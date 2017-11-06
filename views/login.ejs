@@ -1,0 +1,51 @@
+<html>
+<head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+    <div class="col-sm-4"></div>
+    <div class="col-sm-4">
+        <h1>Login</h1>
+        Please provide User Name and Password<br/><br/>
+        <form method="post" action="/login">
+            <div class="form-group">
+                <label for="username" class="control-label">User Name</label>
+                <input type="text" class="form-control" id="username" name="username" placeholder="username" value=""/>
+            </div><br>
+            <div class="form-group">
+                <label for="password" class="control-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="password" value=""/>
+                <% if (typeof error !== 'undefined' && error.length > 0) { %>
+                <%= error %>
+                <% } %>
+
+                <input type="hidden" id="rd" name="rd">
+            </div>
+            <input type="submit" value="Login"/>
+        </form>
+    </div>
+    <div class="col-sm-4">
+    </div>
+</body>
+<script type = "text/javascript" language = "javascript" >
+    function getUrlParams( prop ) {
+        var params = {};
+        var search = decodeURIComponent( window.location.href.slice( window.location.href.indexOf( '?' ) + 1 ) );
+        var definitions = search.split( '&' );
+
+        definitions.forEach( function( val, key ) {
+            var parts = val.split( '=', 2 );
+            params[ parts[ 0 ] ] = parts[ 1 ];
+        } );
+
+        return ( prop && prop in params ) ? params[ prop ] : params;
+    }
+    document.getElementsByName('username')[0].focus();
+    var rd =  getUrlParams('rd');
+    //console.log(rd);
+    document.getElementById('rd').value = typeof rd !== 'object' ? rd : '';
+</script>
+</html>

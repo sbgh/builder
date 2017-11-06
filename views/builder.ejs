@@ -1,0 +1,1898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>/builder</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.3/jstree.min.js"></script>
+
+    <link rel="stylesheet" href="/theme/startbootstrap-sb-admin-2-gh-pages/dist/css/sb-admin-2.min.css">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+
+    <script src="/clientJs/custom.js"></script>
+    <link rel="stylesheet" href="/clientCSS/custom.css" />
+
+    <script src="ansi_up/ansi_up.js" type="text/javascript"></script>
+
+     <!-- <link rel="stylesheet" href="/jstree/dist/themes/proton/style.min.css" /> -->
+
+    <!-- theme  -->
+      <link rel="stylesheet" href="/jstree/dist/themes/default-dark/style.min.css" />
+     <link rel="stylesheet" href="/theme/dark.css">
+
+    <!-- doc.ready() -->
+    <script type = "text/javascript" language = "javascript" >
+
+        $(document).ready(function() {
+
+            $('#jobForm').on('submit', function(e){ e.preventDefault()});
+            $('#sysForm').on('submit', function(e){ e.preventDefault()});
+
+            //create tree
+            $("#jstree_div").jstree({
+                "core" : {
+                   "themes": {
+                        "name": "default-dark",
+                        "dots": true,
+                        "icons": true
+                    },
+                    "data" : {
+                        'url' : function (node) {return 'Jobs';},
+                        'data' : function (node) {return { 'id' : node.id };}
+                    },
+                    'check_callback': function(operation, node, node_parent, node_position, more) {
+                        if (operation === "copy_node") {
+                            //(node.original.type === "system" && node_parent.type === "system") ||
+                            if(  node_parent.id === "#"){
+                                return false;
+                            }else{
+                                $('#copyModal_listOfIds').val(node.original.id);
+
+                                var treeNode = $('#jstree_div').jstree(true).get_node(node.original.id);
+                                var childs = treeNode.children_d;
+                                var listOfIds = [node.original.id];
+                                $("#copyInfoText").html("<b>"+node.original.text + "</b> will be copied to <b>" + node_parent.text+"</b>");
+
+                                if (childs.length > 0 ){
+                                    listOfIds += ';' + childs.join(';');
+                                    $('#copyModal_listOfIds').val(listOfIds);
+                                    $('#copyModalForm').show()
+                                }else{
+                                    $('#copyModalForm').hide()
+                                }
+
+                                $('#copyModal_newParent').val(node_parent.id);  //targetId
+
+                                $('#copyModal').modal('show');
+                                $('#copyChildrenCb').prop('checked', false);
+
+                                return false;
+                            }
+                        }
+                        return true;  //allow all other operations
+                    }
+                },
+                "types" : {
+                    "system" : {
+                        "icon" : "fa fa-desktop"
+                    },
+                    "job" : {
+                        "icon" : "fa fa-code"
+                    },
+                    "disabled" : {
+                        "icon" : "fa fa-hand-paper-o"
+                    }
+                },
+                "state": { "key": "myTree" },
+                "dnd": {
+                    check_while_dragging: false,
+                    always_copy:true,
+                    large_drop_target:true
+                },
+                "plugins" : [ "state","contextmenu", "types", "dnd", "wholerow"],
+                "contextmenu":{
+                    "items": {
+                        "create": {
+                            "label": "Add Child",
+                            "action": function (obj) {
+                                //createNode();  //todo: complete
+                            }
+                        }
+                    }
+                }
+            }).on(  'create_node.jstree', function(e, data) {
+                //console.log('saved');
+            }  );
+
+            $("#copyConfirmButton").on("click",function() {
+                var mydata = {};
+                mydata.ids = $('#copyModal_listOfIds').val();
+                mydata.parent = $('#copyModal_newParent').val();
+
+                if(!$('#copyChildrenCb').is(':checked')){
+                    if(mydata.ids.split(';').length > 1){
+                        mydata.ids = mydata.ids.split(';')[0]
+                    }
+                }
+
+                $.ajax({
+                    type: 'post',
+                    contentType: "application/json",
+                    url: '/copy',
+                    data: JSON.stringify(mydata)
+                }).done(function (e) {
+                    //console.log('copy refresh' );
+                    $('#jstree_div').jstree(true).refresh();
+                }).fail(function (e) {
+                    console.log('copy refresh fail' );
+                    console.log(e );
+                    $('#jstree_div').jstree(true).refresh();
+                });
+                $('#copyModal').modal('toggle');
+            });
+
+            $('#jstree_div').on("copy_node.jstree", function (e, data) {
+
+//                $('#copyModal_listOfIds').val(data.node.id);
+//
+//                var treeNode = $('#jstree_div').jstree(true).get_node(data.node.id);
+//                var childs = treeNode.children_d;
+//                var listOfIds = [data.node.id];
+//                $("#copyInfoText").html("<b>"+ data.node.text + "</b> will be copied to <b>" + $('#jstree_div').jstree(true).get_node(data.parent).text +"</b>");
+//
+//                if (childs.length > 0 ){
+//                    listOfIds += ';' + childs.join(';');
+//                    $('#copyModal_listOfIds').val(listOfIds);
+//                    $('#copyModalForm').show()
+//                }else{
+//                    $('#copyModalForm').hide()
+//                }
+//
+//                $('#copyModal_newParent').val(data.parent);  //targetId
+//
+//                   $('#copyModal').modal('show');
+//                   $('#copyChildrenCb').prop('checked', false);
+
+                //return false;
+            });
+
+            //tree ready
+            $("#jstree_div").bind('ready.jstree', function(e, data) {
+      //          setTreeHover()
+            })
+
+            //tree click
+            $('#jstree_div').on("select_node.jstree", function (e, data) {
+                $("#rightCol").show();
+                $("#introCol").hide();
+                $("#screenShotCol").hide();
+
+                selectedNode = data.selected;
+                //console.log(data.selected);
+                if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled") {
+                    getJobByID(selectedNode);
+                    readModeJob();
+                    $("#sysScreen").hide();
+                    $("#jobScreen").show();
+                    $("#type").val('Job');
+                    updateResultsList(selectedNode);
+                    showBottom()
+                }else{
+                    readModeSys();
+                    $("#sysScreen").show();
+                    $("#jobScreen").hide();
+                    $("#type").val('system');
+                    getSysByID(selectedNode);
+                    updateResultsList(selectedNode);
+                    hideBottom()
+                };
+                $("#results_html").html('');
+                $("#results_codes").html('');
+                $('#messageSpan').html('');
+
+                var inputFields = $("#job-form-panel").find('textarea');
+                inputFields.each(setWidth);
+                function setWidth(index, element) {
+                    $(element).width = '100%';
+                    $(element).css('width','100%');
+                    $(element).css('margin-right',0);
+                }
+            });
+
+
+
+            $("#rightCol").hide();
+            $("#screenShotCol").hide();
+
+            //on refresh tree after remove_node select parent
+            var newFlag = "";
+            removeFlag= false;
+            $('#jstree_div').on('refresh.jstree', function () {
+                if(removeFlag){
+                    var parentNode = $("#jstree_div").jstree(true).get_node($("#parent").val());
+                    $("#jstree_div").jstree(true).select_node(parentNode);
+                    removeFlag= false;
+                }
+            });
+
+            function hideBottom(){
+                $("#bottomRow").hide(function(){
+                    $("#jstree_div").height('calc(100vh - 23px - 22px)');
+                    $("#job-form-panel").height('calc(100vh - 20px - 22px)');
+                    $("#sys-form-panel").height('calc(100vh - 20px - 22px)');
+                    $("#treePanelHandle").height('calc(100vh - 23px)');
+                });
+            }
+            function showBottom(){
+                $("#bottomRow").show(function(){
+                    var container = $('#rowContainer');
+                    currentRatio = .75;
+                    setWindowHeight(currentHeight, container);
+                });
+            }
+            hideBottom();
+
+            function clearJobFields(){
+                $("#id").val('');
+                $("#parent").val('');
+                $("#name").val('');
+                $("#componentEnabled").val('');
+                $("#componentEnabledVal").html('');
+                $("#description").val('');
+                $("#script").val('');
+                $("#compVariables").val('');
+                $("#version").text('');
+                $("#template").val('');
+                $("#text").val('');
+                $('#resourceFiles').val('');
+                $("#ft").val('');
+
+                $('#custTemplates').html('');
+                $('#fileList').html('')
+            }
+
+            $('#componentEnabled').change(function() {
+                if(this.checked) {
+                    $("#componentEnabledVal").html('Yes');
+                }else{
+                    $("#componentEnabledVal").html('No');
+                }
+            });
+
+            //getJobByID
+            function getJobByID(NodeID){
+                clearJobFields();
+                $.get('/Jobs', { id: NodeID }, function(data) {
+                    //console.log("getJobByID: "+data[0].script);
+                    $("#id").val(data[0].id);
+                    $("#parent").val(data[0].parent);
+                    $("#name").val(data[0].name);
+
+                    if(data[0].enabled === 1){
+                        $('#componentEnabled').prop('checked', true);
+                        $('#componentEnabledVal').html('Yes');
+                    }else{
+                        $('#componentEnabled').prop('checked', false);
+                        $('#componentEnabledVal').html('No');
+                    }
+
+                    $("#description").val(data[0].description);
+                    $("#script").val(data[0].script);
+                    $("#compVariables").val(data[0].variables);
+                    $("#version").text(data[0].ver);
+                    $("#template").val(data[0].template);
+                    $("#text").val(data[0].text);
+                    $('#resourceFiles').val(data[0].resourceFiles);
+                    $("#ft").val(data[0].ft);
+
+                    populateFileList( $('#resourceFiles').val(), false);
+
+                    var timestamp = new Date().getTime();
+                    $.get('/uploads/' +  $("#id").val() + "/screenshot.png?" + timestamp, '', function(data) {
+
+                        if (data === ''){
+                            $('#screenShotImageHolder').hide();
+                            $('#screenShotImage')[0].src='';
+                            $("#firstRow").css('width:50%;');
+                            $("#topLeftForm").attr('class', 'col-lg-12');
+
+                        }else{
+                            $('#screenShotImageHolder').show();
+                            $('#screenShotImage')[0].src='/uploads/' +  $("#id").val() + '/screenshot.png?' + timestamp;
+                            $("#firstRow").css('width:100%;');
+                            $("#topLeftForm").attr('class', 'col-lg-6');
+                        }
+                    });
+
+                    var x=2;
+                    var ctDiv = $('#custTemplates');
+                    var ctObj = data[0].custTemplates;
+                    var ctHTML = "";
+                    for (var key in ctObj) {
+                        if (ctObj.hasOwnProperty(key)) {
+                            var inHtml = "<div class='form-group'>";
+                            inHtml += " <label>Template "+x.toString()+"</label>";
+                            inHtml += " <textarea class='form-control code' rows='4' readonly='' id='template"+x.toString()+"'>";
+                            inHtml += "</textarea>";
+                            inHtml += "</div>";
+                            ctHTML +=inHtml;
+                            x++;
+                        }
+                    }; //add all the custom Template fields
+                    $('#custTemplates').html(ctHTML);
+                    x=2;
+                    for (var key in ctObj) {
+                        if (ctObj.hasOwnProperty(key)) {
+                            $('#template'+x.toString()).val(ctObj[key]);
+                            x++;
+                        }
+                    }
+                    setTripleClickTextareaEvents();
+                    allowInsertTabTextarea();
+                })
+            }
+
+            function allowInsertTabTextarea(){
+                //capture tab key on text area when not readonly
+                $(document).delegate('#jobForm textarea', 'keydown', function(e) {
+                    var keyCode = e.keyCode || e.which;
+
+                    if( !$(this).get(0).readOnly){
+                        if (keyCode == 9) {
+                            e.preventDefault();
+                            var start = $(this).get(0).selectionStart;
+                            var end = $(this).get(0).selectionEnd;
+
+                            // set textarea value to: text before caret + tab + text after caret
+                            $(this).val($(this).val().substring(0, start)
+                                + "\t"
+                              //  + "    "
+                                + $(this).val().substring(end));
+
+                            // put caret at right position again
+                            $(this).get(0).selectionStart =
+                                $(this).get(0).selectionEnd = start + 1;
+                        }
+                    }
+                });
+            }
+
+
+            function clearSysFields(){
+                $("#id").val('');
+                $("#parent").val('');
+                $("#sysName").val('');
+                $("#sysVersion").text('');
+                $("#sysDescription").val('');
+                $("#sysVariables").val('');
+                $("#text").val('');
+            }
+
+            //getSysByID
+            function getSysByID(NodeID){
+                clearSysFields();
+                $.get('/Sys', { id: NodeID }, function(data) {
+                    //console.log("getJobByID: "+data[0].script);
+                    $("#id").val(data[0].id);
+                    $("#parent").val(data[0].parent);
+                    $("#sysName").val(data[0].name);
+                    $("#sysVersion").text(data[0].ver);
+                    $("#sysDescription").val(data[0].description);
+                    $("#sysVariables").val(data[0].variables);
+                    $("#text").val(data[0].text);
+
+                    var dataURL = data[0].icon;
+                    if(dataURL !== ''){
+                        $("#sysIcon").css(
+                            {'background-image': "url(" + dataURL + ")", 'background-repeat': 'no-repeat'}
+                            ).data({'width':21, 'height':21});
+                        $("#sysIcon").height(21)
+                    }
+                });
+            }
+
+            //run
+            $("#run_button").click(function(event){
+
+
+               $('#runModal').modal('show');
+               $('#runChildrenCb').prop('checked', false);
+
+                var famTree = $('#ft').val().split('/');
+                var sys = famTree[1];
+
+                var storedKey ='';
+                var storedKeyName = '';
+
+                if (sys.length !== 0){
+                    storedKey = localStorage['key_' + sys];
+                    storedKeyName = localStorage['keyName_' + sys];
+                    if(storedKey !== '' && typeof storedKey !== 'undefined'){
+                        $('#localStoreKeyCb').prop('checked', true);
+                        $('#keyList').html(storedKeyName) ;
+                    }else{
+                        $('#localStoreKeyCb').prop('checked', false);
+                        $('#keyList').html('') ;
+                    }
+                }
+            });
+            $("#runConfirmButton").on("click",function() {
+
+                var ids = $("#id").val();
+
+                if($('#runChildrenCb').is(':checked')){
+                    var treeNode = $('#jstree_div').jstree(true).get_node($("#id").val());
+                    var childs = treeNode.children_d;
+                    if (childs.length > 0 ){
+                        ids += ';' + childs.join(';');
+                    }
+                }
+
+                $("#results_html").html('');
+                $("#results_codes").html('');
+                $("#results_html").addClass('result_fresh');
+                $("#results_html").removeClass('result_history');
+
+                var currentRespText = "";
+                var formData = new FormData();
+
+                formData.append('ids', ids);
+
+                //console.log("ids: " + ids)
+
+                var famTree = $('#ft').val().split('/');
+                var sys = famTree[1];
+
+                if($('#localStoreKeyCb').is(':checked')){
+                    formData.append('storeLocal', 'yes');
+                    formData.append('localStoredKey',localStorage['key_' + sys]);
+                    //console.log("key:"+localStorage['key_' + sys]);
+                }else{
+                    formData.append('storeLocal', 'no');
+                    localStorage['key_' + sys] = '';
+                    localStorage['keyName_' + sys]='';
+
+                }
+
+                files = $('#upload-key').get(0).files
+                if( files.length === 1) {
+                    var file = files[0];
+                    // add the files to formData object for the data payload
+                    formData.append('key', file, file.name);
+                    if($('#localStoreKeyCb').is(':checked')) {
+                        localStorage['keyName_' + sys] = file.name;
+                    }
+                }
+
+                var localKey="";
+                $.ajax({
+                    url: '/run',
+                    processData: false,
+                    contentType: false,
+                    type: 'POST',
+                    data: formData,
+                    xhr: function () {
+
+                    $('#upload-key').val('');
+
+                    var xhr = $.ajaxSettings.xhr();
+                    xhr.onprogress = function e() {
+                        var rText = xhr.responseText
+
+                        var rTextNew = rText.substr(currentRespText.length)
+                        currentRespText = rText;
+                        var rTextNew = ansi_up.ansi_to_html(rTextNew).replace(/(?:\r\n|\r|\n)/g, '<br>');
+
+                        var famTree = $('#ft').val().split('/');
+                        var sys = famTree[1];
+
+                        rTextNew.split('<br>').forEach(function(row){
+                            if(row.substr(0,8) === 'message:'){
+                                $('#messageSpan').html(row.substr(8))
+                            }
+
+                            if(row.substr(0,4) === 'key:' &&  $("#results_html").html() === '') {
+                                localKey += row.substr(4) + '\n';
+                            }
+                            else if(row.substr(0,4) === 'url:'){
+                                //           window.open('https://mynode:8445/cm', 'new_', '');
+                                //window.open('https://mynode:8445/cm');
+                            }
+                            else if(row.substr(0,4) === 'img:'){
+                                var timestamp = new Date().getTime();
+                                $('#screenShot')[0].src="/uploads/" + row.replace('img:','') + '?' +timestamp  ;
+                                $("#rightCol").hide();
+                                $("#screenShotCol").show();
+                            }
+                            else{
+                                if(localKey !== '' && sys.length !== 0){
+                                   if($('#localStoreKeyCb').is(':checked')) {
+                                       localStorage['key_' + sys] = localKey
+                                   }
+                                }
+                                $("#results_html").append(row + '<br>');
+                            }
+                        })
+                        $('#results_html').animate({scrollTop: $('#results_html').get(0).scrollHeight}, 50);
+                    };
+
+                    return xhr;
+                    }
+                }).done(function (e) {
+                    if (localKey !== ''){
+                        //console.log(localKey)
+                    }
+                    updateResultsList(selectedNode)
+                }).fail(function (e) {
+
+                });
+
+                $('#runModal').modal('toggle');
+            });
+            
+            //remove
+            $("#remove_button, #remove_sys_button").click(function(event){
+                $('#delModal').modal('show');
+            });
+            $("#delConfirmButton").on("click",function() {
+
+                clearJobFields();
+                clearSysFields();
+
+                var mydata = {};
+                mydata.ids = selectedNode;
+
+                var treeNode = $('#jstree_div').jstree(true).get_node(selectedNode);
+                var childs = treeNode.children_d;
+                var parent = treeNode.parent;
+                var listOfIds = selectedNode[0];
+                if (childs.length > 0 ){
+                    listOfIds += ';' + childs.join(';');
+                }
+                mydata.ids = listOfIds
+
+                $.ajax({
+                    type: 'post',
+                    contentType: "application/json",
+                    url: '/remove',
+                    data: JSON.stringify(mydata),
+                    selectedNode:selectedNode,
+                    parent:parent
+                }).done(function (data) {
+                    //console.log(data);
+                    removeFlag= true;
+                    $("#jstree_div").jstree(true).delete_node(this.selectedNode);
+                    $('#jstree_div').jstree(true).redraw(true);
+                    $("#jstree_div").jstree(true).select_node(this.parent, true);
+                }).fail(function (e) {
+                    console.log('remove refresh fail' );
+                    console.log(e );
+                    $('#jstree_div').jstree(true).refresh();
+                });
+
+                $('#delModal').modal('toggle');
+            });
+
+            //edit
+            $("#edit_button").click(function(event){
+                editModeJob()
+            });
+            $("#edit_sys_button").click(function(event){
+                editModeSys()
+            });
+
+            function editModeJob(){
+                inputFields = $("#jobForm").find("input");
+                inputFields.each(enableElement);
+                inputFields = $("#jobForm").find("textarea");
+                inputFields.each(enableElement);
+                function enableElement(index, element) {
+                    element.readOnly = false;
+                }
+                $("#version").readOnly = true;
+
+                $("#componentEnabled").show();
+                //$("#componentEnabledVal").hide();
+
+                $("#edit_button").hide();
+                $("#save_button").show();
+                $("#remove_button").hide();
+                $("#new_button").hide();
+                $("#run_button").hide();
+                $("#insertVariable").show();
+                $("#newTemplateButton").show();
+                $("#newFileButton").show();
+                $("#delFileButton").show();
+                $("#moveUp_button").hide();
+                $("#moveDn_button").hide();
+
+                var checkBoxes = $(".varCheckboxFileList")
+                if (checkBoxes.exists()){
+                    checkBoxes.show();
+                }
+
+
+                $.get('/fileList', { id: $('#id').val() }, function(data) {
+                    $('#resourceFiles').val(data);
+                    populateFileList(data, true);
+                });
+
+            }
+            function readModeJob(){
+                inputFields = $("#jobForm").find("input");
+                inputFields.each(disableElement);
+                inputFields = $("#jobForm").find("textarea");
+                inputFields.each(disableElement);
+
+                $("#componentEnabled").hide();
+                //$("#componentEnabledVal").show();
+
+                function disableElement(index, element) {
+                    element.readOnly = true;
+                }
+                $("#edit_button").show();
+                $("#save_button").hide();
+                $("#remove_button").show();
+                $("#new_button").show();
+                $("#run_button").show();
+                $("#insertVariable").hide();
+                $("#newTemplateButton").hide();
+                $("#newFileButton").hide();
+                $("#delFileButton").hide();
+                $("#moveUp_button").show();
+                $("#moveDn_button").show();
+                var checkBoxes = $(".varCheckboxFileList")
+                if (checkBoxes.exists()){
+                    checkBoxes.hide();
+                }
+            }
+
+            function editModeSys(){
+                inputFields = $("#sysForm").find("input");
+                inputFields.each(enableElement);
+                inputFields = $("#sysForm").find("textarea");
+                inputFields.each(enableElement);
+                function enableElement(index, element) {
+                    element.readOnly = false;
+                }
+                $("#edit_sys_button").hide();
+                $("#save_sys_button").show();
+                $("#remove_sys_button").hide();
+                $("#new_sys_button").hide();
+
+                $('#iconPaste').show()
+            }
+            function readModeSys(){
+                inputFields = $("#sysForm").find("input");
+                inputFields.each(disableElement);
+                inputFields = $("#sysForm").find("textarea");
+                inputFields.each(disableElement);
+
+                function disableElement(index, element) {
+                    element.readOnly = true;
+                }
+                $("#edit_sys_button").show();
+                $("#save_sys_button").hide();
+                $("#remove_sys_button").show();
+                $("#new_sys_button").show();
+
+                $('#iconPaste').hide()
+            }
+
+            $("#edit_button").disabled = true;
+            $("#save_button").disabled = true;
+            $("#remove_button").disabled = true;
+            $("#new_button").disabled = true;
+            $("#run_button").disabled = true;
+            $("#edit_sys_button").disabled = true;
+            $("#save_sys_button").hide();
+            $("#remove_sys_button").disabled = true;
+            $("#new_sys_button").disabled = true;
+
+            $('#iconPaste').hide();
+
+            $.fn.exists = function () { //extend jq - exists function
+                return this.length !== 0;
+            }
+
+            //expand & collapse textareas on comp/job form if triple-clicked
+            function setTripleClickTextareaEvents(){
+                var throttle = false;
+                $('#jobForm textarea').click( function (evt) {
+                    if (!throttle && evt.detail === 3) {
+                        if(this.rows < 15 ){
+                            $(this).css({ 'height' : ''});
+                            this.rows = 20;
+                        }else{
+                            $(this).css({ 'height' : ''});
+                            this.rows = 4;
+                        }
+                        throttle = true;
+                        setTimeout(function () {
+                            throttle = false;
+                        }, 1000);
+                    }
+                });
+            }
+
+            //save Job
+            $("#save_button").click(function(event){
+                //console.log("submitting");
+                var mydata = {};
+                mydata.id = $("#id").val();
+                mydata.parent = $("#parent").val();
+                mydata.name = $("#name").val();
+                mydata.type = $("#type").val();
+                mydata.description = $("#description").val();
+
+                if($('#componentEnabled').is(':checked')) {
+                    mydata.enabled = 1;
+                }else{
+                    mydata.enabled = 0;
+                }
+
+                mydata.compVariables = $("#compVariables").val();
+                mydata.script = $("#script").val();
+                mydata.template = $("#template").val();
+
+                var custTemplates = {};
+                var x=2;
+                while($('#template'+ x.toString()).length > 0 && x<100){
+                    if($('#template'+ x.toString()).val().trim() !== ""){
+                        custTemplates[$('#template'+ x.toString())[0].id] = $('#template'+ x.toString()).val();
+                    }
+                    x++;
+                }
+                mydata.custTemplates = custTemplates;
+
+                mydata.text = $("#text").val();
+                mydata.resourceFiles = $('#resourceFiles').val();
+
+                $.ajax({
+                    type: 'POST',
+                    data: JSON.stringify(mydata),
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json",
+                    },
+                    url: '/save',
+                    success : function(result) {
+                        readModeJob();
+                        var resultJSON = JSON.parse(result);
+                        $("#id").val(resultJSON.id);
+                        $("#text").val(resultJSON.text);
+
+                        $('#jstree_div').jstree(true).refresh();
+                    },
+                    error : function(error) {
+                        console.log(error)
+                    }
+                });
+            });
+
+            //save Sys
+            $("#save_sys_button").click(function(event){
+                console.log("submitting");
+                var mydata = {};
+                mydata.id = $("#id").val();
+                mydata.parent = $("#parent").val();
+                mydata.name = $("#sysName").val();
+                mydata.type = $("#type").val();
+                mydata.description = $("#sysDescription").val();
+                mydata.variables = $("#sysVariables").val();
+                mydata.text = $("#text").val();
+                mydata.iconURL = $("#iconURL").val();
+
+                $.ajax({
+                    type: 'POST',
+                    data: JSON.stringify(mydata),
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json",
+                    },
+                    url: '/save',
+                    success : function(result) {
+                        readModeSys();
+                        var resultJSON = JSON.parse(result);
+                        $("#id").val(resultJSON.id);
+                        $("#text").val(resultJSON.text);
+                        $('#jstree_div').jstree(true).refresh();
+                    },
+                    error : function(error) {
+                        console.log(error)
+                    }
+                })
+            })
+
+            //resort components
+            $("#moveUp_button").click(function(event){
+                //console.log("up");
+                $.get('/Move', { id: selectedNode, direction: 'up' }, function(data) {
+                   newPos = data.newPos;
+                    if (newPos !== '') {
+                         $('#jstree_div').jstree(true).refresh();
+                        // $('#jstree_div').jstree(true).redraw(true);
+                   //     $('#jstree_div').jstree("move_node", selectedNode[0], $("#parent").val(), newPos);
+                       // $('#jstree_div').jstree(true).redraw(true);
+                    }
+                })
+            })
+            $("#moveDn_button").click(function(event){
+                //console.log("down");
+                $.get('/Move', { id: selectedNode, direction: 'down' }, function(data) {
+                    //var dataJason = JSON.parse(data);
+                    //  console.log("move down ");
+                    newPos = data.newPos;
+                    if (newPos !== '') {
+                        $('#jstree_div').jstree(true).refresh();
+                        // $('#jstree_div').jstree(true).redraw(true);
+               //         $('#jstree_div').jstree("move_node", selectedNode[0], $("#parent").val(), newPos);
+                    }
+                })
+            })
+
+            //save id
+            $("#changeIdSaveButton").on("click",function() {
+                console.log("saving id");
+                var myIddata = {};
+                myIddata.newPassword = $("#newPassword").val();
+                myIddata.newPasswordAgain = $("#newPasswordAgain").val();
+
+                $.ajax({
+                    type: 'POST',
+                    data: JSON.stringify(myIddata),
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json",
+                    },
+                    url: '/saveId',
+                    success : function(result) {
+
+                            $("#saveProfileResults").text(result)
+
+                        },
+                    error : function(error) {
+                        console.log(error)
+                    }
+                });
+            });
+            
+            //Insert Var
+            $("#insertVarButton").on("click",function() {
+
+                var pasteText = '';
+                var scopeRadioVal = $('input[name="insertScope"]:checked').val();
+                var scopeCode;
+                if (scopeRadioVal == 'Component'){scopeCode = 'c'};
+                if (scopeRadioVal == 'Parent'){scopeCode = 'p'};
+                if (scopeRadioVal == 'Ancestors'){scopeCode = 'a'};
+                if (scopeRadioVal == 'Same System'){scopeCode = 's'};
+                $('.varCheckbox:checkbox:checked').each(function () {
+                    //var thisLink = (this.checked ? $(this).val() : "");
+                    var thisLink = scopeCode + '.' + $(this).val().split('.')[1];
+                    if (thisLink !== ""){
+                        pasteText += '<%%' + thisLink + '%> '
+                    }
+                });
+
+                $('#varModal').modal('toggle');
+                insertAtCaret('script', pasteText);
+
+            });
+            function insertAtCaret(areaId, text) {//http://stackoverflow.com/questions/1064089/inserting-a-text-where-cursor-is-using-javascript-jquery
+                var txtarea = document.getElementById(areaId);
+                if (!txtarea) { return; }
+
+                var scrollPos = txtarea.scrollTop;
+                var strPos = 0;
+                var br = ((txtarea.selectionStart || txtarea.selectionStart == '0') ?
+                    "ff" : (document.selection ? "ie" : false ) );
+                if (br == "ie") {
+                    txtarea.focus();
+                    var range = document.selection.createRange();
+                    range.moveStart ('character', -txtarea.value.length);
+                    strPos = range.text.length;
+                } else if (br == "ff") {
+                    strPos = txtarea.selectionStart;
+                }
+
+                var front = (txtarea.value).substring(0, strPos);
+                var back = (txtarea.value).substring(strPos, txtarea.value.length);
+                txtarea.value = front + text + back;
+                strPos = strPos + text.length;
+                if (br == "ie") {
+                    txtarea.focus();
+                    var ieRange = document.selection.createRange();
+                    ieRange.moveStart ('character', -txtarea.value.length);
+                    ieRange.moveStart ('character', strPos);
+                    ieRange.moveEnd ('character', 0);
+                    ieRange.select();
+                } else if (br == "ff") {
+                    txtarea.selectionStart = strPos;
+                    txtarea.selectionEnd = strPos;
+                    txtarea.focus();
+                }
+
+                txtarea.scrollTop = scrollPos;
+            };
+
+            $('#varModal').on('shown.bs.modal', function() {
+                getVariables("Parent");
+                //console.log('got vars');
+            });
+
+            $( 'input[name="insertScope"]:radio' ).change(function(){
+                getVariables(this.value);
+            });
+
+            //populates variables in the Insert Variables modal
+            function getVariables(scope){
+                var mydata = {};
+                var scopeRadioVal = $('input[name="insertScope"]:checked').val();
+                var html = "<div class='varBody'><table style='width: 100%;' aria-describedby='dataTables-example_info' role='grid' class='table table-striped table-bordered table-hover dataTable no-footer dtr-inline var_Table' id='dataTables-example' width='100%'>";
+                html += "<thead>";
+                html += "<tr role='row'>" +
+                    "<th aria-label='Path: activate to sort column descending' aria-sort='ascending' style='width: 10%;' colspan='1' rowspan='1' aria-controls='dataTables-example' tabindex='0' class='sorting_asc'>Path</th>" +
+                    "<th aria-label='Variable: activate to sort column ascending' style='width: 30%;' colspan='1' rowspan='1' aria-controls='dataTables-example' tabindex='0' class='sorting'>Variable</th>" +
+                    "<th aria-label='Current Value: activate to sort column ascending' style='width: 60%;' colspan='1' rowspan='1' aria-controls='dataTables-example' tabindex='0' class='sorting'>Current Value</th>" +
+                    "</tr>";
+                html += "</thead>";
+                html += "<tbody>";
+
+                if(scopeRadioVal === "Component" ){
+                    var compVarsArr = $("#compVariables").val().split('\n');
+
+                    compVarsArr.forEach(function(thisVar) {
+                        html += "<tr role='row' class='gradeA odd' >";
+
+                        var pair = thisVar.split('=');
+                        var currentVal = thisVar.substr(thisVar.indexOf('=')+1);
+                        html += "<tr role='row' class='gradeA odd'><td width = '10%'>"
+                        html +="<input value='c."  + pair[0] + "' type='checkbox' class='varCheckbox pull-right'>";
+                        html +="</td><td class='var_Table_td' width = '30%'>" + pair[0] + '</td>' + "<td class='var_Table_td' width = '60%'>" + currentVal  + '</td>'
+                        html += "</tr>";
+                    })
+
+                    html += "</tbody></table></div>"
+                    $("#insertVarBody").html(html) ;
+
+                }else{
+                    $.ajax({
+                        type: 'get',
+                        data: mydata,
+                        dataType : "text",
+                        insertScope : scopeRadioVal,
+                        headers: {
+                            "content-type": "application/json",
+                        },
+                        url: '/getVars',
+                        success : function(result) {
+
+                            var ResultsJson = JSON.parse(result);
+
+                            if (this.insertScope == 'Parent'){
+                                for (var key in ResultsJson) {
+                                    if (ResultsJson.hasOwnProperty(key)) {
+                                        if (ResultsJson[key].link !== $('#parent').val()) {
+                                            delete ResultsJson[key]
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (this.insertScope === 'Ancestors'){
+                                for (var key in ResultsJson) {
+                                    if (ResultsJson.hasOwnProperty(key)) {
+                                        var currentFtArr = $('#ft').val().split('/');
+                                        if(jQuery.inArray(ResultsJson[key].link, currentFtArr) === -1){
+                                            delete ResultsJson[key]
+                                        }
+                                    }
+                                }
+                            }
+
+                            for (var key in ResultsJson) {
+                                if (ResultsJson.hasOwnProperty(key)) {
+                                    html += "<tr role='row' class='gradeA odd' >";
+                                    if(ResultsJson[key].path !== last_path){
+                                        html += "<td  class='sorting_1 var_Table_td ' colspan=3 >" + ResultsJson[key].path + '</td></tr>'
+                                    }
+                                    var last_path = ResultsJson[key].path;
+                                    var currentVal = ResultsJson[key].row.trim().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                                    html += "<tr role='row' class='gradeA odd'><td width = '10%'>"
+                                    html +="<input value='" + ResultsJson[key].link + '.' + ResultsJson[key].varName + "' type='checkbox' class='varCheckbox pull-right'>";
+                                    html +="</td><td class='var_Table_td' width = '30%'>" + ResultsJson[key].varName + '</td>' + "<td class='var_Table_td' width = '60%'>" + currentVal  + '</td>'
+                                    html += "</tr>";
+                                }
+                            }
+                            html += "</tbody></table></div>"
+                            $("#insertVarBody").html(html) ;
+                        },
+                        error : function(error) {
+                            console.log(error)
+                        }
+                    })
+                }
+
+            }
+
+            //Updates the list of results when a component is selected
+            function updateResultsList(targetID){
+                $("#results-group").html("");
+                $.get('/resultsList', { id: targetID }, function(data) {
+                    var html = " <div class='panel panel-default'>";
+                    html += "       <div class='panel-heading cust-panel-heading'><i class='fa  fa-calendar fa-fw'></i>Build History</div>";
+                    html += "       <div class='panel-body results-list-body'>";
+                    html += "           <div id='results-group' class='list-group results-group'>";
+
+                    data.forEach(function(row){
+                        var selectedFile = row.file;
+                        var timeStr = selectedFile.split('_')[1];
+                        var pass = selectedFile.split('_')[2];
+                        var formattedTimeStr = formatTimeStr(timeStr);
+                        html += "               <a href='#' class='list-group-item resultsListRow' data-ID='" + selectedFile+"'>";
+                        if(pass == 'p'){
+                            html += "               <i class='fa  fa-check fa-fw'></i>"  ;
+                        }else{
+                            html += "               <i class='fa  fa-times fa-fw'></i>"  ;
+                        }
+                        html += "               <span class='pull-right text-muted small'><em>" + formattedTimeStr + "</em>";
+                        html += "               </span>";
+                        html += "               </a>";
+                    });
+
+                    html += "</div></div></div>";
+
+                    var prevHeight = $('#results-group').height();
+
+                    $("#results-list").html(html);
+                    $('#results-group').height(prevHeight);
+
+                    $('.resultsListRow').on('click', function(){
+                        var id = $(this).attr('data-ID');
+                        //console.log(id);
+                        $("#results_html").html('');
+                        $("#results_codes").html('');
+                        $('#messageSpan').html('');
+                        $.get('/getResults', { id: id }, function(data) {
+                            var results = JSON.parse(data);
+                            //var htmlrows="";
+
+                            results.forEach(function(row){
+
+                                if (typeof row.results !== 'undefined') {
+                                    var htmlRow = ansi_up.ansi_to_html(row.results);
+                                    if (row.x === '') {
+                                        $("#results_html").html($("#results_html").html() + htmlRow)
+                                    } else {
+                                        $("#results_html").html($("#results_html").html() + "var:" + row.x + ":" + htmlRow)
+                                    }
+                                }
+
+                                if (typeof row.cc !== 'undefined'){
+                                    if(row.cc !== ''){
+                                        var coderows="";
+                                        row.cc.data.forEach(function(ccode){
+                                            coderows += ('0'+ccode.toString(16)).slice(-2)+ ' ';
+                                        })
+                                        $("#results_codes").html($("#results_codes").html() + coderows.replace(/0d (?!0a)/g,'0d<br/>').replace(/0d 0a /g,'0d 0a<br/>'));
+                                    }
+                                }
+
+                                if (typeof row.m !== 'undefined') {
+                                    $("#results_html").append("message:" + row.m + "<br/>")
+                                    $("#results_codes").append("<br/>")
+                                }
+                            });
+                            $("#results_codes").html( $("#results_codes").html() +'<br/><br/><br/>');
+
+                            $("#results_html").addClass('result_history');
+                            $("#results_html").removeClass('result_fresh');
+//                            $('#terminal-container').animate({
+//                                    scrollTop: $('#terminal-container').get(0).scrollHeight}, 200);
+
+                        });
+                    });
+                });
+            };
+
+            //sync result and codes scroll
+            $('.scroller').scroll(function(e) {
+                $('.scroller').scrollTop(e.target.scrollTop);
+            });
+
+            $("#new_button, #new_sys_button").on("click",function() {
+                var mydata = {};
+                mydata.id = "NewChild";
+                mydata.parent = selectedNode;
+                mydata.name = "New Component";
+                mydata.description = "";
+                mydata.script = "";
+                mydata.text = "New Component";
+                mydata.type = "job";
+                createNode(mydata);
+            });
+
+            $('.newSys').on('click', function(){
+                var mydata = {};
+                mydata.id = "NewSys";
+                mydata.parent = '#';
+                mydata.name = "New System";
+                mydata.description = "";
+                mydata.script = "";
+                mydata.text = "new Sys";
+                mydata.type = "system";
+                createNode(mydata);
+            });
+
+            //new custom template
+            $('.newCust').on('click', function(){
+                var ctHTML = $('#custTemplates').html();
+                var x=2;
+                var currentVals = [];
+                while($('#template'+ x.toString()).length > 0 && x<100){
+                    currentVals.push($('#template'+ x.toString()).val())
+                    x++;
+                }
+                if (x > 99){
+                    alert("error: too many templates");
+                }else{
+                    var inHtml = "<div class='form-group'>";
+                    inHtml += " <label>Template "+x.toString()+"</label>";
+                    inHtml += " <textarea class='form-control code' rows='4' id='template"+x.toString()+"'></textarea>";
+                    inHtml += "</div>";
+                    ctHTML +=inHtml;
+                    $('#custTemplates').append(inHtml);
+                }
+            });
+
+            //click show code button
+            $('.codes_btn').on('click', function(){
+                if($("#results_codes").is(":visible")){
+                    hideCodes()
+                }else{
+                    showCodes()
+                }
+            });
+
+            function hideCodes(){
+                $("#results_codes").hide();
+                $("#codes_btn").html("[+codes]");
+                $("#results_html").css("width", "100%");
+                $("#results_html").css("overflow-y", "auto");
+            }
+            function showCodes(){
+                $("#results_codes").show();
+                $("#codes_btn").html("[-codes]");
+                $("#results_html").css("width", "50%");
+                $("#results_html").css("overflow-y", "hidden");
+            }
+            hideCodes();
+
+            //Create new component or system
+            var selectedNode = "#"; //default Root
+            function createNode(mydata) {
+                $.ajax({
+                    type: 'POST',
+                    data: JSON.stringify(mydata),
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json",
+                    },
+                    url: '/save',
+                    success : function(result) {
+                        var resultJSON = JSON.parse(result);
+                        var node = { "id" : resultJSON.id };
+                        node.name = resultJSON.name;
+                        node.text = resultJSON.text;
+                        node.type = resultJSON.type;
+
+                        $('#jstree_div').jstree('create_node', resultJSON.parent, node, 'last', function(){
+                            var newNode = $("#jstree_div").jstree(true).get_node(resultJSON.id);
+                            $("#jstree_div").jstree(true).select_node(newNode);
+                            $('#jstree_div').jstree(true).redraw(true);
+                            $('#jstree_div' + " li[id=" + resultJSON.id + "] a").click();
+                        });
+                    },
+                    error : function(error) {
+                        console.log(error)
+                    }
+                });
+            }
+
+            $("#builderBtn").addClass("active");
+
+            var ansi_up = new AnsiUp;
+
+            var isResizingHeight = false;
+            var isResizingWidth = false;
+
+            var container = $('#rowContainer');
+
+            currentRatio = 1;
+            var currentHeight = container.height() * .75; //default height
+            currentHeight += currentHeight < 10 ? 10 - currentHeight : 0;
+
+            //drag height & width
+            $(function () {
+                var heightHandle = $('#rowHandle');
+                var widthHandle = $('#treePanelHandle');
+
+                heightHandle.on('mousedown', function (e) {
+                    isResizingHeight = true;
+                    //lastDownY = e.clientY;
+                });
+
+                widthHandle.on('mousedown', function (e) {
+                    isResizingWidth = true;
+                });
+
+                $( window ).resize(function() {
+                    //var containerWidth = $('#rowContainer');
+                    setWindowHeight($( window ).height() * currentRatio , container);
+                });
+
+                $(document).on('mousemove', function (e) {
+                    if (!isResizingHeight && !isResizingWidth)
+                        return;
+                    if(isResizingHeight){
+                        e.preventDefault();
+                        var topHeight = e.clientY;
+                        currentHeight = e.clientY;
+                        currentHeight += currentHeight < 10 ? 10 - currentHeight : 0
+                        currentRatio = currentHeight / container.height();
+                        setWindowHeight(topHeight, container);
+                    }
+                    if(isResizingWidth){
+                        e.preventDefault();
+                        var leftWidth = e.clientX;
+
+                        setWindowWidth(leftWidth, container);
+                    }
+
+                }).on('mouseup', function (e) {
+                    isResizingHeight = false;
+                    isResizingWidth = false;
+                });
+            });
+
+            function setWindowHeight(topHeight, container){
+                if (topHeight > (container.height() * .2) && topHeight < (container.height() * .8) ){
+
+                    $("#jstree_div").height(topHeight - (23 + 31));
+                    $("#treePanelHandle").height(topHeight - 23);
+
+                    $("#job-form-panel").height(topHeight - (20 + 22 + 38));
+                    $("#sys-form-panel").height(topHeight - (20 + 22 + 38));
+                    $("#screenShotCol").height(topHeight - 24);
+
+
+                    $('#results_html').height(container.height() - topHeight - (23 + 10));
+                    $('#results_codes').height(container.height() - topHeight - (23 + 10));
+
+                    $('#results-group').height(container.height() - topHeight - (23 + 10));
+                }
+            }
+
+            function setWindowWidth(leftWidth, container){
+                if (leftWidth < (container.width() * .8) && leftWidth > 128 ){
+                    $("#rightCol").css("padding-left", leftWidth );
+                    $("#screenShotCol").css("padding-left", leftWidth  );
+//                    $("#leftCol").width(leftWidth  - 2);
+//                    $("#treePanel").width(leftWidth - 7);
+                    $("#leftCol").css('width',leftWidth  - 2);
+                    $("#treePanel").css('width',leftWidth - 7);
+
+                }
+            }
+            setWindowWidth(250, container);
+
+            //Resource file management
+            function populateFileList(data, editMode){
+                var fileNamesHtmlHeader = "<div><table style='width: 50%;'  role='grid' class='table table-striped table-bordered table-hover dataTable no-footer dtr-inline var_Table' id='dataTables-fileList' width='50%'><tbody>";
+                var fileNamesHtmlFooter = "</tbody></table></div>";
+                var fileNamesHtml = "";
+                var fileNamesHtmlEmpty = "<tr role='row' class='gradeA odd'><td width = '10%'><br/></td></tr>";
+                try{
+                    var fList = JSON.parse(data);
+                    if(fList.length > 0){
+                        fList.forEach(function(fName){
+                            fileNamesHtml += "<tr role='row' class='gradeA odd'><td width = '10%'>"
+                            fileNamesHtml +="<span class='varCheckboxFileList'><input class='CheckboxFileList' value='" + fName.name + "' type='checkbox'/></span>";
+                            fileNamesHtml += "<a href='/uploads/" + $('#id').val() + "/" + fName.name + "' target='_new'>" + fName.name + "</a>";
+                            fileNamesHtml +="</td></tr>";
+                        })
+                    }else{
+                        fileNamesHtml += fileNamesHtmlEmpty;
+                    }
+                    $('#fileList').html(fileNamesHtmlHeader + fileNamesHtml + fileNamesHtmlFooter);
+                    if(!editMode){
+                        $(".varCheckboxFileList").hide();
+                    }
+
+                } catch (e) {
+                    $('#fileList').html(fileNamesHtmlHeader + fileNamesHtmlEmpty + fileNamesHtmlFooter);
+                }
+            }
+            $("#fileUpload").hide();
+            $('.newFile').on('click', function(){
+                //  $("#fileUpload").show();
+                $('#upload-input').click();
+                $('.progress-bar').text('0%');
+                $('.progress-bar').width('0%');
+            });
+            $("#delFileButton").on('click', function(){
+                var filesString ='';
+                var id=$("#id").val();
+                $('.CheckboxFileList:checkbox:checked').each(function () {
+                    filesString +=  $(this).val() + ';';
+                });
+                var mydata = {id:id, files:filesString};
+
+                $.ajax({
+                    type: 'get',
+                    data: mydata,
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    url: '/delFiles',
+                    success : function(data) {
+                        $('#resourceFiles').val(data);
+                        populateFileList(data, true);
+                    },
+                    error : function(error) {
+                        console.log(error)
+                    }
+                })
+            });
+            $('#upload-input').on('change', function(){
+
+                var files = $(this).get(0).files;
+                if (files.length > 0){
+                    var formData = new FormData();
+                    formData.append('id', $('#id').val());
+
+                    for (var i = 0; i < files.length; i++) {
+                        var file = files[i];
+
+                        // add the files to formData object for the data payload
+                        formData.append('uploads[]', file, file.name);
+                    }
+                    $.ajax({
+                        url: '/upload',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(data){
+                            //console.log('upload successful!\n' + data);
+                            $('#resourceFiles').val(data);
+                            populateFileList(data, true);
+                            $("#fileUpload").hide();
+                        },
+                        xhr: function() {
+                            // create an XMLHttpRequest
+                            var xhr = new XMLHttpRequest();
+
+                            // listen to the 'progress' event
+                            xhr.upload.addEventListener('progress', function(evt) {
+
+                                if (evt.lengthComputable) {
+                                    $("#fileUpload").show();
+                                    // calculate the percentage of upload completed
+                                    var percentComplete = evt.loaded / evt.total;
+                                    percentComplete = parseInt(percentComplete * 100);
+
+                                    // update the Bootstrap progress bar with the new percentage
+                                    $('.progress-bar').text(percentComplete + '%');
+                                    $('.progress-bar').width(percentComplete + '%');
+
+                                    // once the upload reaches 100%, set the progress bar text to done
+                                    if (percentComplete === 100) {
+                                        $('.progress-bar').html('Done');
+                                    }
+                                }
+
+                            }, false);
+
+                            return xhr;
+                        }
+                    });
+                }
+            });
+
+
+            //Key file management
+            $('.newKey').on('click', function(){
+                $('#upload-key').click();
+            });
+            $('#upload-key').on('change', function() {
+                $('#keyList').html($(this)[0].files[0].name);
+            });
+
+        }); //doc ready
+
+        function formatTimeStr(timeStr){
+
+            var timeStrAr = timeStr.split("-");
+            if (timeStrAr.length != 6 ){
+                return "";
+            }else{
+                var timeDate = new Date(timeStrAr[0], timeStrAr[1]-1, timeStrAr[2], timeStrAr[3], timeStrAr[4], timeStrAr[5]);
+                if ( !(timeDate instanceof Date && !isNaN(timeDate.valueOf())) ){return ""}else{
+                    var newStr =  timeDate.toUTCString()  ;
+                    return(newStr);
+                }
+            }
+
+
+        }
+
+    </script>
+
+
+    <script type = "text/javascript" language = "javascript" >
+        // Created by STRd6
+        // MIT License
+        // jquery.paste_image_reader.js
+        (function($) {
+            var defaults;
+            $.event.fix = (function(originalFix) {
+                return function(event) {
+                    event = originalFix.apply(this, arguments);
+                    if (event.type.indexOf('copy') === 0 || event.type.indexOf('paste') === 0) {
+                        event.clipboardData = event.originalEvent.clipboardData;
+                    }
+                    return event;
+                };
+            })($.event.fix);
+            defaults = {
+                callback: $.noop,
+                matchType: /image.*/
+            };
+            return $.fn.pasteImageReader = function(options) {
+                if (typeof options === "function") {
+                    options = {
+                        callback: options
+                    };
+                }
+                options = $.extend({}, defaults, options);
+                return this.each(function() {
+                    var $this, element;
+                    element = this;
+                    $this = $(this);
+                    return $this.bind('paste', function(event) {
+                        var clipboardData, found;
+                        found = false;
+                        clipboardData = event.clipboardData;
+                        return Array.prototype.forEach.call(clipboardData.types, function(type, i) {
+                            var file, reader;
+                            if (found) {
+                                return;
+                            }
+                            if (type.match(options.matchType) || clipboardData.items[i].type.match(options.matchType)) {
+                                file = clipboardData.items[i].getAsFile();
+                                reader = new FileReader();
+                                reader.onload = function(evt) {
+                                    return options.callback.call(element, {
+                                        dataURL: evt.target.result,
+                                        event: evt,
+                                        file: file,
+                                        name: file.name
+                                    });
+                                };
+                                reader.readAsDataURL(file);
+                                return found = true;
+                            }
+                        });
+                    });
+                });
+            };
+        })(jQuery);
+
+
+        $("html").pasteImageReader(function(results) {
+            var dataURL, filename;
+            filename = results.filename;
+            dataURL = results.dataURL;
+
+
+            var canvas = document.createElement("canvas");
+            var ctx = canvas.getContext("2d");
+
+            canvas.width = 21; // target width
+            canvas.height = 21; // target height
+
+            var image = new Image();
+
+            image.onload = function(e) {
+                ctx.drawImage(image,
+                    0, 0, image.width, image.height,
+                    0, 0, canvas.width, canvas.height
+                );
+                // create a new base64 encoding
+                var resampledImage = new Image();
+                var newdataURL = canvas.toDataURL();
+                resampledImage.src = newdataURL;
+                $('#iconURL').val(newdataURL);
+                var rs = document.getElementById("resampled");
+                rs.innerHTML = '';
+                rs.appendChild(resampledImage);
+            };
+            image.src = dataURL;
+        });
+
+    </script>
+
+</head>
+<body>
+    <div id="rowContainer" class="container-fluid">
+        <%- include topMenu.ejs %>
+        <div id="topRow" class="row top-row">
+                <div id="leftCol" class="top-col-fixed-240" >
+                    <div id="treePanel" class='panel panel-default cust-panel' style="float: left;"  >
+                        <div class='panel-heading cust-panel-heading'><i class='fa  fa-cloud  fa-fw'></i>Systems <a class='newSys' href='#'>[+]</a></div>
+                        <div class='panel-body tree-panel-body'>
+                            <div id="jstree_div" class="SysTree"></div>
+                        </div>
+                    </div>
+                    <div id = "treePanelHandle" class = "treePanelHandle"></div>
+                </div>
+
+            <!--   <div id="iFrameDiv" class="col-lg-12 top-col-offset-240"  style="text-align: center">
+                   <iframe sandbox="allow-scripts allow-popups allow-forms"
+                           src="https://mynode:8445/builder"
+                           style="border: 1;"></iframe>
+               </div>  -->
+
+            <div id="screenShotCol" class="col-lg-12 top-col-offset-240"  style="text-align: center">
+                <img id="screenShot">
+            </div>
+
+                <div id="introCol" class="col-lg-12 top-col-offset-240"  style="text-align: center">
+                    <br/><br/><br/><br/><br/>
+                    <p class="lead">Welcome to Systems</p>
+                    <p>Click a system to the left or click [+] to create a new one.</p>
+                    <p>
+
+                </div>
+
+                <div id="rightCol" class="col-lg-12 top-col-offset-240" >
+                <div id="sysScreen">
+                    <button id = "edit_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
+                    <button id = "save_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
+                    <button id = "new_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Comp</button>
+                    <button id = "remove_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
+
+                    <div class="panel panel-default jobPanel">
+                        <div class="panel-body" sys-form-panel id="sys-form-panel">
+                            <form id="sysForm">
+                                <div class="col-lg-12">
+                                    <div class="row">
+                                        <div class="col-lg-3 nomarg">
+                                            <div class="form-group">
+                                                <label>System Name</label>
+                                                <input class="form-control form-custom" placeholder="Enter system name" id="sysName">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-1 ">
+                                            <div class="form-group">
+                                                <label>Version</label>
+                                                <div id="sysVersion" class="versionBox"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-8 "></div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label>System Description</label>
+                                            <textarea rows="4" class="form-control form-custom" placeholder="Enter description of this system" id="sysDescription"></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>System Variables</label>
+                                            <textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="sysVariables"></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Icon</label>
+                                            <div id="sysIcon"></div>
+                                            <div id="iconPaste">
+                                                <p>Paste image onto this form</p><div id="resampled"></div>
+                                                <input type="hidden" id="iconURL">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div id="jobScreen">
+                    <div class="buttonRow">
+
+                        <button id = "run_button" class="btn btn-default jobFormbtn"><i class="fa fa-play fa-fw"></i>Build</button>
+                        <button id = "edit_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
+                        <button id = "save_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
+                        <button id = "moveUp_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-up fa-fw"></i>Move Up</button>
+                        <button id = "moveDn_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-down fa-fw"></i>Move Down</button>
+                        <button id = "new_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Child</button>
+                        <button id = "remove_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
+
+                    </div>
+                    <div class="panel panel-default jobPanel">
+                        <input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="type" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >
+                    <div class="panel-body job-form-panel" id="job-form-panel">
+
+                        <form id="jobForm">
+
+                            <div class="row">
+                                <div id="topLeftForm" class="col-lg-6 topLeftForm">
+                                    <div class="row" id="firstRow" >
+                                            <div class="col-lg-6 " style="padding: 0px">
+                                                <div class="form-group">
+                                                    <label>Component Name</label>
+                                                    <input class="form-control form-custom" placeholder="Enter name" id="name">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <div class="form-group">
+                                                    <label>Version</label>
+                                                    <div id="version" class="versionBox"></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <div class="form-group">
+                                                    <label>Enabled</label>
+                                                    <div class="radio">
+                                                        <input name="componentEnabled" id="componentEnabled" type="checkbox"/><label><div id="componentEnabledVal"></div></label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                   <!--     https://stackoverflow.com/questions/19865158/what-is-the-difference-among-col-lg-col-md-and-col-sm-in-bootstrap   -->
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-lg-12" style="padding: 0px">
+                                            <div class="form-group">
+                                                <label>Description</label>
+                                                <textarea rows="4" class="form-control form-custom" placeholder="Enter description of this component" id="description"></textarea>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Component Variables</label>
+                                                <textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="compVariables"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="screenShotImageHolder" class="col-lg-6 ">
+                                    <img id="screenShotImage">
+                                </div>
+
+
+
+
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-12 ">
+                                    <div class="form-group">
+                                        <label>Build Script</label>
+                                        <a href="#" id='insertVariable' data-toggle="modal" data-target="#varModal">
+                                            [Insert Variable]</a>
+                                        <textarea class="form-control form-custom code" rows="4" id="script"></textarea>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Template</label>
+                                        <textarea class="form-control form-custom code" rows="4" id="template"></textarea>
+                                    </div>
+                                    <div id="custTemplates">
+                                    </div>
+                                    <div id="newTemplateButton">
+                                        <label>Template<a class='newCust' href='#'>[+]</a></label><br><br>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>File Resources<a id='newFileButton' class='newFile' href='#'>[+]</a><a id='delFileButton' class='delFile' href='#'>[-]</a></label>
+                                        <div id = 'fileList' class = 'fileList'></div>
+                                        <div id = 'fileUpload'>
+                                            <div class="progress">
+                                                <div class="progress-bar" role="progressbar"></div>
+                                            </div>
+                                            <input id="upload-input" type="file" name="uploads[]" multiple="multiple">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Test Script</label>
+                                        <textarea class="form-control form-custom code" rows="4" id="test"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+        <div id='bottomRow'  style="display: none" class="row">
+            <div id="rowHandle"></div>
+            <div class="col-fixed-240 bottom-row" >
+                <div id="results-list" class="results-list" >
+                    <div class='panel panel-default cust-panel'>
+                        <div class='panel-heading cust-panel-heading'><i class='fa  fa-calendar fa-fw'></i>Build History</div>
+                        <div class='panel-body'>
+                            <div id='results-group' class='list-group'></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12 col-offset-240 bottom-row">
+                <div class='panel panel-default cust-panel'>
+                    <div class='panel-heading cust-panel-heading'><i class='fa  fa-tv  fa-fw'></i>Console<i class='fa  fa-fw'></i><span id="messageSpan"></span><a id="codes_btn" class='navbar-right codes_btn' href='#'>[+codes]</a></div>
+                    <div class='panel-body term-panel-body'>
+                        <div id="terminal-container" >
+                            <div id="results_html" class='scroller'></div>
+                            <div id="results_codes" class='scroller'></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<div id="profileModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <nav class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"> <%= username %> Profile</h4>
+            </div>
+            <div class="modal-body">
+                <nav class="navbar ">
+                    <ul class="nav navbar-nav">
+                        <li>
+                            Change Password:
+                            <ul>
+                                <li> <input type='password' class="form-control" placeholder="Enter new password" id="newPassword" ></li>
+
+                                <li><input type='password' class="form-control" placeholder="Enter new password again" id="newPasswordAgain" ></li>
+                                <div id="saveProfileResults"></div>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </nav>
+            <div class="modal-footer">
+                <button type="button" id="changeIdSaveButton" class="btn btn-default jobFormbtn">Save</button>
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+<div id="runModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-run-dialog">
+        <nav class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><i class="fa fa-play fa-fw"></i>Build</h4>
+            </div>
+            <div id='runConfirmationBody' class="modal-body">
+                <form class="form">
+                    <div class="form-group">
+                       <label style="padding-left: 40px">
+                            <input name="runChildrenCb" id="runChildrenCb" value="yes" type="checkbox"/>Run all children?
+                       </label>
+                    </div>
+                    <hr>
+                    <div class="form-group">
+                        <label style="padding-left: 40px">Key: </label><span id = 'keyList' class = 'keyList'></span>
+                        <label style="padding-left: 10px"><a id='newKeyButton' class='newKey' href='#'>[select]</a></label>
+                        <input id="upload-key" type="file" name="key" multiple="single">
+                    </div>
+                    <div class="form-group">
+                        <label style="padding-left: 40px">
+                            <input name="localStoreKeyCb" id="localStoreKeyCb" value="yes" type="checkbox"/>Store key in browser?</label>
+                        </label>
+                    </div>
+                </form>
+            </div>
+        </nav>
+        <div class="modal-footer">
+            <button type="button" id="runConfirmButton" class="btn btn-default jobFormbtn">Build</button>
+            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+        </div>
+    </div>
+</div>
+<div id="copyModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-run-dialog">
+        <nav class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">X</button>
+                <h4 class="modal-title"><i class="fa fa-code-fork fa-fw"></i>Copy</h4>
+            </div>
+            <div id='copyConfirmationBody' class="modal-body">
+                <div id="copyInfoText" class="text-info"></div>
+                <form  class="form" id="copyModalForm">
+                    <div class="form-group">
+                        <div class="radio">
+                            <label><input name="copyChildrenCb" id="copyChildrenCb" value="yes" type="checkbox"/>Copy all children?</label>
+                        </div>
+                    </div>
+                </form>
+                <br/>
+
+                <input type="hidden" id="copyModal_listOfIds"><input type="hidden" id="copyModal_newParent">
+            </div>
+        </nav>
+        <div class="modal-footer">
+            <button type="button" id="copyConfirmButton" class="btn btn-default jobFormbtn">Copy</button>
+            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+        </div>
+    </div>
+</div>
+<div id="delModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-del-dialog">
+        <nav class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">X</button>
+                <h4 class="modal-title"><i class="fa fa-minus-square-o fa-fw"></i>Remove</h4>
+            </div>
+
+            <div id='delConfirmationBody' class="modal-body">
+                Are you sure you want to remove this component and all children?
+            </div>
+        </nav>
+        <div class="modal-footer">
+            <button type="button" id="delConfirmButton" class="btn btn-default jobFormbtn" >Remove</button>
+            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+        </div>
+    </div>
+</div><div id="varModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <nav class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Insert Variable</h4>
+            </div>
+            <form class="form-inline">
+                <div class="form-group">
+                    <label style="padding-left: 15px;padding-top: 15px;padding-bottom: 0px;">From:</label>
+                    <div class="radio">
+                        <label>
+                            <input name="insertScope" id="insertScope0" value="Component" checked="" type="radio">Component
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input name="insertScope" id="insertScope1" value="Parent" type="radio">Parent
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input name="insertScope" id="insertScope2" value="Ancestors" type="radio">Ancestors
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input name="insertScope" id="insertScope3" value="Same System" type="radio">Same System
+                        </label>
+                    </div>
+                </div>
+                <!--form-group-->
+            </form>
+            <div id='insertVarBody' class="modal-body">
+
+            </div>
+        </nav>
+        <div class="modal-footer">
+            <button type="button" id="insertVarButton" class="btn btn-default jobFormbtn">Insert</button>
+            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+        </div>
+    </div>
+
+</div>
+</html>
