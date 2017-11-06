@@ -494,7 +494,7 @@ console.log("type: "+req.body.type);
     res.end(JSON.stringify(foundRow));
     //console.log("saving script"+ JSON.stringify(foundRow));
 
-}); // and New 
+}); // and New
 
 function generateUUID() { // Public Domain/MIT
     var d = new Date().getTime();
