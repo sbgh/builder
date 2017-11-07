@@ -101,24 +101,6 @@ router.use(function (req,res,next) {
 });
 
 router.get("/",function(req,res){
-    // var sess=req.session;
-    // if(typeof sess !== 'undefined'){
-    //     var username=sess.username;
-    //     res.render("index", { username:username});
-    // }else{
-    //     res.render("index", {});
-    // }
-    res.end('')
-});
-
-router.get("/",function(req,res){
-    // var sess=req.session;
-    // if(typeof sess !== 'undefined'){
-    //     var username=sess.username;
-    //     res.render("index", { username:username});
-    // }else{
-    //     res.render("index", {});
-    // }
     res.end('')
 });
 
@@ -222,19 +204,50 @@ router.get("/Sys",function(req,res){
 });
 
 router.post("/remove",function(req,res){
-    //var id = req.query.id[0];
+    //remove id from systems json and remove /uploads/ dir
     var reqJSON= req.body;
     var ids =reqJSON.ids.split(';');
 
     ids.forEach(function(id) {
-        if (id !== ''){
-            delete SystemsJSON[id];
+        if(SystemsJSON.hasOwnProperty(id)) {
+           delete SystemsJSON[id]; //delete from main datastore
+           saveAllJSON();
+           rmDir(filesPath + id + "/"); //delete all uploaded files
+            fs.readdir(resultsPath, function(err, files){ // delete results files
+               // console.log(files);
+                if (err){
+                    console.log(err);
+                }else{
+                    files.forEach(function(mFile){
+                        if (mFile.substr(0,36) === id){
+                            if (fs.statSync(resultsPath + mFile).isFile()){
+                                //console.log("removing: " + resultsFilesPath + mFile);
+                                fs.unlinkSync(resultsPath + mFile);
+                            }
+                        }
+                    })
+                }
+
+            });
         }
     });
 
-    saveAllJSON();
     res.end('');
 });
+
+function rmDir(dirPath) { //sync remove dir
+    try { var files = fs.readdirSync(dirPath); }
+    catch(e) { return; }
+    if (files.length > 0)
+        for (var i = 0; i < files.length; i++) {
+            var filePath = dirPath + '/' + files[i];
+            if (fs.statSync(filePath).isFile())
+                fs.unlinkSync(filePath);
+            else
+                rmDir(filePath);//recursive
+        }
+    fs.rmdirSync(dirPath);
+};
 
 router.get("/move",function(req,res){
     //console.log("move...");
@@ -390,7 +403,7 @@ router.post("/save",function(req,res){
     var reqJSON = req.body;
     var id = reqJSON.id;
     var foundRow = {};
-console.log("type: "+req.body.type);
+    //console.log("type: "+req.body.type);
     if(req.body.type !== "system"){
         var type = "job";
         if (id.length < 32){ //new
