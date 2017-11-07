@@ -41,8 +41,8 @@ app.set('view engine', 'ejs');
 
 //***************************************************************************************************
 const SystemsJSONContents = fs.readFileSync('SystemsJSON.json');
-
 global.SystemsJSON = JSON.parse(SystemsJSONContents);
+
 global.Page = '';
 global.protocol='';
 global.chrome='';
