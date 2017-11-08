@@ -384,12 +384,20 @@
                     $("#sysVariables").val(data[0].variables);
                     $("#text").val(data[0].text);
 
-                    var dataURL = data[0].icon;
-                    if(dataURL !== ''){
-                        $("#sysIcon").css(
-                            {'background-image': "url(" + dataURL + ")", 'background-repeat': 'no-repeat'}
+                    $("#iconURL").val('');
+
+                    if (data[0].hasOwnProperty("icon")){
+                        var dataURL = data[0].icon;
+                        if(dataURL !== ''){
+                            $("#sysIcon").css(
+                                {'background-image': "url(" + dataURL + ")", 'background-repeat': 'no-repeat'}
                             ).data({'width':21, 'height':21});
-                        $("#sysIcon").height(21)
+                            $("#sysIcon").height(21)
+                        }
+                    }else{
+                        $("#sysIcon").css(
+                            {'background-image': "none", 'background-repeat': 'no-repeat'}
+                        ).data({'width':21, 'height':21});
                     }
                 });
             }
@@ -775,7 +783,7 @@
 
             //save Sys
             $("#save_sys_button").click(function(event){
-                console.log("submitting");
+                //console.log("submitting");
                 var mydata = {};
                 mydata.id = $("#id").val();
                 mydata.parent = $("#parent").val();
@@ -807,7 +815,7 @@
                 })
             })
 
-            //resort components
+            //re-sort components
             $("#moveUp_button").click(function(event){
                 //console.log("up");
                 $.get('/Move', { id: selectedNode, direction: 'up' }, function(data) {
@@ -1434,7 +1442,7 @@
 
     </script>
 
-
+    <!-- paste icom image -->
     <script type = "text/javascript" language = "javascript" >
         // Created by STRd6
         // MIT License

@@ -473,6 +473,7 @@ router.post("/save",function(req,res){
             newData.text = req.body.name;
             newData.variables = req.body.variables;
             newData.sort = SystemsJSON[id].sort;
+            newData.icon = SystemsJSON[id].icon;
 
             if ( SystemsJSON[id].hasOwnProperty('ver') ) {
                 newData.ver = SystemsJSON[id].ver + 1;
@@ -487,11 +488,12 @@ router.post("/save",function(req,res){
 
     if (reqJSON.hasOwnProperty('iconURL')){
         var base64Data = reqJSON.iconURL.replace(/^data:image\/png;base64,/, "");
-        //console.log(base64Data);
+        //console.log("base64Data: "+base64Data);
         if (base64Data !== '') {
+            //console.log("base64Data !== '' - "+base64Data);
             var iconPath = filesPath + id + '/' + "icon.png";
-            foundRow.icon = /uploads/ + id + '/' + "icon.png";
-            SystemsJSON[id].icon = /uploads/ + id + '/' + "icon.png";
+            foundRow.icon = "/uploads/" + id + '/' + "icon.png";
+            SystemsJSON[id].icon = "/uploads/" + id + '/' + "icon.png";
             //console.log(iconPath);
             if (!fs.existsSync(filesPath + id)) {
                 fs.mkdirSync(filesPath + id)
@@ -499,6 +501,8 @@ router.post("/save",function(req,res){
             fs.writeFileSync(iconPath, base64Data, 'base64');
         }
     }
+
+    //console.log("icon: "+SystemsJSON[id].icon);
 
     saveAllJSON();
     //res.sendStatus(200);

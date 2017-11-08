@@ -20,6 +20,21 @@ Drag and drop components into a new context. Edit the component variables then c
 
 ## Installation
 
-Work in progress...
+The current version of /builder and the packaged example components are intended to be installed on an Amazon AWS [EC2](https://us-west-2.console.aws.amazon.com/ec2/) instance (RHEL-7.3 t2.micro).
+
+###Automated installation
+
+The automated installation will install all dependencies required to run /builder in a new EC2 instance.
+These dependencies include Node.js, NPM, headless Chrome, unzip and several Node.js extensions.
+
+From the ec2-user home directory execute:
+   curl -L systemssolutiondesigner.com/builderSetup.sh > builderSetup.sh
+   chmod 700 builderSetup.sh
+   ./builderSetup.sh
+
+
+
+
+
 
 
