@@ -29,9 +29,9 @@ These dependencies include Node.js, NPM, headless Chrome, unzip and several Node
 
 From the ec2-user home directory execute:
 
-'''curl -L systemssolutiondesigner.com/builderSetup.sh > builderSetup.sh
+```curl -L systemssolutiondesigner.com/builderSetup.sh > builderSetup.sh
 chmod 700 builderSetup.sh
-./builderSetup.sh'''
+./builderSetup.sh```
 
 
 
