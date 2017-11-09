@@ -38,7 +38,7 @@ chmod 700 builderSetup.sh
 Access the /builder application via https://your.ip.address.or.hostname/builder.
 You will encounter an error 'ERR_CERT_AUTHORITY_INVALID' because the https Certificate Authority (CA) is not valid (self-signed). Select advanced and proceed (add exception).
 You can start or restart the server by executing `./builder/restartServer.sh` from the ec2-user home directory.
-At the login prompt, the username is Admin and the password is the one you chose during installation.
+At the login prompt, the username is Admin and the password is the one you chose during installation. 
 
 
 
