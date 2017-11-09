@@ -14,21 +14,20 @@
 
 ## Add new abilities to your server by dropping them in
 
-Drag and drop components into a new context. Edit the component variables then click build. Headless Chrome is used to display the web app being rebuilt. 
+Drag and drop components into a new design. Edit the component variables then click build. Headless Chrome is used to display the web app being rebuilt.
 
 ![/builder](http://systemssolutiondesigner.com/images/add_phone_field.gif "/builder") 
 
 ## Installation
 
-The current version of /builder and the packaged example components are intended to be installed on an Amazon AWS [EC2](https://us-west-2.console.aws.amazon.com/ec2/) instance (RHEL-7.3 t2.micro).
+The current version of /builder and the packaged example components are intended to be installed on a 'fresh' Amazon AWS [EC2](https://us-west-2.console.aws.amazon.com/ec2/) instance (RHEL-7.3 t2.micro free tier).
 
 ### Automated installation
 
-The automated installation will install all dependencies required to run /builder in a new EC2 instance.
+The automated installation will download the latest /builder code from Github and install all dependencies required to run /builder.
 These dependencies include Node.js, NPM, headless Chrome, unzip and several Node.js extensions.
 
 From the ec2-user home directory execute:
-
 ```
 curl -L systemssolutiondesigner.com/builderSetup.sh > builderSetup.sh
 chmod 700 builderSetup.sh

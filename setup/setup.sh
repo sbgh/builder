@@ -60,7 +60,20 @@ echo
 echo 'Setting config'
 node ./setup/setConfigJson.js;
 
-echo Done!
+echo /builder installation is complete!
+echo /builder listens on port 8443. Ensure that you create a new inbound rule that allows port 8443.
+echo You will access the /builder application via https://your.ip.address.or.hostname/builder.
+echo You can start or restart the server by executing ./builder/restartServer.sh
+echo
+while true; do
+    read -p "Do you wish to start /builder now?" yn
+    case $yn in
+        [Yy]* ) ./restartServer.sh;break;;
+        [Nn]* ) echo "Not starting /builder";break;;
+        * ) echo "Please answer y or n.";;
+    esac
+done
+
 
 
 
