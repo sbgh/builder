@@ -45,8 +45,11 @@
                     },
                     'check_callback': function(operation, node, node_parent, node_position, more) {
                         if (operation === "copy_node") {
+
+                            const targetNodeId = $(".jstree-hovered")[0].id;
+                            const targetNode =  $('#jstree_div').jstree(true).get_node(targetNodeId);
                             //(node.original.type === "system" && node_parent.type === "system") ||
-                            if(  node_parent.id === "#"){
+                            if(  targetNode.id === "#"){
                                 return false;
                             }else{
                                 $('#copyModal_listOfIds').val(node.original.id);
@@ -54,7 +57,7 @@
                                 var treeNode = $('#jstree_div').jstree(true).get_node(node.original.id);
                                 var childs = treeNode.children_d;
                                 var listOfIds = [node.original.id];
-                                $("#copyInfoText").html("<b>"+node.original.text + "</b> will be copied to <b>" + node_parent.text+"</b>");
+                                $("#copyInfoText").html("<b>"+node.original.text + "</b> will be copied to <b>" + targetNode.text+"</b>");
 
                                 if (childs.length > 0 ){
                                     listOfIds += ';' + childs.join(';');
@@ -64,7 +67,7 @@
                                     $('#copyModalForm').hide()
                                 }
 
-                                $('#copyModal_newParent').val(node_parent.id);  //targetId
+                                $('#copyModal_newParent').val(targetNode.id );  //targetId
 
                                 $('#copyModal').modal('show');
                                 $('#copyChildrenCb').prop('checked', false);
@@ -162,6 +165,8 @@
             //tree ready
             $("#jstree_div").bind('ready.jstree', function(e, data) {
       //          setTreeHover()
+
+      //          $("#jstree-marker-line").remove();
             })
 
             //tree click
