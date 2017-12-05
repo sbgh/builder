@@ -39,9 +39,7 @@ echo
 echo 'Creating SSL'
 mkdir ./ssl;
 openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" -keyout ./ssl/server.key -out ./ssl/server.crt;
-echo 'backing up system json if it exists'
-cp SystemsJSON.json SystemsJSON.json.$(date +"%Y%m%d%H%M");
-echo 'Creating System json'
+#echo 'Creating System json'
 #echo '{}' > SystemsJSON.json;
 chmod 600  SystemsJSON.json;
 echo
