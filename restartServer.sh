@@ -4,11 +4,11 @@ pwd;
 echo;
 echo Killing Chrome
 pkill chrome
-echo Stopping Server Server.js..;
-forever stop Server.js;
+echo Stopping server builder.js..;
+forever stop builder.js;
 echo;
-echo Starting Server Server.js..;
-forever start -a -l forever.log -o out.log -e err.log Server.js;
+echo Starting Server builder.js..;
+forever start -a -l forever.log -o out.log -e err.log builder.js;
 echo;
 ps -ef | grep node;
 echo;
