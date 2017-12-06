@@ -1,5 +1,4 @@
 #!/bin/sh
-cd /home/ec2-user/projects/proto
 pwd;
 echo;
 echo Killing Chrome
