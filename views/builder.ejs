@@ -179,7 +179,7 @@
                 //console.log(data.selected);
                 if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled") {
                     getJobByID(selectedNode);
-                    readModeJob();
+                    readModeJob(selectedNode);
                     $("#sysScreen").hide();
                     $("#jobScreen").show();
                     $("#type").val('Job');
@@ -634,7 +634,7 @@
                 });
 
             }
-            function readModeJob(){
+            function readModeJob(NodeID){
                 inputFields = $("#jobForm").find("input");
                 inputFields.each(disableElement);
                 inputFields = $("#jobForm").find("textarea");
@@ -650,7 +650,17 @@
                 $("#save_button").hide();
                 $("#remove_button").show();
                 $("#new_button").show();
-                $("#run_button").show();
+
+                //Do not show run button for components in the Library
+                const targetNode =  $('#jstree_div').jstree(true).get_node( NodeID[0]);
+                const rSystemId = targetNode.parents[targetNode.parents.length - 2];
+                const rSystemNode =  $('#jstree_div').jstree(true).get_node( rSystemId);
+                if(rSystemNode.text !== 'Library'){
+                    $("#run_button").show();
+                }else{
+                    $("#run_button").hide();
+                }
+
                 $("#insertVariable").hide();
                 $("#newTemplateButton").hide();
                 $("#newFileButton").hide();
