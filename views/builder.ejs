@@ -175,7 +175,7 @@
                 $("#introCol").hide();
                 $("#screenShotCol").hide();
 
-                selectedNode = data.selected;
+                selectedNode = data.selected[0];
                 //console.log(data.selected);
                 if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled") {
                     getJobByID(selectedNode);
@@ -346,7 +346,7 @@
                     var keyCode = e.keyCode || e.which;
 
                     if( !$(this).get(0).readOnly){
-                        if (keyCode == 9) {
+                        if (keyCode === 9) {
                             e.preventDefault();
                             var start = $(this).get(0).selectionStart;
                             var end = $(this).get(0).selectionEnd;
@@ -561,7 +561,7 @@
                 var treeNode = $('#jstree_div').jstree(true).get_node(selectedNode);
                 var childs = treeNode.children_d;
                 var parent = treeNode.parent;
-                var listOfIds = selectedNode[0];
+                var listOfIds = selectedNode;
                 if (childs.length > 0 ){
                     listOfIds += ';' + childs.join(';');
                 }
@@ -641,7 +641,6 @@
                 inputFields.each(disableElement);
 
                 $("#componentEnabled").hide();
-                //$("#componentEnabledVal").show();
 
                 function disableElement(index, element) {
                     element.readOnly = true;
@@ -652,7 +651,7 @@
                 $("#new_button").show();
 
                 //Do not show run button for components in the Library
-                const targetNode =  $('#jstree_div').jstree(true).get_node( NodeID[0]);
+                const targetNode =  $('#jstree_div').jstree(true).get_node(NodeID);
                 const rSystemId = targetNode.parents[targetNode.parents.length - 2];
                 const rSystemNode =  $('#jstree_div').jstree(true).get_node( rSystemId);
                 if(rSystemNode.text !== 'Library'){
@@ -661,7 +660,7 @@
                     $("#run_button").hide();
                 }
 
-                $("#insertVariable").hide();
+                $('#insertVariable').hide();
                 $("#newTemplateButton").hide();
                 $("#newFileButton").hide();
                 $("#delFileButton").hide();
@@ -782,8 +781,9 @@
                         "content-type": "application/json",
                     },
                     url: '/save',
+                    id: mydata.id,
                     success : function(result) {
-                        readModeJob();
+                        readModeJob(this.id);
                         var resultJSON = JSON.parse(result);
                         $("#id").val(resultJSON.id);
                         $("#text").val(resultJSON.text);

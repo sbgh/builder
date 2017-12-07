@@ -164,7 +164,7 @@ router.get("/builder",function(req,res){
 
 router.get("/Jobs",function(req,res){
     //console.log("url: " + req.url);
-    var id = req.query.id[0];
+    var id = req.query.id;
     //console.log("jobs:" + id+":");
     res.writeHead(200, {"Content-Type": "application/json"});
     var resJSON = [];
@@ -187,7 +187,7 @@ router.get("/Jobs",function(req,res){
 
 router.get("/Sys",function(req,res){
     //console.log("url: " + req.url);
-    var id = req.query.id[0];
+    var id = req.query.id;
     //console.log("jobs:" + id+":");
     res.writeHead(200, {"Content-Type": "application/json"});
     var resJSON = [];
@@ -251,7 +251,7 @@ function rmDir(dirPath) { //sync remove dir
 
 router.get("/move",function(req,res){
     //console.log("move...");
-    var id = req.query.id[0];
+    var id = req.query.id;
     var direction = req.query.direction[0];
 
     //console.log(id+":"+direction);
@@ -347,7 +347,7 @@ function checkIfFile(file, cb) {
 };
 
 router.get("/resultsList",function(req,res){
-    var id = req.query.id[0];
+    var id = req.query.id;
     res.writeHead(200, {"Content-Type": "application/json"});
     fs.readdir(resultsPath, function (err, files) {
         if (err) {
@@ -407,7 +407,7 @@ router.post("/save",function(req,res){
     if(req.body.type !== "system"){
         var type = "job";
         if (id.length < 32){ //new
-            var pid = req.body.parent[0];
+            var pid = req.body.parent;
             var parentFamTree = SystemsJSON[pid].ft;
             var x =0;
             for (var key in SystemsJSON) {
@@ -526,7 +526,6 @@ function generateUUID() { // Public Domain/MIT
 }
 
 router.post("/copy",function(req,res){
-    var type = "disabled";
     var reqJSON= req.body;
 
     var fromIds =reqJSON.ids.split(';');
@@ -534,7 +533,7 @@ router.post("/copy",function(req,res){
 
     var error = false;
     var errorID = '';
-    if (!SystemsJSON.hasOwnProperty(targetId) && error == false ){
+    if (!SystemsJSON.hasOwnProperty(targetId) && error === false ){
         error = true;
         errorID = targetId;
     }
@@ -557,6 +556,7 @@ router.post("/copy",function(req,res){
             idMap[fromId] = id;
             var newParentId = idMap[SystemsJSON[fromId].parent]
             //console.log('move to:'+SystemsJSON[newParentId].name);
+
             var NewRow = {
                 parent: newParentId,
                 ft: SystemsJSON[newParentId].ft + '/' + newParentId,
@@ -564,6 +564,7 @@ router.post("/copy",function(req,res){
                 description: fromNode.description,
                 ver: 1,
                 type: fromNode.type,
+                sort:fromNode.sort,
                 text: fromNode.name
             };
             if(fromNode.type === 'job' || fromNode.type === 'disabled'){
@@ -581,16 +582,26 @@ router.post("/copy",function(req,res){
 
             if ( fs.existsSync( filesPath + fromId ) ) { //copy file resources if they exist
                 fs.mkdirSync(filesPath + id);
-                files = fs.readdirSync(filesPath + fromId);
+                const files = fs.readdirSync(filesPath + fromId);
                 files.forEach(function (file) {
                     if (!fs.lstatSync(filesPath + fromId + '/' + file).isDirectory()) {
-                        var targetFile = filesPath + id + '/' + file;
-                        var source = filesPath + fromId + '/' + file;
+                        const targetFile = filesPath + id + '/' + file;
+                        const source = filesPath + fromId + '/' + file;
                         fs.writeFileSync(targetFile, fs.readFileSync(source))
                     }
                 })
             }
         });
+
+        //give new sort to 1st node
+        var x =0;
+        for (var key in SystemsJSON) {
+            if (SystemsJSON[key].parent === targetId) {
+                x++;
+            }
+        }
+        SystemsJSON[fromIds[0]].sort = x;
+
         saveAllJSON();
 
         res.sendStatus(200);
