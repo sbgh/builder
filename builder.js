@@ -178,6 +178,7 @@ router.get("/Jobs",function(req,res){
             if (SystemsJSON.hasOwnProperty(key)) {
                 var rowdata = SystemsJSON[key];
                 rowdata.id = key;
+                rowdata.text = rowdata.name + " " + rowdata.sort;  // test
                 resJSON.push(rowdata);
             }
         }
@@ -546,7 +547,15 @@ router.post("/copy",function(req,res){
 
     if(error === false){
         var idMap = {};
-        idMap[SystemsJSON[fromIds[0]].parent] = SystemsJSON[targetId].id;
+        idMap[SystemsJSON[fromIds[0]].parent] = targetId;
+
+        //give new sort to 1st node
+        var x =0;
+        for (var key in SystemsJSON) {
+            if (SystemsJSON[key].parent === targetId) {
+                x++;
+            }
+        }
 
         //var resultRows = {};
         fromIds.forEach(function(fromId) {
@@ -593,14 +602,7 @@ router.post("/copy",function(req,res){
             }
         });
 
-        //give new sort to 1st node
-        var x =0;
-        for (var key in SystemsJSON) {
-            if (SystemsJSON[key].parent === targetId) {
-                x++;
-            }
-        }
-        SystemsJSON[fromIds[0]].sort = x;
+        SystemsJSON[idMap[fromIds[0]]].sort = x;
 
         saveAllJSON();
 
