@@ -178,7 +178,8 @@ router.get("/Jobs",function(req,res){
             if (SystemsJSON.hasOwnProperty(key)) {
                 var rowdata = SystemsJSON[key];
                 rowdata.id = key;
-                rowdata.text = rowdata.name + " " + rowdata.sort;  // test
+                rowdata.text = rowdata.name;
+                //+ " " + rowdata.sort;  // test
                 resJSON.push(rowdata);
             }
         }
@@ -628,7 +629,7 @@ function getSystemVarVal(jobId, vari){
         //console.log(varListAr);
         var returnVal = '';
         varListAr.forEach(function(pair){
-            var vName = pair.split('=')[0];
+            const vName = pair.split('=')[0];
             if (vName === vari){
                 returnVal = pair.split('=')[1];
             }
@@ -638,7 +639,7 @@ function getSystemVarVal(jobId, vari){
         return('');
     }
 
-};
+}
 
 /*
 var GIFEncoder = require('gifencoder');

@@ -326,6 +326,10 @@ padding-left: 0px;
    //height: 30px;
 }
 
+.jstree-container-ul {
+   margin: 0px 0px 20px !important;
+}
+
 #upload-input {
    display: none;
 }
