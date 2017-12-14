@@ -1,6 +1,7 @@
 #!/bin/sh
 echo
 echo 'Installing NPM modules'
+export npm_config_loglevel=error;
 npm install express --save;
 npm install express-session --save;
 npm install session-file-store --save;
