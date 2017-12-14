@@ -1342,13 +1342,11 @@ router.post("/run",function(req,res){
                                         }
                                     });
                                 }
-                                ;
-
                             });
 
                             //If there are any <%...%> patterns left in the line then raise error and abort
                             const  remainingItemsCount = commandStr.split(new RegExp('<%', 'g')).length;
-                            if(remainingItemsCount > 0){
+                            if(remainingItemsCount > 1){
                                 items.forEach(function (item) {
                                     item = item.substr(0, item.indexOf('%>'));
 
@@ -1360,7 +1358,6 @@ router.post("/run",function(req,res){
                                         return ('');
                                     }
                                 });
-
                             }
 
                             return (commandStr);
