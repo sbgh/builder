@@ -33,7 +33,7 @@ mkdir ./results;
 
 echo
 echo 'Creating upload folder'
-mkdir ./uploads;
+unzip -q ./uploads/uploads.zip -d ./uploads
 
 echo
 echo 'Creating SSL'
