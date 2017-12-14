@@ -184,7 +184,16 @@
                     $("#jobScreen").show();
                     $("#type").val('Job');
                     updateResultsList(selectedNode);
-                    showBottom()
+
+                    const targetNode =  $('#jstree_div').jstree(true).get_node(data.node.id);
+                    const rSystemId = targetNode.parents[targetNode.parents.length - 2];
+                    const rSystemNode =  $('#jstree_div').jstree(true).get_node( rSystemId);
+                    if(rSystemNode.text !== 'Library'){
+                        showBottom()
+                    }else{
+                        hideBottom()
+                    }
+
                 }else{
                     readModeSys();
                     $("#sysScreen").show();
