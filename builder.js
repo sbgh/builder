@@ -709,7 +709,7 @@ router.post("/run",function(req,res){
     var newKey=false;
 
     var conn;
-    var timeOut = 300000;  //how many ms all connections should wait for the prompt to reappear before connection is terminated
+    var timeOut = 60000;  //how many ms all connections should wait for the prompt to reappear before connection is terminated
     var lastTimeout;
     var exportVar = "";
 
@@ -1261,7 +1261,9 @@ router.post("/run",function(req,res){
 
                         function replaceVar(commandStr, job) {// find and replace inserted vars eg. <%0ae3461e-d3c3-4214-acfb-35f44199ab5c.mVar4%>
                             //console.log("-"+commandStr+"-");
-                            var items = commandStr.split(new RegExp('<%', 'g'));
+
+
+                            const items = commandStr.split(new RegExp('<%', 'g'));
                             items.forEach(function (item) {
                                 item = item.substr(0, item.indexOf('%>'));
 
@@ -1320,7 +1322,7 @@ router.post("/run",function(req,res){
                                         if (SystemsJSON.hasOwnProperty(id)) {
                                             var resultsSystem = SystemsJSON[id].ft.split('/')[1];
                                             var val = getVarValFromFile(file, targetVarName);
-                                            if (val !== '' && (ft.split('/')[1] == resultsSystem)) {
+                                            if (val !== '' && (ft.split('/')[1] === resultsSystem)) {
                                                 commandStr = commandStr.replace(repStr, val)
                                             }
                                         }
@@ -1343,6 +1345,23 @@ router.post("/run",function(req,res){
                                 ;
 
                             });
+
+                            //If there are any <%...%> patterns left in the line then raise error and abort
+                            const  remainingItemsCount = commandStr.split(new RegExp('<%', 'g')).length;
+                            if(remainingItemsCount > 0){
+                                items.forEach(function (item) {
+                                    item = item.substr(0, item.indexOf('%>'));
+
+                                    if (item.length > 2 && item.length < 32) {
+
+                                        message("Error: Component Variable not found: " + item + '\n');
+                                        stream.write("exit" + '\n');
+                                        sshSuccess = false;
+                                        return ('');
+                                    }
+                                });
+
+                            }
 
                             return (commandStr);
                         }
