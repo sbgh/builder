@@ -1353,8 +1353,8 @@ router.post("/run",function(req,res){
                                     if (item.length > 2 && item.length < 32) {
 
                                         message("Error: Component Variable not found: " + item + '\n');
-                                        stream.write("exit" + '\n');
                                         sshSuccess = false;
+                                        stream.close();
                                         return ('');
                                     }
                                 });
