@@ -1344,20 +1344,20 @@ router.post("/run",function(req,res){
                                 }
                             });
 
-                            //If there are any <%...%> patterns left in the line then raise error and abort
+                            //If there are any <% patterns left in the line then raise error and abort
                             const  remainingItemsCount = commandStr.split(new RegExp('<%', 'g')).length;
+                            const  remainingItems = commandStr.split(new RegExp('<%', 'g'));
                             if(remainingItemsCount > 1){
-                                items.forEach(function (item) {
-                                    item = item.substr(0, item.indexOf('%>'));
+                                var item = remainingItems[1]
+                                item = item.substr(0, item.indexOf('%>'));
 
-                                    if (item.length > 2 && item.length < 32) {
+                                if (item.length > 2 && item.length < 32) {
 
-                                        message("Error: Component Variable not found: " + item + '\n');
-                                        sshSuccess = false;
-                                        stream.close();
-                                        return ('');
-                                    }
-                                });
+                                    message("Error: Component Variable not found: " + item + '\n');
+                                    sshSuccess = false;
+                                    stream.close();
+                                    return ('');
+                                }
                             }
 
                             return (commandStr);
