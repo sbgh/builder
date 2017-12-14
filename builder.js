@@ -1364,7 +1364,12 @@ router.post("/run",function(req,res){
                         }
 
                         function getVarValFromFile(file, targetVarName) {
-                            var results = JSON.parse(fs.readFileSync(resultsPath + file));
+                            try {
+                                var results = JSON.parse(fs.readFileSync(resultsPath + file));
+                            } catch (e) {
+                                console.log(resultsPath + file + " not valid results JSON");
+                                return('');
+                            }
                             var trimmedResults = '';
                             results.forEach(function (row) {
                                 if (row.hasOwnProperty('results')) {
