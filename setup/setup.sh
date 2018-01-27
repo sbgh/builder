@@ -63,7 +63,7 @@ chmod 700 restartServer.sh
 
 echo /builder installation is complete!
 echo /builder listens on port 8443. Ensure that you create a new inbound rule that allows port 8443.
-echo You will access the /builder application via https://your.ip.address.or.hostname/builder.
+echo You will access the /builder application via https://your.ip.address.or.hostname:8443/builder.
 echo "You will encounter an error: ERR_CERT_AUTHORITY_INVALID because the https Certificate Authority (CA) is not valid (self-signed). Select advanced and proceed (add exception)"
 echo The username is Admin and the password is the one you chose during installation.
 echo You can start or restart the server by executing ./builder/restartServer.sh.
