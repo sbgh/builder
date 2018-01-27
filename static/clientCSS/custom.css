@@ -184,7 +184,7 @@ padding-left: 0px;
    width:90px;
 }
 .buttonRow {
-   padding-left: 3px;
+   padding-left: 40px;
    display: inline-block;
    white-space: nowrap;
 }
@@ -398,6 +398,8 @@ padding-left: 0px;
    width:100%;
    padding: 0px;
 }
+
+
 
 
 

@@ -1162,7 +1162,7 @@
 
             //new custom template
             $('.newCust').on('click', function(){
-                var ctHTML = $('#custTemplates').html();
+     //           var ctHTML = $('#custTemplates').html();
                 var x=2;
                 var currentVals = [];
                 while($('#template'+ x.toString()).length > 0 && x<100){
@@ -1176,7 +1176,7 @@
                     inHtml += " <label>Template "+x.toString()+"</label>";
                     inHtml += " <textarea class='form-control code' rows='4' id='template"+x.toString()+"'></textarea>";
                     inHtml += "</div>";
-                    ctHTML +=inHtml;
+       //             ctHTML +=inHtml;
                     $('#custTemplates').append(inHtml);
                 }
             });
@@ -1595,11 +1595,12 @@
 
                 <div id="rightCol" class="col-lg-12 top-col-offset-240" >
                 <div id="sysScreen">
-                    <button id = "edit_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
-                    <button id = "save_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
-                    <button id = "new_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Comp</button>
-                    <button id = "remove_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
-
+                    <div class="buttonRow">
+                        <button id = "edit_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
+                        <button id = "save_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
+                        <button id = "new_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Comp</button>
+                        <button id = "remove_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
+                    </div>
                     <div class="panel panel-default jobPanel">
                         <div class="panel-body" sys-form-panel id="sys-form-panel">
                             <form id="sysForm">
@@ -1710,9 +1711,9 @@
                             <div class="row">
                                 <div class="col-lg-12 ">
                                     <div class="form-group">
-                                        <label>Build Script</label>
-                                        <a href="#" id='insertVariable' data-toggle="modal" data-target="#varModal">
-                                            [Insert Variable]</a>
+                                        <label>Build Script</label><i class="fa fa-fw"></i>
+                                        <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal">[<i class="fa fa-question fa-fw"></i>]</a>
+                                        <a href="#" id='insertVariable' data-toggle="modal" data-target="#varModal">[Insert Variable]</a>
                                         <textarea class="form-control form-custom code" rows="4" id="script"></textarea>
                                     </div>
 
@@ -1923,6 +1924,106 @@
         <div class="modal-footer">
             <button type="button" id="insertVarButton" class="btn btn-default jobFormbtn">Insert</button>
             <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+        </div>
+    </div>
+
+</div>
+<div id="buildHelpModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <nav class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h1 class="modal-title">Build Script Help</h1>
+            </div>
+
+            <div id='buildHelpBody' class="modal-body" style="overflow-y: auto;height: 80vh;">
+                <p>The build script is created and maintained by a developer and is the set of build instructions that are sent to the system server once an SSH connection is made. Builder assumes the initial CLI is bash.</p>
+                <p>One line is sent to the server at a time and the response is recorded until the prompt is detected or a timeout is exceeded. The remote system's prompt is set to a default value when the session starts. The prompt can be set by the developer to accommodate other CLIs.</p>
+
+                <p>Each line returned is stored in a response file (Build History) that may be read by future sessions.</p>
+
+                <h3 class="modal-title">Directives</h3>
+
+                <p>The build script may contain optional directives for the /builder application that can help the developer control the session and deploy assets. The list of directives recognized by builder are as follows:</p>
+                <ul>
+                    <li><b>noWait:</b></li>
+                    Usage noWait:<br/>
+                    Will instruct builder to not wait for the prompt after the current command. The command on the next line will be sent to the remote host immediately.<br/>
+                    Eg: noWait:ls -l
+
+                    <li><b>^c:</b></li>
+                    Usage: ^c:<br/>
+                    Sends control-c to the remote host.<br/>
+                    Eg. ^c:
+
+                    <li><b>setPrompt:</b></li>
+                    Usage: setPrompt:prompt_string<br/>
+                    Tells builder what the expected prompt is. This is useful when a function or new CLI changes the user prompt. <br/>
+                    Eg: setPrompt:[newPrompt] will set the expected prompt to '[newPrompt]'.
+
+                    <li><b>setPromptCodes:</b></li>
+                    Usage: setPromptCodes:asc_code1 asc_code2 ...<br/>
+                    Tells builder what the expected prompt is. Separate 2 digit hex ascii codes with a single space. This is the same as setPrompt but the prompt is defined as ascii hex codes. <br/>
+                    Eg: setPromptCodes:3e 20 will set the expected prompt to '> '.
+
+                    <li><b>saveTemplate:</b></li>
+                    Usage: saveTemplate:remote_file_path<br/>
+                    Will launch an asynchronous process that will save the string contents of the template field to a file on the remote host.<br/>
+                    Eg: saveTemplate:/tmp/temp.txt will save the template field string to /tmp/temp.txt.
+
+                    <li><b>saveTemplate:x:</b></li>
+                    Usage: saveTemplate:template_num:remote_file_path<br/>
+                    Same as SaveTemplate: except that a specific template field is saved other then the first. Valid values for template_num are 2-99.<br/>
+                    Eg: saveTemplate:2:/tmp/temp.txt will save template 2 field string to /tmp/temp.txt.
+
+                    <li><b>saveFile:</b></li>
+                    Usage: saveFile:resource_file_name:remote_file_path<br/>
+                    Will launch an asynchronous process that will save the specified file resource to a path on the remote host.<br/>
+                    Eg: saveFile:myResource.gif:/tmp/ will save myResource.gif to /tmp/. The file must exist as a file resource attached to the component or a fatal error will occur.
+
+                    <li><b>snap:</b></li>
+                    Usage: snap:url<br/>
+                    Instructs builder to launch an asynchronous process that will navigate to a url and take a snapshot, then save image as a component file resource called screenshot.png.<br/>
+                    Eg: snap:http://google.com
+
+                    <li><b>abort:</b></li>
+                    Usage: abort:<br/>
+                    Causes builder to stop processing the current build script and to terminate the SSH session.<br/>
+                    Eg: abort:
+                </ul>
+
+                <h3 class="modal-title">Variables</h3>
+                <p>Information resulting from the execution of a build script can be used by other components by defining variables.
+                If any line in the results of a build script (what the remote system has returned) begins with 'var:', the line is interpreted by builder as a variable.
+                This variable and its value are readable by scripts that execute in the future.
+                <br/><br/>
+                The examples below are specific to a Linux CLI. <br/><br/>
+                Eg 1: echo var:myVar:1<br/>
+                This will instruct the remote Linux host to return 'var:myVar:1'. The variable 'myVar' will be defined for the component and its value will be '1'.<br/>
+                Eg 2: echo var:nowDate:$(date)<br/>
+                This will instruct the remote Linux host to return 'var:nowDate:Fri Jan 26 15:45:21 EST 2018' or what ever the current date is.
+                The variable 'nowDate' will be defined for the component and its value will be the date string.
+                <br/><br/>
+                Using variables that have been previously defined in script, is accomplished by inserting a variable reference. A variable reference has the following syntax:<br/>
+                    &lt;%scope.variable-name%&gt;<br>
+                    Builder will search for the variable name defined is all results that fit within the scope.<br/><br/>
+                    The scope can be as follows:<br/>
+                    c - the current component (defined in Component Variables not as a var:)<br/>
+                    p - the parent component<br/>
+                    a - all direct ancestor components (parent, gr-parent, g-gr-parent, etc)<br/>
+                    s - all components in the current system.<br/>
+                    If the variable name is not found in the specified scope a fatal error is raised and the SSH session is aborted.
+
+                </p>
+
+
+
+
+            </div>
+        </nav>
+        <div class="modal-footer">
+           <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
         </div>
     </div>
 
