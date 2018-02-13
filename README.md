@@ -1,12 +1,12 @@
-![/builder](http://systemssolutiondesigner.com/images/Blk_Cloud_sm.png "/builder") | [/builder](http://systemssolutiondesigner.com)
+![/builder](http://EZStack.Systems/images/Blk_Cloud_sm.png "/builder") | [/builder](http://EZStack.Systems)
 --- | --- 
 
-[http://systemssolutiondesigner.com](http://systemssolutiondesigner.com)
+[http://EZStack.Systems](http://EZStack.Systems)
 
 ---
 ## Programmatically build web servers
 
-[/builder](http://systemssolutiondesigner.com) is a general purpose, personal, server configuration manager built with Node.js. Allows you to easily build and deploy web services and applications (webpage/etc) on any Linux cloud or private server. Builder is a proof of concept and is currently in development phase.
+[/builder](http://EZStack.Systems) is a general purpose, personal, server configuration manager built with Node.js. Allows you to easily build and deploy web services and applications (webpage/etc) on any Linux cloud or private server. Builder is a proof of concept and is currently in development phase.
 
 ## Full software stack management
 
@@ -16,7 +16,7 @@
 
 Drag and drop components into a new design. Edit the component variables then click build. Headless Chrome is used to display the web app being rebuilt.
 
-![/builder](http://systemssolutiondesigner.com/images/add_phone_field.gif "/builder") 
+![/builder](http://EZStack.Systems/images/add_phone_field.gif "/builder") 
 
 ## Installation
 
@@ -29,7 +29,7 @@ These dependencies include Node.js, NPM, headless Chrome, unzip and several Node
 
 From the ec2-user home directory execute:
 ```
-curl -L systemssolutiondesigner.com/builderSetup.sh > builderSetup.sh
+curl -L EZStack.Systems/builderSetup.sh > builderSetup.sh
 chmod 700 builderSetup.sh
 ./builderSetup.sh
 ```

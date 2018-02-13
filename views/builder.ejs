@@ -1694,7 +1694,8 @@
                                                 <textarea rows="4" class="form-control form-custom" placeholder="Enter description of this component" id="description"></textarea>
                                             </div>
                                             <div class="form-group">
-                                                <label>Component Variables</label>
+                                                <label>Component Variables</label><i class="fa fa-fw"></i>
+                                                <a href="#" id='varHelp' data-toggle="modal" data-target="#varHelpModal">[<i class="fa fa-question"></i>]</a>
                                                 <textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="compVariables"></textarea>
                                             </div>
                                         </div>
@@ -1704,15 +1705,12 @@
                                     <img id="screenShotImage">
                                 </div>
 
-
-
-
                             </div>
                             <div class="row">
                                 <div class="col-lg-12 ">
                                     <div class="form-group">
                                         <label>Build Script</label><i class="fa fa-fw"></i>
-                                        <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal">[<i class="fa fa-question fa-fw"></i>]</a>
+                                        <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal">[<i class="fa fa-question"></i>]</a>
                                         <a href="#" id='insertVariable' data-toggle="modal" data-target="#varModal">[Insert Variable]</a>
                                         <textarea class="form-control form-custom code" rows="4" id="script"></textarea>
                                     </div>
@@ -1934,7 +1932,7 @@
         <nav class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h1 class="modal-title">Build Script Help</h1>
+                <h1 class="modal-title">Build Script</h1>
             </div>
 
             <div id='buildHelpBody' class="modal-body" style="overflow-y: auto;height: 80vh;">
@@ -1995,17 +1993,17 @@
 
                 <h3 class="modal-title">Variables</h3>
                 <p>Information resulting from the execution of a build script can be used by other components by defining variables.
-                If any line in the results of a build script (what the remote system has returned) begins with 'var:', the line is interpreted by builder as a variable.
-                This variable and its value are readable by scripts that execute in the future.
-                <br/><br/>
-                The examples below are specific to a Linux CLI. <br/><br/>
-                Eg 1: echo var:myVar:1<br/>
-                This will instruct the remote Linux host to return 'var:myVar:1'. The variable 'myVar' will be defined for the component and its value will be '1'.<br/>
-                Eg 2: echo var:nowDate:$(date)<br/>
-                This will instruct the remote Linux host to return 'var:nowDate:Fri Jan 26 15:45:21 EST 2018' or what ever the current date is.
-                The variable 'nowDate' will be defined for the component and its value will be the date string.
-                <br/><br/>
-                Using variables that have been previously defined in script, is accomplished by inserting a variable reference. A variable reference has the following syntax:<br/>
+                    If any line in the results of a build script (what the remote system has returned) begins with 'var:', the line is interpreted by builder as a variable.
+                    This variable and its value are readable by scripts that execute in the future.
+                    <br/><br/>
+                    The examples below are specific to a Linux CLI. <br/><br/>
+                    Eg 1: echo var:myVar:1<br/>
+                    This will instruct the remote Linux host to return 'var:myVar:1'. The variable 'myVar' will be defined for the component and its value will be '1'.<br/>
+                    Eg 2: echo var:nowDate:$(date)<br/>
+                    This will instruct the remote Linux host to return 'var:nowDate:Fri Jan 26 15:45:21 EST 2018' or what ever the current date is.
+                    The variable 'nowDate' will be defined for the component and its value will be the date string.
+                    <br/><br/>
+                    Using variables that have been previously defined in script, is accomplished by inserting a variable reference. A variable reference has the following syntax:<br/>
                     &lt;%scope.variable-name%&gt;<br>
                     Builder will search for the variable name defined is all results that fit within the scope.<br/><br/>
                     The scope can be as follows:<br/>
@@ -2016,16 +2014,36 @@
                     If the variable name is not found in the specified scope a fatal error is raised and the SSH session is aborted.
 
                 </p>
-
-
-
-
             </div>
         </nav>
         <div class="modal-footer">
-           <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
         </div>
     </div>
 
 </div>
+<div id="varHelpModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <nav class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h1 class="modal-title">Component Variables</h1>
+            </div>
+
+            <div id='varHelpBody' class="modal-body" style="overflow-y: auto;height: 80vh;">
+                <p>Component variables are used to provide configurability of components to non-developers. A build script developer can insert a component variable into the build script that a non-developer user can adjust.</p>
+                <p>Enter variable-name=value pairs. Separate each with a new line.<br></p>
+                <p>Replace any hardcoded value in the build script with &lt;%c.variable-name%&gt;<br>
+                    When the build script is executed the &lt;%c.variable-name%&gt; tag will be replaced with the value string in the component variable list.
+                </p>
+            </div>
+        </nav>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
+        </div>
+    </div>
+
+</div>
+
 </html>
