@@ -1,4 +1,4 @@
-![/builder](http://EZStack.Systems/images/Blk_Cloud_sm.png "/builder") | [/builder](http://EZStack.Systems)
+![/builder](https://github.com/sbgh/builder/raw/master/static/images/server.png "/builder") | [/builder](http://EZStack.Systems)
 --- | --- 
 
 [http://EZStack.Systems](http://EZStack.Systems)
