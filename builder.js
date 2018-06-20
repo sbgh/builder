@@ -709,7 +709,7 @@ router.post("/run",function(req,res){
     var newKey=false;
 
     var conn;
-    var timeOut = 60000;  //how many ms all connections should wait for the prompt to reappear before connection is terminated
+    var timeOut = 10000;  //how many ms all connections should wait for the prompt to reappear before connection is terminated
     var lastTimeout;
     var exportVar = "";
 
@@ -913,6 +913,7 @@ router.post("/run",function(req,res){
                 var atPrompt = false;
                 var aSyncInProgress = 0;
                 var deferredExit = false;
+                var respBufferAccu = new Buffer([]);;
                 conn.shell(function (err, stream) {
                     if (err) throw err;
 
@@ -953,36 +954,47 @@ router.post("/run",function(req,res){
                     });
                     stream.on('data', function (data) {
 
-                        writeResponse(data);
+                        res.write(data.toString());
 
-                        if (commandIndex < scriptArray.length) {
-                            var command = scriptArray[commandIndex];
-                            var currentCommand = replaceVar(command, job);
+                        respBufferAccu = Buffer.concat([respBufferAccu, data]);
 
-//see if building a list of async tasks and sending to manager is worth trying...
-                            //console.log('\n1 aSyncInProgress:', aSyncInProgress, command);
-                            processDirectives();
+                        //test
+                        var tempVal = respBufferAccu.toString();
+                        //console.log('data: ' + tempVal);
+
+                        if( respBufferAccu.toString().split('\n').slice(-1)[0]  === prompt){
+                            writeResponse(respBufferAccu);
+                            respBufferAccu = new Buffer([]);
+
                             if (commandIndex < scriptArray.length) {
-                                sendCommand();
+                                var command = scriptArray[commandIndex];
+                                var currentCommand = replaceVar(command, job);
+
+        //see if building a list of async tasks and sending to manager is worth trying...
+
+                                //console.log('\n1 aSyncInProgress:', aSyncInProgress, command);
+                                processDirectives();
+                                if (commandIndex < scriptArray.length) {
+                                    sendCommand();
+                                }
+                                //console.log('2 aSyncInProgress:', aSyncInProgress);
                             }
-                            //console.log('2 aSyncInProgress:', aSyncInProgress);
-                        }
 
-                        if (commandIndex === scriptArray.length) {
-                            commandIndex++;
+                            if (commandIndex === scriptArray.length) {
+                                commandIndex++;
 
-                            if (aSyncInProgress < 1){
-                                stream.write("exit" + '\n');
-                                sshSuccess = true
-                            }else{
-                                message('Waiting for asynchronous processes to complete...');
-                                deferredExit = true
+                                if (aSyncInProgress < 1){
+                                    stream.write("exit" + '\n');
+                                    sshSuccess = true
+                                }else{
+                                    message('Waiting for asynchronous processes to complete...');
+                                    deferredExit = true
+                                }
+                                flushMessQueue();
+
+                                //console.log('Exiting...');
                             }
-                            flushMessQueue();
-
-                            //console.log('Exiting...');
                         }
-
                         function writeResponse(newData) {
 
                             var ds = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-');
@@ -996,7 +1008,8 @@ router.post("/run",function(req,res){
                             messQueue = [];
 
                             var newdataStr = newData.toString();
-                            res.write(newdataStr);
+
+                            //console.log('writeResponse: ' + newdataStr);
 
                             newdataStr = newdataStr.replace(/\n$/, "");
                             var newdataAr = newdataStr.split('\n');
