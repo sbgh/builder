@@ -160,3 +160,12 @@ div.grippie {
 .form-control:-ms-input-placeholder { color: #555555; }  /* Internet Explorer 10-11 */
 .form-control::-ms-input-placeholder { color: #555555; }  /* Microsoft Edge */
 
+.runningJobCompleteSuccess{
+    color: #4dff4b !important;
+}
+.runningJobCompleteFail{
+    color: #ff1917 !important;
+}
+.runningJob{
+    color: #ffffff !important;
+}

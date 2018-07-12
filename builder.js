@@ -851,6 +851,7 @@ router.post("/run",function(req,res){
             var messQueue = [];
 
             message('-----Building: ' + job.name+'-----');
+            message('BuildID:[' +job.id+ ']');
             function message(mess) {
                 messQueue.push(mess)
             }

@@ -20,7 +20,7 @@ Drag and drop components into a new design. Edit the component variables then cl
 
 ## Installation
 
-The current version of /builder and the packaged example components are intended to be installed on a 'fresh' Amazon AWS [EC2](https://us-west-2.console.aws.amazon.com/ec2/) instance (RHEL-7.3 t2.micro free tier).
+The current version of /builder and the packaged example components are intended to be installed on a 'fresh' Amazon AWS [EC2](https://us-west-2.console.aws.amazon.com/ec2/) instance (RHEL-7.3 t2.medium).
 
 ### Automated installation
 

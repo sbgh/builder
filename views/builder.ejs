@@ -490,6 +490,11 @@
                 }
 
                 var localKey="";
+
+                $('.runningJob').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
+                $('.runningJobCompleteSuccess').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
+                $('.runningJobCompleteFail').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
+
                 $.ajax({
                     url: '/run',
                     processData: false,
@@ -501,7 +506,10 @@
                     $('#upload-key').val('');
 
                     var xhr = $.ajaxSettings.xhr();
-                    xhr.onprogress = function e() {
+
+                        var buildIDRunningPrev = '';
+                        var buildIDRunning = '';
+                        xhr.onprogress = function e() {
                         var rText = xhr.responseText
 
                         var rTextNew = rText.substr(currentRespText.length)
@@ -514,6 +522,7 @@
                         rTextNew.split('<br>').forEach(function(row){
                             if(row.substr(0,8) === 'message:'){
                                 $('#messageSpan').html(row.substr(8))
+
                             }
 
                             if(row.substr(0,4) === 'key:' &&  $("#results_html").html() === '') {
@@ -522,6 +531,30 @@
                             else if(row.substr(0,4) === 'url:'){
                                 //           window.open('https://mynode:8445/cm', 'new_', '');
                                 //window.open('https://mynode:8445/cm');
+                            }
+                            else if(row.substr(0,16) === 'message:BuildID:'){
+                                buildIDRunning = row.substring(
+                                    row.lastIndexOf("[") + 1,
+                                    row.lastIndexOf("]")
+                                );
+                                if(buildIDRunning !== ''){
+                                    $('#' + buildIDRunning + '_anchor').removeClass('runningJobCompleteSuccess').removeClass('runningJobCompleteFail').addClass("runningJob");
+                                    if(buildIDRunningPrev !== ''){
+                                        $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteFail').addClass("runningJobCompleteSuccess");
+                                    }
+                                    buildIDRunningPrev = buildIDRunning
+                                }
+                            }
+                            else if(row.substr(0,25) === '**All scripts completed**'){
+                                if(buildIDRunningPrev !== ''){
+                                    $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteFail').addClass("runningJobCompleteSuccess");
+                                }
+                            }
+                            else if(row.substr(0,23) === 'CompletionSuccess:false'){
+                                if(buildIDRunningPrev !== ''){
+                                    // $('#' + buildIDRunning + '_anchor').css({color:'#fff'});
+                                    $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteSuccess').addClass("runningJobCompleteFail");
+                                }
                             }
                             else if(row.substr(0,4) === 'img:'){
                                 var timestamp = new Date().getTime();
@@ -1181,6 +1214,20 @@
                 }
             });
 
+            //min codes window
+            $('.codes_btn_min').on('click', function(){
+                var container = $('#rowContainer');
+                setWindowHeight(container.height()- 25 , container);
+                currentHeight = container.height()- 25
+            });
+
+            //max codes window
+            $('.codes_btn_max').on('click', function(){
+                var container = $('#rowContainer');
+                setWindowHeight(container.height()/2 , container);
+                currentHeight = container.height() / 2
+            });
+
             //click show code button
             $('.codes_btn').on('click', function(){
                 if($("#results_codes").is(":visible")){
@@ -1192,13 +1239,13 @@
 
             function hideCodes(){
                 $("#results_codes").hide();
-                $("#codes_btn").html("[+codes]");
+             //   $("#codes_btn").html("[+codes]");
                 $("#results_html").css("width", "100%");
                 $("#results_html").css("overflow-y", "auto");
             }
             function showCodes(){
                 $("#results_codes").show();
-                $("#codes_btn").html("[-codes]");
+            //    $("#codes_btn").html("[-codes]");
                 $("#results_html").css("width", "50%");
                 $("#results_html").css("overflow-y", "hidden");
             }
@@ -1292,21 +1339,25 @@
             });
 
             function setWindowHeight(topHeight, container){
-                if (topHeight > (container.height() * .2) && topHeight < (container.height() * .8) ){
-
-                    $("#jstree_div").height(topHeight - (23 + 31));
-                    $("#treePanelHandle").height(topHeight - 23);
-
-                    $("#job-form-panel").height(topHeight - (20 + 22 + 38));
-                    $("#sys-form-panel").height(topHeight - (20 + 22 + 38));
-                    $("#screenShotCol").height(topHeight - 24);
-
-
-                    $('#results_html').height(container.height() - topHeight - (23 + 10));
-                    $('#results_codes').height(container.height() - topHeight - (23 + 10));
-
-                    $('#results-group').height(container.height() - topHeight - (23 + 10));
+                if (topHeight > (container.height() - 27)){
+                    topHeight = container.height() - 27
                 }
+
+                 if (topHeight < (container.height() * .2)){
+                     topHeight = container.height() * .2
+                 }
+
+                $("#jstree_div").height(topHeight - (23 + 31));
+                $("#treePanelHandle").height(topHeight - 23);
+
+                $("#job-form-panel").height(topHeight - (20 + 22 + 38));
+                $("#sys-form-panel").height(topHeight - (20 + 22 + 38));
+                $("#screenShotCol").height(topHeight - 24);
+
+                $('#results_html').height(container.height() - topHeight - (23 + 10));
+                $('#results_codes').height(container.height() - topHeight - (23 + 10));
+
+                $('#results-group').height(container.height() - topHeight - (23 + 10));
             }
 
             function setWindowWidth(leftWidth, container){
@@ -1762,7 +1813,16 @@
             </div>
             <div class="col-lg-12 col-offset-240 bottom-row">
                 <div class='panel panel-default cust-panel'>
-                    <div class='panel-heading cust-panel-heading'><i class='fa  fa-tv  fa-fw'></i>Console<i class='fa  fa-fw'></i><span id="messageSpan"></span><a id="codes_btn" class='navbar-right codes_btn' href='#'>[+codes]</a></div>
+                    <div class='panel-heading cust-panel-heading'><i class='fa  fa-tv  fa-fw'></i>Console<i class='fa  fa-fw'></i><span id="messageSpan"></span>
+
+                        <i class='fa fa-fw navbar-right'></i>
+                        <i id="codes_btn_max" class='codes_btn_max fa fa-window-maximize fa-fw navbar-right'></i>
+                        <i id="codes_btn_min" class='codes_btn_min fa fa-window-minimize fa-fw navbar-right'></i>
+                        <i id="codes_btn" class='codes_btn fa  fa-hashtag fa-fw navbar-right'></i>
+                        <i class='fa fa-fw navbar-right'></i>
+
+                    </div>
+
                     <div class='panel-body term-panel-body'>
                         <div id="terminal-container" >
                             <div id="results_html" class='scroller'></div>
