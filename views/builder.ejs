@@ -20,12 +20,13 @@
      <!-- <link rel="stylesheet" href="/jstree/dist/themes/proton/style.min.css" /> -->
 
     <!-- theme  -->
-      <link rel="stylesheet" href="/jstree/dist/themes/default-dark/style.min.css" />
-     <link rel="stylesheet" href="/theme/dark.css">
+    <link rel="stylesheet" href="/jstree/dist/themes/default-dark/style.min.css" />
+    <link rel="stylesheet" href="/theme/dark.css">
 
     <!-- doc.ready() -->
     <script type = "text/javascript" language = "javascript" >
 
+        var pickedLib = '#';
         $(document).ready(function() {
 
             $('#jobForm').on('submit', function(e){ e.preventDefault()});
@@ -34,7 +35,7 @@
             //create tree
             $("#jstree_div").jstree({
                 "core" : {
-                   "themes": {
+                    "themes": {
                         "name": "default-dark",
                         "dots": true,
                         "icons": true
@@ -48,13 +49,21 @@
 
                             const targetNodeId = $(".jstree-hovered")[0].id;
                             const targetNode =  $('#jstree_div').jstree(true).get_node(targetNodeId);
-                            //(node.original.type === "system" && node_parent.type === "system") ||
-                            if(  targetNode.id === "#"){
+                            if(targetNode.id === "#") {
                                 return false;
                             }else{
                                 $('#copyModal_listOfIds').val(node.original.id);
 
-                                var treeNode = $('#jstree_div').jstree(true).get_node(node.original.id);
+                                var fromTree;
+                                if(node.parents[node.parents.length - 2] === 'lib'){
+                                    fromTree = $('#jslibtree_div');
+                                    $('#copyModal_lib').val(pickedLib)
+                                }else{
+                                    fromTree = $('#jstree_div');
+                                    $('#copyModal_lib').val('local')
+                                }
+                                const treeNode = fromTree.jstree(true).get_node(node.original.id);
+
                                 var childs = treeNode.children_d;
                                 var listOfIds = [node.original.id];
                                 $("#copyInfoText").html("<b>"+node.original.text + "</b> will be copied to <b>" + targetNode.text+"</b>");
@@ -67,7 +76,11 @@
                                     $('#copyModalForm').hide()
                                 }
 
-                                $('#copyModal_newParent').val(targetNode.id );  //targetId
+                                if(targetNode.id === "local"){
+                                    $('#copyModal_newParent').val('#')
+                                }else{
+                                    $('#copyModal_newParent').val(targetNode.id );  //targetId
+                                }
 
                                 $('#copyModal').modal('show');
                                 $('#copyChildrenCb').prop('checked', false);
@@ -110,10 +123,96 @@
                 //console.log('saved');
             }  );
 
+
+            //Create Lib Tree
+            $("#jslibtree_div").jstree({
+                "core" : {
+                    "themes": {
+                        "name": "default-dark",
+                        "dots": true,
+                        "icons": true
+                    },
+                    "data" : {
+                        'url' : function (node) {return 'getLib';},
+                        'data' : function (node) {return { 'id' : node.id, 'pickedLib' : pickedLib };}
+                    },
+                    'check_callback': function(operation, node, node_parent, node_position, more) {
+                        if (operation === "copy_node") {
+
+                            const targetNodeId = $(".jstree-hovered")[0].id;
+                            const targetNode =  $('#jslibtree_div').jstree(true).get_node(targetNodeId);
+                            if(  targetNode.id === "#"){
+                                return false;
+                            }else{
+                                $('#copyTiLibModal_listOfIds').val(node.original.id);
+
+                                var treeNode = $('#jstree_div').jstree(true).get_node(node.original.id);
+                                var childs = treeNode.children_d;
+                                var listOfIds = [node.original.id];
+                                $("#copyToLibInfoText").html("<b>"+node.original.text + "</b> will be copied to <b>" + targetNode.text+"</b>");
+
+                                listOfIds += ';' + childs.join(';');
+
+                                $('#copyToLibModal_listOfIds').val(listOfIds);
+
+
+                                $('#copyToLibModalForm').show()
+
+                                $('#copyToLibModal_newParent').val(targetNode.id );  //targetId
+
+                                $('#copyToLibModal').modal('show');
+                                $('#copyToLibChildrenCb').prop('checked', false);
+
+                                return false;
+                            }
+                        }
+                        return true;  //allow all other operations
+                    }
+                },
+                "types" : {
+                    "system" : {
+                        "icon" : "fa fa-desktop"
+                    },
+                    "job" : {
+                        "icon" : "fa fa-code"
+                    },
+                    "disabled" : {
+                        "icon" : "fa fa-hand-paper-o"
+                    }
+                },
+//                "state": { "key": "myLibTree" },
+                "dnd": {
+                    check_while_dragging: false,
+                    always_copy:true,
+                    large_drop_target:true
+                },
+                "plugins" : [ "state","contextmenu", "types", "dnd", "wholerow"],
+                "contextmenu":{
+                    "items": {
+                        "create": {
+                            "label": "Add Child",
+                            "action": function (obj) {
+                                //createNode();  //todo: complete
+                            }
+                        }
+                    }
+                }
+            }).on(  'create_node.jstree', function(e, data) {
+                //console.log('saved');
+            }  );
+
+
+            //Lib Tree Collapse
+            $("#treeCollapse").on("click",function(){
+                setLibWindowWidth(20, container);
+            });
+
+
             $("#copyConfirmButton").on("click",function() {
                 var mydata = {};
                 mydata.ids = $('#copyModal_listOfIds').val();
                 mydata.parent = $('#copyModal_newParent').val();
+                mydata.lib = $('#copyModal_lib').val();
 
                 if(!$('#copyChildrenCb').is(':checked')){
                     if(mydata.ids.split(';').length > 1){
@@ -130,44 +229,221 @@
                     //console.log('copy refresh' );
                     $('#jstree_div').jstree(true).refresh();
                 }).fail(function (e) {
-                    console.log('copy refresh fail' );
+                    console.log('copy failed' );
                     console.log(e );
                     $('#jstree_div').jstree(true).refresh();
                 });
                 $('#copyModal').modal('toggle');
             });
 
-            $('#jstree_div').on("copy_node.jstree", function (e, data) {
+            $("#copyToLibConfirmButton").on("click",function() {
+                var mydata = {};
+                mydata.ids = $('#copyToLibModal_listOfIds').val();
+                mydata.parent = $('#copyToLibModal_newParent').val();
+                mydata.lib = pickedLib;
 
-//                $('#copyModal_listOfIds').val(data.node.id);
-//
-//                var treeNode = $('#jstree_div').jstree(true).get_node(data.node.id);
-//                var childs = treeNode.children_d;
-//                var listOfIds = [data.node.id];
-//                $("#copyInfoText").html("<b>"+ data.node.text + "</b> will be copied to <b>" + $('#jstree_div').jstree(true).get_node(data.parent).text +"</b>");
-//
-//                if (childs.length > 0 ){
-//                    listOfIds += ';' + childs.join(';');
-//                    $('#copyModal_listOfIds').val(listOfIds);
-//                    $('#copyModalForm').show()
-//                }else{
-//                    $('#copyModalForm').hide()
-//                }
-//
-//                $('#copyModal_newParent').val(data.parent);  //targetId
-//
-//                   $('#copyModal').modal('show');
-//                   $('#copyChildrenCb').prop('checked', false);
+                if(!$('#copyToLibChildrenCb').is(':checked')){
+                    if(mydata.ids.split(';').length > 1){
+                        mydata.ids = mydata.ids.split(';')[0]
+                    }
+                }
 
-                //return false;
+                $.ajax({
+                    type: 'post',
+                    contentType: "application/json",
+                    url: '/copyToLib',
+                    data: JSON.stringify(mydata)
+                }).done(function (e) {
+                    //console.log('copy refresh' );
+                    $('#jslibtree_div').jstree(true).refresh();
+                    $('#copyToLibModal').modal('toggle');
+                }).fail(function (e) {
+                    console.log('copy to lib failed' );
+                    console.log(e );
+                    $('#jstree_div').jstree(true).refresh();
+                });
+
             });
 
-            //tree ready
-            $("#jstree_div").bind('ready.jstree', function(e, data) {
-      //          setTreeHover()
+            //geLibJobByID
+            function getLibJobByID(NodeID, lib){
+                clearJobFields();
+                $.get('/getLib', { id: NodeID, 'pickedLib':lib }, function(data) {
+                    //console.log("getJobByID: "+data[0].script);
+                    $("#id").val(data[0].id);
+                    $("#parent").val(data[0].parent);
+                    $("#name").val(data[0].name);
 
-      //          $("#jstree-marker-line").remove();
-            })
+                    if(data[0].enabled === 1){
+                        $('#componentEnabled').prop('checked', true);
+                        $('#componentEnabledVal').html('Yes');
+                    }else{
+                        $('#componentEnabled').prop('checked', false);
+                        $('#componentEnabledVal').html('No');
+                    }
+
+                    $("#description").val(data[0].description);
+                    $("#script").val(data[0].script);
+                    $("#compVariables").val(data[0].variables);
+                    $("#version").text(data[0].ver);
+                    $("#template").val(data[0].template);
+                    $("#text").val(data[0].text);
+                    $('#resourceFiles').val(data[0].resourceFiles);
+                    $("#ft").val(data[0].ft);
+
+                    populateLibFileList( $('#resourceFiles').val());
+
+                    var timestamp = new Date().getTime();
+                    $.get("/library/" + pickedLib + '/uploads/' +  $("#id").val() + "/screenshot.png?" + timestamp, '', function(data) {
+
+                        if (data === ''){
+                            $('#screenShotImageHolder').hide();
+                            $('#screenShotImage')[0].src='';
+                            $("#firstRow").css('width:50%;');
+                            $("#topLeftForm").attr('class', 'col-lg-12');
+
+                        }else{
+                            $('#screenShotImageHolder').show();
+                            $('#screenShotImage')[0].src= "/library/" + pickedLib + '/uploads/' +  $("#id").val() + '/screenshot.png?' + timestamp;
+                            $("#firstRow").css('width:100%;');
+                            $("#topLeftForm").attr('class', 'col-lg-6');
+                        }
+                    });
+
+                    var x=2;
+                    var ctDiv = $('#custTemplates');
+                    var ctObj = data[0].custTemplates;
+                    var ctHTML = "";
+                    for (var key in ctObj) {
+                        if (ctObj.hasOwnProperty(key)) {
+                            var inHtml = "<div class='form-group'>";
+                            inHtml += " <label>Template "+x.toString()+"</label>";
+                            inHtml += " <textarea class='form-control code' rows='4' readonly='' id='template"+x.toString()+"'>";
+                            inHtml += "</textarea>";
+                            inHtml += "</div>";
+                            ctHTML +=inHtml;
+                            x++;
+                        }
+                    }; //add all the custom Template fields
+                    $('#custTemplates').html(ctHTML);
+                    x=2;
+                    for (var key in ctObj) {
+                        if (ctObj.hasOwnProperty(key)) {
+                            $('#template'+x.toString()).val(ctObj[key]);
+                            x++;
+                        }
+                    }
+                    setTripleClickTextareaEvents();
+                    allowInsertTabTextarea();
+                })
+            }
+
+            //Library pick
+            $("#LibDropDownPick").on('click', function(){
+                libDropDown();
+            });
+            $("#LibDropDownPickIcon").on('click', function(){
+                libDropDown();
+            });
+            function libDropDown(){
+                if (!$("#libDropDown").hasClass( "open" )) {
+
+                    $('#LibDropDownList').show();
+                    var mydata = {};
+
+                    $.ajax({
+                        type: 'get',
+                        data: mydata,
+                        dataType: "text",
+                        headers: {
+                            "content-type": "application/json"
+                        },
+                        url: '/libraryList',
+                        success: function (data) {
+                            const dataObj = JSON.parse(data);
+                            const priArr = dataObj.pri;
+                            const pubArr = dataObj.pub;
+
+                            const LibDropDownListDiv = $("#LibDropDownList")[0];
+                            var libListHTML = '';
+                            priArr.forEach(function (priDir) {
+                                libListHTML += '<a class="dropdown-item libListRow" data-id="private/' + priDir + '" href="#">private/' + priDir + '</a><br>';
+                            })
+                            pubArr.forEach(function (priDir) {
+                                libListHTML += '<a class="dropdown-item libListRow" data-id="public/' + priDir + '" href="#">public/' + priDir + '</a><br>';
+                            })
+                            LibDropDownListDiv.innerHTML = libListHTML
+
+                            //Add click events to new row
+                            $('.libListRow').on('click', function(){
+                                var pickedDir = $(this).attr('data-ID');
+                                pickedLib = pickedDir;
+                                $('#LibDropDownList').hide();
+                                $('#jslibtree_div').jstree(true).refresh();
+
+
+                                setLibWindowWidth(250, container)
+
+                            });
+
+                        },
+                        error: function (error) {
+                            console.log(error)
+                        }
+                    })
+                }else{
+                    $('#LibDropDownList').hide();
+                }
+            }
+
+            //Lib tree click
+            $('#jslibtree_div').on("select_node.jstree", function (e, data) {
+                $("#rightCol").show();
+                $("#introCol").hide();
+                $("#screenShotCol").hide();
+
+                selectedNode = data.selected[0];
+                selectedTree = 'lib'
+
+                if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled" ) {
+                    getLibJobByID(selectedNode, pickedLib);
+                    readModeLibJob(selectedNode);
+                    $('#jstree_div').jstree("deselect_all");
+
+
+                    $("#sysScreen").hide();
+                    $("#jobScreen").show();
+                    $("#type").val('Job');
+                    hideBottom()
+                }else if(data.instance.get_node(data.node.id).type === "system" ){
+                    readModeLibSys();
+                    $('#jstree_div').jstree("deselect_all");
+                    $("#sysScreen").show();
+                    $("#jobScreen").hide();
+                    $("#type").val('system');
+                    getLibSysByID(selectedNode, pickedLib);
+                    hideBottom()
+                }else{ //Type = Lib
+                    $('#jstree_div').jstree("deselect_all");
+                    hideBottom()
+                }
+                $("#results_html").html('');
+                $("#results_codes").html('');
+                $('#messageSpan').html('');
+
+                var inputFields = $("#job-form-panel").find('textarea');
+                inputFields.each(setWidth);
+                function setWidth(index, element) {
+                    $(element).width = '100%';
+                    $(element).css('width','100%');
+                    $(element).css('margin-right',0);
+                }
+            });
+
+            //$('#jstree_div').on("copy_node.jstree", function (e, data) {});  //not used
+
+            //tree ready
+            //$("#jstree_div").bind('ready.jstree', function(e, data) {})    //not used
 
             //tree click
             $('#jstree_div').on("select_node.jstree", function (e, data) {
@@ -176,10 +452,16 @@
                 $("#screenShotCol").hide();
 
                 selectedNode = data.selected[0];
+                selectedTree = 'working'
+
                 //console.log(data.selected);
                 if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled") {
                     getJobByID(selectedNode);
                     readModeJob(selectedNode);
+
+
+                    $('#jslibtree_div').jstree("deselect_all");
+
                     $("#sysScreen").hide();
                     $("#jobScreen").show();
                     $("#type").val('Job');
@@ -216,8 +498,6 @@
                 }
             });
 
-
-
             $("#rightCol").hide();
             $("#screenShotCol").hide();
 
@@ -235,9 +515,11 @@
             function hideBottom(){
                 $("#bottomRow").hide(function(){
                     $("#jstree_div").height('calc(100vh - 23px - 22px)');
+                    $("#jslibtree_div").height('calc(100vh - 23px - 22px)');
                     $("#job-form-panel").height('calc(100vh - 20px - 22px)');
                     $("#sys-form-panel").height('calc(100vh - 20px - 22px)');
                     $("#treePanelHandle").height('calc(100vh - 23px)');
+                    $("#libTreePanelHandle").height('calc(100vh - 23px)');
                 });
             }
             function showBottom(){
@@ -374,7 +656,6 @@
                 });
             }
 
-
             function clearSysFields(){
                 $("#id").val('');
                 $("#parent").val('');
@@ -388,8 +669,45 @@
             //getSysByID
             function getSysByID(NodeID){
                 clearSysFields();
-                $.get('/Sys', { id: NodeID }, function(data) {
-                    //console.log("getJobByID: "+data[0].script);
+                if(NodeID === 'local'){
+                    $("#rightCol").hide();
+                }else{
+                    $("#rightCol").show();
+                    $.get('/Sys', { id: NodeID }, function(data) {
+                        //console.log("getJobByID: "+data[0].script);
+                        $("#id").val(data[0].id);
+                        $("#parent").val(data[0].parent);
+                        $("#sysName").val(data[0].name);
+                        $("#sysVersion").text(data[0].ver);
+                        $("#sysDescription").val(data[0].description);
+                        $("#sysVariables").val(data[0].variables);
+                        $("#text").val(data[0].text);
+
+                        $("#iconURL").val('');
+
+                        if (data[0].hasOwnProperty("icon")){
+                            var dataURL = data[0].icon;
+                            if(dataURL !== ''){
+                                $("#sysIcon").css(
+                                    {'background-image': "url(" + dataURL + ")", 'background-repeat': 'no-repeat'}
+                                ).data({'width':21, 'height':21});
+                                $("#sysIcon").height(21)
+                            }
+                        }else{
+                            $("#sysIcon").css(
+                                {'background-image': "none", 'background-repeat': 'no-repeat'}
+                            ).data({'width':21, 'height':21});
+                        }
+                    });
+                }
+
+            }
+
+            //getLibSysByID
+            function getLibSysByID(NodeID, lib){
+                clearSysFields();
+                console.log( { id: NodeID, pickedLib:lib } );
+                $.get('/LibSys', { id: NodeID, pickedLib:lib }, function(data) {
                     $("#id").val(data[0].id);
                     $("#parent").val(data[0].parent);
                     $("#sysName").val(data[0].name);
@@ -600,7 +918,12 @@
                 var mydata = {};
                 mydata.ids = selectedNode;
 
-                var treeNode = $('#jstree_div').jstree(true).get_node(selectedNode);
+                if( selectedTree === 'working'){
+                    var tree = $('#jstree_div');
+                }else{
+                    var tree = $('#jslibtree_div');
+                }
+                var treeNode = tree.jstree(true).get_node(selectedNode);
                 var childs = treeNode.children_d;
                 var parent = treeNode.parent;
                 var listOfIds = selectedNode;
@@ -608,6 +931,12 @@
                     listOfIds += ';' + childs.join(';');
                 }
                 mydata.ids = listOfIds
+
+                if( selectedTree === 'working') {
+                    mydata.tree = 'working'
+                }else{
+                    mydata.tree = pickedLib
+                }
 
                 $.ajax({
                     type: 'post',
@@ -619,13 +948,13 @@
                 }).done(function (data) {
                     //console.log(data);
                     removeFlag= true;
-                    $("#jstree_div").jstree(true).delete_node(this.selectedNode);
-                    $('#jstree_div').jstree(true).redraw(true);
-                    $("#jstree_div").jstree(true).select_node(this.parent, true);
+                    tree.jstree(true).delete_node(this.selectedNode);
+                    tree.jstree(true).redraw(true);
+                    tree.jstree(true).select_node(this.parent, true);
                 }).fail(function (e) {
                     console.log('remove refresh fail' );
                     console.log(e );
-                    $('#jstree_div').jstree(true).refresh();
+                    tree.jstree(true).refresh();
                 });
 
                 $('#delModal').modal('toggle');
@@ -693,14 +1022,14 @@
                 $("#new_button").show();
 
                 //Do not show run button for components in the Library
-                const targetNode =  $('#jstree_div').jstree(true).get_node(NodeID);
-                const rSystemId = targetNode.parents[targetNode.parents.length - 2];
-                const rSystemNode =  $('#jstree_div').jstree(true).get_node( rSystemId);
-                if(rSystemNode.text !== 'Library'){
+//                const targetNode =  $('#jstree_div').jstree(true).get_node(NodeID);
+//                const rSystemId = targetNode.parents[targetNode.parents.length - 2];
+//                const rSystemNode =  $('#jstree_div').jstree(true).get_node( rSystemId);
+//                if(rSystemNode.text !== 'Library'){
                     $("#run_button").show();
-                }else{
-                    $("#run_button").hide();
-                }
+//                }else{
+//                    $("#run_button").hide();
+//                }
 
                 $('#insertVariable').hide();
                 $("#newTemplateButton").hide();
@@ -746,6 +1075,55 @@
                 $('#iconPaste').hide()
             }
 
+            function readModeLibJob(NodeID){
+                inputFields = $("#jobForm").find("input");
+                inputFields.each(disableElement);
+                inputFields = $("#jobForm").find("textarea");
+                inputFields.each(disableElement);
+
+                $("#componentEnabled").hide();
+
+                function disableElement(index, element) {
+                    element.readOnly = true;
+                }
+                $("#edit_button").hide();
+                $("#save_button").hide();
+                $("#remove_button").show();
+                $("#new_button").hide();
+                $("#run_button").hide();
+                $("#new_button").hide();
+                $("#run_button").hide();
+
+
+                $('#insertVariable').hide();
+                $("#newTemplateButton").hide();
+                $("#newFileButton").hide();
+                $("#delFileButton").hide();
+                $("#moveUp_button").hide();
+                $("#moveDn_button").hide();
+                var checkBoxes = $(".varCheckboxFileList")
+                if (checkBoxes.exists()){
+                    checkBoxes.hide();
+                }
+            }
+            function readModeLibSys(){
+                inputFields = $("#sysForm").find("input");
+                inputFields.each(disableElement);
+                inputFields = $("#sysForm").find("textarea");
+                inputFields.each(disableElement);
+
+                function disableElement(index, element) {
+                    element.readOnly = true;
+                }
+                $("#edit_sys_button").hide();
+                $("#save_sys_button").hide();
+                $("#remove_sys_button").show();
+                $("#new_sys_button").hide();
+
+                $('#iconPaste').hide()
+            }
+
+
             $("#edit_button").disabled = true;
             $("#save_button").disabled = true;
             $("#remove_button").disabled = true;
@@ -758,7 +1136,8 @@
 
             $('#iconPaste').hide();
 
-            $.fn.exists = function () { //extend jq - exists function
+            //extend jq - exists function
+            $.fn.exists = function () {
                 return this.length !== 0;
             }
 
@@ -1251,8 +1630,14 @@
             }
             hideCodes();
 
-            //Create new component or system
+            //Define the current selected node for several functions
             var selectedNode = "#"; //default Root
+
+            //Define the current selected tree for several functions
+            var selectedTree = "working"; //default 'working' tree
+
+
+            //Create new component or system
             function createNode(mydata) {
                 $.ajax({
                     type: 'POST',
@@ -1288,6 +1673,9 @@
 
             var isResizingHeight = false;
             var isResizingWidth = false;
+            var isResizingLibWidth = false;
+            var treeWidth = 240;
+            var libTreeWidth = 240;
 
             var container = $('#rowContainer');
 
@@ -1295,10 +1683,11 @@
             var currentHeight = container.height() * .75; //default height
             currentHeight += currentHeight < 10 ? 10 - currentHeight : 0;
 
-            //drag height & width
+            //drag height & width events
             $(function () {
                 var heightHandle = $('#rowHandle');
                 var widthHandle = $('#treePanelHandle');
+                var libWidthHandle = $('#libTreePanelHandle');
 
                 heightHandle.on('mousedown', function (e) {
                     isResizingHeight = true;
@@ -1308,6 +1697,9 @@
                 widthHandle.on('mousedown', function (e) {
                     isResizingWidth = true;
                 });
+                libWidthHandle.on('mousedown', function (e) {
+                    isResizingLibWidth = true;
+                });
 
                 $( window ).resize(function() {
                     //var containerWidth = $('#rowContainer');
@@ -1315,7 +1707,7 @@
                 });
 
                 $(document).on('mousemove', function (e) {
-                    if (!isResizingHeight && !isResizingWidth)
+                    if (!isResizingHeight && !isResizingWidth && !isResizingLibWidth)
                         return;
                     if(isResizingHeight){
                         e.preventDefault();
@@ -1325,16 +1717,24 @@
                         currentRatio = currentHeight / container.height();
                         setWindowHeight(topHeight, container);
                     }
+
+                    if(isResizingLibWidth){
+                        e.preventDefault();
+                        var leftWidth = e.clientX;
+                        setLibWindowWidth(leftWidth , container);
+                    }
+
                     if(isResizingWidth){
                         e.preventDefault();
                         var leftWidth = e.clientX;
-
-                        setWindowWidth(leftWidth, container);
+                        setWindowWidth(leftWidth - libTreeWidth - 2, container);
                     }
+
 
                 }).on('mouseup', function (e) {
                     isResizingHeight = false;
                     isResizingWidth = false;
+                    isResizingLibWidth = false;
                 });
             });
 
@@ -1348,7 +1748,10 @@
                  }
 
                 $("#jstree_div").height(topHeight - (23 + 31));
+                $("#jslibtree_div").height(topHeight - (23 + 31));
+
                 $("#treePanelHandle").height(topHeight - 23);
+                $("#libTreePanelHandle").height(topHeight - 23);
 
                 $("#job-form-panel").height(topHeight - (20 + 22 + 38));
                 $("#sys-form-panel").height(topHeight - (20 + 22 + 38));
@@ -1360,15 +1763,30 @@
                 $('#results-group').height(container.height() - topHeight - (23 + 10));
             }
 
+            function setLibWindowWidth(leftWidth, container){
+                if (leftWidth < (container.width() * .8) && leftWidth > 19 ){
+                    libTreeWidth = leftWidth;
+
+                    $("#leftLibCol").css('width',leftWidth  - 2);
+                    $("#leftCol").css('left',libTreeWidth );
+                    $("#libTreePanel").css('width',leftWidth - 7);
+
+                    $("#rightCol").css("left", leftWidth + treeWidth - 15);
+                    $("#screenShotCol").css("left", leftWidth + treeWidth);
+                    $("#rightCol").css('width',$(window).width() - (treeWidth + libTreeWidth) + 23 );
+                }
+            }
+            setLibWindowWidth(20, container);
+
             function setWindowWidth(leftWidth, container){
                 if (leftWidth < (container.width() * .8) && leftWidth > 128 ){
-                    $("#rightCol").css("padding-left", leftWidth );
-                    $("#screenShotCol").css("padding-left", leftWidth  );
-//                    $("#leftCol").width(leftWidth  - 2);
-//                    $("#treePanel").width(leftWidth - 7);
-                    $("#leftCol").css('width',leftWidth  - 2);
-                    $("#treePanel").css('width',leftWidth - 7);
+                    treeWidth = leftWidth;
+                    $("#leftCol").css('width',treeWidth - 2 );
+                    $("#treePanel").css('width',treeWidth - 7);
 
+                    $("#rightCol").css("left", treeWidth + libTreeWidth - 15 );
+                    $("#screenShotCol").css("left", leftWidth  + libTreeWidth  );
+                    $("#rightCol").css('width',$(window).width() - (treeWidth + libTreeWidth) + 23 );
                 }
             }
             setWindowWidth(250, container);
@@ -1400,6 +1818,34 @@
                     $('#fileList').html(fileNamesHtmlHeader + fileNamesHtmlEmpty + fileNamesHtmlFooter);
                 }
             }
+
+            function populateLibFileList(data){
+                var fileNamesHtmlHeader = "<div><table style='width: 50%;'  role='grid' class='table table-striped table-bordered table-hover dataTable no-footer dtr-inline var_Table' id='dataTables-fileList' width='50%'><tbody>";
+                var fileNamesHtmlFooter = "</tbody></table></div>";
+                var fileNamesHtml = "";
+                var fileNamesHtmlEmpty = "<tr role='row' class='gradeA odd'><td width = '10%'><br/></td></tr>";
+                try{
+                    var fList = JSON.parse(data);
+                    if(fList.length > 0){
+                        fList.forEach(function(fName){
+                            fileNamesHtml += "<tr role='row' class='gradeA odd'><td width = '10%'>"
+//                            fileNamesHtml +="<span class='varCheckboxFileList'><input class='CheckboxFileList' value='" + fName.name + "' type='checkbox'/></span>";
+                            fileNamesHtml += "<a href='/library/" + pickedLib + "/uploads/" + $('#id').val() + "/" + fName.name + "' target='_new'>" + fName.name + "</a>";
+                            fileNamesHtml +="</td></tr>";
+                        })
+                    }else{
+                        fileNamesHtml += fileNamesHtmlEmpty;
+                    }
+                    $('#fileList').html(fileNamesHtmlHeader + fileNamesHtml + fileNamesHtmlFooter);
+//                    if(!editMode){
+//                        $(".varCheckboxFileList").hide();
+//                    }
+
+                } catch (e) {
+                    $('#fileList').html(fileNamesHtmlHeader + fileNamesHtmlEmpty + fileNamesHtmlFooter);
+                }
+            }
+
             $("#fileUpload").hide();
             $('.newFile').on('click', function(){
                 //  $("#fileUpload").show();
@@ -1616,15 +2062,40 @@
     <div id="rowContainer" class="container-fluid">
         <%- include topMenu.ejs %>
         <div id="topRow" class="row top-row">
-                <div id="leftCol" class="top-col-fixed-240" >
-                    <div id="treePanel" class='panel panel-default cust-panel' style="float: left;"  >
-                        <div class='panel-heading cust-panel-heading'><i class='fa  fa-cloud  fa-fw'></i>Systems <a class='newSys' href='#'>[+]</a></div>
-                        <div class='panel-body tree-panel-body'>
-                            <div id="jstree_div" class="SysTree"></div>
-                        </div>
+
+
+            <div id="leftLibCol" class="topLib-col-fixed-240" >
+                <div id="libTreePanel" class='panel panel-default cust-panel' style="float: left;"  >
+                    <div class='panel-heading cust-panel-heading' style="white-space: nowrap;"><i class='fa  fa-book' id="LibDropDownPickIcon"></i> Library
+                        <a class="dropdown-toggle" href="#" role="button" id="LibDropDownPick" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">[+]</a>
+                        <a class="dropdown-toggle" href="#" role="button" id="treeCollapse" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">[<]</a>
                     </div>
-                    <div id = "treePanelHandle" class = "treePanelHandle"></div>
+
+                    <div class="dropdown show" id="libDropDown">
+                        <!--<a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="LibDropDownPick" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
+                            <!--Pick:-->
+                        <!--</a>-->
+
+                        <div class="dropdown-menu" aria-labelledby="LibDropDownPick" id="LibDropDownList"></div>
+                    </div>
+
+                    <div class='panel-body tree-panel-body'>
+                        <div id="jslibtree_div" class="SysTree"></div>
+                    </div>
                 </div>
+                <div id = "libTreePanelHandle" class = "treePanelHandle"></div>
+            </div>
+
+
+            <div id="leftCol" class="top-col-fixed-240" >
+                <div id="treePanel" class='panel panel-default cust-panel' style="float: left;"  >
+                    <div class='panel-heading cust-panel-heading'><i class='fa  fa-cloud  fa-fw'></i>Systems <a class='newSys' href='#'>[+]</a></div>
+                    <div class='panel-body tree-panel-body'>
+                        <div id="jstree_div" class="SysTree"></div>
+                    </div>
+                </div>
+                <div id = "treePanelHandle" class = "treePanelHandle"></div>
+            </div>
 
             <!--   <div id="iFrameDiv" class="col-lg-12 top-col-offset-240"  style="text-align: center">
                    <iframe sandbox="allow-scripts allow-popups allow-forms"
@@ -1915,7 +2386,7 @@
                 </form>
                 <br/>
 
-                <input type="hidden" id="copyModal_listOfIds"><input type="hidden" id="copyModal_newParent">
+                <input type="hidden" id="copyModal_listOfIds"><input type="hidden" id="copyModal_newParent"><input type="hidden" id="copyModal_lib">
             </div>
         </nav>
         <div class="modal-footer">
@@ -1924,6 +2395,42 @@
         </div>
     </div>
 </div>
+
+
+
+
+<div id="copyToLibModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-run-dialog">
+        <nav class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">X</button>
+                <h4 class="modal-title"><i class="fa fa-code-fork fa-fw"></i>Copy To Library</h4>
+            </div>
+            <div id='copyToLibConfirmationBody' class="modal-body">
+                <div id="copyToLibInfoText" class="text-info"></div>
+                <form  class="form" id="copyToLibModalForm">
+                    <div class="form-group">
+                        <div class="radio">
+                            <label><input name="copyToLibChildrenCb" id="copyToLibChildrenCb" value="yes" type="checkbox"/>Copy all children?</label>
+                        </div>
+                    </div>
+                </form>
+                <br/>
+
+                <input type="hidden" id="copyToLibModal_listOfIds"><input type="hidden" id="copyToLibModal_newParent">
+            </div>
+        </nav>
+        <div class="modal-footer">
+            <button type="button" id="copyToLibConfirmButton" class="btn btn-default jobFormbtn">Copy</button>
+            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
 <div id="delModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-del-dialog">
         <nav class="modal-content">

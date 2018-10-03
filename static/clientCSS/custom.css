@@ -13,6 +13,10 @@ html, body {
    margin-left: 5px;
 }
 
+.top-row{
+   position: relative;
+}
+
 .panel {
    margin-bottom: 0px;
 }
@@ -30,21 +34,40 @@ html, body {
    margin-bottom: 2px;
 }
 
+#jslibtree_div{
+   height: calc(100vh - 23px - 22px);
+   width:100%;
+   overflow-y: auto;
+   overflow-x: auto;
+   margin-bottom: 2px;
+}
+
 .tree-panel-body{
    padding: 0px 0px;
    //width:227px;
 }
 
-.top-col-fixed-240{
-   //width:247px;
+topLib-col-fixed-240{
+   width:250px;
    position:absolute;
    z-index:1;
-   padding-left: 0px;
+   left: 0px;
 }
 
+.top-col-fixed-240{
+   width:250px;
+   position:absolute;
+   z-index:1;
+   //left: 250px;
+}
+
+
 .top-col-offset-240{
-   padding-left:250px;
-   padding-right: 0px;
+   position:absolute;
+   width: 100%;
+   overflow-x: auto;
+   //left:250px;
+   //padding-right: 0px;
    z-index:0;
 }
 
@@ -56,7 +79,8 @@ html, body {
 }
 
 .treePanelHandle{
-   float: right;width: 3px;
+   float: right;
+   width: 3px;
    height: 100%;
    cursor: w-resize;
    background-color: #dedcdc;

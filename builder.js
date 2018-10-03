@@ -12,14 +12,14 @@ const formidable = require('formidable');
 const chromeLauncher = require('chrome-launcher');
 const CDP = require('chrome-remote-interface');
 
-var app = express();
-var fs = require('fs');
+const app = express();
+const fs = require('fs');
 
-
-var router = express.Router();
-var viewPath = __dirname + '/views/';
-var resultsPath = __dirname + '/results/';
-var filesPath = __dirname + '/uploads/';
+const router = express.Router();
+const viewPath = __dirname + '/views/';
+const resultsPath = __dirname + '/results/';
+const filesPath = __dirname + '/uploads/';
+const libsPath = __dirname + '/library/';
 
 const cf = fs.readFileSync('config.json');
 const config = JSON.parse(cf);
@@ -174,12 +174,23 @@ router.get("/Jobs",function(req,res){
         rowdata.id = id;
         resJSON.push(rowdata);
     }else{
+
+        //Create parent row and place entire tree under it
+        var rowdata = {};
+        rowdata.id = "local";
+        rowdata.name = "local";
+        rowdata.text = "local";
+        rowdata.parent = '#';
+        resJSON.push(rowdata);
         for (var key in SystemsJSON) {
             if (SystemsJSON.hasOwnProperty(key)) {
-                var rowdata = SystemsJSON[key];
+                rowdata = SystemsJSON[key];
                 rowdata.id = key;
                 rowdata.text = rowdata.name;
-                //+ " " + rowdata.sort;  // test
+                var pt = rowdata.parent;
+                if(pt === "#"){
+                    rowdata.parent = "local";
+                }
                 resJSON.push(rowdata);
             }
         }
@@ -190,11 +201,33 @@ router.get("/Jobs",function(req,res){
 router.get("/Sys",function(req,res){
     //console.log("url: " + req.url);
     var id = req.query.id;
-    //console.log("jobs:" + id+":");
+    //console.log("sys:" + id+":");
     res.writeHead(200, {"Content-Type": "application/json"});
     var resJSON = [];
     if (id !== ''){
         var rowdata = SystemsJSON[id];
+        //console.log("rowdata " + rowdata);
+        rowdata.id = id;
+        resJSON.push(rowdata);
+        //console.log("resJSON.id = " + resJSON.id);
+        res.end(JSON.stringify(resJSON));
+        //console.log(JSON.stringify(resJSON));
+    }else{
+        res.end("");
+    }
+});
+
+router.get("/LibSys",function(req,res){
+    //console.log("url: " + req.url);
+    const pickedLib = req.query.pickedLib;
+
+    const id = req.query.id;
+
+    res.writeHead(200, {"Content-Type": "application/json"});
+    var resJSON = [];
+    if (id !== ''){
+        const libJSON =  JSON.parse(fs.readFileSync(libsPath + pickedLib + "/SystemsJSON.json"));
+        var rowdata = libJSON[id];
         rowdata.id = id;
         resJSON.push(rowdata);
         //console.log("resJSON.id = " + resJSON.id);
@@ -209,30 +242,50 @@ router.post("/remove",function(req,res){
     //remove id from systems json and remove /uploads/ dir
     var reqJSON= req.body;
     var ids =reqJSON.ids.split(';');
+    var tree =reqJSON.tree;
 
-    ids.forEach(function(id) {
-        if(SystemsJSON.hasOwnProperty(id)) {
-           delete SystemsJSON[id]; //delete from main datastore
-           saveAllJSON();
-           rmDir(filesPath + id + "/"); //delete all uploaded files
-            fs.readdir(resultsPath, function(err, files){ // delete results files
-               // console.log(files);
-                if (err){
-                    console.log(err);
-                }else{
-                    files.forEach(function(mFile){
-                        if (mFile.substr(0,36) === id){
-                            if (fs.statSync(resultsPath + mFile).isFile()){
-                                //console.log("removing: " + resultsFilesPath + mFile);
-                                fs.unlinkSync(resultsPath + mFile);
+    if(tree === 'working'){
+        ids.forEach(function(id) {
+            if(SystemsJSON.hasOwnProperty(id)) {
+                delete SystemsJSON[id]; //delete from main datastore
+                saveAllJSON();
+                rmDir(filesPath + id + "/"); //delete all uploaded files
+                fs.readdir(resultsPath, function(err, files){ // delete results files
+                    // console.log(files);
+                    if (err){
+                        console.log(err);
+                    }else{
+                        files.forEach(function(mFile){
+                            if (mFile.substr(0,36) === id){
+                                if (fs.statSync(resultsPath + mFile).isFile()){
+                                    //console.log("removing: " + resultsFilesPath + mFile);
+                                    fs.unlinkSync(resultsPath + mFile);
+                                }
                             }
-                        }
-                    })
-                }
+                        })
+                    }
 
-            });
-        }
-    });
+                });
+            }
+        });
+    }else{
+        const libJSON =  JSON.parse(fs.readFileSync(libsPath + tree + "/SystemsJSON.json"));
+        const libPath = __dirname + "/library/" + tree;
+        ids.forEach(function(id) {
+            if((libJSON.hasOwnProperty(id)) && (id.length > 20)) {
+                delete libJSON[id]; //delete from main datastore
+
+                rmDir(libPath + '/uploads/' + id); //delete all uploaded files
+            }
+        });
+        fs.writeFile(libPath + '/SystemsJSON.json', JSON.stringify(libJSON), function (err) {
+            if (err) {
+                console.log('There has been an error saving your library json');
+                console.log(err.message);
+            }
+            //console.log('json saved successfully.')
+        });
+    }
 
     res.end('');
 });
@@ -532,17 +585,232 @@ router.post("/copy",function(req,res){
 
     var fromIds =reqJSON.ids.split(';');
     var targetId = reqJSON.parent;
+    var lib = reqJSON.lib;
+
+    if(lib === 'local'){
+        var error = false;
+        var errorID = '';
+        if (!SystemsJSON.hasOwnProperty(targetId)){
+            error = true;
+            errorID = targetId;
+        }
+
+        fromIds.forEach(function(id){
+            if (!SystemsJSON.hasOwnProperty(id) && error === false ){
+                error = true;
+                errorID = id;
+            }
+        });
+
+        if(error === false){
+            var idMap = {};
+            idMap[SystemsJSON[fromIds[0]].parent] = targetId;
+
+            //give new sort to 1st node
+            var x =0;
+            for (var key in SystemsJSON) {
+                if (SystemsJSON[key].parent === targetId) {
+                    x++;
+                }
+            }
+
+            //var resultRows = {};
+            fromIds.forEach(function(fromId) {
+                var fromNode = SystemsJSON[fromId];
+                var id = generateUUID();
+
+                idMap[fromId] = id;
+                var newParentId = idMap[SystemsJSON[fromId].parent]
+                //console.log('move to:'+SystemsJSON[newParentId].name);
+
+                var NewRow = {
+                    parent: newParentId,
+                    ft: SystemsJSON[newParentId].ft + '/' + newParentId,
+                    name: fromNode.name,
+                    description: fromNode.description,
+                    ver: 1,
+                    type: fromNode.type,
+                    sort:fromNode.sort,
+                    text: fromNode.name
+                };
+                if(fromNode.type === 'job' || fromNode.type === 'disabled'){
+                    NewRow.enabled=fromNode.enabled;
+                    NewRow.script=fromNode.script;
+                    NewRow.variables=fromNode.variables;
+                    NewRow.template=fromNode.template;
+                    NewRow.custTemplates=fromNode.custTemplates;
+                    NewRow.resourceFiles=fromNode.resourceFiles;
+                }else{
+                    NewRow.icon=fromNode.icon.replace(fromId, id);
+                }
+
+                SystemsJSON[id] = NewRow;
+
+                if ( fs.existsSync( filesPath + fromId ) ) { //copy file resources if they exist
+                    fs.mkdirSync(filesPath + id);
+                    const files = fs.readdirSync(filesPath + fromId);
+                    files.forEach(function (file) {
+                        if (!fs.lstatSync(filesPath + fromId + '/' + file).isDirectory()) {
+                            const targetFile = filesPath + id + '/' + file;
+                            const source = filesPath + fromId + '/' + file;
+                            fs.writeFileSync(targetFile, fs.readFileSync(source))
+                        }
+                    })
+                }
+            });
+
+            SystemsJSON[idMap[fromIds[0]]].sort = x;
+
+            saveAllJSON();
+
+            res.sendStatus(200);
+            res.end('');
+            //console.log("saving script"+ JSON.stringify(foundRow));
+
+        }else{
+            res.sendStatus(500);
+            res.end("Error:System ID not found - " + errorID)
+        }
+    }else{
+
+        //console.log(reqJSON);
+
+        var error = false;
+        var errorID = '';
+
+        if ((!SystemsJSON.hasOwnProperty(targetId)) && (targetId !== '#')){
+            error = true;
+            errorID = targetId;
+            console.log("Target ID not found in SystemsJSON: " + errorID);
+        }
+
+        libJSON = JSON.parse(fs.readFileSync("library/" + lib + "/SystemsJSON.json"));
+        fromIds.forEach(function(id){
+            if (!libJSON.hasOwnProperty(id) && error === false ){
+                error = true;
+                errorID = id;
+                console.log("From ID not found in lib: " + errorID);
+            }
+        });
+
+        if(error === false){
+            var idMap = {};
+            idMap[libJSON[fromIds[0]].parent] = targetId;
+
+            //give new sort to 1st node
+            var x =0;
+            for (var key in libJSON) {
+                if (libJSON[key].parent === targetId) {
+                    x++;
+                }
+            }
+
+            //var resultRows = {};
+            fromIds.forEach(function(fromId) {
+                var fromNode = libJSON[fromId];
+                var id = generateUUID();
+
+                idMap[fromId] = id;
+                var newParentId = idMap[libJSON[fromId].parent];
+
+                var newIcon = '';
+                if(fromNode.hasOwnProperty('icon')){
+                    var newIcon = "/uploads/" + fromNode.icon.split("/").slice(-2).join("/").replace(fromId, id);
+                }
+
+                var NewRow = {
+                    parent: newParentId,
+                    name: fromNode.name,
+                    description: fromNode.description,
+                    ver: 1,
+                    type: fromNode.type,
+                    variables: fromNode.variables,
+                    sort:fromNode.sort,
+                    text: fromNode.name
+                };
+                if(fromNode.type === 'job' || fromNode.type === 'disabled'){
+                    NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
+                    NewRow.enabled=fromNode.enabled;
+                    NewRow.script=fromNode.script;
+                    NewRow.template=fromNode.template;
+                    NewRow.custTemplates=fromNode.custTemplates;
+                    NewRow.resourceFiles=fromNode.resourceFiles;
+                }else{
+                    NewRow.icon=newIcon;
+                }
+
+                SystemsJSON[id] = NewRow;
+
+                const libPath = libsPath + lib + "/";
+
+                console.log("libPath:" + libPath );
+                if ( fs.existsSync( libPath + "/uploads/" + fromId ) ) { //copy file resources if they exist
+
+
+
+
+                    fs.mkdirSync(filesPath + id);
+                    const files = fs.readdirSync(libPath + "/uploads/" + fromId +  "/");
+                    files.forEach(function (file) {
+                        if (!fs.lstatSync(libPath + "/uploads/" + fromId + '/' + file).isDirectory()) {
+                            const targetFile = filesPath + id +"/"+ file;
+                            const source = libPath + "/uploads/" + fromId + '/' + file;
+                            console.log("targetFile:" + targetFile);
+                            console.log("source:" + source);
+                            fs.writeFileSync(targetFile, fs.readFileSync(source))
+                        }
+                    })
+                }
+            });
+
+            SystemsJSON[idMap[fromIds[0]]].sort = x;
+
+            saveAllJSON();
+
+            res.sendStatus(200);
+            res.end('');
+            //console.log("saving script"+ JSON.stringify(foundRow));
+
+        }else{
+            res.sendStatus(500);
+            res.end("Error:System ID not found - " + errorID)
+        }
+    }
+
+
+
+});
+
+router.post("/copyToLib",function(req,res){
+    var reqJSON= req.body;
+
+    var fromIds =reqJSON.ids.split(';');
+    var targetId = reqJSON.parent;
+    var lib = reqJSON.lib;
+
+    console.log(targetId);
+    if(targetId === 'lib'){
+        targetId = '#'
+    }
+
+    libJSON = JSON.parse(fs.readFileSync("library/" + lib + "/SystemsJSON.json"));
 
     var error = false;
     var errorID = '';
-    if (!SystemsJSON.hasOwnProperty(targetId) && error === false ){
+    if ((!libJSON.hasOwnProperty(targetId)) && (targetId !== '#')){
         error = true;
         errorID = targetId;
+        res.sendStatus(500);
+        console.log("Error:Target ID not found in library system json - " + errorID);
+        res.end("")
     }
     fromIds.forEach(function(id){
         if (!SystemsJSON.hasOwnProperty(id) && error === false ){
-           error = true;
-           errorID = id;
+            error = true;
+            errorID = id;
+            res.sendStatus(500);
+            console.log("Error:Source ID not found in system json - " + errorID);
+            res.end("")
         }
     });
 
@@ -550,52 +818,62 @@ router.post("/copy",function(req,res){
         var idMap = {};
         idMap[SystemsJSON[fromIds[0]].parent] = targetId;
 
-        //give new sort to 1st node
+        //find out how many nodes in this branch to use for sort placement
         var x =0;
-        for (var key in SystemsJSON) {
-            if (SystemsJSON[key].parent === targetId) {
+        for (var key in libJSON) {
+            if (libJSON[key].parent === targetId) {
                 x++;
             }
         }
 
-        //var resultRows = {};
+        const libPath = __dirname + "/library/" + lib;
+
         fromIds.forEach(function(fromId) {
             var fromNode = SystemsJSON[fromId];
             var id = generateUUID();
 
             idMap[fromId] = id;
-            var newParentId = idMap[SystemsJSON[fromId].parent]
-            //console.log('move to:'+SystemsJSON[newParentId].name);
+            var newParentId = idMap[SystemsJSON[fromId].parent];
+
+            //console.log('copy to:'+libJSON[newParentId].name);
+
+            var newIcon = '';
+            if(fromNode.hasOwnProperty('icon')){
+                var newIcon = "/library/" + lib + fromNode.icon.replace(fromId, id);
+            }
 
             var NewRow = {
                 parent: newParentId,
-                ft: SystemsJSON[newParentId].ft + '/' + newParentId,
                 name: fromNode.name,
-                description: fromNode.description,
-                ver: 1,
                 type: fromNode.type,
-                sort:fromNode.sort,
-                text: fromNode.name
+                description: fromNode.description,
+                ver: fromNode.ver,
+                variables: fromNode.variables,
+                sort: fromNode.sort
             };
-            if(fromNode.type === 'job' || fromNode.type === 'disabled'){
-                NewRow.enabled=fromNode.enabled;
+            if (newIcon !== ''){
+                NewRow.icon = newIcon
+            }
+            console.log(fromNode.icon);
+
+
+            const nodeType = fromNode.type;
+            if ((nodeType === 'job') || (nodeType === 'disabled')){
+                NewRow.ft=libJSON[newParentId].ft + '/' + newParentId;
                 NewRow.script=fromNode.script;
-                NewRow.variables=fromNode.variables;
                 NewRow.template=fromNode.template;
                 NewRow.custTemplates=fromNode.custTemplates;
                 NewRow.resourceFiles=fromNode.resourceFiles;
-            }else{
-                NewRow.icon=fromNode.icon.replace(fromId, id);
             }
 
-            SystemsJSON[id] = NewRow;
+            libJSON[id] = NewRow;
 
             if ( fs.existsSync( filesPath + fromId ) ) { //copy file resources if they exist
-                fs.mkdirSync(filesPath + id);
+                fs.mkdirSync(libPath + '/uploads/' + id);
                 const files = fs.readdirSync(filesPath + fromId);
                 files.forEach(function (file) {
                     if (!fs.lstatSync(filesPath + fromId + '/' + file).isDirectory()) {
-                        const targetFile = filesPath + id + '/' + file;
+                        const targetFile = libPath + '/uploads/' + id + '/' + file;
                         const source = filesPath + fromId + '/' + file;
                         fs.writeFileSync(targetFile, fs.readFileSync(source))
                     }
@@ -603,20 +881,78 @@ router.post("/copy",function(req,res){
             }
         });
 
-        SystemsJSON[idMap[fromIds[0]]].sort = x;
+        libJSON[idMap[fromIds[0]]].sort = x;
 
-        saveAllJSON();
+        fs.writeFile(libPath + '/SystemsJSON.json', JSON.stringify(libJSON), function (err) {
+            if (err) {
+                console.log('There has been an error saving your library json');
+                console.log(err.message);
+            }
+            //console.log('json saved successfully.')
+        });
 
         res.sendStatus(200);
         res.end('');
-        //console.log("saving script"+ JSON.stringify(foundRow));
 
-    }else{
-        res.sendStatus(500);
-        res.end("Error:System ID not found - " + errorID)
     }
 
+});
 
+router.get("/libraryList",function(req,res){
+    res.writeHead(200, {"Content-Type": "application/json"});
+
+        var priFiles = fs.readdirSync(libsPath + "/private");
+        var pubFiles = fs.readdirSync(libsPath + "/public");
+        const respObj = {pri:priFiles, pub:pubFiles};
+        res.end(JSON.stringify(respObj));
+});
+
+var currentPickedLib = '';
+router.get("/getLib",function(req,res) {
+    const pickedLib = req.query.pickedLib;
+    currentPickedLib = pickedLib;
+    const id = req.query.id;
+    res.writeHead(200, {"Content-Type": "application/json"});
+    if (req.query.id === '#'){
+        var resJSON = [];
+        if (pickedLib !== '#'){
+            const libJSON =  JSON.parse(fs.readFileSync(libsPath + pickedLib + "/SystemsJSON.json"));
+
+            //Create parent row and place entire tree under it
+            var rowdata = {};
+            rowdata.id = "lib";
+            rowdata.name = pickedLib;
+            rowdata.text = pickedLib;
+            rowdata.parent = '#';
+
+            resJSON.push(rowdata);
+            for (var key in libJSON) {
+                if (libJSON.hasOwnProperty(key)) {
+                    rowdata = libJSON[key];
+                    rowdata.id = key;
+                    rowdata.text = rowdata.name;
+
+                    var pt = rowdata.parent;
+                    if(pt === "#"){
+                        rowdata.parent = "lib";
+                    }
+                    resJSON.push(rowdata);
+                }
+            }
+        }
+        console.log(pickedLib);
+        res.end(JSON.stringify(resJSON))
+
+    }else{
+
+        const libJSON =  JSON.parse(fs.readFileSync(libsPath + pickedLib + "/SystemsJSON.json"));
+        var resJSON = [];
+        var rowdata = libJSON[id];
+        //console.log('gv:' + SystemsJSON[id].variables);
+        rowdata.id = id;
+        resJSON.push(rowdata);
+        res.end(JSON.stringify(resJSON));
+    }
 
 });
 
@@ -1596,7 +1932,7 @@ router.post("/upload",function(req,res){ //https://coligo.io/building-ajax-file-
     });
 });
 
-router.get("/uploads/*",function(req,res){
+router.get(["/uploads/*", "/library/*"],function(req,res){
 
     var link = req.originalUrl;
     if (link.indexOf("?") > 0 ){
