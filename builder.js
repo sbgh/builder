@@ -1293,11 +1293,15 @@ router.post("/run",function(req,res){
 
                         res.write(data.toString());
 
+                        //Accumulate to buffer until the prompt appears
                         respBufferAccu = Buffer.concat([respBufferAccu, data]);
 
-                        //test
-                        var tempVal = respBufferAccu.toString();
-                        //console.log('data: ' + tempVal);
+                        //
+                        //var tempVal = respBufferAccu.toString();
+                        // console.log('data: ' + tempVal);
+                        // console.log('prompt: ' + prompt);
+                        // console.log("");
+
 
                         if( respBufferAccu.toString().split('\n').slice(-1)[0]  === prompt){
                             writeResponse(respBufferAccu);
@@ -1306,15 +1310,18 @@ router.post("/run",function(req,res){
                             if (commandIndex < scriptArray.length) {
                                 var command = scriptArray[commandIndex];
                                 var currentCommand = replaceVar(command, job);
-
-        //see if building a list of async tasks and sending to manager is worth trying...
-
-                                //console.log('\n1 aSyncInProgress:', aSyncInProgress, command);
                                 processDirectives();
-                                if (commandIndex < scriptArray.length) {
-                                    sendCommand();
+                                command = scriptArray[commandIndex];
+                                currentCommand = replaceVar(command, job);
+                                sendCommand();
+                                if (commandIndex < scriptArray.length){
+                                    var command = scriptArray[commandIndex];
+                                    var currentCommand = replaceVar(command, job);
+                                    processDirectives();
                                 }
-                                //console.log('2 aSyncInProgress:', aSyncInProgress);
+
+         //see if building a list of async tasks and sending to manager is worth trying...
+
                             }
 
                             if (commandIndex === scriptArray.length) {
@@ -1606,6 +1613,7 @@ router.post("/run",function(req,res){
                                     }
                                 }
                             }while(isDirective === true);
+
 
                          }
 
