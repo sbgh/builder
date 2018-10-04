@@ -37,10 +37,16 @@ echo 'Creating upload folder'
 unzip -q ./uploads/uploads.zip -d ./uploads
 
 echo
-echo 'Creating library folders'
+echo 'Creating library folders and files'
 mkdir ./library;
 mkdir ./library/public;
 mkdir ./library/private;
+mkdir ./library/public/library1;
+mkdir ./library/private/library1;
+mkdir ./library/public/library1/uploads;
+mkdir ./library/private/library1/uploads;
+echo "{}" > ./library/public/library1/SystemsJSON.json
+echo "{}" > ./library/private/library1/SystemsJSON.json
 
 echo
 echo 'Creating SSL'
