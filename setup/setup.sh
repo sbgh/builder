@@ -14,8 +14,10 @@ npm install formidable --save;
 npm install ssh2 --save;
 npm install getuid --save;
 npm install ejs --save;
-npm install chrome-remote-interface
-npm install chrome-launcher
+npm install chrome-remote-interface --save
+npm install chrome-launcher --save
+npm install
+npm audit fix
 
 echo
 echo 'Creating identity folder & json'

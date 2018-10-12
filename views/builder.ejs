@@ -20,13 +20,14 @@
      <!-- <link rel="stylesheet" href="/jstree/dist/themes/proton/style.min.css" /> -->
 
     <!-- theme  -->
-    <link rel="stylesheet" href="/jstree/dist/themes/default-dark/style.min.css" />
-    <link rel="stylesheet" href="/theme/dark.css">
+    <link rel="stylesheet" href="/jstree/dist/themes/default/style.min.css" />
+    <!--<link rel="stylesheet" href="/theme/dark.css">-->
 
     <!-- doc.ready() -->
     <script type = "text/javascript" language = "javascript" >
 
         var pickedLib = '#';
+        var lastStyleSheet;
         $(document).ready(function() {
 
             $('#jobForm').on('submit', function(e){ e.preventDefault()});
@@ -36,7 +37,7 @@
             $("#jstree_div").jstree({
                 "core" : {
                     "themes": {
-                        "name": "default-dark",
+                        "name": "default",
                         "dots": true,
                         "icons": true
                     },
@@ -128,7 +129,7 @@
             $("#jslibtree_div").jstree({
                 "core" : {
                     "themes": {
-                        "name": "default-dark",
+                        "name": "default",
                         "dots": true,
                         "icons": true
                     },
@@ -1680,7 +1681,8 @@
             var container = $('#rowContainer');
 
             currentRatio = 1;
-            var currentHeight = container.height() * .75; //default height
+
+            var currentHeight = container.height()- 25   //container.height() * .75; //default height
             currentHeight += currentHeight < 10 ? 10 - currentHeight : 0;
 
             //drag height & width events
@@ -1829,7 +1831,6 @@
                     if(fList.length > 0){
                         fList.forEach(function(fName){
                             fileNamesHtml += "<tr role='row' class='gradeA odd'><td width = '10%'>"
-//                            fileNamesHtml +="<span class='varCheckboxFileList'><input class='CheckboxFileList' value='" + fName.name + "' type='checkbox'/></span>";
                             fileNamesHtml += "<a href='/library/" + pickedLib + "/uploads/" + $('#id').val() + "/" + fName.name + "' target='_new'>" + fName.name + "</a>";
                             fileNamesHtml +="</td></tr>";
                         })
@@ -1934,7 +1935,6 @@
                 }
             });
 
-
             //Key file management
             $('.newKey').on('click', function(){
                 $('#upload-key').click();
@@ -1943,7 +1943,50 @@
                 $('#keyList').html($(this)[0].files[0].name);
             });
 
+            //settings Style Pick event
+            $('.stylePick').on('click', function(){
+                var pickedStyle = $(this).attr('data-ID');
+                setStyle(pickedStyle);
+            });
+
+
+
         }); //doc ready
+
+        //Apply Style
+        function setStyle(name){
+            const styleName = name;
+
+            var mydata = {styleName:styleName};
+
+            $.ajax({
+                type: 'get',
+                data: mydata,
+                dataType : "text",
+                headers: {
+                    "content-type": "application/json"
+                },
+                url: '/getStyle',
+                success : function(data) {
+                    var sheet = document.createElement('style');
+
+                    if (lastStyleSheet){
+                        lastStyleSheet.parentNode.removeChild(lastStyleSheet);
+                    }
+                    lastStyleSheet = sheet;
+
+                    const respJson = JSON.parse(data);
+                    sheet.innerHTML = respJson.css;
+                    document.body.appendChild(sheet);
+                    // $('#jstree_div').jstree(true).refresh();
+                },
+                error : function(error) {
+                    console.log(error)
+                }
+            })
+
+        }
+        setStyle('');
 
         function formatTimeStr(timeStr){
 
@@ -2079,7 +2122,7 @@
                         <div class="dropdown-menu customLibDropBox" aria-labelledby="LibDropDownPick" id="LibDropDownList"></div>
                     </div>
 
-                    <div class='panel-body tree-panel-body'>
+                    <div class='panel-body tree-panel-body libTree-panel-body'>
                         <div id="jslibtree_div" class="SysTree"></div>
                     </div>
                 </div>
@@ -2088,7 +2131,7 @@
 
 
             <div id="leftCol" class="top-col-fixed-240" >
-                <div id="treePanel" class='panel panel-default cust-panel' style="float: left;"  >
+                <div id="treePanel" class='panel panel-default cust-panel locTree-panel-body' style="float: left;"  >
                     <div class='panel-heading cust-panel-heading'><i class='fa  fa-cloud  fa-fw'></i>Systems <a class='newSys' href='#'>[+]</a></div>
                     <div class='panel-body tree-panel-body'>
                         <div id="jstree_div" class="SysTree"></div>
@@ -2115,7 +2158,7 @@
 
                 </div>
 
-                <div id="rightCol" class="col-lg-12 top-col-offset-240" >
+            <div id="rightCol" class="col-lg-12 top-col-offset-240" >
                 <div id="sysScreen">
                     <div class="buttonRow">
                         <button id = "edit_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
@@ -2328,12 +2371,44 @@
                 </nav>
             </div>
         </nav>
-            <div class="modal-footer">
-                <button type="button" id="changeIdSaveButton" class="btn btn-default jobFormbtn">Save</button>
-                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
-            </div>
+        <div class="modal-footer">
+            <button type="button" id="changeIdSaveButton" class="btn btn-default jobFormbtn">Save</button>
+            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
         </div>
     </div>
+</div>
+<div id="setupModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <nav class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Setup</h4>
+            </div>
+            <div class="modal-body">
+                <nav class="navbar ">
+                    <ul class="nav navbar-nav">
+                        <li>
+                            Theme:
+                            <ul>
+                                <li class="stylePick" data-id="default"> <div class="radio">
+                                        <label><input type="radio" name="setupRadio" checked>Default</label>
+                                    </div>
+                                </li>
+                                <li class="stylePick" data-id="dark"> <div class="radio">
+                                        <label><input type="radio" name="setupRadio" >Dark</label>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </nav>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
+        </div>
+    </div>
+</div>
 <div id="runModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-run-dialog">
         <nav class="modal-content">
@@ -2395,10 +2470,6 @@
         </div>
     </div>
 </div>
-
-
-
-
 <div id="copyToLibModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-run-dialog">
         <nav class="modal-content">
@@ -2426,11 +2497,6 @@
         </div>
     </div>
 </div>
-
-
-
-
-
 <div id="delModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-del-dialog">
         <nav class="modal-content">
@@ -2448,7 +2514,8 @@
             <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
         </div>
     </div>
-</div><div id="varModal" class="modal fade" role="dialog">
+</div>
+<div id="varModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
 
         <nav class="modal-content">
@@ -2612,5 +2679,4 @@
     </div>
 
 </div>
-
 </html>
