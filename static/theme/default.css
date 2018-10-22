@@ -160,7 +160,7 @@ div.grippie {
 .form-control::-ms-input-placeholder { color: #555555; }  /* Microsoft Edge */
 
 .runningJobCompleteSuccess{
-    color: #4dff4b !important;
+    color: #44b52e !important;
 }
 .runningJobCompleteFail{
     color: #ff1917 !important;

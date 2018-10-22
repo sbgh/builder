@@ -20,6 +20,8 @@ const viewPath = __dirname + '/views/';
 const resultsPath = __dirname + '/results/';
 const filesPath = __dirname + '/uploads/';
 const libsPath = __dirname + '/library/';
+const stylesPath = __dirname + '/static/theme/';
+const treeStylesPath = __dirname + '/static/jstree/dist/themes/';
 
 const cf = fs.readFileSync('config.json');
 const config = JSON.parse(cf);
@@ -1140,7 +1142,7 @@ router.post("/run",function(req,res){
      }
 
     function runScript(jobId, job, runMethod) {
-        var script = job.script;
+        var script = job.script + "\n";
         var scriptArray = script.split("\n");
 
         latestResultsFileList = getLatestResultsFileList(); //cache the list of results files to make var lookups quicker
@@ -1210,13 +1212,15 @@ router.post("/run",function(req,res){
 
             conn.on('end', function () {
                 //console.log('SSH - Connection Closed');
-                //console.log('conn end, jobIndex: ' + jobIndex);
-                if (ids.length > jobIndex + 1) {
-                    jobIndex++;
+                jobIndex++;
+                //console.log('conn end, jobIndex: ' + jobIndex + " / " + ids.length);
+
+                if (ids.length > jobIndex) {
+
                     id = ids[jobIndex];
 
                     if (SystemsJSON.hasOwnProperty(id)) {
-                        //    console.log("\nrunning: "+ SystemsJSON[id].name);
+                        //console.log("\nrunning: "+ SystemsJSON[id].name);
                         if (sshSuccess) {
                             var job = SystemsJSON[id];
 
@@ -1231,9 +1235,11 @@ router.post("/run",function(req,res){
                         console.log("Error: /run id not found in SystemsJSON: " + id);
                     }
                 } else {
+                    //console.log("all scripts completed")
                     if (sshSuccess) {
-                        res.end("**All scripts completed**");
-                        //console.log("**All scripts completed**")
+                        res.write("--All scripts completed---\n");
+                        res.write("**All scripts completed**\n"); //This line triggers ui to complete style format
+                        res.end("\n");
                     } else {
                         flushMessQueue();
                         res.write("message:Script Aborted\n");
@@ -1250,7 +1256,7 @@ router.post("/run",function(req,res){
                 var atPrompt = false;
                 var aSyncInProgress = 0;
                 var deferredExit = false;
-                var respBufferAccu = new Buffer([]);;
+                var respBufferAccu = new Buffer([]);
                 conn.shell(function (err, stream) {
                     if (err) throw err;
 
@@ -1986,6 +1992,47 @@ router.get("/delFiles",function(req,res){
     }
 });
 
+router.get("/getStyle",function(req,res){
+    var styleName = req.query.styleName;
+
+    if(!config.hasOwnProperty('currentStyle')){
+        saveSettings("currentStyle", 'default')
+    }
+
+    if (styleName === '') {
+        styleName = config.currentStyle;
+    }
+
+    if (styleName === 'dark') {
+        try {
+            var cssJson = fs.readFileSync(stylesPath + 'dark.css').toString();
+
+            res.writeHead(200, {"Content-Type": "application/json"});
+            const respJson = {css: cssJson};
+            saveSettings("currentStyle", 'dark');
+            res.end(JSON.stringify(respJson));
+        } catch (e) {
+            res.writeHead(300, {"Content-Type": "text/plain"});
+            res.end('');
+            throw e;
+        }
+    }else{
+        try {
+            var cssJson = fs.readFileSync(stylesPath + 'default.css').toString();
+
+            res.writeHead(200, {"Content-Type": "application/json"});
+            const respJson = {css: cssJson};
+            saveSettings("currentStyle", 'default');
+            res.end(JSON.stringify(respJson));
+        } catch (e) {
+            res.writeHead(300, {"Content-Type": "text/plain"});
+            res.end('');
+            throw e;
+        }
+    }
+
+});
+
 function saveAllJSON(){
 
     fs.writeFile('SystemsJSON.json', JSON.stringify(SystemsJSON), function (err) {
@@ -2008,6 +2055,18 @@ function saveAllIdentJSON(){
        // console.log('identity saved successfully.')
     });
 };
+
+function saveSettings(name, value){
+    config[name] = value;
+
+    fs.writeFile('config.json', JSON.stringify(config), function (err) {
+        if (err) {
+            console.log('There has been an error saving your config.json.');
+            console.log(err.message);
+            return;
+        }
+    });
+}
 
 app.use("/",router);
 
