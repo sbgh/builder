@@ -30,6 +30,7 @@
         var lastStyleSheet;
         $(document).ready(function() {
 
+
             $('#jobForm').on('submit', function(e){ e.preventDefault()});
             $('#sysForm').on('submit', function(e){ e.preventDefault()});
 
@@ -455,13 +456,15 @@
                 selectedNode = data.selected[0];
                 selectedTree = 'working'
 
+                //deselect Lib tree
+                $('#jslibtree_div').jstree("deselect_all");
+
                 //console.log(data.selected);
                 if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled") {
                     getJobByID(selectedNode);
                     readModeJob(selectedNode);
 
 
-                    $('#jslibtree_div').jstree("deselect_all");
 
                     $("#sysScreen").hide();
                     $("#jobScreen").show();
@@ -1695,7 +1698,6 @@
                     isResizingHeight = true;
                     //lastDownY = e.clientY;
                 });
-
                 widthHandle.on('mousedown', function (e) {
                     isResizingWidth = true;
                 });
@@ -1706,6 +1708,7 @@
                 $( window ).resize(function() {
                     //var containerWidth = $('#rowContainer');
                     setWindowHeight($( window ).height() * currentRatio , container);
+                    setFormColWidth();
                 });
 
                 $(document).on('mousemove', function (e) {
@@ -1773,9 +1776,7 @@
                     $("#leftCol").css('left',libTreeWidth );
                     $("#libTreePanel").css('width',leftWidth - 7);
 
-                    $("#rightCol").css("left", leftWidth + treeWidth - 15);
-                    $("#screenShotCol").css("left", leftWidth + treeWidth);
-                    $("#rightCol").css('width',$(window).width() - (treeWidth + libTreeWidth) + 23 );
+                    setFormColWidth();
                 }
             }
             setLibWindowWidth(20, container);
@@ -1786,12 +1787,17 @@
                     $("#leftCol").css('width',treeWidth - 2 );
                     $("#treePanel").css('width',treeWidth - 7);
 
-                    $("#rightCol").css("left", treeWidth + libTreeWidth - 15 );
-                    $("#screenShotCol").css("left", leftWidth  + libTreeWidth  );
-                    $("#rightCol").css('width',$(window).width() - (treeWidth + libTreeWidth) + 23 );
+                    setFormColWidth();
                 }
             }
             setWindowWidth(250, container);
+
+            function setFormColWidth(){
+                $("#rightCol").css("left", treeWidth + libTreeWidth - 15);
+                $("#screenShotCol").css("left", treeWidth + libTreeWidth);
+                $("#rightCol").css('width',$(window).width() - (treeWidth + libTreeWidth) + 23 );
+            }
+
 
             //Resource file management
             function populateFileList(data, editMode){
@@ -1949,7 +1955,9 @@
                 setStyle(pickedStyle);
             });
 
-
+            $('.code-panel-body').slideUp();
+            $('.BuildCode-Heading').addClass('panel-collapsed');
+            $('.BuildCode-Heading').find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
 
         }); //doc ready
 
@@ -2003,6 +2011,20 @@
 
 
         }
+
+        $(document).on('click', '.BuildCode-Heading span.clickable', function(e){
+            var $this = $(this);
+            if(!$this.hasClass('panel-collapsed')) {
+                $this.parents('.codePanel').find('.panel-body').slideUp();
+                $this.addClass('panel-collapsed');
+                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+            } else {
+                $this.parents('.codePanel').find('.panel-body').slideDown();
+                $this.removeClass('panel-collapsed');
+                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+            }
+        })
+
 
     </script>
 
@@ -2272,39 +2294,53 @@
 
                             </div>
                             <div class="row">
+
                                 <div class="col-lg-12 ">
-                                    <div class="form-group">
-                                        <label>Build Script</label><i class="fa fa-fw"></i>
-                                        <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal">[<i class="fa fa-question"></i>]</a>
-                                        <a href="#" id='insertVariable' data-toggle="modal" data-target="#varModal">[Insert Variable]</a>
-                                        <textarea class="form-control form-custom code" rows="4" id="script"></textarea>
-                                    </div>
 
-                                    <div class="form-group">
-                                        <label>Template</label>
-                                        <textarea class="form-control form-custom code" rows="4" id="template"></textarea>
-                                    </div>
-                                    <div id="custTemplates">
-                                    </div>
-                                    <div id="newTemplateButton">
-                                        <label>Template<a class='newCust' href='#'>[+]</a></label><br><br>
-                                    </div>
+                                    <div class="panel panel-primary codePanel">
+                                        <div class="panel-heading cust-panel-heading BuildCode-Heading ">Build Code<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
+                                        </div>
+                                        <div class="panel-body code-panel-body">
 
-                                    <div class="form-group">
-                                        <label>File Resources<a id='newFileButton' class='newFile' href='#'>[+]</a><a id='delFileButton' class='delFile' href='#'>[-]</a></label>
-                                        <div id = 'fileList' class = 'fileList'></div>
-                                        <div id = 'fileUpload'>
-                                            <div class="progress">
-                                                <div class="progress-bar" role="progressbar"></div>
+                                            <div class="form-group">
+                                                <label>Build Script</label><i class="fa fa-fw"></i>
+                                                <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal">[<i class="fa fa-question"></i>]</a>
+                                                <a href="#" id='insertVariable' data-toggle="modal" data-target="#varModal">[Insert Variable]</a>
+                                                <textarea class="form-control form-custom code" rows="4" id="script"></textarea>
                                             </div>
-                                            <input id="upload-input" type="file" name="uploads[]" multiple="multiple">
+
+                                            <div class="form-group">
+                                                <label>Template</label>
+                                                <textarea class="form-control form-custom code" rows="4" id="template"></textarea>
+                                            </div>
+                                            <div id="custTemplates">
+                                            </div>
+                                            <div id="newTemplateButton">
+                                                <label>Template<a class='newCust' href='#'>[+]</a></label><br><br>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>File Resources<a id='newFileButton' class='newFile' href='#'>[+]</a><a id='delFileButton' class='delFile' href='#'>[-]</a></label>
+                                                <div id = 'fileList' class = 'fileList'></div>
+                                                <div id = 'fileUpload'>
+                                                    <div class="progress">
+                                                        <div class="progress-bar" role="progressbar"></div>
+                                                    </div>
+                                                    <input id="upload-input" type="file" name="uploads[]" multiple="multiple">
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Test Script</label>
+                                                <textarea class="form-control form-custom code" rows="4" id="test"></textarea>
+                                            </div>
+
                                         </div>
                                     </div>
 
-                                    <div class="form-group">
-                                        <label>Test Script</label>
-                                        <textarea class="form-control form-custom code" rows="4" id="test"></textarea>
-                                    </div>
+
+
+
                                 </div>
                             </div>
                         </form>
