@@ -79,24 +79,10 @@ a.list-group-item {
     -webkit-box-shadow: inset 0 0 6px #999;
 }
 
-/*::-webkit-scrollbar-corner { background: rgba(0,0,0,0); }*/
-/*::-webkit-resizer {*/
-    /*background: #3c3f41 ;*/
-    /*border-top:0px solid #D9D9D9;*/
-    /*border-left:0px solid #D9D9D9;*/
-/*}*/
-/*::-webkit-scrollbar-corner {*/
-    /*background: #3c3f41;*/
-    /*border-top:0px solid #D9D9D9;*/
-    /*border-left:0px solid #D9D9D9;*/
-/*}*/
+
 ::-webkit-scrollbar-corner {
     background: transparent !important;
 }
-/*::-webkit-resizer {*/
-    /*width: 30px !important;*/
-    /*height: 30px !important;*/
-/*}*/
 
 div.grippie {
     border-color:#DDDDDD;
@@ -174,16 +160,6 @@ div.grippie {
     background-color: #555555;
 }
 
-
-
-
-/*tree*/
-
-/*.jstree-anchor {*/
-    /*color: #f0f0f0;*/
-/*}*/
-
-
 .vakata-context ul {
 border: 1px solid #adadad;
     box-shadow: 2px 2px 2px #dcdcdc;
@@ -239,31 +215,7 @@ border: 1px solid #adadad;
 #jstree-dnd .jstree-er {
     background: red;
 }
-/*.jstree-default .jstree-hovered {*/
-    /*background: #9b9b9b;*/
-    /*box-shadow: inset 0 0 1px #cccccc;*/
-/*}*/
-/*.jstree-default .jstree-context {*/
-    /*background: #9b9b9b;*/
-    /*box-shadow: inset 0 0 1px #cccccc;*/
-/*}*/
-/*.jstree-default .jstree-clicked {*/
-    /*color: white;*/
-    /*background: #beebff;*/
-    /*box-shadow: inset 0 0 1px #999999;*/
-/*}*/
 
-/*.jstree-default>.jstree-wholerow-ul .jstree-clicked {*/
-    /*color: #ffffff;*/
-/*}*/
-
-/*.jstree-default .jstree-disabled {*/
-    /*color: #f0f0f0;*/
-/*}*/
-/*.jstree-default .jstree-disabled.jstree-clicked {*/
-    /*color: #ffffff;*/
-    /*background: #efefef;*/
-/*}*/
 .jstree-default .jstree-disabled > .jstree-icon {
     opacity: 0.8;
     filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'jstree-grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#jstree-grayscale");
@@ -276,34 +228,16 @@ border: 1px solid #adadad;
 .jstree-default .jstree-search {
     color: #8b0000;
 }
-/*.jstree-default.jstree-checkbox-no-clicked .jstree-clicked.jstree-hovered {*/
-    /*background: #9b9b9b;*/
-/*}*/
-/*.jstree-default.jstree-checkbox-no-clicked > .jstree-wholerow-ul .jstree-wholerow-clicked.jstree-wholerow-hovered {*/
-    /*background: #9b9b9b;*/
-/*}*/
+
 .jstree-default > .jstree-striped {
     background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAkCAMAAAB/qqA+AAAABlBMVEUAAAAAAAClZ7nPAAAAAnRSTlMNAMM9s3UAAAAXSURBVHjajcEBAQAAAIKg/H/aCQZ70AUBjAATb6YPDgAAAABJRU5ErkJggg==") left top repeat;
 }
-/*.jstree-default .jstree-wholerow-hovered {*/
-    /*background: #9b9b9b;*/
-/*}*/
+
 .jstree-default .jstree-wholerow-clicked {
     color: #ffffff;
-    background: #0066ff;
-    /*background: -webkit-linear-gradient(top, #beebff 0%, #a8e4ff 100%);*/
-    /*background: linear-gradient(to bottom, #beebff 0%, #a8e4ff 100%);*/
-}
-/*.jstree-default .jstree-wholerow-hovered{*/
-    /*color: #ffffff;*/
-    /*background: #323232;*/
-    /*font-weight: bold*/
-/*}*/
+    background: #337ab7;
 
-/*.jstree-default .jstree-node,*/
-/*.jstree-default .jstree-icon {*/
-    /*background-image: url("/jstree/dist/themes/default-dark/32px.png");*/
-/*}*/
+}
 
 .jstree-default .jstree-node,
 .jstree-default .jstree-icon {
@@ -316,68 +250,12 @@ border: 1px solid #adadad;
     background-position: 0 0;
 }
 
-/*.jstree-default .jstree-disabled.jstree-clicked {*/
-    /*color: #ffffff;*/
-    /*background: #efefef;*/
-/*}*/
-/*.jstree-default .jstree-checkbox-disabled {*/
-    /*opacity: 0.8;*/
-    /*filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'jstree-grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#jstree-grayscale");*/
-    /*!* Firefox 10+ *!*/
-    /*filter: #f9f9f9;*/
-    /*!* IE6-9 *!*/
-    /*-webkit-filter: grayscale(100%);*/
-    /*!* Chrome 19+ & Safari 6+ *!*/
-/*}*/
-
-/*.jstree-default-small .jstree-checkbox-disabled {*/
-    /*opacity: 0.8;*/
-    /*filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'jstree-grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#jstree-grayscale");*/
-    /*!* Firefox 10+ *!*/
-    /*filter: #f9f9f9;*/
-    /*!* IE6-9 *!*/
-    /*-webkit-filter: grayscale(100%);*/
-    /*!* Chrome 19+ & Safari 6+ *!*/
-/*}*/
-/*.jstree-default-large .jstree-checkbox-disabled {*/
-    /*opacity: 0.8;*/
-    /*filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'jstree-grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#jstree-grayscale");*/
-    /*!* Firefox 10+ *!*/
-    /*filter: #f9f9f9;*/
-    /*!* IE6-9 *!*/
-    /*-webkit-filter: grayscale(100%);*/
-    /*!* Chrome 19+ & Safari 6+ *!*/
-/*}*/
-
-/*.jstree-default .jstree-wholerow-clicked {*/
-    /*background: #0066ff;*/
-    /*color: white;*/
-/*}*/
-
-/*.jstree-default> .jstree-default>.jstree-wholerow-ul .jstree-clicked {*/
-    /*color: #ffffff;*/
-    /*box-shadow: none;*/
-    /*border-radius: 0;*/
-/*}*/
-/*.jstree-default>.jstree-wholerow-ul .jstree-hovered {*/
-    /*background: #9b9b9b;*/
-    /*box-shadow: none;*/
-    /*border-radius: 0;*/
-
-/*}*/
-
     .jstree-default-responsive .jstree-wholerow {
         border-top: 1px solid rgba(255, 255, 255, 0.7);
         border-bottom: 1px solid rgba(64, 64, 64, 0.2);
         background: #9b9b9b;
     }
-    /*.jstree-default-responsive .jstree-wholerow-hovered {*/
-        /*background: #9b9b9b;*/
-    /*}*/
-    /*.jstree-default-responsive .jstree-wholerow-clicked {*/
-        /*background: #beebff;*/
-        /*color: #323232;*/
-    /*}*/
+
     .jstree-default-responsive .jstree-children .jstree-last > .jstree-wholerow {
         box-shadow: inset 0 -6px 3px -5px #ececec;
     }

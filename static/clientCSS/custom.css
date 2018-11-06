@@ -421,6 +421,24 @@ padding-left: 0px;
    padding: 0px;
 }
 
+.vakata-contextmenu{
+   /*display: none;*/
+   /*z-index:2;*/
+}
+
+#jstree-marker{
+   /*z-index:2;*/
+   display: none !important
+}
+
+.form-custom-meta{
+   display: inline;
+}
+
+.jobSetFormbtn{
+   width: 30px;
+}
+
 
 
 

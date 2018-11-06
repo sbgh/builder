@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="/theme/startbootstrap-sb-admin-2-gh-pages/dist/css/sb-admin-2.min.css">
     <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
+    <!-- theme  -->
+    <link rel="stylesheet" href="/jstree/dist/themes/default/style.min.css" />
+    <!--<link rel="stylesheet" href="/theme/dark.css">-->
 
     <script src="/clientJs/custom.js"></script>
     <link rel="stylesheet" href="/clientCSS/custom.css" />
@@ -19,9 +22,6 @@
 
      <!-- <link rel="stylesheet" href="/jstree/dist/themes/proton/style.min.css" /> -->
 
-    <!-- theme  -->
-    <link rel="stylesheet" href="/jstree/dist/themes/default/style.min.css" />
-    <!--<link rel="stylesheet" href="/theme/dark.css">-->
 
     <!-- doc.ready() -->
     <script type = "text/javascript" language = "javascript" >
@@ -34,7 +34,7 @@
             $('#jobForm').on('submit', function(e){ e.preventDefault()});
             $('#sysForm').on('submit', function(e){ e.preventDefault()});
 
-            //create tree
+            //create main tree
             $("#jstree_div").jstree({
                 "core" : {
                     "themes": {
@@ -110,17 +110,7 @@
                     always_copy:true,
                     large_drop_target:true
                 },
-                "plugins" : [ "state","contextmenu", "types", "dnd", "wholerow"],
-                "contextmenu":{
-                    "items": {
-                        "create": {
-                            "label": "Add Child",
-                            "action": function (obj) {
-                                //createNode();  //todo: complete
-                            }
-                        }
-                    }
-                }
+                "plugins" : [ "state", "types", "dnd", "wholerow"]
             }).on(  'create_node.jstree', function(e, data) {
                 //console.log('saved');
             }  );
@@ -188,17 +178,7 @@
                     always_copy:true,
                     large_drop_target:true
                 },
-                "plugins" : [ "state","contextmenu", "types", "dnd", "wholerow"],
-                "contextmenu":{
-                    "items": {
-                        "create": {
-                            "label": "Add Child",
-                            "action": function (obj) {
-                                //createNode();  //todo: complete
-                            }
-                        }
-                    }
-                }
+                "plugins" : [ "state", "types", "dnd", "wholerow"]
             }).on(  'create_node.jstree', function(e, data) {
                 //console.log('saved');
             }  );
@@ -461,6 +441,8 @@
 
                 //console.log(data.selected);
                 if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled") {
+
+                    //query backend for a specific job and update fields
                     getJobByID(selectedNode);
                     readModeJob(selectedNode);
 
@@ -551,7 +533,13 @@
                 $("#ft").val('');
 
                 $('#custTemplates').html('');
-                $('#fileList').html('')
+                $('#fileList').html('');
+
+                $('#createdDate').val('');
+                $('#createdBy').val('');
+                $("#idDisp").val('');
+                $("#price").val('')
+
             }
 
             $('#componentEnabled').change(function() {
@@ -562,12 +550,14 @@
                 }
             });
 
-            //getJobByID
+            //getJobByID - query backend and update fields
             function getJobByID(NodeID){
                 clearJobFields();
                 $.get('/Jobs', { id: NodeID }, function(data) {
                     //console.log("getJobByID: "+data[0].script);
                     $("#id").val(data[0].id);
+                    $("#idDisp").val(data[0].id);
+
                     $("#parent").val(data[0].parent);
                     $("#name").val(data[0].name);
 
@@ -587,6 +577,11 @@
                     $("#text").val(data[0].text);
                     $('#resourceFiles').val(data[0].resourceFiles);
                     $("#ft").val(data[0].ft);
+
+                    if(data[0].hasOwnProperty("hist")){
+                        $("#createdBy").val(data[0].hist[0].username);
+                        $("#createdDate").val(data[0].hist[0].ds)
+                    }
 
                     populateFileList( $('#resourceFiles').val(), false);
 
@@ -1955,9 +1950,118 @@
                 setStyle(pickedStyle);
             });
 
+            //close BuildCode box
             $('.code-panel-body').slideUp();
             $('.BuildCode-Heading').addClass('panel-collapsed');
-            $('.BuildCode-Heading').find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+            $('.BuildCode-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+
+            //close Meta box
+            $('.meta-panel-body').slideUp();
+            $('.BuildMeta-Heading').addClass('panel-collapsed');
+            $('.BuildMeta-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+
+            //settings - set time out button event
+            $('#set_timeout').on('click', function(){
+                const timeout = $("#timeout").val();
+                setTimeout(timeout);
+            });
+            function setTimeout(timeout){
+                var mydata = {};
+                mydata.timeout = timeout;
+
+                $.ajax({
+                    type: 'post',
+                    data: JSON.stringify(mydata),
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json",
+                    },
+                    url: '/setTimeout',
+                    success : function(result) {
+                        $("#set_timeout_results")[0].innerText = result;
+                    },
+                    error : function(error) {
+                        $("#set_timeout_results")[0].innerText = "Error setting timeout";
+                        console.log(error)
+                    }
+                });
+
+            }
+
+            //settings - set username button event
+            $('#set_username').on('click', function(){
+                const username = $("#username").val();
+                if(username.trim() === ""){
+                    alert("Enter your preferred username");
+                }else{
+                    setUsername(username.trim());
+                }
+            });
+            function setUsername(username){
+                var mydata = {};
+                mydata.username = username
+
+                $.ajax({
+                    type: 'post',
+                    data: JSON.stringify(mydata),
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json",
+                    },
+                    url: '/setUsername',
+                    success : function(result) {
+                        $("#set_username_results")[0].innerText = result;
+                    },
+                    error : function(error) {
+                        $("#set_username_results")[0].innerText = "Error setting username";
+                        console.log(error)
+                    }
+                });
+
+            }
+
+            //Settings - populate fields on modal open
+            $('#setupModal').on('shown.bs.modal', function() {
+                var mydata = {};
+                $.ajax({
+                    type: 'get',
+                    data: mydata,
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    url: '/settings',
+                    success : function(data) {
+
+                        const respJson = JSON.parse(data);
+
+                        //set the style radion btn
+                        if(respJson.hasOwnProperty("currentStyle")){
+                            if(respJson.currentStyle === "dark"){
+                                $("#darkStyleRadio").prop('checked',true);
+                            }else{
+                                $("#defaultStyleRadio").prop('checked',true);
+                            }
+                        }
+
+                        //set the timeout value
+                        if(respJson.hasOwnProperty("timeout")){
+                            $("#timeout").val(respJson.timeout);
+                        }
+
+                        //set the username value
+                        if(respJson.hasOwnProperty("username")){
+                            $("#username").val(respJson.username);
+                        }
+
+
+                    },
+                    error : function(error) {
+                        console.log(error)
+                    }
+                })
+
+            });
 
         }); //doc ready
 
@@ -2012,16 +2116,29 @@
 
         }
 
-        $(document).on('click', '.BuildCode-Heading span.clickable', function(e){
+        $(document).on('click', '.BuildCode-Heading', function(e){
             var $this = $(this);
             if(!$this.hasClass('panel-collapsed')) {
                 $this.parents('.codePanel').find('.panel-body').slideUp();
                 $this.addClass('panel-collapsed');
-                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
             } else {
                 $this.parents('.codePanel').find('.panel-body').slideDown();
                 $this.removeClass('panel-collapsed');
+                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+            }
+        })
+
+        $(document).on('click', '.BuildMeta-Heading', function(e){
+            var $this = $(this);
+            if(!$this.hasClass('panel-collapsed')) {
+                $this.parents('.metaPanel').find('.panel-body').slideUp();
+                $this.addClass('panel-collapsed');
                 $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+            } else {
+                $this.parents('.metaPanel').find('.panel-body').slideDown();
+                $this.removeClass('panel-collapsed');
+                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
             }
         })
 
@@ -2337,9 +2454,26 @@
 
                                         </div>
                                     </div>
+                                    <br>
+                                    <div class="panel panel-primary metaPanel">
+                                        <div class="panel-heading cust-panel-heading BuildMeta-Heading ">Meta<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
+                                        </div>
+                                        <div id = "meta-panel-body" class="panel-body meta-panel-body">
+
+                                            <div class="col-lg-6 ">
+                                            <div class="form-group"><label>Created Date: </label><input class="form-control form-custom" id="createdDate"></div>
+                                            <div class="form-group"><label>Created By: </label><input class="form-control form-custom" id="createdBy"></div>
+                                            </div>
+
+                                            <div class="col-lg-6 ">
+                                            <div class="form-group"><label>ID: </label><input class="form-control form-custom" id="idDisp"></div>
+                                            <div class="form-group"><label>Price: </label><input class="form-control form-custom" id="price"></div>
+                                            </div>
 
 
 
+                                        </div>
+                                    </div>
 
                                 </div>
                             </div>
@@ -2418,25 +2552,27 @@
         <nav class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Setup</h4>
+                <h4 class="modal-title">Settings</h4>
             </div>
             <div class="modal-body">
                 <nav class="navbar ">
-                    <ul class="nav navbar-nav">
-                        <li>
-                            Theme:
-                            <ul>
-                                <li class="stylePick" data-id="default"> <div class="radio">
-                                        <label><input type="radio" name="setupRadio" checked>Default</label>
-                                    </div>
-                                </li>
-                                <li class="stylePick" data-id="dark"> <div class="radio">
-                                        <label><input type="radio" name="setupRadio" >Dark</label>
-                                    </div>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
+                    Theme:
+                    <div class="radio stylePick" data-id="default">
+                        <label><input type="radio" id ="defaultStyleRadio" name="setupRadio" checked>Light</label>
+                    </div>
+                    <div class="radio stylePick" data-id="dark">
+                        <label><input type="radio" id="darkStyleRadio" name="setupRadio" >Dark</label>
+                    </div>
+                    <hr>
+                    Time out (ms):
+                    <div class="form-group">
+                        <input class="form-control form-custom-meta" placeholder="(ms)" id="timeout" style="width:75px"> <button id = "set_timeout" class="btn btn-default jobFormbtn jobSetFormbtn">Set</button> <span id="set_timeout_results"></span>
+                    </div>
+                    <hr>
+                    User Name:
+                    <div class="form-group">
+                        <input class="form-control form-custom-meta" placeholder="Enter your preferred user name" id="username" style="width:250px"> <button id = "set_username" class="btn btn-default jobFormbtn jobSetFormbtn">Set</button> <span id="set_username_results"></span>
+                    </div>
                 </nav>
             </div>
         </nav>

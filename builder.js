@@ -23,6 +23,7 @@ const libsPath = __dirname + '/library/';
 const stylesPath = __dirname + '/static/theme/';
 const treeStylesPath = __dirname + '/static/jstree/dist/themes/';
 
+//Load configs
 const cf = fs.readFileSync('config.json');
 const config = JSON.parse(cf);
 
@@ -473,8 +474,12 @@ router.post("/save",function(req,res){
                 }
             }
 
+            //initial history json
+            var ds = new Date().toISOString();
+            var hist=[{username:config.username, ds: ds, fromId: ""}];
+
             id = generateUUID();
-            foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1,enabled:0, type: 'disabled', description: req.body.description, script:req.body.script, variables:req.body.compVariables, template:req.body.template, text:req.body.name, resourceFiles:{}, sort:x};
+            foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1,enabled:0, type: 'disabled', description: req.body.description, script:req.body.script, variables:req.body.compVariables, template:req.body.template, text:req.body.name, resourceFiles:{}, sort:x, hist:hist};
             SystemsJSON[id] = foundRow;
         }else{ //not new
                 var newData = {};
@@ -497,6 +502,16 @@ router.post("/save",function(req,res){
                 newData.resourceFiles = req.body.resourceFiles;
                 newData.sort = SystemsJSON[id].sort;
 
+                //add history json to SystemsJSON if not there
+                if(!SystemsJSON[id].hasOwnProperty("hist")){
+                    SystemsJSON[id].hist = [];
+                }
+                //append history json
+                var ds = new Date().toISOString();
+                var currentHist = SystemsJSON[id].hist;
+                currentHist.push({username:config.username, ds: ds, fromId: ""});
+                newData.hist=currentHist;
+
             if ( SystemsJSON[id].hasOwnProperty('ver') ) {
                 newData.ver = SystemsJSON[id].ver + 1;
             }else{
@@ -518,7 +533,12 @@ router.post("/save",function(req,res){
                 }
             }
             id = generateUUID();
-            foundRow = {parent:pid, ft:pid, name:req.body.name, ver:1, type: type, description: req.body.description, text:req.body.name, variables:req.body.variables, sort:x};
+
+            //initial history json
+            var ds = new Date().toISOString();
+            var hist=[{username:config.username, ds: ds, fromId: fromId}];
+
+            foundRow = {parent:pid, ft:pid, name:req.body.name, ver:1, type: type, description: req.body.description, text:req.body.name, variables:req.body.variables, sort:x, hist:hist};
             SystemsJSON[id] = foundRow;
         }else{ //not new
             var newData = {};
@@ -531,6 +551,16 @@ router.post("/save",function(req,res){
             newData.variables = req.body.variables;
             newData.sort = SystemsJSON[id].sort;
             newData.icon = SystemsJSON[id].icon;
+
+            //add history json to SystemsJSON if not there
+            if(!SystemsJSON[id].hasOwnProperty("hist")){
+                SystemsJSON[id].hist = [];
+            }
+            //append history json
+            var ds = new Date().toISOString();
+            const currentHist = SystemsJSON[id].hist;
+            currentHist.push({username:config.username, ds: ds, fromId: ""});
+            newData.hist=currentHist;
 
             if ( SystemsJSON[id].hasOwnProperty('ver') ) {
                 newData.ver = SystemsJSON[id].ver + 1;
@@ -625,6 +655,11 @@ router.post("/copy",function(req,res){
                 var newParentId = idMap[SystemsJSON[fromId].parent]
                 //console.log('move to:'+SystemsJSON[newParentId].name);
 
+                //initial history json
+                var ds = new Date().toISOString();
+                var hist=[{username:config.username, ds: ds, fromId: fromId}];
+
+
                 var NewRow = {
                     parent: newParentId,
                     ft: SystemsJSON[newParentId].ft + '/' + newParentId,
@@ -633,7 +668,8 @@ router.post("/copy",function(req,res){
                     ver: 1,
                     type: fromNode.type,
                     sort:fromNode.sort,
-                    text: fromNode.name
+                    text: fromNode.name,
+                    hist: hist
                 };
                 if(fromNode.type === 'job' || fromNode.type === 'disabled'){
                     NewRow.enabled=fromNode.enabled;
@@ -674,7 +710,6 @@ router.post("/copy",function(req,res){
             res.end("Error:System ID not found - " + errorID)
         }
     }else{
-
         //console.log(reqJSON);
 
         var error = false;
@@ -707,7 +742,6 @@ router.post("/copy",function(req,res){
                 }
             }
 
-            //var resultRows = {};
             fromIds.forEach(function(fromId) {
                 var fromNode = libJSON[fromId];
                 var id = generateUUID();
@@ -720,6 +754,10 @@ router.post("/copy",function(req,res){
                     var newIcon = "/uploads/" + fromNode.icon.split("/").slice(-2).join("/").replace(fromId, id);
                 }
 
+                //initial history json
+                const ds = new Date().toISOString();
+                const hist=[{username:config.username, ds: ds, fromId: fromId}];
+
                 var NewRow = {
                     parent: newParentId,
                     name: fromNode.name,
@@ -728,7 +766,9 @@ router.post("/copy",function(req,res){
                     type: fromNode.type,
                     variables: fromNode.variables,
                     sort:fromNode.sort,
-                    text: fromNode.name
+                    text: fromNode.name,
+                    lib: lib,
+                    hist: hist
                 };
                 if(fromNode.type === 'job' || fromNode.type === 'disabled'){
                     NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
@@ -745,11 +785,8 @@ router.post("/copy",function(req,res){
 
                 const libPath = libsPath + lib + "/";
 
-                console.log("libPath:" + libPath );
+                //console.log("libPath:" + libPath );
                 if ( fs.existsSync( libPath + "/uploads/" + fromId ) ) { //copy file resources if they exist
-
-
-
 
                     fs.mkdirSync(filesPath + id);
                     const files = fs.readdirSync(libPath + "/uploads/" + fromId +  "/");
@@ -779,14 +816,12 @@ router.post("/copy",function(req,res){
         }
     }
 
-
-
 });
 
 router.post("/copyToLib",function(req,res){
     var reqJSON= req.body;
 
-    var fromIds =reqJSON.ids.split(';');
+    var fromIds =reqJSON.ids.split(';').filter(Boolean);
     var targetId = reqJSON.parent;
     var lib = reqJSON.lib;
 
@@ -807,6 +842,7 @@ router.post("/copyToLib",function(req,res){
         res.end("")
     }
     fromIds.forEach(function(id){
+
         if (!SystemsJSON.hasOwnProperty(id) && error === false ){
             error = true;
             errorID = id;
@@ -851,7 +887,8 @@ router.post("/copyToLib",function(req,res){
                 description: fromNode.description,
                 ver: fromNode.ver,
                 variables: fromNode.variables,
-                sort: fromNode.sort
+                sort: fromNode.sort,
+                hist: fromNode.hist
             };
             if (newIcon !== ''){
                 NewRow.icon = newIcon
@@ -1047,7 +1084,14 @@ router.post("/run",function(req,res){
     var newKey=false;
 
     var conn;
-    var timeOut = 10000;  //how many ms all connections should wait for the prompt to reappear before connection is terminated
+
+    var timeOut = 30000;  //By default - how many ms all connections should wait for the prompt to reappear before connection is terminated
+    const timeoutNumber = parseInt(config.timeout);
+    //console.log("timeoutNumber: " + timeoutNumber)
+    if (timeoutNumber > 0 ){ //If config holds timeout, use it.
+        timeOut = timeoutNumber
+    }
+
     var lastTimeout;
     var exportVar = "";
 
@@ -1138,6 +1182,7 @@ router.post("/run",function(req,res){
 
     function conTimeout () {
         console.log('SSH2 conn timed out ' + timeOut.toString());
+        res.write("message:No prompt detected " + timeOut.toString() + " ms") ;
         conn.end();
      }
 
@@ -2033,6 +2078,49 @@ router.get("/getStyle",function(req,res){
 
 });
 
+router.post("/setTimeout",function(req,res){
+
+    var reqJSON = req.body;
+    var timeout = reqJSON.timeout;
+    const timeoutNumber = parseInt(timeout);
+
+    if(timeoutNumber > 0) {
+        if( !saveSettings("timeout", timeout) ){
+            res.write("Timeout set to " + timeout + " ms")
+        }else{
+            res.write("Error setting timeout")
+        }
+    }else{
+        res.write("Timeout not set. Must be greater than 0 ms")
+    }
+    res.end('')
+});
+
+router.post("/setUsername",function(req,res){
+
+    var reqJSON = req.body;
+    var username = reqJSON.username.trim()
+    if(username.length < 8){
+        res.write("User Name not set. Must be at least 8 characters.")
+    }else{
+        if( !saveSettings("username", username)){
+            res.write("User Name set to " + username)
+        }else{
+            res.write("Error setting username")
+        }
+
+    }
+    res.end('')
+});
+
+router.get("/settings",function(req,res){
+    res.writeHead(200, {"Content-Type": "application/json"});
+
+    const respObj = config;
+    res.end(JSON.stringify(respObj));
+});
+
+
 function saveAllJSON(){
 
     fs.writeFile('SystemsJSON.json', JSON.stringify(SystemsJSON), function (err) {
@@ -2063,8 +2151,11 @@ function saveSettings(name, value){
         if (err) {
             console.log('There has been an error saving your config.json.');
             console.log(err.message);
-            return;
+            return false;
+        }else{
+            return true;
         }
+
     });
 }
 
