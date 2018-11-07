@@ -190,6 +190,11 @@ router.get("/Jobs",function(req,res){
                 rowdata = SystemsJSON[key];
                 rowdata.id = key;
                 rowdata.text = rowdata.name;
+
+                if(rowdata.rerunnable === 1){
+                    rowdata.type="rerunnable";
+                }
+
                 var pt = rowdata.parent;
                 if(pt === "#"){
                     rowdata.parent = "local";
@@ -479,7 +484,7 @@ router.post("/save",function(req,res){
             var hist=[{username:config.username, ds: ds, fromId: ""}];
 
             id = generateUUID();
-            foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1,enabled:0, type: 'disabled', description: req.body.description, script:req.body.script, variables:req.body.compVariables, template:req.body.template, text:req.body.name, resourceFiles:{}, sort:x, hist:hist};
+            foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1, enabled:0, rerunnable:0, type: 'disabled', description: req.body.description, script:req.body.script, variables:req.body.compVariables, template:req.body.template, text:req.body.name, resourceFiles:{}, sort:x, hist:hist};
             SystemsJSON[id] = foundRow;
         }else{ //not new
                 var newData = {};
@@ -487,6 +492,7 @@ router.post("/save",function(req,res){
                 newData.ft = SystemsJSON[id].ft;
                 newData.name = req.body.name;
                 newData.enabled = req.body.enabled;
+                newData.rerunnable = req.body.rerunnable;
                 if(req.body.enabled === 1){
                     newData.type = 'job'
                 }else{
@@ -673,6 +679,7 @@ router.post("/copy",function(req,res){
                 };
                 if(fromNode.type === 'job' || fromNode.type === 'disabled'){
                     NewRow.enabled=fromNode.enabled;
+                    NewRow.rerunnable=fromNode.rerunnable;
                     NewRow.script=fromNode.script;
                     NewRow.variables=fromNode.variables;
                     NewRow.template=fromNode.template;
@@ -773,6 +780,7 @@ router.post("/copy",function(req,res){
                 if(fromNode.type === 'job' || fromNode.type === 'disabled'){
                     NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
                     NewRow.enabled=fromNode.enabled;
+                    NewRow.rerunnable=fromNode.rerunnable;
                     NewRow.script=fromNode.script;
                     NewRow.template=fromNode.template;
                     NewRow.custTemplates=fromNode.custTemplates;
@@ -893,16 +901,16 @@ router.post("/copyToLib",function(req,res){
             if (newIcon !== ''){
                 NewRow.icon = newIcon
             }
-            console.log(fromNode.icon);
-
-
+            //console.log(fromNode.icon);
+            
             const nodeType = fromNode.type;
-            if ((nodeType === 'job') || (nodeType === 'disabled')){
+            if ((nodeType === 'job') || (nodeType === 'disabled') || (nodeType === 'rerunnable')){
                 NewRow.ft=libJSON[newParentId].ft + '/' + newParentId;
                 NewRow.script=fromNode.script;
                 NewRow.template=fromNode.template;
                 NewRow.custTemplates=fromNode.custTemplates;
                 NewRow.resourceFiles=fromNode.resourceFiles;
+                NewRow.rerunnable=fromNode.rerunnable;
             }
 
             libJSON[id] = NewRow;
@@ -971,6 +979,10 @@ router.get("/getLib",function(req,res) {
                     rowdata.id = key;
                     rowdata.text = rowdata.name;
 
+                    if(rowdata.rerunnable === 1){
+                        rowdata.type="rerunnable";
+                    }
+
                     var pt = rowdata.parent;
                     if(pt === "#"){
                         rowdata.parent = "lib";
@@ -987,7 +999,7 @@ router.get("/getLib",function(req,res) {
         const libJSON =  JSON.parse(fs.readFileSync(libsPath + pickedLib + "/SystemsJSON.json"));
         var resJSON = [];
         var rowdata = libJSON[id];
-        //console.log('gv:' + SystemsJSON[id].variables);
+        console.log( libJSON[id].rerunnable);
         rowdata.id = id;
         resJSON.push(rowdata);
         res.end(JSON.stringify(resJSON));
@@ -1149,7 +1161,6 @@ router.post("/run",function(req,res){
             if(SystemsJSON[id].enabled !== 1){
                 disabledIds.push(id);
             }else if (disabledIds.indexOf(SystemsJSON[id].parent) !== -1){
-            //((SystemsJSON[SystemsJSON[id].parent].enabled !== 1) && (SystemsJSON[SystemsJSON[id].parent].type !== "system")){
                 disabledIds.push(id);
             }
         });

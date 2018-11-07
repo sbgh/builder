@@ -95,13 +95,19 @@
                 },
                 "types" : {
                     "system" : {
-                        "icon" : "fa fa-desktop"
+                        "icon" : "fa fa-desktop ",
+                        "a_attr": { class : " systemRow "}
                     },
                     "job" : {
                         "icon" : "fa fa-code"
                     },
+                    "rerunnable" : {
+                        "icon" : "fa fa-repeat rerunnableRow",
+                        "a_attr": { class : " rerunnableRow "}
+                    },
                     "disabled" : {
-                        "icon" : "fa fa-hand-paper-o"
+                        "icon" : "fa fa-hand-paper-o disabledRow",
+                        "li_attr": { class : "  "}
                     }
                 },
                 "state": { "key": "myTree" },
@@ -163,13 +169,19 @@
                 },
                 "types" : {
                     "system" : {
-                        "icon" : "fa fa-desktop"
+                        "icon" : "fa fa-desktop ",
+                        "a_attr": { class : " systemRow "}
                     },
                     "job" : {
                         "icon" : "fa fa-code"
                     },
+                    "rerunnable" : {
+                        "icon" : "fa fa-repeat rerunnableRow",
+                        "a_attr": { class : " rerunnableRow "}
+                    },
                     "disabled" : {
-                        "icon" : "fa fa-hand-paper-o"
+                        "icon" : "fa fa-hand-paper-o disabledRow",
+                        "li_attr": { class : "  "}
                     }
                 },
 //                "state": { "key": "myLibTree" },
@@ -262,6 +274,14 @@
                     }else{
                         $('#componentEnabled').prop('checked', false);
                         $('#componentEnabledVal').html('No');
+                    }
+
+                    if(data[0].rerunnable === 1){
+                        $('#rerunnable').prop('checked', true);
+                        $('#rerunnableVal').html('Yes');
+                    }else{
+                        $('#rerunnable').prop('checked', false);
+                        $('#rerunnableVal').html('No');
                     }
 
                     $("#description").val(data[0].description);
@@ -392,7 +412,7 @@
                     $("#jobScreen").hide();
                 }else {
                     clearJobFields();
-                    if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled") {
+                    if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled" || data.instance.get_node(data.node.id).type === "rerunnable") {
                         getLibJobByID(selectedNode, pickedLib);
                         readModeLibJob(selectedNode);
                         $('#jstree_div').jstree("deselect_all");
@@ -450,7 +470,7 @@
                     $("#sysScreen").hide();
                     $("#jobScreen").hide();
                 }else{
-                    if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled") {
+                    if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled" || data.instance.get_node(data.node.id).type === "rerunnable") {
 
                         //query backend for a specific job and update fields
                         getJobByID(selectedNode);
@@ -534,6 +554,8 @@
                 $("#name").val('');
                 $("#componentEnabled").val('');
                 $("#componentEnabledVal").html('');
+                $("#rerunnable").val('');
+                $("#rerunnableVal").html('');
                 $("#description").val('');
                 $("#script").val('');
                 $("#compVariables").val('');
@@ -561,6 +583,14 @@
                 }
             });
 
+            $('#rerunnable').change(function() {
+                if(this.checked) {
+                    $("#rerunnableVal").html('Yes');
+                }else{
+                    $("#rerunnableVal").html('No');
+                }
+            });
+
             //getJobByID - query backend and update fields
             function getJobByID(NodeID){
                 clearJobFields();
@@ -578,6 +608,14 @@
                     }else{
                         $('#componentEnabled').prop('checked', false);
                         $('#componentEnabledVal').html('No');
+                    }
+
+                    if(data[0].rerunnable === 1){
+                        $('#rerunnable').prop('checked', true);
+                        $('#rerunnableVal').html('Yes');
+                    }else{
+                        $('#rerunnable').prop('checked', false);
+                        $('#rerunnableVal').html('No');
                     }
 
                     $("#description").val(data[0].description);
@@ -986,10 +1024,13 @@
                 function enableElement(index, element) {
                     element.readOnly = false;
                 }
-                $("#version").readOnly = true;
+//                $("#version").readOnly = true;
+                $("#createdBy")[0].readOnly = true;
+                $("#createdDate")[0].readOnly = true;
+                $("#idDisp")[0].readOnly = true;
 
-                $("#componentEnabled").show();
-                //$("#componentEnabledVal").hide();
+                $("#componentEnabledSlider").show();
+                $("#rerunnableSlider").show();
 
                 $("#edit_button").hide();
                 $("#save_button").show();
@@ -1008,7 +1049,6 @@
                     checkBoxes.show();
                 }
 
-
                 $.get('/fileList', { id: $('#id').val() }, function(data) {
                     $('#resourceFiles').val(data);
                     populateFileList(data, true);
@@ -1021,7 +1061,8 @@
                 inputFields = $("#jobForm").find("textarea");
                 inputFields.each(disableElement);
 
-                $("#componentEnabled").hide();
+                $("#componentEnabledSlider").hide();
+                $("#rerunnableSlider").hide();
 
                 function disableElement(index, element) {
                     element.readOnly = true;
@@ -1091,7 +1132,8 @@
                 inputFields = $("#jobForm").find("textarea");
                 inputFields.each(disableElement);
 
-                $("#componentEnabled").hide();
+                $("#componentEnabledSlider").hide();
+                $("#rerunnableSlider").hide();
 
                 function disableElement(index, element) {
                     element.readOnly = true;
@@ -1185,6 +1227,11 @@
                     mydata.enabled = 1;
                 }else{
                     mydata.enabled = 0;
+                }
+                if($('#rerunnable').is(':checked')) {
+                    mydata.rerunnable = 1;
+                }else{
+                    mydata.rerunnable = 0;
                 }
 
                 mydata.compVariables = $("#compVariables").val();
@@ -2330,7 +2377,7 @@
                                         <div class="col-lg-1 ">
                                             <div class="form-group">
                                                 <label>Version</label>
-                                                <div id="sysVersion" class="versionBox"></div>
+                                                <div id="sysVersion" class="statusBox"></div>
                                             </div>
                                         </div>
                                         <div class="col-lg-8 "></div>
@@ -2379,27 +2426,45 @@
                             <div class="row">
                                 <div id="topLeftForm" class="col-lg-6 topLeftForm">
                                     <div class="row" id="firstRow" >
-                                            <div class="col-lg-6 " style="padding: 0px">
+                                        <div class="col-lg-6 " style="padding: 0px">
                                                 <div class="form-group">
                                                     <label>Component Name</label>
                                                     <input class="form-control form-custom" placeholder="Enter name" id="name">
                                                 </div>
                                             </div>
-                                            <div class="col-lg-3">
+                                        <div class="col-lg-2">
                                                 <div class="form-group">
                                                     <label>Version</label>
-                                                    <div id="version" class="versionBox"></div>
+                                                    <div id="version" class="statusBox"></div>
                                                 </div>
                                             </div>
-                                            <div class="col-lg-3">
-                                                <div class="form-group">
-                                                    <label>Enabled</label>
-                                                    <div class="radio">
-                                                        <input name="componentEnabled" id="componentEnabled" type="checkbox"/><label><div id="componentEnabledVal"></div></label>
-                                                    </div>
+                                        <div class="col-lg-2">
+                                            <div class="form-group">
+                                                <label>Enabled</label>
+                                                <div>
+                                                    <label class="switch" id="componentEnabledSlider">
+                                                        <input name="componentEnabled" id="componentEnabled" type="checkbox">
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                    <span id="componentEnabledVal" class="statusBox"></span>
+
                                                 </div>
                                             </div>
-                                   <!--     https://stackoverflow.com/questions/19865158/what-is-the-difference-among-col-lg-col-md-and-col-sm-in-bootstrap   -->
+                                        </div>
+                                        <div class="col-lg-2">
+                                            <div class="form-group">
+                                                <label>Rerunnable</label>
+                                                <div>
+                                                    <label class="switch" id="rerunnableSlider">
+                                                        <input name="rerunnable" id="rerunnable" type="checkbox">
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                    <span id="rerunnableVal" class="statusBox"></span>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!--     https://stackoverflow.com/questions/19865158/what-is-the-difference-among-col-lg-col-md-and-col-sm-in-bootstrap   -->
                                     </div>
 
                                     <div class="row">

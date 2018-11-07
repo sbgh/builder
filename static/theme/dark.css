@@ -270,3 +270,10 @@ border: 1px solid #adadad;
 .locTree-panel-body{
     background-color: #323232;
 }
+
+.disabledRow{
+    color: red;
+}
+.rerunnableRow{
+    color: white;
+}
