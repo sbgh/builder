@@ -191,8 +191,10 @@ router.get("/Jobs",function(req,res){
                 rowdata.id = key;
                 rowdata.text = rowdata.name;
 
-                if(rowdata.rerunnable === 1){
-                    rowdata.type="rerunnable";
+                if(rowdata.enabled === 0){
+                    rowdata.type="disabled";
+                }else if(rowdata.rerunnable === 1){
+                    rowdata.type="rerunnable"
                 }
 
                 var pt = rowdata.parent;
@@ -902,7 +904,7 @@ router.post("/copyToLib",function(req,res){
                 NewRow.icon = newIcon
             }
             //console.log(fromNode.icon);
-            
+
             const nodeType = fromNode.type;
             if ((nodeType === 'job') || (nodeType === 'disabled') || (nodeType === 'rerunnable')){
                 NewRow.ft=libJSON[newParentId].ft + '/' + newParentId;
