@@ -387,27 +387,33 @@
                 selectedNode = data.selected[0];
                 selectedTree = 'lib'
 
-                if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled" ) {
-                    getLibJobByID(selectedNode, pickedLib);
-                    readModeLibJob(selectedNode);
-                    $('#jstree_div').jstree("deselect_all");
-
-
+                if (selectedNode ==='lib'){
                     $("#sysScreen").hide();
-                    $("#jobScreen").show();
-                    $("#type").val('Job');
-                    hideBottom()
-                }else if(data.instance.get_node(data.node.id).type === "system" ){
-                    readModeLibSys();
-                    $('#jstree_div').jstree("deselect_all");
-                    $("#sysScreen").show();
                     $("#jobScreen").hide();
-                    $("#type").val('system');
-                    getLibSysByID(selectedNode, pickedLib);
-                    hideBottom()
-                }else{ //Type = Lib
-                    $('#jstree_div').jstree("deselect_all");
-                    hideBottom()
+                }else {
+                    clearJobFields();
+                    if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled") {
+                        getLibJobByID(selectedNode, pickedLib);
+                        readModeLibJob(selectedNode);
+                        $('#jstree_div').jstree("deselect_all");
+
+
+                        $("#sysScreen").hide();
+                        $("#jobScreen").show();
+                        $("#type").val('Job');
+                        hideBottom()
+                    } else if (data.instance.get_node(data.node.id).type === "system") {
+                        readModeLibSys();
+                        $('#jstree_div').jstree("deselect_all");
+                        $("#sysScreen").show();
+                        $("#jobScreen").hide();
+                        $("#type").val('system');
+                        getLibSysByID(selectedNode, pickedLib);
+                        hideBottom()
+                    } else { //Type = Lib
+                        $('#jstree_div').jstree("deselect_all");
+                        hideBottom()
+                    }
                 }
                 $("#results_html").html('');
                 $("#results_codes").html('');
@@ -440,37 +446,42 @@
                 $('#jslibtree_div').jstree("deselect_all");
 
                 //console.log(data.selected);
-                if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled") {
-
-                    //query backend for a specific job and update fields
-                    getJobByID(selectedNode);
-                    readModeJob(selectedNode);
-
-
-
+                if (selectedNode ==='local'){
                     $("#sysScreen").hide();
-                    $("#jobScreen").show();
-                    $("#type").val('Job');
-                    updateResultsList(selectedNode);
-
-                    const targetNode =  $('#jstree_div').jstree(true).get_node(data.node.id);
-                    const rSystemId = targetNode.parents[targetNode.parents.length - 2];
-                    const rSystemNode =  $('#jstree_div').jstree(true).get_node( rSystemId);
-                    if(rSystemNode.text !== 'Library'){
-                        showBottom()
-                    }else{
-                        hideBottom()
-                    }
-
-                }else{
-                    readModeSys();
-                    $("#sysScreen").show();
                     $("#jobScreen").hide();
-                    $("#type").val('system');
-                    getSysByID(selectedNode);
-                    updateResultsList(selectedNode);
-                    hideBottom()
-                };
+                }else{
+                    if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled") {
+
+                        //query backend for a specific job and update fields
+                        getJobByID(selectedNode);
+                        readModeJob(selectedNode);
+
+                        $("#sysScreen").hide();
+                        $("#jobScreen").show();
+                        $("#type").val('Job');
+                        updateResultsList(selectedNode);
+
+                        const targetNode =  $('#jstree_div').jstree(true).get_node(data.node.id);
+                        const rSystemId = targetNode.parents[targetNode.parents.length - 2];
+                        const rSystemNode =  $('#jstree_div').jstree(true).get_node( rSystemId);
+                        if(rSystemNode.text !== 'Library'){
+                            showBottom()
+                        }else{
+                            hideBottom()
+                        }
+
+                    }else{
+                        readModeSys();
+                        $("#sysScreen").show();
+                        $("#jobScreen").hide();
+                        $("#type").val('system');
+                        getSysByID(selectedNode);
+                        updateResultsList(selectedNode);
+                        hideBottom()
+                    };
+                }
+
+
                 $("#results_html").html('');
                 $("#results_codes").html('');
                 $('#messageSpan').html('');
