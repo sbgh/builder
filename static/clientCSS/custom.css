@@ -238,8 +238,8 @@ padding-left: 0px;
 
 .cust-panel-heading {
    padding: 1px 1px;
-   //margin-top: 5px;
-   margin-bottom: 1px;
+   /*margin-top: 5px;*/
+   /*margin-bottom: 1px;*/
 }
 
 .resultsListRow{
@@ -511,6 +511,11 @@ input:checked + .slider:before {
 }
 .rerunnableRow{
 
+}
+
+.customLibDropBox{
+   padding-right: 4px;
+   padding-left: 4px;
 }
 
 

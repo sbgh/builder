@@ -367,12 +367,12 @@
                             const pubArr = dataObj.pub;
 
                             const LibDropDownListDiv = $("#LibDropDownList")[0];
-                            var libListHTML = '';
-                            priArr.forEach(function (priDir) {
-                                libListHTML += '<a class="dropdown-item libListRow" data-id="private/' + priDir + '" href="#">private/' + priDir + '</a><br>';
+                            var libListHTML = '<button type="button" class="close" id="closeLibListHTML">×</button><br>';
+                            priArr.forEach(function (dir) {
+                                libListHTML += '<a class="dropdown-item libListRow" data-id="private/' + dir + '" href="#">private/' + dir + '</a><br>';
                             })
-                            pubArr.forEach(function (priDir) {
-                                libListHTML += '<a class="dropdown-item libListRow" data-id="public/' + priDir + '" href="#">public/' + priDir + '</a><br>';
+                            pubArr.forEach(function (dir) {
+                                libListHTML += '<a class="dropdown-item libListRow" data-id="public/' + dir + '" href="#">public/' + dir + '</a><br>';
                             })
                             LibDropDownListDiv.innerHTML = libListHTML
 
@@ -386,6 +386,10 @@
 
                                 setLibWindowWidth(250, container)
 
+                            });
+
+                            $('#closeLibListHTML').on('click', function(){
+                                $('#LibDropDownList').hide();
                             });
 
                         },
@@ -451,7 +455,22 @@
             //$('#jstree_div').on("copy_node.jstree", function (e, data) {});  //not used
 
             //tree ready
-            //$("#jstree_div").bind('ready.jstree', function(e, data) {})    //not used
+            $("#jstree_div").bind('ready.jstree', function(e, data) {
+
+                //Add events for shift click expand/close
+                $("#jstree_div").on("open_node.jstree", function (e, data) {
+                    const shiftKey = window.event.shiftKey;
+                    if(shiftKey){
+                        $("#jstree_div").jstree("open_all", data.node);
+                    }
+                });
+                $("#jstree_div").on("close_node.jstree", function (e, data) {
+                    const shiftKey = window.event.shiftKey;
+                    if(shiftKey){
+                        $("#jstree_div").jstree("close_all", data.node);
+                    }
+                });
+            })
 
             //tree click
             $('#jstree_div').on("select_node.jstree", function (e, data) {
@@ -1675,13 +1694,11 @@
 
             function hideCodes(){
                 $("#results_codes").hide();
-             //   $("#codes_btn").html("[+codes]");
                 $("#results_html").css("width", "100%");
                 $("#results_html").css("overflow-y", "auto");
             }
             function showCodes(){
                 $("#results_codes").show();
-            //    $("#codes_btn").html("[-codes]");
                 $("#results_html").css("width", "50%");
                 $("#results_html").css("overflow-y", "hidden");
             }
@@ -1760,7 +1777,8 @@
 
                 $( window ).resize(function() {
                     //var containerWidth = $('#rowContainer');
-                    setWindowHeight($( window ).height() * currentRatio , container);
+                    //setWindowHeight($( window ).height() * currentRatio , container);
+                    setWindowHeight(currentHeight, container);
                     setFormColWidth();
                 });
 
@@ -1864,7 +1882,7 @@
                         fList.forEach(function(fName){
                             fileNamesHtml += "<tr role='row' class='gradeA odd'><td width = '10%'>"
                             fileNamesHtml +="<span class='varCheckboxFileList'><input class='CheckboxFileList' value='" + fName.name + "' type='checkbox'/></span>";
-                            fileNamesHtml += "<a href='/uploads/" + $('#id').val() + "/" + fName.name + "' target='_new'>" + fName.name + "</a>";
+                            fileNamesHtml += "<a class='fileListLink' href='/uploads/" + $('#id').val() + "/" + fName.name + "' target='_new'>" + fName.name + "</a>";
                             fileNamesHtml +="</td></tr>";
                         })
                     }else{
@@ -1897,9 +1915,7 @@
                         fileNamesHtml += fileNamesHtmlEmpty;
                     }
                     $('#fileList').html(fileNamesHtmlHeader + fileNamesHtml + fileNamesHtmlFooter);
-//                    if(!editMode){
-//                        $(".varCheckboxFileList").hide();
-//                    }
+
 
                 } catch (e) {
                     $('#fileList').html(fileNamesHtmlHeader + fileNamesHtmlEmpty + fileNamesHtmlFooter);
@@ -2013,10 +2029,20 @@
             $('.BuildCode-Heading').addClass('panel-collapsed');
             $('.BuildCode-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
 
+            //close TestCode box
+            $('.test-panel-body').slideUp();
+            $('.BuildTest-Heading').addClass('panel-collapsed');
+            $('.BuildTest-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+
             //close Meta box
             $('.meta-panel-body').slideUp();
             $('.BuildMeta-Heading').addClass('panel-collapsed');
             $('.BuildMeta-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+
+            //close Resources box
+            $('.res-panel-body').slideUp();
+            $('.BuildRes-Heading').addClass('panel-collapsed');
+            $('.BuildRes-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
 
             //settings - set time out button event
             $('#set_timeout').on('click', function(){
@@ -2187,6 +2213,19 @@
             }
         })
 
+        $(document).on('click', '.BuildTest-Heading', function(e){
+            var $this = $(this);
+            if(!$this.hasClass('panel-collapsed')) {
+                $this.parents('.testPanel').find('.panel-body').slideUp();
+                $this.addClass('panel-collapsed');
+                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+            } else {
+                $this.parents('.testPanel').find('.panel-body').slideDown();
+                $this.removeClass('panel-collapsed');
+                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+            }
+        })
+
         $(document).on('click', '.BuildMeta-Heading', function(e){
             var $this = $(this);
             if(!$this.hasClass('panel-collapsed')) {
@@ -2195,6 +2234,19 @@
                 $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
             } else {
                 $this.parents('.metaPanel').find('.panel-body').slideDown();
+                $this.removeClass('panel-collapsed');
+                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+            }
+        })
+
+        $(document).on('click', '.BuildRes-Heading', function(e){
+            var $this = $(this);
+            if(!$this.hasClass('panel-collapsed')) {
+                $this.parents('.resPanel').find('.panel-body').slideUp();
+                $this.addClass('panel-collapsed');
+                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+            } else {
+                $this.parents('.resPanel').find('.panel-body').slideDown();
                 $this.removeClass('panel-collapsed');
                 $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
             }
@@ -2364,7 +2416,7 @@
                         <button id = "remove_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
                     </div>
                     <div class="panel panel-default jobPanel">
-                        <div class="panel-body" sys-form-panel id="sys-form-panel">
+                        <div class="panel-body sys-form-panel"  id="sys-form-panel">
                             <form id="sysForm">
                                 <div class="col-lg-12">
                                     <div class="row">
@@ -2512,6 +2564,14 @@
                                                 <label>Template<a class='newCust' href='#'>[+]</a></label><br><br>
                                             </div>
 
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="panel panel-primary resPanel">
+                                        <div class="panel-heading cust-panel-heading BuildRes-Heading ">Resources<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
+                                        </div>
+                                        <div class="panel-body res-panel-body">
+
                                             <div class="form-group">
                                                 <label>File Resources<a id='newFileButton' class='newFile' href='#'>[+]</a><a id='delFileButton' class='delFile' href='#'>[-]</a></label>
                                                 <div id = 'fileList' class = 'fileList'></div>
@@ -2522,6 +2582,16 @@
                                                     <input id="upload-input" type="file" name="uploads[]" multiple="multiple">
                                                 </div>
                                             </div>
+
+
+
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="panel panel-primary testPanel">
+                                        <div class="panel-heading cust-panel-heading BuildTest-Heading ">Test Code<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
+                                        </div>
+                                        <div class="panel-body test-panel-body">
 
                                             <div class="form-group">
                                                 <label>Test Script</label>

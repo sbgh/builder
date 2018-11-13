@@ -277,3 +277,17 @@ border: 1px solid #adadad;
 .rerunnableRow{
     color: white;
 }
+
+.sys-form-panel{
+    background-color: #3c3f41;
+    color: #ffffff;
+}
+
+a.fileListLink {
+    color: #ffffff;
+}
+
+a.libListRow {
+    color: #ffffff;
+}
+

@@ -236,3 +236,16 @@ div.grippie {
 .rerunnableRow{
     color: #2b2b2b;
 }
+
+.sys-form-panel{
+    background-color: #ececec;
+    color: #555555;
+}
+
+a.fileListLink {
+    color: #2b2b2b;
+}
+
+a.libListRow {
+    color: #2b2b2b;
+}

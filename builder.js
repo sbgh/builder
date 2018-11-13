@@ -496,11 +496,15 @@ router.post("/save",function(req,res){
                 newData.enabled = req.body.enabled;
                 newData.rerunnable = req.body.rerunnable;
                 if(req.body.enabled === 1){
-                    newData.type = 'job'
+                    if(req.body.rerunnable === 1){
+                        newData.type = 'rerunnable'
+                    }else{
+                        newData.type = 'job'
+                    }
                 }else{
                     newData.type = 'disabled'
                 }
-                //newData.type = type;
+
                 newData.description = req.body.description;
                 newData.variables = req.body.compVariables;
                 newData.script = req.body.script;
@@ -679,7 +683,7 @@ router.post("/copy",function(req,res){
                     text: fromNode.name,
                     hist: hist
                 };
-                if(fromNode.type === 'job' || fromNode.type === 'disabled'){
+                if(fromNode.type === 'job' || fromNode.type === 'disabled' || fromNode.type === 'rerunnable'){
                     NewRow.enabled=fromNode.enabled;
                     NewRow.rerunnable=fromNode.rerunnable;
                     NewRow.script=fromNode.script;
@@ -779,7 +783,7 @@ router.post("/copy",function(req,res){
                     lib: lib,
                     hist: hist
                 };
-                if(fromNode.type === 'job' || fromNode.type === 'disabled'){
+                if(fromNode.type === 'job' || fromNode.type === 'disabled' || fromNode.type === 'rerunnable'){
                     NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
                     NewRow.enabled=fromNode.enabled;
                     NewRow.rerunnable=fromNode.rerunnable;
