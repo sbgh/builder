@@ -12,7 +12,7 @@ while (secret.length < 20){
 
 while (username.trim().length < 5){
     console.log('');
-    secret = prompt.question('Enter your preferred username. Must be at least 5 chrs: ');
+    username = prompt.question('Enter your preferred username. Must be at least 5 chrs: ');
 }
 
 var configJSON = {};
