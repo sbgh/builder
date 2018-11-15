@@ -916,6 +916,7 @@ router.post("/copyToLib",function(req,res){
                 NewRow.custTemplates=fromNode.custTemplates;
                 NewRow.resourceFiles=fromNode.resourceFiles;
                 NewRow.rerunnable=fromNode.rerunnable;
+                NewRow.enabled=fromNode.enabled;
             }
 
             libJSON[id] = NewRow;
