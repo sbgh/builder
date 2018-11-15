@@ -518,6 +518,13 @@ input:checked + .slider:before {
    padding-left: 4px;
 }
 
+.screenShotCol{
+
+}
+
+.jstree-disabled{
+   background-color: transparent;
+}
 
 
 

@@ -548,7 +548,7 @@ router.post("/save",function(req,res){
 
             //initial history json
             var ds = new Date().toISOString();
-            var hist=[{username:config.username, ds: ds, fromId: fromId}];
+            var hist=[{username:config.username, ds: ds, fromId: ''}];
 
             foundRow = {parent:pid, ft:pid, name:req.body.name, ver:1, type: type, description: req.body.description, text:req.body.name, variables:req.body.variables, sort:x, hist:hist};
             SystemsJSON[id] = foundRow;
@@ -556,7 +556,6 @@ router.post("/save",function(req,res){
             var newData = {};
             newData.parent = SystemsJSON[id].parent;
             newData.ft = SystemsJSON[id].ft;
-            newData.name = req.body.name;
             newData.type =  req.body.type;
             newData.description = req.body.description;
             newData.text = req.body.name;
@@ -1647,13 +1646,11 @@ router.post("/run",function(req,res){
                                             fs.writeFileSync(filesPath + job.id + '/' + 'screenshot.png', ss.data, 'base64');
 
                                             res.write("img:"+job.id + '/' + 'screenshot.png');
-                                            // protocol.close();
-                                            // chrome.kill();
-                                            // console.log('chrome killed');
 
                                             aSyncInProgress--;
                                             //console.log('saveTemplate:Sent - screenshot.png' );
-                                            message('snap:created: ' + "screenshot.png" + ":"+ 'url:' + url);
+                                            message('snap:created: ' + "screenshot.png");
+                                            message('url:' + url);
                                             if(deferredExit == true && aSyncInProgress == 0){
                                                 stream.write("exit" + '\n');
                                                 sshSuccess = true

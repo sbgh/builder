@@ -156,6 +156,10 @@ div.grippie {
     color: #ffffff !important;
 }
 
+.jstree-disabled{
+    background-color: transparent !important;
+}
+
 .customLibDropBox{
     background-color: #555555;
 }
@@ -290,4 +294,6 @@ a.fileListLink {
 a.libListRow {
     color: #ffffff;
 }
+
+
 

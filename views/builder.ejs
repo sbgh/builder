@@ -459,13 +459,15 @@
 
                 //Add events for shift click expand/close
                 $("#jstree_div").on("open_node.jstree", function (e, data) {
-                    const shiftKey = window.event.shiftKey;
+                    var evt = window.event || e  //good ol firefox
+                    const shiftKey = evt.shiftKey || false;
                     if(shiftKey){
                         $("#jstree_div").jstree("open_all", data.node);
                     }
                 });
                 $("#jstree_div").on("close_node.jstree", function (e, data) {
-                    const shiftKey = window.event.shiftKey;
+                    var evt = window.event || e  //good ol firefox
+                    const shiftKey = evt.shiftKey || false;
                     if(shiftKey){
                         $("#jstree_div").jstree("close_all", data.node);
                     }
@@ -880,6 +882,11 @@
                 $('.runningJobCompleteSuccess').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
                 $('.runningJobCompleteFail').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
 
+                //Disable tree
+                $('#jstree_div li').each( function() {
+                    $("#jstree_div").jstree().disable_node(this.id);
+                })
+
                 $.ajax({
                     url: '/run',
                     processData: false,
@@ -913,9 +920,10 @@
                             if(row.substr(0,4) === 'key:' &&  $("#results_html").html() === '') {
                                 localKey += row.substr(4) + '\n';
                             }
-                            else if(row.substr(0,4) === 'url:'){
-                                //           window.open('https://mynode:8445/cm', 'new_', '');
+                            else if(row.substr(0,12) === 'message:url:'){
+                                //window.open('https://mynode:8445/cm', 'new_', '');
                                 //window.open('https://mynode:8445/cm');
+                                $("#link")[0].innerHTML = "<a href='" + row.slice(12)+"' target='_new'>Link: " + row.slice(12) + "</a>"
                             }
                             else if(row.substr(0,16) === 'message:BuildID:'){
                                 buildIDRunning = row.substring(
@@ -965,9 +973,19 @@
                     if (localKey !== ''){
                         //console.log(localKey)
                     }
-                    updateResultsList(selectedNode)
+                    updateResultsList(selectedNode);
+
+                    //Enable tree
+                    $('#jstree_div li').each( function() {
+                        $("#jstree_div").jstree().enable_node(this.id);
+                    })
+
                 }).fail(function (e) {
 
+                    //Enable tree
+                    $('#jstree_div li').each( function() {
+                        $("#jstree_div").jstree().enable_node(this.id);
+                    })
                 });
 
                 $('#runModal').modal('toggle');
@@ -2395,7 +2413,8 @@
                            style="border: 1;"></iframe>
                </div>  -->
 
-            <div id="screenShotCol" class="col-lg-12 top-col-offset-240"  style="text-align: center">
+            <div id="screenShotCol" class="col-lg-12 top-col-offset-240 screenShotCol"  >
+                <div id="link"></div>
                 <img id="screenShot">
             </div>
 
