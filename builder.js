@@ -197,6 +197,10 @@ router.get("/Jobs",function(req,res){
                     rowdata.type="rerunnable"
                 }
 
+                if(rowdata.icon){
+                    rowdata.icon = "/uploads/" + key + "/" + "icon.png"
+                }
+
                 var pt = rowdata.parent;
                 if(pt === "#"){
                     rowdata.parent = "local";
@@ -559,6 +563,7 @@ router.post("/save",function(req,res){
             newData.type =  req.body.type;
             newData.description = req.body.description;
             newData.text = req.body.name;
+            newData.name = req.body.name;
             newData.variables = req.body.variables;
             newData.sort = SystemsJSON[id].sort;
             newData.icon = SystemsJSON[id].icon;
@@ -590,8 +595,10 @@ router.post("/save",function(req,res){
         if (base64Data !== '') {
             //console.log("base64Data !== '' - "+base64Data);
             var iconPath = filesPath + id + '/' + "icon.png";
-            foundRow.icon = "/uploads/" + id + '/' + "icon.png";
-            SystemsJSON[id].icon = "/uploads/" + id + '/' + "icon.png";
+            foundRow.icon = "icon.png";
+
+            SystemsJSON[id].icon = "icon.png";
+
             //console.log(iconPath);
             if (!fs.existsSync(filesPath + id)) {
                 fs.mkdirSync(filesPath + id)
@@ -690,8 +697,9 @@ router.post("/copy",function(req,res){
                     NewRow.template=fromNode.template;
                     NewRow.custTemplates=fromNode.custTemplates;
                     NewRow.resourceFiles=fromNode.resourceFiles;
-                }else{
-                    NewRow.icon=fromNode.icon.replace(fromId, id);
+                    NewRow.icon=fromNode.icon;
+                // }else{
+                //     NewRow.icon=fromNode.icon.replace(fromId, id);
                 }
 
                 SystemsJSON[id] = NewRow;
@@ -761,10 +769,10 @@ router.post("/copy",function(req,res){
                 idMap[fromId] = id;
                 var newParentId = idMap[libJSON[fromId].parent];
 
-                var newIcon = '';
-                if(fromNode.hasOwnProperty('icon')){
-                    var newIcon = "/uploads/" + fromNode.icon.split("/").slice(-2).join("/").replace(fromId, id);
-                }
+                // var newIcon = '';
+                // if(fromNode.hasOwnProperty('icon')){
+                //     var newIcon = fromNode.icon;
+                // }
 
                 //initial history json
                 const ds = new Date().toISOString();
@@ -790,8 +798,9 @@ router.post("/copy",function(req,res){
                     NewRow.template=fromNode.template;
                     NewRow.custTemplates=fromNode.custTemplates;
                     NewRow.resourceFiles=fromNode.resourceFiles;
-                }else{
-                    NewRow.icon=newIcon;
+                    NewRow.icon=fromNode.icon;
+                // }else{
+                //     NewRow.icon=fromNode.icon;
                 }
 
                 SystemsJSON[id] = NewRow;
@@ -901,11 +910,12 @@ router.post("/copyToLib",function(req,res){
                 ver: fromNode.ver,
                 variables: fromNode.variables,
                 sort: fromNode.sort,
-                hist: fromNode.hist
+                hist: fromNode.hist,
+                icon: fromNode.icon
             };
-            if (newIcon !== ''){
-                NewRow.icon = newIcon
-            }
+            // if (newIcon !== ''){
+            //     NewRow.icon = newIcon
+            // }
             //console.log(fromNode.icon);
 
             const nodeType = fromNode.type;
@@ -987,6 +997,10 @@ router.get("/getLib",function(req,res) {
 
                     if(rowdata.rerunnable === 1){
                         rowdata.type="rerunnable";
+                    }
+
+                    if(rowdata.icon){
+                        rowdata.icon = "/library/" + pickedLib + "/uploads/" + key + "/" + "icon.png"
                     }
 
                     var pt = rowdata.parent;
