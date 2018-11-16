@@ -1143,7 +1143,7 @@ router.post("/run",function(req,res){
                     runKey = fs.readFileSync(myFiles.path);
                     newKey = true;
                     fs.unlink(myFiles.path,function(err){
-                        console.log('Error: unable to delete uploaded key file');
+                        if(err) console.log('Error: unable to delete uploaded key file')
                     });
                    //console.log('runKey file: ' + runKey);
                 }
@@ -1284,6 +1284,8 @@ router.post("/run",function(req,res){
             conn.on('error', function (err) {
                 console.log('SSH - Connection Error: ' + err);
                 message('SSH - Connection Error: ' + err);
+                flushMessQueue();
+                res.end("**Scripts Aborted**");
             });
 
             conn.on('end', function () {
@@ -1841,13 +1843,22 @@ router.post("/run",function(req,res){
             });
 
             //console.log('job.id: ' + jobId);
-            //console.log('username: ' + getSystemVarVal(jobId, 'username'));
-            conn.connect({
-                host: getSystemVarVal(jobId, 'host'),
-                port: getSystemVarVal(jobId, 'port'),
-                username: getSystemVarVal(jobId, 'username'),
-                privateKey: runKey
-            });
+            //console.log('runKey: ' + runKey);
+
+            try {
+                conn.connect({
+                    host: getSystemVarVal(jobId, 'host'),
+                    port: getSystemVarVal(jobId, 'port'),
+                    username: getSystemVarVal(jobId, 'username'),
+                    privateKey: runKey
+                });
+            }
+            catch(error) {
+                console.error(error);
+                console.log('runKey: ' + runKey);
+                res.end("**Connection Error**");
+            }
+
         }
     }
 });
