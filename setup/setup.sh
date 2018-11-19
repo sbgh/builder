@@ -51,6 +51,10 @@ echo "{}" > ./library/public/library1/SystemsJSON.json
 echo "{}" > ./library/private/library1/SystemsJSON.json
 
 echo
+echo 'Creating library folders and files'
+mkdir ./backup;
+
+echo
 echo 'Creating SSL'
 mkdir ./ssl;
 openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" -keyout ./ssl/server.key -out ./ssl/server.crt;

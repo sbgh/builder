@@ -526,7 +526,13 @@ input:checked + .slider:before {
    background-color: transparent;
 }
 
+.welcome-modal-body{
 
+}
+
+.welcome-modal-content{
+   opacity: .9;
+}
 
 
 

@@ -212,6 +212,63 @@ router.get("/Jobs",function(req,res){
     res.end(JSON.stringify(resJSON));
 });
 
+var currentPickedLib = '';
+router.get("/getLib",function(req,res) {
+    const pickedLib = req.query.pickedLib;
+    currentPickedLib = pickedLib;
+    const id = req.query.id;
+    res.writeHead(200, {"Content-Type": "application/json"});
+    if (req.query.id === '#'){
+        var resJSON = [];
+        if (pickedLib !== '#'){
+            const libJSON =  JSON.parse(fs.readFileSync(libsPath + pickedLib + "/SystemsJSON.json"));
+
+            //Create parent row and place entire tree under it
+            var rowdata = {};
+            rowdata.id = "lib";
+            rowdata.name = pickedLib;
+            rowdata.text = pickedLib;
+            rowdata.parent = '#';
+
+            resJSON.push(rowdata);
+            for (var key in libJSON) {
+                if (libJSON.hasOwnProperty(key)) {
+                    rowdata = libJSON[key];
+                    rowdata.id = key;
+                    rowdata.text = rowdata.name;
+
+                    if(rowdata.rerunnable === 1){
+                        rowdata.type="rerunnable";
+                    }
+
+                    if(rowdata.icon){
+                        rowdata.icon = "/library/" + pickedLib + "/uploads/" + key + "/" + "icon.png"
+                    }
+
+                    var pt = rowdata.parent;
+                    if(pt === "#"){
+                        rowdata.parent = "lib";
+                    }
+                    resJSON.push(rowdata);
+                }
+            }
+        }
+        //console.log(pickedLib);
+        res.end(JSON.stringify(resJSON))
+
+    }else{
+
+        const libJSON =  JSON.parse(fs.readFileSync(libsPath + pickedLib + "/SystemsJSON.json"));
+        var resJSON = [];
+        var rowdata = libJSON[id];
+        //console.log( libJSON[id].rerunnable);
+        rowdata.id = id;
+        resJSON.push(rowdata);
+        res.end(JSON.stringify(resJSON));
+    }
+
+});
+
 router.get("/Sys",function(req,res){
     //console.log("url: " + req.url);
     var id = req.query.id;
@@ -788,7 +845,8 @@ router.post("/copy",function(req,res){
                     sort:fromNode.sort,
                     text: fromNode.name,
                     lib: lib,
-                    hist: hist
+                    hist: hist,
+                    icon: fromNode.icon
                 };
                 if(fromNode.type === 'job' || fromNode.type === 'disabled' || fromNode.type === 'rerunnable'){
                     NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
@@ -968,63 +1026,6 @@ router.get("/libraryList",function(req,res){
         var pubFiles = fs.readdirSync(libsPath + "/public");
         const respObj = {pri:priFiles, pub:pubFiles};
         res.end(JSON.stringify(respObj));
-});
-
-var currentPickedLib = '';
-router.get("/getLib",function(req,res) {
-    const pickedLib = req.query.pickedLib;
-    currentPickedLib = pickedLib;
-    const id = req.query.id;
-    res.writeHead(200, {"Content-Type": "application/json"});
-    if (req.query.id === '#'){
-        var resJSON = [];
-        if (pickedLib !== '#'){
-            const libJSON =  JSON.parse(fs.readFileSync(libsPath + pickedLib + "/SystemsJSON.json"));
-
-            //Create parent row and place entire tree under it
-            var rowdata = {};
-            rowdata.id = "lib";
-            rowdata.name = pickedLib;
-            rowdata.text = pickedLib;
-            rowdata.parent = '#';
-
-            resJSON.push(rowdata);
-            for (var key in libJSON) {
-                if (libJSON.hasOwnProperty(key)) {
-                    rowdata = libJSON[key];
-                    rowdata.id = key;
-                    rowdata.text = rowdata.name;
-
-                    if(rowdata.rerunnable === 1){
-                        rowdata.type="rerunnable";
-                    }
-
-                    if(rowdata.icon){
-                        rowdata.icon = "/library/" + pickedLib + "/uploads/" + key + "/" + "icon.png"
-                    }
-
-                    var pt = rowdata.parent;
-                    if(pt === "#"){
-                        rowdata.parent = "lib";
-                    }
-                    resJSON.push(rowdata);
-                }
-            }
-        }
-        console.log(pickedLib);
-        res.end(JSON.stringify(resJSON))
-
-    }else{
-
-        const libJSON =  JSON.parse(fs.readFileSync(libsPath + pickedLib + "/SystemsJSON.json"));
-        var resJSON = [];
-        var rowdata = libJSON[id];
-        console.log( libJSON[id].rerunnable);
-        rowdata.id = id;
-        resJSON.push(rowdata);
-        res.end(JSON.stringify(resJSON));
-    }
-
 });
 
 function getSystemVarVal(jobId, vari){
@@ -2160,6 +2161,19 @@ router.get("/settings",function(req,res){
     res.end(JSON.stringify(respObj));
 });
 
+router.post("/firstRun",function(req,res){
+
+    var reqJSON = req.body;
+    var firstRun = reqJSON.firstRun;
+
+        if( !saveSettings("firstRun", 1) ){
+            res.write("firstRun set")
+        }else{
+            res.write("Error setting firstRun")
+        }
+    res.end('')
+});
+
 
 function saveAllJSON(){
 
@@ -2168,8 +2182,18 @@ function saveAllJSON(){
             console.log('There has been an error saving your json.');
             console.log(err.message);
             return;
+        }else{
+            var dsString = new Date().toISOString();
+            var fds = dsString.replace(/_/g, '-').replace(/T/, '-').replace(/:/g, '-').replace(/\..+/, '');
+            const fname = 'SystemsJSON_'+fds+'.json';
+            fs.writeFile("./backup/" + fname, JSON.stringify(SystemsJSON), function (err) {
+                if (err) {
+                    console.log('There has been an error saving your json: ' + fname);
+                    console.log(err.message);
+                    return;
+                }
+            })
         }
-        //console.log('json saved successfully.')
     })
 };
 
