@@ -18,9 +18,11 @@
             <div class="form-group">
                 <label for="password" class="control-label">Password</label>
                 <input type="password" class="form-control" id="password" name="password" placeholder="password" value=""/>
-                <% if (typeof error !== 'undefined' && error.length > 0) { %>
-                <%= error %>
-                <% } %>
+                <br><div style="color:red">
+                    <% if (typeof error !== 'undefined' && error.length > 0) { %>
+                    <%= error %>
+                    <% } %>
+                </div>
 
                 <input type="hidden" id="rd" name="rd">
             </div>

@@ -415,7 +415,7 @@
                     $("#jobScreen").hide();
                 }else {
                     clearJobFields();
-                    if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled" || data.instance.get_node(data.node.id).type === "rerunnable") {
+                    if (data.instance.get_node(data.node.id).type === "job"  || data.instance.get_node(data.node.id).type === "disabled" || data.instance.get_node(data.node.id).type === "rerunnable") {
                         getLibJobByID(selectedNode, pickedLib);
                         readModeLibJob(selectedNode);
                         $('#jstree_div').jstree("deselect_all");
@@ -423,14 +423,14 @@
 
                         $("#sysScreen").hide();
                         $("#jobScreen").show();
-                        $("#type").val('Job');
+                        $("#comType").val('Job');
                         hideBottom()
-                    } else if (data.instance.get_node(data.node.id).type === "system") {
+                    } else if (data.instance.get_node(data.node.id).comType === "system") {
                         readModeLibSys();
                         $('#jstree_div').jstree("deselect_all");
                         $("#sysScreen").show();
                         $("#jobScreen").hide();
-                        $("#type").val('system');
+                        $("#comType").val('system');
                         getLibSysByID(selectedNode, pickedLib);
                         hideBottom()
                     } else { //Type = Lib
@@ -490,7 +490,7 @@
                     $("#sysScreen").hide();
                     $("#jobScreen").hide();
                 }else{
-                    if (data.instance.get_node(data.node.id).type === "job" || data.instance.get_node(data.node.id).type === "disabled" || data.instance.get_node(data.node.id).type === "rerunnable") {
+                    if (data.instance.get_node(data.node.id).type === "job"  || data.instance.get_node(data.node.id).type === "disabled" || data.instance.get_node(data.node.id).type === "rerunnable" ) {
 
                         //query backend for a specific job and update fields
                         getJobByID(selectedNode);
@@ -498,7 +498,7 @@
 
                         $("#sysScreen").hide();
                         $("#jobScreen").show();
-                        $("#type").val('Job');
+                        $("#comType").val('Job');
                         updateResultsList(selectedNode);
 
                         const targetNode =  $('#jstree_div').jstree(true).get_node(data.node.id);
@@ -514,7 +514,7 @@
                         readModeSys();
                         $("#sysScreen").show();
                         $("#jobScreen").hide();
-                        $("#type").val('system');
+                        $("#comType").val('system');
                         getSysByID(selectedNode);
                         updateResultsList(selectedNode);
                         hideBottom()
@@ -1256,7 +1256,7 @@
                 mydata.id = $("#id").val();
                 mydata.parent = $("#parent").val();
                 mydata.name = $("#name").val();
-                mydata.type = $("#type").val();
+                mydata.comType = $("#comType").val();
                 mydata.description = $("#description").val();
 
                 if($('#componentEnabled').is(':checked')) {
@@ -1317,7 +1317,7 @@
                 mydata.id = $("#id").val();
                 mydata.parent = $("#parent").val();
                 mydata.name = $("#sysName").val();
-                mydata.type = $("#type").val();
+                mydata.comType = $("#comType").val();
                 mydata.description = $("#sysDescription").val();
                 mydata.variables = $("#sysVariables").val();
                 mydata.text = $("#text").val();
@@ -1649,7 +1649,7 @@
                 mydata.description = "";
                 mydata.script = "";
                 mydata.text = "New Component";
-                mydata.type = "job";
+                mydata.comType = "job";
                 createNode(mydata);
             });
 
@@ -1661,7 +1661,7 @@
                 mydata.description = "";
                 mydata.script = "";
                 mydata.text = "new Sys";
-                mydata.type = "system";
+                mydata.comType = "system";
                 createNode(mydata);
             });
 
@@ -1743,7 +1743,7 @@
                         var node = { "id" : resultJSON.id };
                         node.name = resultJSON.name;
                         node.text = resultJSON.text;
-                        node.type = resultJSON.type;
+                        node.comType = resultJSON.comType;
 
                         $('#jstree_div').jstree('create_node', resultJSON.parent, node, 'last', function(){
                             var newNode = $("#jstree_div").jstree(true).get_node(resultJSON.id);
@@ -2546,7 +2546,7 @@
 
                     </div>
                     <div class="panel panel-default jobPanel">
-                        <input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="type" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >
+                        <input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="conType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >
                     <div class="panel-body job-form-panel" id="job-form-panel">
 
                         <form id="jobForm">

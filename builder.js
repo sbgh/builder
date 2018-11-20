@@ -108,37 +108,42 @@ router.get("/",function(req,res){
 });
 
 router.get("/login",function(req,res){
-    res.render('login');
+    //console.log("error: " + req.query.error);
+    //console.log("rd: " + req.query.rd);
+    res.render('login', {error: req.query.error});
 });
 
 router.post("/login",function(req,res) {
 
-    console.log("login - referrer:" + req.headers.referer + ' remoteAddress:' + req.connection.remoteAddress);
+    console.log("login - referrer:" + req.headers.referer + ' remoteAddress:' + req.connection.remoteAddress); //sic
     if (req.body.username === "" || req.body.password === "") {
-        res.render('login', {error: "ERROR: Please enter userID & password"});
+        res.redirect("/login?rd=" + encodeURIComponent(req.body.rd) +"&error=" + encodeURIComponent("ERROR: Please enter userID & password"))
     }else{
         var userJSON = userTableJSON.filter(function (row) {
             return row.id === req.body.username;
         });
-        if (!passwordHash.isHashed( userJSON[0].pw)){
-            console.log('username not found - referrer:' + req.headers.referer + ' connection:' + req.connection.remoteAddress + " username:" + req.body.username);
-            res.render('login', {error: "ERROR: User identity not setup."});
-        }else{
+        if((typeof userJSON[0]) !== "undefined"){
+            if (  !passwordHash.isHashed( userJSON[0].pw)   ){
+                console.log('password not hashed - referrer:' + req.headers.referer + ' connection:' + req.connection.remoteAddress + " username:" + req.body.username);
+                res.redirect("/login?rd=" + encodeURIComponent(req.body.rd) +"&error=" + encodeURIComponent("User identity not setup"))
+            }else{
+                if (passwordHash.verify(req.body.password, userJSON[0].pw)) {
+                    const redirectTo = req.body.rd ? req.body.rd : '/';
+                    req.session.authenticated = true;
+                    req.session.username = "Admin";
 
-            if (passwordHash.verify(req.body.password, userJSON[0].pw)) {
-                req.session.authenticated = true;
-                req.session.username = "Admin";
-
-                const redirectTo = req.body.rd ? req.body.rd : '/';
-
-               // console.log('redirecting to: ' + redirectTo);
-               // console.log('req.body.rd ' + req.body.rd);
-                res.redirect(redirectTo);
-            } else {
-                console.log('Login credentials incorrect - referer:' + req.headers.referer + ' connection:' + req.connection.remoteAddress + " username:" + req.body.username);
-                res.render('login', {error: "Login credentials incorrect"});
+                    res.redirect(redirectTo);
+                } else {
+                    console.log('Login credentials incorrect - referer:' + req.headers.referer + ' connection:' + req.connection.remoteAddress + " username:" + req.body.username);
+                    res.redirect("/login?rd=" + encodeURIComponent(req.body.rd) +"&error=" + encodeURIComponent("Login credentials incorrect"))
+                }
             }
         }
+        else{
+            console.log('username not found - referrer:' + req.headers.referer + ' connection:' + req.connection.remoteAddress + " username:" + req.body.username);
+            res.redirect("/login?rd=" + encodeURIComponent(req.body.rd) +"&error=" + encodeURIComponent("User identity not setup"))
+        }
+
     }
 
 });
@@ -191,10 +196,14 @@ router.get("/Jobs",function(req,res){
                 rowdata.id = key;
                 rowdata.text = rowdata.name;
 
-                if(rowdata.enabled === 0){
-                    rowdata.type="disabled";
-                }else if(rowdata.rerunnable === 1){
-                    rowdata.type="rerunnable"
+
+                rowdata.type=SystemsJSON[key].comType;
+                if(rowdata.hasOwnProperty("enabled")){
+                    if(rowdata.enabled === 0){
+                        rowdata.type="disabled";
+                    }else if(rowdata.rerunnable === 1){
+                        rowdata.type="rerunnable"
+                    }
                 }
 
                 if(rowdata.icon){
@@ -237,8 +246,13 @@ router.get("/getLib",function(req,res) {
                     rowdata.id = key;
                     rowdata.text = rowdata.name;
 
-                    if(rowdata.rerunnable === 1){
-                        rowdata.type="rerunnable";
+                    rowdata.type=SystemsJSON[key].comType;
+                    if(rowdata.hasOwnProperty("enabled")){
+                        if(rowdata.enabled === 0){
+                            rowdata.type="disabled";
+                        }else if(rowdata.rerunnable === 1){
+                            rowdata.type="rerunnable"
+                        }
                     }
 
                     if(rowdata.icon){
@@ -530,8 +544,8 @@ router.post("/save",function(req,res){
     var id = reqJSON.id;
     var foundRow = {};
     //console.log("type: "+req.body.type);
-    if(req.body.type !== "system"){
-        var type = "job";
+    if(req.body.comType !== "system"){
+        var comType = "job";
         if (id.length < 32){ //new
             var pid = req.body.parent;
             var parentFamTree = SystemsJSON[pid].ft;
@@ -547,7 +561,7 @@ router.post("/save",function(req,res){
             var hist=[{username:config.username, ds: ds, fromId: ""}];
 
             id = generateUUID();
-            foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1, enabled:0, rerunnable:0, type: 'disabled', description: req.body.description, script:req.body.script, variables:req.body.compVariables, template:req.body.template, text:req.body.name, resourceFiles:{}, sort:x, hist:hist};
+            foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1, enabled:1, rerunnable:0, comType: 'job', description: req.body.description, script:req.body.script, variables:req.body.compVariables, template:req.body.template, text:req.body.name, resourceFiles:{}, sort:x, hist:hist};
             SystemsJSON[id] = foundRow;
         }else{ //not new
                 var newData = {};
@@ -556,15 +570,7 @@ router.post("/save",function(req,res){
                 newData.name = req.body.name;
                 newData.enabled = req.body.enabled;
                 newData.rerunnable = req.body.rerunnable;
-                if(req.body.enabled === 1){
-                    if(req.body.rerunnable === 1){
-                        newData.type = 'rerunnable'
-                    }else{
-                        newData.type = 'job'
-                    }
-                }else{
-                    newData.type = 'disabled'
-                }
+                newData.comType = 'job';
 
                 newData.description = req.body.description;
                 newData.variables = req.body.compVariables;
@@ -596,7 +602,7 @@ router.post("/save",function(req,res){
                // console.log('v:' + req.body.compVariables)
         }
     }else{
-        var type = "system";
+        var comType = "system";
         if (id.length < 32){ //new
             var pid = '#';
             var x =0;
@@ -611,13 +617,13 @@ router.post("/save",function(req,res){
             var ds = new Date().toISOString();
             var hist=[{username:config.username, ds: ds, fromId: ''}];
 
-            foundRow = {parent:pid, ft:pid, name:req.body.name, ver:1, type: type, description: req.body.description, text:req.body.name, variables:req.body.variables, sort:x, hist:hist};
+            foundRow = {parent:pid, ft:pid, name:req.body.name, ver:1, comType: "system", description: req.body.description, text:req.body.name, variables:req.body.variables, sort:x, hist:hist};
             SystemsJSON[id] = foundRow;
         }else{ //not new
             var newData = {};
             newData.parent = SystemsJSON[id].parent;
             newData.ft = SystemsJSON[id].ft;
-            newData.type =  req.body.type;
+            newData.comType =  "system";
             newData.description = req.body.description;
             newData.text = req.body.name;
             newData.name = req.body.name;
@@ -741,12 +747,12 @@ router.post("/copy",function(req,res){
                     name: fromNode.name,
                     description: fromNode.description,
                     ver: 1,
-                    type: fromNode.type,
+                    comType: fromNode.comType,
                     sort:fromNode.sort,
                     text: fromNode.name,
                     hist: hist
                 };
-                if(fromNode.type === 'job' || fromNode.type === 'disabled' || fromNode.type === 'rerunnable'){
+                if(fromNode.comType === 'job' ){
                     NewRow.enabled=fromNode.enabled;
                     NewRow.rerunnable=fromNode.rerunnable;
                     NewRow.script=fromNode.script;
@@ -840,7 +846,7 @@ router.post("/copy",function(req,res){
                     name: fromNode.name,
                     description: fromNode.description,
                     ver: 1,
-                    type: fromNode.type,
+                    comType: fromNode.comType,
                     variables: fromNode.variables,
                     sort:fromNode.sort,
                     text: fromNode.name,
@@ -848,7 +854,7 @@ router.post("/copy",function(req,res){
                     hist: hist,
                     icon: fromNode.icon
                 };
-                if(fromNode.type === 'job' || fromNode.type === 'disabled' || fromNode.type === 'rerunnable'){
+                if(fromNode.comType === 'job'){
                     NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
                     NewRow.enabled=fromNode.enabled;
                     NewRow.rerunnable=fromNode.rerunnable;
@@ -963,7 +969,7 @@ router.post("/copyToLib",function(req,res){
             var NewRow = {
                 parent: newParentId,
                 name: fromNode.name,
-                type: fromNode.type,
+                comType: fromNode.comType,
                 description: fromNode.description,
                 ver: fromNode.ver,
                 variables: fromNode.variables,
@@ -976,8 +982,8 @@ router.post("/copyToLib",function(req,res){
             // }
             //console.log(fromNode.icon);
 
-            const nodeType = fromNode.type;
-            if ((nodeType === 'job') || (nodeType === 'disabled') || (nodeType === 'rerunnable')){
+            const nodeType = fromNode.comType;
+            if (nodeType === 'job' ){
                 NewRow.ft=libJSON[newParentId].ft + '/' + newParentId;
                 NewRow.script=fromNode.script;
                 NewRow.template=fromNode.template;
@@ -2191,6 +2197,23 @@ function saveAllJSON(){
                     console.log('There has been an error saving your json: ' + fname);
                     console.log(err.message);
                     return;
+                }else{
+                    var x = 1;
+                    fs.readdir("./backup/", function(err, files){ // delete older backups files
+                        if (err){
+                            console.log(err);
+                        }else{
+                            files.forEach(function(mFile){
+                                if (fs.statSync("./backup/" + mFile).isFile()){
+                                    if((x + 20) <  files.length){
+                                        fs.unlinkSync("./backup/" + mFile)
+                                    };
+                                    x++
+                                }
+                            })
+                        }
+
+                    });
                 }
             })
         }
