@@ -42,7 +42,13 @@
                         "icons": true
                     },
                     "data" : {
-                        'url' : function (node) {return 'Jobs';},
+                        'url' : function (node) {
+                                return node.id === '#' ?
+                                    'jobs' :
+                                    'jobs';
+
+                            //return 'Jobs';
+                            },
                         'data' : function (node) {return { 'id' : node.id };}
                     },
                     'check_callback': function(operation, node, node_parent, node_position, more) {
@@ -99,6 +105,9 @@
                     },
                     "job" : {
                         "icon" : "fa fa-code"
+                    },
+                    "needfull" : {
+                        "icon" : "fa fa-play-circle-o"
                     },
                     "rerunnable" : {
                         "icon" : "fa fa-repeat rerunnableRow",
@@ -415,9 +424,12 @@
                     $("#jobScreen").hide();
                 }else {
                     clearJobFields();
-                    if (data.instance.get_node(data.node.id).type === "job"  || data.instance.get_node(data.node.id).type === "disabled" || data.instance.get_node(data.node.id).type === "rerunnable") {
+                    if (data.instance.get_node(data.node.id).type === "job"
+                        || data.instance.get_node(data.node.id).type === "disabled"
+                        || data.instance.get_node(data.node.id).type === "needfull"
+                        || data.instance.get_node(data.node.id).type === "rerunnable") {
                         getLibJobByID(selectedNode, pickedLib);
-                        readModeLibJob(selectedNode);
+                        readModeLibJob();
                         $('#jstree_div').jstree("deselect_all");
 
 
@@ -425,7 +437,8 @@
                         $("#jobScreen").show();
                         $("#comType").val('Job');
                         hideBottom()
-                    } else if (data.instance.get_node(data.node.id).comType === "system") {
+                    }
+                    else if (data.instance.get_node(data.node.id).type === "system") {
                         readModeLibSys();
                         $('#jstree_div').jstree("deselect_all");
                         $("#sysScreen").show();
@@ -433,7 +446,8 @@
                         $("#comType").val('system');
                         getLibSysByID(selectedNode, pickedLib);
                         hideBottom()
-                    } else { //Type = Lib
+                    }
+                    else { //Type = Lib
                         $('#jstree_div').jstree("deselect_all");
                         hideBottom()
                     }
@@ -475,6 +489,7 @@
 
             //tree click
             $('#jstree_div').on("select_node.jstree", function (e, data) {
+
                 $("#rightCol").show();
                 $("#introCol").hide();
                 $("#screenShotCol").hide();
@@ -490,11 +505,14 @@
                     $("#sysScreen").hide();
                     $("#jobScreen").hide();
                 }else{
-                    if (data.instance.get_node(data.node.id).type === "job"  || data.instance.get_node(data.node.id).type === "disabled" || data.instance.get_node(data.node.id).type === "rerunnable" ) {
+                    if (data.instance.get_node(data.node.id).type === "job"
+                        || data.instance.get_node(data.node.id).type === "disabled"
+                        || data.instance.get_node(data.node.id).type === "needfull"
+                        || data.instance.get_node(data.node.id).type === "rerunnable" ) {
 
                         //query backend for a specific job and update fields
                         getJobByID(selectedNode);
-                        readModeJob(selectedNode);
+                        readModeJob();
 
                         $("#sysScreen").hide();
                         $("#jobScreen").show();
@@ -539,15 +557,16 @@
             $("#screenShotCol").hide();
 
             //on refresh tree after remove_node select parent
-            var newFlag = "";
-            removeFlag= false;
-            $('#jstree_div').on('refresh.jstree', function () {
-                if(removeFlag){
-                    var parentNode = $("#jstree_div").jstree(true).get_node($("#parent").val());
-                    $("#jstree_div").jstree(true).select_node(parentNode);
-                    removeFlag= false;
-                }
-            });
+//            var newFlag = "";
+//            removeFlag= false;
+//            $('#jstree_div').on('refresh.jstree', function () {
+//                if(removeFlag){
+////                    var parentNode = $("#jstree_div").jstree(true).get_node($("#parent").val());
+////                    $('#jstree_div' + " li[id=" + parentNode.id + "] a").click();
+//                    //$("#jstree_div").jstree(true).select_node(parentNode);
+//                    removeFlag= false;
+//                }
+//            });
 
             function hideBottom(){
                 $("#bottomRow").hide(function(){
@@ -615,8 +634,17 @@
             function getJobByID(NodeID){
                 clearJobFields();
                 $.get('/Jobs', { id: NodeID }, function(data) {
+
+//                    var dispData = data[0];
+//                    delete dispData.script;
+//                    delete dispData.custTemplates;
+//                    delete dispData.template;
+//
+//                    $("#nodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  ); // testing ---------------------
+
                     //console.log("getJobByID: "+data[0].script);
                     $("#id").val(data[0].id);
+                    $("#comType").val(data[0].comType);
                     $("#idDisp").val(data[0].id);
 
                     $("#parent").val(data[0].parent);
@@ -744,6 +772,7 @@
                     $.get('/Sys', { id: NodeID }, function(data) {
                         //console.log("getJobByID: "+data[0].script);
                         $("#id").val(data[0].id);
+                        $("#comType").val(data[0].comType);
                         $("#parent").val(data[0].parent);
                         $("#sysName").val(data[0].name);
                         $("#sysVersion").text(data[0].ver);
@@ -937,20 +966,27 @@
                                     buildIDRunningPrev = buildIDRunning
                                 }
                             }
-                            else if(row.substr(0,25) === '**All scripts completed**'){
-                                if(buildIDRunningPrev !== ''){
-                                    $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteFail').addClass("runningJobCompleteSuccess");
-                                }
+                            else if(row.substr(0,28) === 'status:All scripts completed'){
+                                //$('#jstree_div').jstree(true).refresh_node(buildIDRunningPrev);
+                                $('#jstree_div').jstree(true).refresh(true);
+//                                if(buildIDRunningPrev !== ''){
+//                                    $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteFail').addClass("runningJobCompleteSuccess");
+//                                };
+                                //$('#jstree_div').jstree(true).refresh(true);
+
                             }
-                            else if(row.substr(0,23) === 'CompletionSuccess:false'){
-                                if(buildIDRunningPrev !== ''){
-                                    // $('#' + buildIDRunning + '_anchor').css({color:'#fff'});
-                                    $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteSuccess').addClass("runningJobCompleteFail");
-                                }
+                            else if(row.substr(0,22) === 'status:Scripts Aborted'){
+                                //$('#jstree_div').jstree(true).redraw(true);
+                                $('#jstree_div').jstree(true).refresh(true);
+//                                if(buildIDRunningPrev !== ''){
+//                                    $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteSuccess').addClass("runningJobCompleteFail");
+//                                };
+                                //$('#jstree_div').jstree(true).refresh();
+                                //$('#jstree_div').jstree(true).redraw(true);
                             }
-                            else if(row.substr(0,4) === 'img:'){
+                            else if(row.substr(0,12) === 'message:img:'){
                                 var timestamp = new Date().getTime();
-                                $('#screenShot')[0].src="/uploads/" + row.replace('img:','') + '?' +timestamp  ;
+                                $('#screenShot')[0].src="/uploads/" + row.replace('message:img:','') + '?' +timestamp  ;
                                 $("#rightCol").hide();
                                 $("#screenShotCol").show();
                             }
@@ -1033,15 +1069,45 @@
                     //console.log(data);
                     removeFlag= true;
                     tree.jstree(true).delete_node(this.selectedNode);
-                    tree.jstree(true).redraw(true);
-                    tree.jstree(true).select_node(this.parent, true);
+                    //tree.jstree(true).redraw(true);
+                    //tree.jstree(true).select_node(this.parent, true);
+                    //var parentNode = $("#jstree_div").jstree(true).get_node($("#parent").val());
+                    $('#jstree_div' + " li[id=" + this.parent + "] a").click();
                 }).fail(function (e) {
                     console.log('remove refresh fail' );
                     console.log(e );
-                    tree.jstree(true).refresh();
+                    $('#jstree_div').jstree(true).refresh()
                 });
 
                 $('#delModal').modal('toggle');
+            });
+
+            //Clear build History
+            $("#clear_sys_button").click(function(event){
+                $('#clearModal').modal('show');
+            });
+            $("#clearConfirmButton").on("click",function() {
+
+                var mydata = {};
+                mydata.ids = selectedNode;
+
+                $.ajax({
+                    type: 'post',
+                    contentType: "application/json",
+                    url: '/clear',
+                    data: JSON.stringify(mydata),
+                    selectedNode:selectedNode,
+                    parent:parent
+                }).done(function (data) {
+                    $('#jstree_div').jstree(true).refresh(true)
+
+                }).fail(function (e) {
+                    console.log('Clear history fail' );
+                    console.log(e );
+                    $('#jstree_div').jstree(true).refresh()
+                });
+
+                $('#clearModal').modal('toggle');
             });
 
             //edit
@@ -1091,7 +1157,7 @@
                 });
 
             }
-            function readModeJob(NodeID){
+            function readModeJob(){
                 inputFields = $("#jobForm").find("input");
                 inputFields.each(disableElement);
                 inputFields = $("#jobForm").find("textarea");
@@ -1141,6 +1207,7 @@
                 $("#edit_sys_button").hide();
                 $("#save_sys_button").show();
                 $("#remove_sys_button").hide();
+                $("#clear_sys_button").hide();
                 $("#new_sys_button").hide();
 
                 $('#iconPaste').show()
@@ -1157,12 +1224,13 @@
                 $("#edit_sys_button").show();
                 $("#save_sys_button").hide();
                 $("#remove_sys_button").show();
+                $("#clear_sys_button").show();
                 $("#new_sys_button").show();
 
                 $('#iconPaste').hide()
             }
 
-            function readModeLibJob(NodeID){
+            function readModeLibJob(){
                 inputFields = $("#jobForm").find("input");
                 inputFields.each(disableElement);
                 inputFields = $("#jobForm").find("textarea");
@@ -1206,7 +1274,8 @@
                 $("#edit_sys_button").hide();
                 $("#save_sys_button").hide();
                 $("#remove_sys_button").show();
-                $("#new_sys_button").hide();
+                $("#clear_sys_button").show();
+                $("#new_syoves_button").hide();
 
                 $('#iconPaste').hide()
             }
@@ -1220,6 +1289,7 @@
             $("#edit_sys_button").disabled = true;
             $("#save_sys_button").hide();
             $("#remove_sys_button").disabled = true;
+            $("#clear_sys_button").disabled = true;
             $("#new_sys_button").disabled = true;
 
             $('#iconPaste').hide();
@@ -1302,7 +1372,7 @@
                         $("#id").val(resultJSON.id);
                         $("#text").val(resultJSON.text);
 
-                        $('#jstree_div').jstree(true).refresh();
+                        $('#jstree_div').jstree(true).refresh(true);
                     },
                     error : function(error) {
                         console.log(error)
@@ -1350,7 +1420,7 @@
                 $.get('/Move', { id: selectedNode, direction: 'up' }, function(data) {
                    newPos = data.newPos;
                     if (newPos !== '') {
-                         $('#jstree_div').jstree(true).refresh();
+                         $('#jstree_div').jstree(true).refresh(true);
                         // $('#jstree_div').jstree(true).redraw(true);
                    //     $('#jstree_div').jstree("move_node", selectedNode[0], $("#parent").val(), newPos);
                        // $('#jstree_div').jstree(true).redraw(true);
@@ -1364,7 +1434,7 @@
                     //  console.log("move down ");
                     newPos = data.newPos;
                     if (newPos !== '') {
-                        $('#jstree_div').jstree(true).refresh();
+                        $('#jstree_div').jstree(true).refresh(true);
                         // $('#jstree_div').jstree(true).redraw(true);
                //         $('#jstree_div').jstree("move_node", selectedNode[0], $("#parent").val(), newPos);
                     }
@@ -1747,9 +1817,12 @@
 
                         $('#jstree_div').jstree('create_node', resultJSON.parent, node, 'last', function(){
                             var newNode = $("#jstree_div").jstree(true).get_node(resultJSON.id);
-                            $("#jstree_div").jstree(true).select_node(newNode);
-                            $('#jstree_div').jstree(true).redraw(true);
-                            $('#jstree_div' + " li[id=" + resultJSON.id + "] a").click();
+                           // $("#jstree_div").jstree(true).select_node(newNode);
+
+                            //$('#jstree_div').jstree(true).redraw(true);
+                            $('#jstree_div').jstree(true).refresh(true);
+                            //$('#jstree_div' + " li[id=" + resultJSON.id + "] a").click();
+                            //$('#jstree_div').jstree('select_node', resultJSON.id);
                         });
                     },
                     error : function(error) {
@@ -1876,9 +1949,13 @@
                     $("#treePanel").css('width',treeWidth - 7);
 
                     setFormColWidth();
+                    localStorage['locTreeWidth'] = JSON.stringify({width:leftWidth});
                 }
             }
-            setWindowWidth(250, container);
+            if(!localStorage['locTreeWidth']){
+                setWindowWidth(250, container);
+            }
+            setWindowWidth(JSON.parse(localStorage['locTreeWidth']).width, container);
 
             function setFormColWidth(){
                 $("#rightCol").css("left", treeWidth + libTreeWidth - 15);
@@ -2490,6 +2567,7 @@
                         <button id = "save_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
                         <button id = "new_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Comp</button>
                         <button id = "remove_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
+                        <button id = "clear_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-history fa-fw"></i>Clear History</button>
                     </div>
                     <div class="panel panel-default jobPanel">
                         <div class="panel-body sys-form-panel"  id="sys-form-panel">
@@ -2546,7 +2624,7 @@
 
                     </div>
                     <div class="panel panel-default jobPanel">
-                        <input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="conType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >
+                        <input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="comType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >
                     <div class="panel-body job-form-panel" id="job-form-panel">
 
                         <form id="jobForm">
@@ -2697,9 +2775,18 @@
                                         </div>
                                     </div>
 
+
+                                    <!--TESTING-->
+                                    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+                                    <div class="form-group">
+                                        <label class="build-label">nodeData</label>
+                                        <textarea type="disabled" class="form-control form-custom code" rows="25" id="nodeData"></textarea>
+                                    </div>
+
                                 </div>
                             </div>
                         </form>
+
                     </div>
                 </div>
                 </div>
@@ -2905,6 +2992,24 @@
         </nav>
         <div class="modal-footer">
             <button type="button" id="delConfirmButton" class="btn btn-default jobFormbtn" >Remove</button>
+            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+        </div>
+    </div>
+</div>
+<div id="clearModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-clear-dialog">
+        <nav class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">X</button>
+                <h4 class="modal-title"><i class="fa fa-history fa-fw"></i>Clear Build History</h4>
+            </div>
+
+            <div id='clearConfirmationBody' class="modal-body">
+                Are you sure you want to clear all build history for this system?
+            </div>
+        </nav>
+        <div class="modal-footer">
+            <button type="button" id="clearConfirmButton" class="btn btn-default jobFormbtn" >Clear</button>
             <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
         </div>
     </div>

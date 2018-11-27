@@ -196,14 +196,31 @@ router.get("/Jobs",function(req,res){
                 rowdata.id = key;
                 rowdata.text = rowdata.name;
 
-
-                rowdata.type=SystemsJSON[key].comType;
-                if(rowdata.hasOwnProperty("enabled")){
-                    if(rowdata.enabled === 0){
-                        rowdata.type="disabled";
-                    }else if(rowdata.rerunnable === 1){
-                        rowdata.type="rerunnable"
+                if(SystemsJSON[key].comType === "system"){
+                    rowdata.type="system"
+                }else{
+                    rowdata.type="job";
+                    if(rowdata.hasOwnProperty("enabled")){
+                        if(rowdata.enabled === 0){
+                            rowdata.type="disabled";
+                        }else if(!rowdata.hasOwnProperty("lastBuild") ){
+                            rowdata.type="needfull"
+                        }else if(rowdata.rerunnable === 1){
+                            rowdata.type="rerunnable"
+                        }
                     }
+                };
+
+                if(rowdata.comType === "job"){
+                    if(rowdata.hasOwnProperty("lastBuild")){
+                        if (rowdata.lastBuild.pass===1){
+                            rowdata.li_attr = { "class" : "runningJobCompleteSuccess" }
+                        }else if(rowdata.lastBuild.pass===0){
+                            rowdata.li_attr = { "class" : "runningJobCompleteFail" }
+                        }
+                    }else{
+                        rowdata.li_attr = { "class" : "runningJob" }
+                    };
                 }
 
                 if(rowdata.icon){
@@ -213,7 +230,7 @@ router.get("/Jobs",function(req,res){
                 var pt = rowdata.parent;
                 if(pt === "#"){
                     rowdata.parent = "local";
-                }
+                };
                 resJSON.push(rowdata);
             }
         }
@@ -246,7 +263,7 @@ router.get("/getLib",function(req,res) {
                     rowdata.id = key;
                     rowdata.text = rowdata.name;
 
-                    rowdata.type=SystemsJSON[key].comType;
+                    rowdata.type = libJSON[key].type || libJSON[key].comType;
                     if(rowdata.hasOwnProperty("enabled")){
                         if(rowdata.enabled === 0){
                             rowdata.type="disabled";
@@ -333,7 +350,6 @@ router.post("/remove",function(req,res){
         ids.forEach(function(id) {
             if(SystemsJSON.hasOwnProperty(id)) {
                 delete SystemsJSON[id]; //delete from main datastore
-                saveAllJSON();
                 rmDir(filesPath + id + "/"); //delete all uploaded files
                 fs.readdir(resultsPath, function(err, files){ // delete results files
                     // console.log(files);
@@ -353,6 +369,8 @@ router.post("/remove",function(req,res){
                 });
             }
         });
+        saveAllJSON(true);
+
     }else{
         const libJSON =  JSON.parse(fs.readFileSync(libsPath + tree + "/SystemsJSON.json"));
         const libPath = __dirname + "/library/" + tree;
@@ -373,6 +391,60 @@ router.post("/remove",function(req,res){
     }
 
     res.end('');
+});
+
+router.post("/clear",function(req,res){
+    //clear all build history foe a system(results files & job.lastBuild)
+    var reqJSON= req.body;
+    var id =reqJSON.ids.split(';')[0];
+    if(SystemsJSON[id].comType !== "system"){
+        res.end('error');
+    }else{
+        // delete results files
+        fs.readdir(resultsPath, function(err, files){
+            if (err){
+                console.log("clear results files failed: " + resultsFilesPath + mFile);
+                console.log(err);
+            }else{
+                files.forEach(function(mFile){
+
+                    var fileId = mFile.substr(0,36);
+                    if(SystemsJSON.hasOwnProperty(fileId)) {
+
+                        if( SystemsJSON[fileId].comType === "job"){
+                            if(SystemsJSON[fileId].ft.split("/")[1] === id) {
+
+                                if (fs.statSync(resultsPath + mFile).isFile()){
+                                    //console.log("removing: " + resultsPath + mFile);
+                                    fs.unlinkSync(resultsPath + mFile);
+                                }
+                            }
+                        }
+                    }
+                })
+            }
+
+        });
+
+        // delete SystemsJSON[key].lastBuild
+        if(SystemsJSON.hasOwnProperty(id)) {
+            if(SystemsJSON[id].comType === "system"){
+                for (var key in SystemsJSON) {
+                    if (SystemsJSON.hasOwnProperty(key)) {
+                        if( SystemsJSON[key].comType === "job"){
+                            if(SystemsJSON[key].ft.split("/")[1] === id){
+                                //console.log("del lastBuild: " + SystemsJSON[key].name)
+                                delete SystemsJSON[key].lastBuild;
+                            }
+                        }
+                    }
+                };
+                saveAllJSON(true);
+            }
+        }
+        res.end('Completed');
+    }
+
 });
 
 function rmDir(dirPath) { //sync remove dir
@@ -460,7 +532,7 @@ router.get("/move",function(req,res){
 
     SystemsJSON = SystemsJson_sorted;
 
-    saveAllJSON();
+    saveAllJSON(true);
 
     res.writeHead(200, {"Content-Type": "application/json"});
     res.end(JSON.stringify({newPos:newPos}));
@@ -543,7 +615,7 @@ router.post("/save",function(req,res){
     var reqJSON = req.body;
     var id = reqJSON.id;
     var foundRow = {};
-    //console.log("type: "+req.body.type);
+    console.log("comType: "+req.body.comType);
     if(req.body.comType !== "system"){
         var comType = "job";
         if (id.length < 32){ //new
@@ -563,15 +635,18 @@ router.post("/save",function(req,res){
             id = generateUUID();
             foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1, enabled:1, rerunnable:0, comType: 'job', description: req.body.description, script:req.body.script, variables:req.body.compVariables, template:req.body.template, text:req.body.name, resourceFiles:{}, sort:x, hist:hist};
             SystemsJSON[id] = foundRow;
-        }else{ //not new
+        }else{
+                //not new
                 var newData = {};
                 newData.parent = SystemsJSON[id].parent;;
                 newData.ft = SystemsJSON[id].ft;
                 newData.name = req.body.name;
                 newData.enabled = req.body.enabled;
                 newData.rerunnable = req.body.rerunnable;
+                if(SystemsJSON[id].hasOwnProperty("lastBuild") ){
+                    newData.lastBuild = SystemsJSON[id].lastBuild
+                }
                 newData.comType = 'job';
-
                 newData.description = req.body.description;
                 newData.variables = req.body.compVariables;
                 newData.script = req.body.script;
@@ -672,7 +747,7 @@ router.post("/save",function(req,res){
 
     //console.log("icon: "+SystemsJSON[id].icon);
 
-    saveAllJSON();
+    saveAllJSON(true);
     //res.sendStatus(200);
     res.writeHead(200, {"Content-Type": "application/json"});
     foundRow.id = id;
@@ -782,7 +857,7 @@ router.post("/copy",function(req,res){
 
             SystemsJSON[idMap[fromIds[0]]].sort = x;
 
-            saveAllJSON();
+            saveAllJSON(true);
 
             res.sendStatus(200);
             res.end('');
@@ -890,7 +965,7 @@ router.post("/copy",function(req,res){
 
             SystemsJSON[idMap[fromIds[0]]].sort = x;
 
-            saveAllJSON();
+            saveAllJSON(true);
 
             res.sendStatus(200);
             res.end('');
@@ -961,8 +1036,11 @@ router.post("/copyToLib",function(req,res){
 
             //console.log('copy to:'+libJSON[newParentId].name);
 
+            //console.log('copy from:'+fromNode.name);
+
             var newIcon = '';
             if(fromNode.hasOwnProperty('icon')){
+
                 var newIcon = "/library/" + lib + fromNode.icon.replace(fromId, id);
             }
 
@@ -1292,7 +1370,7 @@ router.post("/run",function(req,res){
                 console.log('SSH - Connection Error: ' + err);
                 message('SSH - Connection Error: ' + err);
                 flushMessQueue();
-                res.end("**Scripts Aborted**");
+                res.end("status:Scripts Aborted\n");
             });
 
             conn.on('end', function () {
@@ -1313,8 +1391,8 @@ router.post("/run",function(req,res){
 
                         } else {
                             flushMessQueue();
-                            res.write("message:Script Aborted\n");
-                            res.end("**Scripts Aborted**");
+                            //res.write("message:Script Aborted\n");
+                            res.end("status:Scripts Aborted\n");
                         }
                     } else {
                         console.log("Error: /run id not found in SystemsJSON: " + id);
@@ -1322,13 +1400,12 @@ router.post("/run",function(req,res){
                 } else {
                     //console.log("all scripts completed")
                     if (sshSuccess) {
-                        res.write("--All scripts completed---\n");
-                        res.write("**All scripts completed**\n"); //This line triggers ui to complete style format
+                        res.write("status:All scripts completed\n"); //This line triggers ui to complete style format
                         res.end("\n");
                     } else {
                         flushMessQueue();
-                        res.write("message:Script Aborted\n");
-                        res.end("**Scripts Aborted**");
+                        //res.write("message:Script Aborted\n");
+                        res.end("status:Scripts Aborted\n");
                     }
                 }
             });
@@ -1358,10 +1435,14 @@ router.post("/run",function(req,res){
                         var fds = dsString.replace(/_/g, '-').replace(/T/, '-').replace(/:/g, '-').replace(/\..+/, '');
                         var fileName = "";
                         if (sshSuccess === true) {
+                            SystemsJSON[job.id].lastBuild = {ct:fds,pass:1};
                             fileName = resultsPath + job.id + '_' + fds + '_p.json';
                         } else {
+                            SystemsJSON[job.id].lastBuild = {ct:fds,pass:0};
                             fileName = resultsPath + job.id + '_' + fds + '_f.json';
                         }
+
+                        saveAllJSON(false);
 
                         fs.writeFile(fileName, JSON.stringify(resultsArray), function (err) {
                             if (err) {
@@ -1371,6 +1452,7 @@ router.post("/run",function(req,res){
                             }
                             //console.log('json saved successfully.')
                         });
+
                         function writeCloseResponse(newData, dsString) {
                             var endStr = newData.toString() + 'code: ' + code + '\nsignal: ' + signal + '\n';
                             res.write(endStr);
@@ -1669,7 +1751,7 @@ router.post("/run",function(req,res){
                                             }
                                             fs.writeFileSync(filesPath + job.id + '/' + 'screenshot.png', ss.data, 'base64');
 
-                                            res.write("img:"+job.id + '/' + 'screenshot.png');
+                                            message("img:"+job.id + '/' + 'screenshot.png');
 
                                             aSyncInProgress--;
                                             //console.log('saveTemplate:Sent - screenshot.png' );
@@ -2181,32 +2263,34 @@ router.post("/firstRun",function(req,res){
 });
 
 
-function saveAllJSON(){
-
+function saveAllJSON(backup){
+    console.log("saving");
     fs.writeFile('SystemsJSON.json', JSON.stringify(SystemsJSON), function (err) {
         if (err) {
             console.log('There has been an error saving your json.');
             console.log(err.message);
             return;
-        }else{
+        }else if(backup){
+            console.log("backup");
             var dsString = new Date().toISOString();
             var fds = dsString.replace(/_/g, '-').replace(/T/, '-').replace(/:/g, '-').replace(/\..+/, '');
             const fname = 'SystemsJSON_'+fds+'.json';
-            fs.writeFile("./backup/" + fname, JSON.stringify(SystemsJSON), function (err) {
+            fs.writeFile(__dirname + "/backup/" + fname, JSON.stringify(SystemsJSON), function (err) {
                 if (err) {
-                    console.log('There has been an error saving your json: ' + fname);
+                    console.log('There has been an error saving your json: /backup/'+fname);
                     console.log(err.message);
                     return;
                 }else{
                     var x = 1;
-                    fs.readdir("./backup/", function(err, files){ // delete older backups files
+                    fs.readdir(__dirname + "/backup/", function(err, files){ // delete older backups files
                         if (err){
                             console.log(err);
                         }else{
                             files.forEach(function(mFile){
-                                if (fs.statSync("./backup/" + mFile).isFile()){
+                                if (fs.statSync(__dirname + "/backup/" + mFile).isFile()){
                                     if((x + 20) <  files.length){
-                                        fs.unlinkSync("./backup/" + mFile)
+                                        //console.log("removing"  + __dirname + "/backup/" + mFile );
+                                        fs.unlinkSync(__dirname + "/backup/" + mFile)
                                     };
                                     x++
                                 }

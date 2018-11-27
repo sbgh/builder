@@ -156,6 +156,8 @@ div.grippie {
     color: #ffffff !important;
 }
 
+
+
 .jstree-disabled{
     background-color: transparent !important;
 }
@@ -241,6 +243,10 @@ border: 1px solid #adadad;
     color: #ffffff;
     background: #337ab7;
 
+}
+.jstree-default .jstree-wholerow-hovered {
+    color: #adadad;
+    background: #3c3f41;
 }
 
 .jstree-default .jstree-node,

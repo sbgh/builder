@@ -160,13 +160,13 @@ div.grippie {
 .form-control::-ms-input-placeholder { color: #555555; }  /* Microsoft Edge */
 
 .runningJobCompleteSuccess{
-    color: #44b52e !important;
+    color: #009b23 !important;
 }
 .runningJobCompleteFail{
-    color: #ff1917 !important;
+    color: #901514 !important;
 }
 .runningJob{
-    color: #ffffff !important;
+    color: #323232 !important;
 }
 
 .customLibDropBox{
@@ -190,9 +190,9 @@ div.grippie {
 }
 
 .jstree-default .jstree-wholerow-hovered {
-    background: #e7f4f9;
+    color: #9b9b9b;
+    background: #f0f0f0;
 }
-
 
 .jstree-default> .jstree-default>.jstree-wholerow-ul .jstree-clicked {
     background: 0 0;

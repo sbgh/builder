@@ -534,5 +534,9 @@ input:checked + .slider:before {
    opacity: .9;
 }
 
+.modal-clear-dialog {
+   width: 30vw;
+}
+
 
 
