@@ -272,6 +272,15 @@
                 clearJobFields();
                 $.get('/getLib', { id: NodeID, 'pickedLib':lib }, function(data) {
                     //console.log("getJobByID: "+data[0].script);
+
+                    var dispData = JSON.parse(JSON.stringify(data[0]) )  ;
+                    delete dispData.script;
+                    delete dispData.custTemplates;
+                    delete dispData.template;
+
+                    $("#nodeData").val(JSON.stringify(dispData).split(',"').join(',\n"'));
+
+
                     $("#id").val(data[0].id);
                     $("#parent").val(data[0].parent);
                     $("#name").val(data[0].name);
@@ -413,6 +422,7 @@
             //Lib tree click
             $('#jslibtree_div').on("select_node.jstree", function (e, data) {
                 $("#rightCol").show();
+                $('#componentTabs').hide();
                 $("#introCol").hide();
                 $("#screenShotCol").hide();
 
@@ -490,98 +500,102 @@
             //tree click
             $('#jstree_div').on("select_node.jstree", function (e, data) {
 
-                $("#rightCol").show();
-                $("#introCol").hide();
-                $("#screenShotCol").hide();
-
-                selectedNode = data.selected[0];
-                selectedTree = 'working'
-
-                //deselect Lib tree
-                $('#jslibtree_div').jstree("deselect_all");
-
-                //console.log(data.selected);
-                if (selectedNode ==='local'){
-                    $("#sysScreen").hide();
-                    $("#jobScreen").hide();
+                if(refreshFlag){
+                    refreshFlag = false;
                 }else{
-                    if (data.instance.get_node(data.node.id).type === "job"
-                        || data.instance.get_node(data.node.id).type === "disabled"
-                        || data.instance.get_node(data.node.id).type === "needfull"
-                        || data.instance.get_node(data.node.id).type === "rerunnable" ) {
+                    //$("#rightCol").show();
+                    //$("#screenShotCol").hide();
 
-                        //query backend for a specific job and update fields
-                        getJobByID(selectedNode);
-                        readModeJob();
+                    selectedNode = data.selected[0];
+                    selectedTree = 'working'
 
+                    //deselect Lib tree
+                    $('#jslibtree_div').jstree("deselect_all");
+
+                    activaTab('Component_Details');
+
+                    //console.log(data.selected);
+                    if (selectedNode ==='local'){
                         $("#sysScreen").hide();
-                        $("#jobScreen").show();
-                        $("#comType").val('Job');
-                        updateResultsList(selectedNode);
-
-                        const targetNode =  $('#jstree_div').jstree(true).get_node(data.node.id);
-                        const rSystemId = targetNode.parents[targetNode.parents.length - 2];
-                        const rSystemNode =  $('#jstree_div').jstree(true).get_node( rSystemId);
-                        if(rSystemNode.text !== 'Library'){
-                            showBottom()
-                        }else{
-                            hideBottom()
-                        }
-
-                    }else{
-                        readModeSys();
-                        $("#sysScreen").show();
                         $("#jobScreen").hide();
-                        $("#comType").val('system');
-                        getSysByID(selectedNode);
-                        updateResultsList(selectedNode);
-                        hideBottom()
-                    };
+                        $('#componentTabs').hide()
+                    }else{
+                        if (data.instance.get_node(data.node.id).type === "job"
+                            || data.instance.get_node(data.node.id).type === "disabled"
+                            || data.instance.get_node(data.node.id).type === "needfull"
+                            || data.instance.get_node(data.node.id).type === "rerunnable" ) {
+
+                            //query backend for a specific job and update fields
+                            getJobByID(selectedNode);
+                            readModeJob();
+
+                            $("#sysScreen").hide();
+                            $("#jobScreen").show();
+                            $('#componentTabs').show()
+                            $("#comType").val('Job');
+                            updateResultsList(selectedNode);
+
+                            const targetNode =  $('#jstree_div').jstree(true).get_node(data.node.id);
+                            const rSystemId = targetNode.parents[targetNode.parents.length - 2];
+                            const rSystemNode =  $('#jstree_div').jstree(true).get_node( rSystemId);
+                            if(rSystemNode.text !== 'Library'){
+                                showBottom()
+                            }else{
+                                hideBottom()
+                            }
+
+                        }else{
+                            $('#componentTabs').hide()
+                            readModeSys();
+                            $("#sysScreen").show();
+                            $("#jobScreen").hide();
+                            $("#comType").val('system');
+                            getSysByID(selectedNode);
+                            updateResultsList(selectedNode);
+                            hideBottom()
+                        };
+                    }
+
+
+                    $("#results_html").html('');
+                    $("#results_codes").html('');
+                    $('#messageSpan').html('');
+
+                    var inputFields = $("#job-form-panel").find('textarea');
+                    inputFields.each(setWidth);
+                    function setWidth(index, element) {
+                        $(element).width = '100%';
+                        $(element).css('width','100%');
+                        $(element).css('margin-right',0);
+                    }
                 }
 
 
-                $("#results_html").html('');
-                $("#results_codes").html('');
-                $('#messageSpan').html('');
-
-                var inputFields = $("#job-form-panel").find('textarea');
-                inputFields.each(setWidth);
-                function setWidth(index, element) {
-                    $(element).width = '100%';
-                    $(element).css('width','100%');
-                    $(element).css('margin-right',0);
-                }
             });
 
-            $("#rightCol").hide();
-            $("#screenShotCol").hide();
+            //$("#rightCol").hide();
+            //$("#screenShotCol").hide();
 
-            //on refresh tree after remove_node select parent
-//            var newFlag = "";
-//            removeFlag= false;
-//            $('#jstree_div').on('refresh.jstree', function () {
-//                if(removeFlag){
-////                    var parentNode = $("#jstree_div").jstree(true).get_node($("#parent").val());
-////                    $('#jstree_div' + " li[id=" + parentNode.id + "] a").click();
-//                    //$("#jstree_div").jstree(true).select_node(parentNode);
-//                    removeFlag= false;
-//                }
-//            });
-
+            var bottomHiddenFlag = true;
             function hideBottom(){
                 $("#bottomRow").hide(function(){
-                    $("#jstree_div").height('calc(100vh - 23px - 22px)');
-                    $("#jslibtree_div").height('calc(100vh - 23px - 22px)');
-                    $("#job-form-panel").height('calc(100vh - 20px - 22px)');
-                    $("#sys-form-panel").height('calc(100vh - 20px - 22px)');
-                    $("#treePanelHandle").height('calc(100vh - 23px)');
-                    $("#libTreePanelHandle").height('calc(100vh - 23px)');
+//                    $("#jstree_div").height('calc(100vh - 23px - 22px)');
+//                    $("#jslibtree_div").height('calc(100vh - 23px - 22px)');
+//                    $("#rightCol").height('calc(100vh - 26px)');
+//                    $("#job-form-panel").height('calc(100vh - 44px)');
+//                    $("#sys-form-panel").height('calc(100vh - 44px)');
+//                    $("#treePanelHandle").height('calc(100vh - 26px)');
+//                    $("#libTreePanelHandle").height('calc(100vh - 26px)');
+
+                    var container = $('#rowContainer');
+                    bottomHiddenFlag = true;
+                    setWindowHeight(container.height(), container);
                 });
             }
             function showBottom(){
                 $("#bottomRow").show(function(){
                     var container = $('#rowContainer');
-                    currentRatio = .75;
+                    bottomHiddenFlag = false;
                     setWindowHeight(currentHeight, container);
                 });
             }
@@ -635,12 +649,12 @@
                 clearJobFields();
                 $.get('/Jobs', { id: NodeID }, function(data) {
 
-//                    var dispData = data[0];
-//                    delete dispData.script;
-//                    delete dispData.custTemplates;
-//                    delete dispData.template;
-//
-//                    $("#nodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  ); // testing ---------------------
+                   var dispData = JSON.parse(JSON.stringify(data[0]) )  ;
+                    delete dispData.script;
+                    delete dispData.custTemplates;
+                    delete dispData.template;
+
+                    $("#nodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  ); // testing ---------------------
 
                     //console.log("getJobByID: "+data[0].script);
                     $("#id").val(data[0].id);
@@ -832,6 +846,7 @@
             }
 
             //run
+            var refreshFlag = false;
             $("#run_button").click(function(event){
 
 
@@ -870,6 +885,7 @@
 
                 $("#results_html").html('');
                 $("#results_codes").html('');
+                $("#resultsStatus")[0].innerHTML = '';
                 $("#results_html").addClass('result_fresh');
                 $("#results_html").removeClass('result_history');
 
@@ -939,11 +955,32 @@
                         var famTree = $('#ft').val().split('/');
                         var sys = famTree[1];
 
-                        rTextNew.split('<br>').forEach(function(row){
-                            if(row.substr(0,8) === 'message:'){
-                                $('#messageSpan').html(row.substr(8))
+                        $("#Build_Results_tab").show();
+                        activaTab('Build_Results');
 
+                        rTextNew.split('<br>').forEach(function(row){
+//                            if(row.substr(0,8) === 'message:'){
+//                                $('#messageSpan').html(row.substr(8))
+//
+//                            }
+
+                            //resultsStatus
+                            if(row.substr(0,17) === 'message:Building:'){
+                                $("#resultsStatus")[0].innerHTML += "<span>Building: " + row.slice(17) + "</span>"
+                            }else if(row.substr(0,28) === 'status:All scripts completed'){
+                                $("#resultsStatus")[0].innerHTML += "All scripts completed"
+                            }else if(row.substr(0,22) === 'status:Scripts Aborted'){
+                                $("#resultsStatus")[0].innerHTML += "Scripts aborted"
+                            }else if(row.substr(0,26) === 'message:CompletionSuccess:'){
+                                if(row.slice(26) === 'true'){
+                                    $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-check fa-fw' style='color:darkgreen'></i><br>"
+                                }else{
+                                    $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-times fa-fw' style='color:darkred'></i><br>"
+                                }
                             }
+
+
+                            message:CompletionSuccess:true
 
                             if(row.substr(0,4) === 'key:' &&  $("#results_html").html() === '') {
                                 localKey += row.substr(4) + '\n';
@@ -968,7 +1005,11 @@
                             }
                             else if(row.substr(0,28) === 'status:All scripts completed'){
                                 //$('#jstree_div').jstree(true).refresh_node(buildIDRunningPrev);
+                                //$('#jstree_div').jstree(true).redraw(true);
+
+                                refreshFlag=true;
                                 $('#jstree_div').jstree(true).refresh(true);
+                                //$('#jstree_div').jstree(true).refresh_node(buildIDRunningPrev);
 //                                if(buildIDRunningPrev !== ''){
 //                                    $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteFail').addClass("runningJobCompleteSuccess");
 //                                };
@@ -977,6 +1018,7 @@
                             }
                             else if(row.substr(0,22) === 'status:Scripts Aborted'){
                                 //$('#jstree_div').jstree(true).redraw(true);
+                                refreshFlag=true;
                                 $('#jstree_div').jstree(true).refresh(true);
 //                                if(buildIDRunningPrev !== ''){
 //                                    $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteSuccess').addClass("runningJobCompleteFail");
@@ -987,8 +1029,8 @@
                             else if(row.substr(0,12) === 'message:img:'){
                                 var timestamp = new Date().getTime();
                                 $('#screenShot')[0].src="/uploads/" + row.replace('message:img:','') + '?' +timestamp  ;
-                                $("#rightCol").hide();
-                                $("#screenShotCol").show();
+                                //$("#rightCol").hide();
+                                //$("#screenShotCol").show();
                             }
                             else{
                                 if(localKey !== '' && sys.length !== 0){
@@ -1000,6 +1042,7 @@
                             }
                         })
                         $('#results_html').animate({scrollTop: $('#results_html').get(0).scrollHeight}, 50);
+                        $('#leftResultsCol').animate({scrollTop: $('#leftResultsCol').get(0).scrollHeight}, 50);
                     };
 
                     return xhr;
@@ -1067,12 +1110,11 @@
                     parent:parent
                 }).done(function (data) {
                     //console.log(data);
-                    removeFlag= true;
+
                     tree.jstree(true).delete_node(this.selectedNode);
-                    //tree.jstree(true).redraw(true);
-                    //tree.jstree(true).select_node(this.parent, true);
-                    //var parentNode = $("#jstree_div").jstree(true).get_node($("#parent").val());
-                    $('#jstree_div' + " li[id=" + this.parent + "] a").click();
+                    tree.jstree(true).select_node(this.parent, false);
+                    tree.jstree(true).redraw(true);
+
                 }).fail(function (e) {
                     console.log('remove refresh fail' );
                     console.log(e );
@@ -1761,6 +1803,7 @@
                 var container = $('#rowContainer');
                 setWindowHeight(container.height()- 25 , container);
                 currentHeight = container.height()- 25
+                currentRatio = currentHeight / container.height();
             });
 
             //max codes window
@@ -1768,6 +1811,7 @@
                 var container = $('#rowContainer');
                 setWindowHeight(container.height()/2 , container);
                 currentHeight = container.height() / 2
+                currentRatio = currentHeight / container.height();
             });
 
             //click show code button
@@ -1800,6 +1844,7 @@
 
             //Create new component or system
             function createNode(mydata) {
+
                 $.ajax({
                     type: 'POST',
                     data: JSON.stringify(mydata),
@@ -1809,6 +1854,7 @@
                     },
                     url: '/save',
                     success : function(result) {
+                        $('#jstree_div').jstree(true).open_node(mydata.parent, false);
                         var resultJSON = JSON.parse(result);
                         var node = { "id" : resultJSON.id };
                         node.name = resultJSON.name;
@@ -1816,12 +1862,14 @@
                         node.comType = resultJSON.comType;
 
                         $('#jstree_div').jstree('create_node', resultJSON.parent, node, 'last', function(){
+
                             var newNode = $("#jstree_div").jstree(true).get_node(resultJSON.id);
                            // $("#jstree_div").jstree(true).select_node(newNode);
 
                             //$('#jstree_div').jstree(true).redraw(true);
+
+                            $('#jstree_div' + " li[id=" + resultJSON.id + "] a").click();
                             $('#jstree_div').jstree(true).refresh(true);
-                            //$('#jstree_div' + " li[id=" + resultJSON.id + "] a").click();
                             //$('#jstree_div').jstree('select_node', resultJSON.id);
                         });
                     },
@@ -1847,6 +1895,7 @@
 
             var currentHeight = container.height()- 25   //container.height() * .75; //default height
             currentHeight += currentHeight < 10 ? 10 - currentHeight : 0;
+            currentRatio = currentHeight / container.height();
 
             //drag height & width events
             $(function () {
@@ -1865,10 +1914,16 @@
                     isResizingLibWidth = true;
                 });
 
-                $( window ).resize(function() {
-                    //var containerWidth = $('#rowContainer');
-                    //setWindowHeight($( window ).height() * currentRatio , container);
-                    setWindowHeight(currentHeight, container);
+                $(window).on('resize', function(){
+                    //var win = $(this);
+
+                    var container = $('#rowContainer');
+                    if(bottomHiddenFlag === true){
+                        setWindowHeight(container.height() , container);
+                    }else{
+                        setWindowHeight(container.height() * currentRatio , container);
+                    }
+
                     setFormColWidth();
                 });
 
@@ -1905,28 +1960,43 @@
             });
 
             function setWindowHeight(topHeight, container){
-                if (topHeight > (container.height() - 27)){
-                    topHeight = container.height() - 27
+                if (topHeight > (container.height() - 33)){
+                    topHeight = container.height() - 33
                 }
 
                  if (topHeight < (container.height() * .2)){
                      topHeight = container.height() * .2
                  }
 
-                $("#jstree_div").height(topHeight - (23 + 31));
-                $("#jslibtree_div").height(topHeight - (23 + 31));
+                 if(!bottomHiddenFlag){
+                     $("#jstree_div").height(topHeight - (17 + 29));
+                     $("#jslibtree_div").height(topHeight - (17 + 29));
 
-                $("#treePanelHandle").height(topHeight - 23);
-                $("#libTreePanelHandle").height(topHeight - 23);
+                     $("#treePanelHandle").height(topHeight - 17);
+                     $("#libTreePanelHandle").height(topHeight - 17);
 
-                $("#job-form-panel").height(topHeight - (20 + 22 + 38));
-                $("#sys-form-panel").height(topHeight - (20 + 22 + 38));
-                $("#screenShotCol").height(topHeight - 24);
+                     $("#job-form-panel").height(topHeight - (56 + 22 + 34));
+                     $("#sys-form-panel").height(topHeight - (56 + 22 + 34));
+                     $("#leftResultsCol").height(topHeight - (15 + 22 + 38));
+                     $("#build-results-row").height(topHeight - (15 + 22 + 24));
 
-                $('#results_html').height(container.height() - topHeight - (23 + 10));
-                $('#results_codes').height(container.height() - topHeight - (23 + 10));
 
-                $('#results-group').height(container.height() - topHeight - (23 + 10));
+                     $('#results_html').height(container.height() - topHeight - (23 + 15));
+                     $('#results_codes').height(container.height() - topHeight - (23 + 15));
+                     $('#results-group').height(container.height() - topHeight - (23 + 15));
+                 }else{
+                     $("#jstree_div").height(topHeight );
+                     $("#jslibtree_div").height(topHeight );
+
+                     $("#treePanelHandle").height(topHeight +10 );
+                     $("#libTreePanelHandle").height(topHeight +10);
+
+                     $("#rightCol").height(topHeight - 24);
+                     $("#job-form-panel").height(topHeight );
+                     $("#sys-form-panel").height(topHeight );
+
+                 }
+
             }
 
             function setLibWindowWidth(leftWidth, container){
@@ -1958,9 +2028,9 @@
             setWindowWidth(JSON.parse(localStorage['locTreeWidth']).width, container);
 
             function setFormColWidth(){
-                $("#rightCol").css("left", treeWidth + libTreeWidth - 15);
-                $("#screenShotCol").css("left", treeWidth + libTreeWidth);
-                $("#rightCol").css('width',$(window).width() - (treeWidth + libTreeWidth) + 23 );
+                $("#rightCol").css("left", treeWidth + libTreeWidth + 1);
+                $("#screenShotCol").css("left", treeWidth + libTreeWidth + 1);
+                $("#rightCol").css('width',$(window).width() - (treeWidth + libTreeWidth) );
             }
 
 
@@ -2290,6 +2360,14 @@
             };
             openWelcome();
 
+            function activaTab(tab){
+                $('.nav-tabs a[href="#' + tab + '"]').tab('show');
+            };
+
+            $("#Build_Results_tab").hide();
+//            $('.nav').on('show.bs.tab', function (e) {
+//                $('.nav .active').removeClass('active');
+//            })
 
 
         }); //doc ready
@@ -2496,7 +2574,7 @@
 
 </head>
 <body>
-    <div id="rowContainer" class="container-fluid">
+    <div id="rowContainer" class="container-fluid container-fluid-custom">
         <%- include topMenu.ejs %>
         <div id="topRow" class="row top-row">
 
@@ -2546,249 +2624,263 @@
                            style="border: 1;"></iframe>
                </div>  -->
 
-            <div id="screenShotCol" class="col-lg-12 top-col-offset-240 screenShotCol"  >
-                <div id="link"></div>
-                <img id="screenShot">
-            </div>
-
-                <!--<div id="introCol" class="col-lg-12 top-col-offset-240"  style="text-align: center">-->
-                    <!--<br/><br/><br/><br/><br/>-->
-                    <!--<p class="lead">Welcome to /builder</p>-->
-                    <!--<p>Click a system to the left or click [+] to create a new one.</p>-->
-                    <!--<p>-->
-
-
-                <!--</div>-->
-
-            <div id="rightCol" class="col-lg-12 top-col-offset-240" >
-                <div id="sysScreen">
-                    <div class="buttonRow">
-                        <button id = "edit_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
-                        <button id = "save_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
-                        <button id = "new_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Comp</button>
-                        <button id = "remove_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
-                        <button id = "clear_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-history fa-fw"></i>Clear History</button>
-                    </div>
-                    <div class="panel panel-default jobPanel">
-                        <div class="panel-body sys-form-panel"  id="sys-form-panel">
-                            <form id="sysForm">
-                                <div class="col-lg-12">
-                                    <div class="row">
-                                        <div class="col-lg-3 nomarg">
-                                            <div class="form-group">
-                                                <label>System Name</label>
-                                                <input class="form-control form-custom" placeholder="Enter system name" id="sysName">
+            <div id="rightCol" class="col-lg-12 top-col-offset-240 rightCol" >
+                <ul class="nav nav-tabs " role="tablist" id="componentTabs">
+                    <li class="active">
+                        <a href="#Component_Details" role="tab" data-toggle="tab"">
+                            <icon class="fa fa-bars"></icon> Component Details
+                        </a>
+                    </li>
+                    <li class="" id="Build_Results_tab">
+                        <a href="#Build_Results" role="tab" data-toggle="tab">
+                            <i class="fa fa-check-square-o"></i> Build Results
+                        </a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade active in" id="Component_Details">
+                        <div id="sysScreen">
+                            <div class="buttonRow">
+                                <button id = "edit_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
+                                <button id = "save_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
+                                <button id = "new_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Comp</button>
+                                <button id = "remove_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
+                                <button id = "clear_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-history fa-fw"></i>Clear History</button>
+                            </div>
+                            <div class="panel panel-default sysPanel">
+                                <div class="panel-body sys-form-panel"  id="sys-form-panel">
+                                    <form id="sysForm">
+                                        <div class="col-lg-12">
+                                            <div class="row">
+                                                <div class="col-lg-3 nomarg">
+                                                    <div class="form-group">
+                                                        <label>System Name</label>
+                                                        <input class="form-control form-custom" placeholder="Enter system name" id="sysName">
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-1 ">
+                                                    <div class="form-group">
+                                                        <label>Version</label>
+                                                        <div id="sysVersion" class="statusBox"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-8 "></div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="form-group">
+                                                    <label>System Description</label>
+                                                    <textarea rows="4" class="form-control form-custom" placeholder="Enter description of this system" id="sysDescription"></textarea>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>System Variables</label>
+                                                    <textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="sysVariables"></textarea>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Icon</label>
+                                                    <div id="sysIcon"></div>
+                                                    <div id="iconPaste">
+                                                        <p>Paste image onto this form</p><div id="resampled"></div>
+                                                        <input type="hidden" id="iconURL">
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="col-lg-1 ">
-                                            <div class="form-group">
-                                                <label>Version</label>
-                                                <div id="sysVersion" class="statusBox"></div>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-8 "></div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="form-group">
-                                            <label>System Description</label>
-                                            <textarea rows="4" class="form-control form-custom" placeholder="Enter description of this system" id="sysDescription"></textarea>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>System Variables</label>
-                                            <textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="sysVariables"></textarea>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Icon</label>
-                                            <div id="sysIcon"></div>
-                                            <div id="iconPaste">
-                                                <p>Paste image onto this form</p><div id="resampled"></div>
-                                                <input type="hidden" id="iconURL">
-                                            </div>
-                                        </div>
-                                    </div>
+                                    </form>
                                 </div>
-                            </form>
+                            </div>
+                        </div>
+                        <div id="jobScreen" class="jobScreen">
+                            <div class="buttonRow">
+
+                                <button id = "run_button" class="btn btn-default jobFormbtn"><i class="fa fa-play fa-fw"></i>Build</button>
+                                <button id = "edit_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
+                                <button id = "save_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
+                                <button id = "moveUp_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-up fa-fw"></i>Move Up</button>
+                                <button id = "moveDn_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-down fa-fw"></i>Move Down</button>
+                                <button id = "new_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Child</button>
+                                <button id = "remove_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
+
+                            </div>
+                            <div class="panel panel-default jobPanel">
+                                <input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="comType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >
+                                <div class="panel-body job-form-panel" id="job-form-panel">
+                                    <form id="jobForm">
+                                        <div class="row">
+                                            <div id="topLeftForm" class="col-lg-6 topLeftForm">
+                                                <div class="row" id="firstRow" >
+                                                    <div class="col-lg-6 " style="padding: 0px">
+                                                        <div class="form-group">
+                                                            <label class="build-label">Component Name</label>
+                                                            <input class="form-control form-custom" placeholder="Enter name" id="name">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-2">
+                                                        <div class="form-group">
+                                                            <label class="build-label">Version</label>
+                                                            <div id="version" class="statusBox"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-2">
+                                                        <div class="form-group">
+                                                            <label class="build-label">Enabled</label>
+                                                            <div>
+                                                                <label class="switch" id="componentEnabledSlider">
+                                                                    <input name="componentEnabled" id="componentEnabled" type="checkbox">
+                                                                    <span class="slider round"></span>
+                                                                </label>
+                                                                <span id="componentEnabledVal" class="statusBox"></span>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-2">
+                                                        <div class="form-group">
+                                                            <label class="build-label">Rerunnable</label>
+                                                            <div>
+                                                                <label class="switch" id="rerunnableSlider">
+                                                                    <input name="rerunnable" id="rerunnable" type="checkbox">
+                                                                    <span class="slider round"></span>
+                                                                </label>
+                                                                <span id="rerunnableVal" class="statusBox"></span>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!--     https://stackoverflow.com/questions/19865158/what-is-the-difference-among-col-lg-col-md-and-col-sm-in-bootstrap   -->
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-lg-12" style="padding: 0px">
+                                                        <div class="form-group">
+                                                            <label class="build-label">Description</label>
+                                                            <textarea rows="4" class="form-control form-custom" placeholder="Enter description of this component" id="description"></textarea>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label class="build-label">Component Variables</label><i class="fa fa-fw"></i>
+                                                            <a href="#" id='varHelp' data-toggle="modal" data-target="#varHelpModal">[<i class="fa fa-question"></i>]</a>
+                                                            <textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="compVariables"></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div id="screenShotImageHolder" class="col-lg-6 ">
+                                                <img id="screenShotImage">
+                                            </div>
+
+                                        </div>
+                                        <div class="row">
+
+                                            <div class="col-lg-12 ">
+
+                                                <div class="panel panel-primary cust-panel-group codePanel">
+                                                    <div class="panel-heading cust-panel-heading BuildCode-Heading ">Build Code<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
+                                                    </div>
+                                                    <div class="panel-body code-panel-body">
+
+                                                        <div class="form-group">
+                                                            <label class="build-label">Build Script</label><i class="fa fa-fw"></i>
+                                                            <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal">[<i class="fa fa-question"></i>]</a>
+                                                            <a href="#" id='insertVariable' data-toggle="modal" data-target="#varModal">[Insert Variable]</a>
+                                                            <textarea class="form-control form-custom code" rows="4" id="script"></textarea>
+                                                        </div>
+
+                                                        <div class="form-group">
+                                                            <label class="build-label">Template</label>
+                                                            <textarea class="form-control form-custom code" rows="4" id="template"></textarea>
+                                                        </div>
+                                                        <div id="custTemplates">
+                                                        </div>
+                                                        <div id="newTemplateButton">
+                                                            <label class="build-label">Template<a class='newCust' href='#'>[+]</a></label><br><br>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                                <div class="panel panel-primary cust-panel-group resPanel">
+                                                    <div class="panel-heading cust-panel-heading BuildRes-Heading ">Resources<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
+                                                    </div>
+                                                    <div class="panel-body res-panel-body">
+
+                                                        <div class="form-group">
+                                                            <label class="build-label">File Resources<a id='newFileButton' class='newFile' href='#'>[+]</a><a id='delFileButton' class='delFile' href='#'>[-]</a></label>
+                                                            <div id = 'fileList' class = 'fileList'></div>
+                                                            <div id = 'fileUpload'>
+                                                                <div class="progress">
+                                                                    <div class="progress-bar" role="progressbar"></div>
+                                                                </div>
+                                                                <input id="upload-input" type="file" name="uploads[]" multiple="multiple">
+                                                            </div>
+                                                        </div>
+
+
+
+                                                    </div>
+                                                </div>
+                                                <div class="panel panel-primary cust-panel-group testPanel">
+                                                    <div class="panel-heading cust-panel-heading BuildTest-Heading ">Test Code<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
+                                                    </div>
+                                                    <div class="panel-body test-panel-body">
+
+                                                        <div class="form-group">
+                                                            <label class="build-label">Test Script</label>
+                                                            <textarea class="form-control form-custom code" rows="4" id="test"></textarea>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                                <div class="panel panel-primary cust-panel-group metaPanel">
+                                                    <div class="panel-heading cust-panel-heading BuildMeta-Heading ">Meta<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
+                                                    </div>
+                                                    <div id = "meta-panel-body" class="panel-body meta-panel-body">
+
+                                                        <div class="col-lg-6 ">
+                                                            <div class="form-group"><label>Created Date: </label><input class="form-control form-custom" id="createdDate"></div>
+                                                            <div class="form-group"><label>Created By: </label><input class="form-control form-custom" id="createdBy"></div>
+                                                        </div>
+
+                                                        <div class="col-lg-6 ">
+                                                            <div class="form-group"><label>ID: </label><input class="form-control form-custom" id="idDisp"></div>
+                                                            <div class="form-group"><label>Price: </label><input class="form-control form-custom" id="price"></div>
+                                                        </div>
+
+
+
+                                                    </div>
+                                                </div>
+
+
+                                                <!--TESTING-->
+                                                <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+                                                <div class="form-group">
+                                                    <label class="build-label">nodeData</label>
+                                                    <textarea type="disabled" class="form-control form-custom code" rows="25" id="nodeData"></textarea>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div id="jobScreen">
-                    <div class="buttonRow">
 
-                        <button id = "run_button" class="btn btn-default jobFormbtn"><i class="fa fa-play fa-fw"></i>Build</button>
-                        <button id = "edit_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
-                        <button id = "save_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
-                        <button id = "moveUp_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-up fa-fw"></i>Move Up</button>
-                        <button id = "moveDn_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-down fa-fw"></i>Move Down</button>
-                        <button id = "new_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Child</button>
-                        <button id = "remove_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
+                    <div class="tab-pane fade" id="Build_Results">
+                        <div class="container-fluid">
+                            <div class="row" id="build-results-row">
 
-                    </div>
-                    <div class="panel panel-default jobPanel">
-                        <input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="comType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >
-                    <div class="panel-body job-form-panel" id="job-form-panel">
-
-                        <form id="jobForm">
-
-                            <div class="row">
-                                <div id="topLeftForm" class="col-lg-6 topLeftForm">
-                                    <div class="row" id="firstRow" >
-                                        <div class="col-lg-6 " style="padding: 0px">
-                                                <div class="form-group">
-                                                    <label class="build-label">Component Name</label>
-                                                    <input class="form-control form-custom" placeholder="Enter name" id="name">
-                                                </div>
-                                            </div>
-                                        <div class="col-lg-2">
-                                                <div class="form-group">
-                                                    <label class="build-label">Version</label>
-                                                    <div id="version" class="statusBox"></div>
-                                                </div>
-                                            </div>
-                                        <div class="col-lg-2">
-                                            <div class="form-group">
-                                                <label class="build-label">Enabled</label>
-                                                <div>
-                                                    <label class="switch" id="componentEnabledSlider">
-                                                        <input name="componentEnabled" id="componentEnabled" type="checkbox">
-                                                        <span class="slider round"></span>
-                                                    </label>
-                                                    <span id="componentEnabledVal" class="statusBox"></span>
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-2">
-                                            <div class="form-group">
-                                                <label class="build-label">Rerunnable</label>
-                                                <div>
-                                                    <label class="switch" id="rerunnableSlider">
-                                                        <input name="rerunnable" id="rerunnable" type="checkbox">
-                                                        <span class="slider round"></span>
-                                                    </label>
-                                                    <span id="rerunnableVal" class="statusBox"></span>
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!--     https://stackoverflow.com/questions/19865158/what-is-the-difference-among-col-lg-col-md-and-col-sm-in-bootstrap   -->
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-lg-12" style="padding: 0px">
-                                            <div class="form-group">
-                                                <label class="build-label">Description</label>
-                                                <textarea rows="4" class="form-control form-custom" placeholder="Enter description of this component" id="description"></textarea>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="build-label">Component Variables</label><i class="fa fa-fw"></i>
-                                                <a href="#" id='varHelp' data-toggle="modal" data-target="#varHelpModal">[<i class="fa fa-question"></i>]</a>
-                                                <textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="compVariables"></textarea>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div id="leftResultsCol" class="col-lg-3 resultsStatus" >
+                                    <div class="resultsStatus" id="resultsStatus"></div>
                                 </div>
-                                <div id="screenShotImageHolder" class="col-lg-6 ">
-                                    <img id="screenShotImage">
+                                <div id="rightResultsCol" class="col-lg-8" >
+                                    <div id="screenShotCol" class="screenShotCol"  >
+                                        <div id="link"></div>
+                                        <img id="screenShot">
+                                    </div>
                                 </div>
 
                             </div>
-                            <div class="row">
-
-                                <div class="col-lg-12 ">
-
-                                    <div class="panel panel-primary codePanel">
-                                        <div class="panel-heading cust-panel-heading BuildCode-Heading ">Build Code<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
-                                        </div>
-                                        <div class="panel-body code-panel-body">
-
-                                            <div class="form-group">
-                                                <label class="build-label">Build Script</label><i class="fa fa-fw"></i>
-                                                <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal">[<i class="fa fa-question"></i>]</a>
-                                                <a href="#" id='insertVariable' data-toggle="modal" data-target="#varModal">[Insert Variable]</a>
-                                                <textarea class="form-control form-custom code" rows="4" id="script"></textarea>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label class="build-label">Template</label>
-                                                <textarea class="form-control form-custom code" rows="4" id="template"></textarea>
-                                            </div>
-                                            <div id="custTemplates">
-                                            </div>
-                                            <div id="newTemplateButton">
-                                                <label class="build-label">Template<a class='newCust' href='#'>[+]</a></label><br><br>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                    <br>
-                                    <div class="panel panel-primary resPanel">
-                                        <div class="panel-heading cust-panel-heading BuildRes-Heading ">Resources<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
-                                        </div>
-                                        <div class="panel-body res-panel-body">
-
-                                            <div class="form-group">
-                                                <label class="build-label">File Resources<a id='newFileButton' class='newFile' href='#'>[+]</a><a id='delFileButton' class='delFile' href='#'>[-]</a></label>
-                                                <div id = 'fileList' class = 'fileList'></div>
-                                                <div id = 'fileUpload'>
-                                                    <div class="progress">
-                                                        <div class="progress-bar" role="progressbar"></div>
-                                                    </div>
-                                                    <input id="upload-input" type="file" name="uploads[]" multiple="multiple">
-                                                </div>
-                                            </div>
-
-
-
-                                        </div>
-                                    </div>
-                                    <br>
-                                    <div class="panel panel-primary testPanel">
-                                        <div class="panel-heading cust-panel-heading BuildTest-Heading ">Test Code<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
-                                        </div>
-                                        <div class="panel-body test-panel-body">
-
-                                            <div class="form-group">
-                                                <label class="build-label">Test Script</label>
-                                                <textarea class="form-control form-custom code" rows="4" id="test"></textarea>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                    <br>
-                                    <div class="panel panel-primary metaPanel">
-                                        <div class="panel-heading cust-panel-heading BuildMeta-Heading ">Meta<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
-                                        </div>
-                                        <div id = "meta-panel-body" class="panel-body meta-panel-body">
-
-                                            <div class="col-lg-6 ">
-                                            <div class="form-group"><label>Created Date: </label><input class="form-control form-custom" id="createdDate"></div>
-                                            <div class="form-group"><label>Created By: </label><input class="form-control form-custom" id="createdBy"></div>
-                                            </div>
-
-                                            <div class="col-lg-6 ">
-                                            <div class="form-group"><label>ID: </label><input class="form-control form-custom" id="idDisp"></div>
-                                            <div class="form-group"><label>Price: </label><input class="form-control form-custom" id="price"></div>
-                                            </div>
-
-
-
-                                        </div>
-                                    </div>
-
-
-                                    <!--TESTING-->
-                                    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-                                    <div class="form-group">
-                                        <label class="build-label">nodeData</label>
-                                        <textarea type="disabled" class="form-control form-custom code" rows="25" id="nodeData"></textarea>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </form>
-
+                        </div>
                     </div>
-                </div>
                 </div>
             </div>
         </div>

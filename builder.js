@@ -177,22 +177,22 @@ router.get("/Jobs",function(req,res){
     res.writeHead(200, {"Content-Type": "application/json"});
     var resJSON = [];
     if (id !== '#'){
-        var rowdata = SystemsJSON[id];
+        var rowdata = JSON.parse(JSON.stringify(SystemsJSON[id]) );
         //console.log('gv:' + SystemsJSON[id].variables);
         rowdata.id = id;
         resJSON.push(rowdata);
     }else{
 
         //Create parent row and place entire tree under it
-        var rowdata = {};
+        var rowdata={};
         rowdata.id = "local";
         rowdata.name = "local";
-        rowdata.text = "local";
+        rowdata.text = "working";
         rowdata.parent = '#';
         resJSON.push(rowdata);
         for (var key in SystemsJSON) {
             if (SystemsJSON.hasOwnProperty(key)) {
-                rowdata = SystemsJSON[key];
+                rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
                 rowdata.id = key;
                 rowdata.text = rowdata.name;
 
@@ -259,7 +259,7 @@ router.get("/getLib",function(req,res) {
             resJSON.push(rowdata);
             for (var key in libJSON) {
                 if (libJSON.hasOwnProperty(key)) {
-                    rowdata = libJSON[key];
+                    rowdata = JSON.parse(JSON.stringify(libJSON[key]) );
                     rowdata.id = key;
                     rowdata.text = rowdata.name;
 
@@ -291,7 +291,7 @@ router.get("/getLib",function(req,res) {
 
         const libJSON =  JSON.parse(fs.readFileSync(libsPath + pickedLib + "/SystemsJSON.json"));
         var resJSON = [];
-        var rowdata = libJSON[id];
+        var rowdata = JSON.parse(JSON.stringify(libJSON[id]) );
         //console.log( libJSON[id].rerunnable);
         rowdata.id = id;
         resJSON.push(rowdata);
@@ -383,10 +383,9 @@ router.post("/remove",function(req,res){
         });
         fs.writeFile(libPath + '/SystemsJSON.json', JSON.stringify(libJSON), function (err) {
             if (err) {
-                console.log('There has been an error saving your library json');
-                console.log(err.message);
+                console.log('There has been an error saving your library json\n' + err.message);
             }
-            //console.log('json saved successfully.')
+
         });
     }
 
@@ -615,7 +614,7 @@ router.post("/save",function(req,res){
     var reqJSON = req.body;
     var id = reqJSON.id;
     var foundRow = {};
-    console.log("comType: "+req.body.comType);
+    //console.log("comType: "+req.body.comType);
     if(req.body.comType !== "system"){
         var comType = "job";
         if (id.length < 32){ //new
@@ -674,7 +673,7 @@ router.post("/save",function(req,res){
 
                 SystemsJSON[id] = newData;
                 foundRow = SystemsJSON[id];
-               // console.log('v:' + req.body.compVariables)
+               //console.log('v:' + req.body.compVariables)
         }
     }else{
         var comType = "system";
@@ -955,8 +954,8 @@ router.post("/copy",function(req,res){
                         if (!fs.lstatSync(libPath + "/uploads/" + fromId + '/' + file).isDirectory()) {
                             const targetFile = filesPath + id +"/"+ file;
                             const source = libPath + "/uploads/" + fromId + '/' + file;
-                            console.log("targetFile:" + targetFile);
-                            console.log("source:" + source);
+                            //console.log("targetFile:" + targetFile);
+                            //console.log("source:" + source);
                             fs.writeFileSync(targetFile, fs.readFileSync(source))
                         }
                     })
@@ -986,7 +985,7 @@ router.post("/copyToLib",function(req,res){
     var targetId = reqJSON.parent;
     var lib = reqJSON.lib;
 
-    console.log(targetId);
+   // console.log(targetId);
     if(targetId === 'lib'){
         targetId = '#'
     }
@@ -1189,6 +1188,7 @@ router.get("/stream",function(req,res){
 */
 
 var latestResultsFileList = [];
+var latestVarCache = {};
 router.post("/run",function(req,res){
     //console.log("running");
 
@@ -1290,44 +1290,127 @@ router.post("/run",function(req,res){
         jobIndex = 0;
         if (SystemsJSON.hasOwnProperty(id)){
             job = SystemsJSON[id];
+                cacheVarVals(latestResultsFileList,job.ft.split('/')[1]);
                 runScript(id, job ,"SSH");
         }else{
             console.log("Error: /run id not found in SystemsJSON: "+ id);
         }
     });
 
+    var resultsArray = [];
+
+    var messQueue = [];
+    function message(mess) {
+        messQueue.push(mess)
+    }
+    function flushMessQueue() {
+        var ds = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-');
+        messQueue.forEach(function (mess) {
+            resultsArray.push({
+                t: ds,
+                m: mess
+            });
+            res.write("message:" + mess + "\n")
+        });
+        messQueue = [];
+    }
+
     function conTimeout () {
         console.log('SSH2 conn timed out ' + timeOut.toString());
-        res.write("message:No prompt detected " + timeOut.toString() + " ms") ;
+        message("No prompt detected " + timeOut.toString() + " ms");
+        flushMessQueue();
+        //res.write("message:No prompt detected " + timeOut.toString() + " ms") ;
         conn.end();
      }
+
+    function getLatestResultsFileList() {
+        var files = fs.readdirSync(resultsPath);  //!!Sync
+        files = files.sort(function (a, b) //sort by id_time desc
+        {
+            var ap = b;
+            var bp = a;
+            return ap == bp ? 0 : ap < bp ? -1 : 1;
+        });//sort dec
+
+        var lastID = '';
+        files = files.filter(function (file) {
+            if (file.split('_')[0] !== lastID) {
+                lastID = file.split('_')[0];
+                return (true)
+            } else {
+                return (false)
+            }
+        }); //include most recent of each id
+
+        return (files);
+    }
+    latestResultsFileList = getLatestResultsFileList(); //cache the list of results files to make var lookups quicker
+
+
+    function cacheVarVals(latestResultsFileList, systemId){
+
+        //getSystemVarVal(jobId, vari)
+
+        latestResultsFileList.forEach(function (file) {
+            var id = file.substr(0, 36);
+            if(typeof SystemsJSON[id] !== "undefined"){
+                var resultsSystem = SystemsJSON[id].ft.split('/')[1];
+                if (systemId === resultsSystem){
+                    try {
+                        var results = JSON.parse(fs.readFileSync(resultsPath + file));
+                    } catch (e) {
+                        console.log(resultsPath + file + " not valid results JSON");
+                        return('');
+                    }
+                    var trimmedResults = '';
+                    results.forEach(function (row) {
+                        if (row.hasOwnProperty('results')) {
+                            if (row.results.substr(0, 4) === 'var:') {
+                                var varName = row.results.split(':')[1];
+
+                                trimmedResults = row.results.substr(('var:' + varName + ':').length);
+                                if(typeof latestVarCache[id] === 'undefined'){
+                                    latestVarCache[id] = {};
+                                }
+                                //var appendedTResults = typeof latestVarCache[id][varName] === 'undefined'  ?  trimmedResults  : latestVarCache[id][varName] + trimmedResults;
+                                latestVarCache[id][varName] = trimmedResults.replace(/\n$/, "").replace(/\r$/, "");
+
+//console.log("found: id:" + id + " varName:" + varName + "=" + JSON.stringify(latestVarCache[id][varName]))
+                            }
+                        }
+                        if (row.hasOwnProperty('x') && row.x !== '') {
+                            varName = row.x;
+                            trimmedResults = row.results;
+                            if(typeof latestVarCache[id] === 'undefined'){
+                                latestVarCache[id] = {};
+                            }
+                            //var appendedTResults = typeof latestVarCache[id][varName] === 'undefined'  ?  trimmedResults  : latestVarCache[id][varName] + trimmedResults;
+                            latestVarCache[id][varName] = trimmedResults.replace(/\n$/, "").replace(/\r$/, "");
+//console.log("found: id:" + id + " varName:" + varName + "=" + JSON.stringify(latestVarCache[id][varName]))
+                        }
+                    });
+                }
+            }
+        });
+
+        //cache system vars
+        var varListAr = SystemsJSON[systemId].variables.split('\n');
+        if(typeof latestVarCache[systemId] === 'undefined'){
+            latestVarCache[systemId] = {};
+        }
+        varListAr.forEach(function(pair){
+            var kName = pair.split('=')[0];
+            var kVal = pair.split('=')[1];
+            latestVarCache[systemId][kName] = kVal
+            //console.log("found: id:" + systemId + " varName:" + kName + "=" + JSON.stringify(latestVarCache[systemId][kName]))
+        });
+    }
+
+    console.log("complete cacheVarVals - " + Object.keys(latestVarCache).length.toString() + " results files" );
 
     function runScript(jobId, job, runMethod) {
         var script = job.script + "\n";
         var scriptArray = script.split("\n");
-
-        latestResultsFileList = getLatestResultsFileList(); //cache the list of results files to make var lookups quicker
-        function getLatestResultsFileList() {
-            var files = fs.readdirSync(resultsPath);  //!!Sync
-            files = files.sort(function (a, b) //sort by id_time desc
-            {
-                var ap = b;
-                var bp = a;
-                return ap == bp ? 0 : ap < bp ? -1 : 1;
-            });//sort dec
-
-            var lastID = '';
-            files = files.filter(function (file) {
-                if (file.split('_')[0] !== lastID) {
-                    lastID = file.split('_')[0];
-                    return (true)
-                } else {
-                    return (false)
-                }
-            }); //include most resent of each id
-
-            return (files);
-        }
 
         if (runMethod === "exec") {
             scriptArray.forEach(function (item) {
@@ -1345,26 +1428,12 @@ router.post("/run",function(req,res){
             //var Client = require('ssh2').Client;
             conn = new Client();
             //var username = 'SysStackUser';
-            var resultsArray = [];
             var exportCommand = "";
-            var messQueue = [];
 
-            message('-----Building: ' + job.name+'-----');
-            message('BuildID:[' +job.id+ ']');
-            function message(mess) {
-                messQueue.push(mess)
-            }
-            function flushMessQueue() {
-                var ds = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-');
-                messQueue.forEach(function (mess) {
-                    resultsArray.push({
-                        t: ds,
-                        m: mess
-                    });
-                    res.write("message:" + mess + "\n")
-                });
-                messQueue = [];
-            }
+
+            message('Building:' + job.name);
+            message('BuildID:[' +jobId+ ']');
+
 
             conn.on('error', function (err) {
                 console.log('SSH - Connection Error: ' + err);
@@ -1390,8 +1459,8 @@ router.post("/run",function(req,res){
                                 runScript(id, job ,"SSH");
 
                         } else {
+                            message("Script Aborted\n");
                             flushMessQueue();
-                            //res.write("message:Script Aborted\n");
                             res.end("status:Scripts Aborted\n");
                         }
                     } else {
@@ -1400,11 +1469,12 @@ router.post("/run",function(req,res){
                 } else {
                     //console.log("all scripts completed")
                     if (sshSuccess) {
-                        res.write("status:All scripts completed\n"); //This line triggers ui to complete style format
-                        res.end("\n");
-                    } else {
+                        message("All scripts completed\n");
                         flushMessQueue();
-                        //res.write("message:Script Aborted\n");
+                        res.end("status:All scripts completed\n");  //This line triggers ui to complete style format
+                    } else {
+                        message("Script Aborted\n");
+                        flushMessQueue();
                         res.end("status:Scripts Aborted\n");
                     }
                 }
@@ -1419,48 +1489,46 @@ router.post("/run",function(req,res){
                 var aSyncInProgress = 0;
                 var deferredExit = false;
                 var respBufferAccu = new Buffer([]);
+                resultsArray = [];
                 conn.shell(function (err, stream) {
                     if (err) throw err;
 
                     stream.on('close', function (code, signal) {
                         var dsString = new Date().toISOString();
 
-                        writeCloseResponse(sshSuccess === true ? "CompletionSuccess:true\n" : "CompletionSuccess:false\n", dsString);
+                        //writeCloseResponse(sshSuccess === true ? "CompletionSuccess:true\n" : "CompletionSuccess:false\n", dsString);
                         clearTimeout(lastTimeout);
                         //sshSuccess = true;
 
                         message("Completed " + job.name);
+                        message(sshSuccess === true ? "CompletionSuccess:true\n" : "CompletionSuccess:false\n");
                         flushMessQueue();
 
                         var fds = dsString.replace(/_/g, '-').replace(/T/, '-').replace(/:/g, '-').replace(/\..+/, '');
                         var fileName = "";
+
                         if (sshSuccess === true) {
-                            SystemsJSON[job.id].lastBuild = {ct:fds,pass:1};
-                            fileName = resultsPath + job.id + '_' + fds + '_p.json';
+                            SystemsJSON[jobId].lastBuild = {ct:fds,pass:1};
+                            fileName =  jobId + '_' + fds + '_p.json';
                         } else {
-                            SystemsJSON[job.id].lastBuild = {ct:fds,pass:0};
-                            fileName = resultsPath + job.id + '_' + fds + '_f.json';
+                            SystemsJSON[jobId].lastBuild = {ct:fds,pass:0};
+                            fileName = jobId + '_' + fds + '_f.json';
                         }
 
                         saveAllJSON(false);
 
-                        fs.writeFile(fileName, JSON.stringify(resultsArray), function (err) {
+                        fs.writeFile(resultsPath + fileName, JSON.stringify(resultsArray), function (err) {
                             if (err) {
-                                console.log('There has been an error saving your json.');
-                                console.log(err.message);
-                                //return;
+                                console.log('There has been an error saving your json.\n'+err.message);
+                            }else{
+                                if(typeof latestVarCache[jobId] === 'undefined'){
+                                    delete latestVarCache[jobId]
+                                }
+                                cacheVarVals([fileName],job.ft.split('/')[1]);
+                                conn.end();
                             }
-                            //console.log('json saved successfully.')
+
                         });
-
-                        function writeCloseResponse(newData, dsString) {
-                            var endStr = newData.toString() + 'code: ' + code + '\nsignal: ' + signal + '\n';
-                            res.write(endStr);
-                            var ds = dsString.replace(/T/, '_').replace(/:/g, '-');
-                            resultsArray.push({t: ds, x: "", results: endStr});
-                        }
-
-                        conn.end();
                     });
                     stream.on('data', function (data) {
 
@@ -1469,14 +1537,12 @@ router.post("/run",function(req,res){
                         //Accumulate to buffer until the prompt appears
                         respBufferAccu = Buffer.concat([respBufferAccu, data]);
 
-                        //
-                        //var tempVal = respBufferAccu.toString();
-                        // console.log('data: ' + tempVal);
-                        // console.log('prompt: ' + prompt);
-                        // console.log("");
-
+                        var tempVal = respBufferAccu.toString();
+                        //console.log('data: ' + tempVal);
 
                         if( respBufferAccu.toString().split('\n').slice(-1)[0]  === prompt){
+                            //console.log(respBufferAccu.toString().split('\n').slice(-1)[0] + '===' + prompt);
+
                             writeResponse(respBufferAccu);
                             respBufferAccu = new Buffer([]);
 
@@ -1484,18 +1550,17 @@ router.post("/run",function(req,res){
                                 var command = scriptArray[commandIndex];
                                 var currentCommand = replaceVar(command, job);
                                 processDirectives();
-                                command = scriptArray[commandIndex];
-                                currentCommand = replaceVar(command, job);
-                                sendCommand();
-                                if (commandIndex < scriptArray.length){
-                                    var command = scriptArray[commandIndex];
-                                    var currentCommand = replaceVar(command, job);
-                                    processDirectives();
-                                }
-
-         //see if building a list of async tasks and sending to manager is worth trying...
-
                             }
+                            if (commandIndex < scriptArray.length) {
+                                var command = scriptArray[commandIndex];
+                                var currentCommand = replaceVar(command, job);
+                                sendCommand();
+                            }
+                             if (commandIndex < scriptArray.length){
+                                 var command = scriptArray[commandIndex];
+                                 var currentCommand = replaceVar(command, job);
+                                 processDirectives();
+                             }
 
                             if (commandIndex === scriptArray.length) {
                                 commandIndex++;
@@ -1508,10 +1573,8 @@ router.post("/run",function(req,res){
                                     deferredExit = true
                                 }
                                 flushMessQueue();
-
-                                //console.log('Exiting...');
                             }
-                        }
+                        };
                         function writeResponse(newData) {
 
                             var ds = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-');
@@ -1684,14 +1747,14 @@ router.post("/run",function(req,res){
                                         stream.close();
                                     }
 
-                                    if (!fs.existsSync(filesPath + job.id + '/' + fileName)) {
+                                    if (!fs.existsSync(filesPath + jobId + '/' + fileName)) {
                                         console.log("Error saving resource file. File resource not found.");
                                         //foundErr = true;
-                                        message('error:Resource not found - ' + filesPath + job.id + '/' + fileName);
+                                        message('error:Resource not found - ' + filesPath + jobId + '/' + fileName);
                                         stream.close();
                                     } else {
                                         aSyncInProgress++;
-                                        sendFile(fileName, remotePath, job.id);
+                                        sendFile(fileName, remotePath, jobId);
                                         function sendFile(aFileName, aRemotePath, aJobID) {
                                             conn.sftp(
                                                 function (err, sftp) {
@@ -1745,13 +1808,15 @@ router.post("/run",function(req,res){
                                         await Page.loadEventFired();
 
                                         setTimeout(async function() {
+                                            message('snap:creating snapshot');
+                                            flushMessQueue();
                                             const ss = await Page.captureScreenshot({format: 'png', fromSurface: true});
-                                            if (!fs.existsSync(filesPath + job.id)) {
-                                                fs.mkdirSync(filesPath + job.id)
+                                            if (!fs.existsSync(filesPath + jobId)) {
+                                                fs.mkdirSync(filesPath + jobId)
                                             }
-                                            fs.writeFileSync(filesPath + job.id + '/' + 'screenshot.png', ss.data, 'base64');
+                                            fs.writeFileSync(filesPath + jobId + '/' + 'screenshot.png', ss.data, 'base64');
 
-                                            message("img:"+job.id + '/' + 'screenshot.png');
+                                            message("img:"+jobId + '/' + 'screenshot.png');
 
                                             aSyncInProgress--;
                                             //console.log('saveTemplate:Sent - screenshot.png' );
@@ -1784,13 +1849,12 @@ router.post("/run",function(req,res){
                                     }
                                 }
                             }while(isDirective === true);
-
-
                          }
 
                         function replaceVar(commandStr, job) {// find and replace inserted vars eg. <%0ae3461e-d3c3-4214-acfb-35f44199ab5c.mVar4%>
                             //console.log("-"+commandStr+"-");
 
+                            //console.log("replaceVar " + commandIndex.toString());
 
                             const items = commandStr.split(new RegExp('<%', 'g'));
                             items.forEach(function (item) {
@@ -1813,31 +1877,27 @@ router.post("/run",function(req,res){
                                     var targetVarName = item.substr(2);
                                     var pid = job.parent;
                                     var repStr = "<%p." + targetVarName + "%>";
-                                    latestResultsFileList.forEach(function (file) {
-                                        if (file.substr(0, 36) === pid) {
-                                            var val = getVarValFromFile(file, targetVarName);
-
+                                    if (typeof latestVarCache[pid] !== "undefined"){
+                                        if (typeof latestVarCache[pid][targetVarName] !== "undefined"){
+                                            var val = latestVarCache[pid][targetVarName].replace(/\n$/, "").replace(/\r$/, "")
                                             commandStr = commandStr.replace(repStr, val)
                                         }
-                                    })
+                                    }
                                 }
                                 ; //look in parent for vars
 
                                 if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 'a.') {
                                     var targetVarName = item.substr(2);
-                                    var pid = job.parent;
                                     var repStr = "<%a." + targetVarName + "%>";
                                     var anArr = job.ft.replace('#/', '').split('/');
                                     anArr.reverse().forEach(function (an) {
-                                        latestResultsFileList.forEach(function (file) {
-                                            if (file.substr(0, 36) === an) {
-                                                var val = getVarValFromFile(file, targetVarName);
-                                                if (val !== '') {
-                                                    commandStr = commandStr.replace(repStr, val)
-                                                }
+                                        if (typeof latestVarCache[an] !== "undefined"){
+                                            if (typeof latestVarCache[an][targetVarName] !== "undefined"){
+                                                var val = latestVarCache[an][targetVarName];
+                                                commandStr = commandStr.replace(repStr, val)
                                             }
-                                        })
-                                    })//reverse the ansester list so that closer ansesters values are used first.
+                                        }
+                                    })//reverse the ancestor list so that closer ancestor values are used first.
                                 }
                                 ; //look in ancestors for vars
 
@@ -1845,32 +1905,75 @@ router.post("/run",function(req,res){
                                     var targetVarName = item.substr(2);
                                     var ft = job.ft;
                                     var repStr = "<%s." + targetVarName + "%>";
-
-                                    latestResultsFileList.forEach(function (file) {
-                                        var id = file.substr(0, 36);
-                                        if (SystemsJSON.hasOwnProperty(id)) {
+                                    var bestVal;
+                                    var relativeScore = 0; //track how close of a relative the job the varwas found in and give pref to closer relatives.
+                                    
+                                    for (var id in SystemsJSON) { //look in all jobs for var.
+                                        if (SystemsJSON.hasOwnProperty(id) && SystemsJSON[id].comType === 'job') {
                                             var resultsSystem = SystemsJSON[id].ft.split('/')[1];
-                                            var val = getVarValFromFile(file, targetVarName);
-                                            if (val !== '' && (ft.split('/')[1] === resultsSystem)) {
-                                                commandStr = commandStr.replace(repStr, val)
+                                            if (resultsSystem === ft.split('/')[1]){ //if same system...
+                                                if (typeof latestVarCache[id] !== "undefined"){
+                                                    if (typeof latestVarCache[id][targetVarName] !== "undefined"){
+                                                        var thisScore = calcRelativeScore(ft, SystemsJSON[id].ft);
+                                                        var val = latestVarCache[id][targetVarName];
+                                                        if(relativeScore < thisScore){
+                                                            relativeScore = thisScore;
+                                                            bestVal = val;
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
-                                    })
+                                    }
+                                    //now look in system for the var
+                                    if (typeof latestVarCache[ft.split('/')[1]] !== "undefined"){
+                                        if (typeof latestVarCache[ft.split('/')[1]][targetVarName] !== "undefined"){
+                                            var val = latestVarCache[ft.split('/')[1]][targetVarName];
+                                            var thisScore = 2;
+                                            if(relativeScore < thisScore){
+                                                relativeScore = thisScore;
+                                                bestVal = val;
+                                            }
+                                        }
+                                    };
+                                    if (typeof bestVal !== "undefined"){
+                                        commandStr = commandStr.replace(repStr, bestVal);
+                                    }
+
+
+
+
                                 }
                                 ; //look in same system for vars
 
-                                if (item.length > 37 && item.length < 67 && item.split("-").length == 5 && item.substr(14, 1) == '4' && item.substr(36, 1) == '.') {
-                                    var targetVarName = item.substr(37);
-                                    var id = item.substr(0, 36);
-                                    var repStr = "<%" + id + "." + targetVarName + "%>";
-
-                                    latestResultsFileList.forEach(function (file) {
-                                        if (file.substr(0, 36) === id) {
-                                            var val = getVarValFromFile(file, targetVarName);
-                                            commandStr = commandStr.replace(repStr, val);
-                                        }
-                                    });
+                                function calcRelativeScore(jobFT, foundFT){
+                                    //how many gr/parents does the current running job have in common with the found var job..
+                                    debugger;
+                                    const jobFTArr = jobFT.split('/');
+                                    const foundFTArr = foundFT.split('/');
+                                    var x = 0;
+                                    var score = 0;
+                                    while((typeof jobFTArr[x] !== "undefined")&&(typeof foundFTArr[x] !== "undefined")){
+                                       if (jobFTArr[x] === foundFTArr[x]){
+                                            score++;
+                                        };
+                                       x++;
+                                    }
+                                    return score;
                                 }
+
+                                // if (item.length > 37 && item.length < 67 && item.split("-").length == 5 && item.substr(14, 1) == '4' && item.substr(36, 1) == '.') {
+                                //     var targetVarName = item.substr(37);
+                                //     var id = item.substr(0, 36);
+                                //     var repStr = "<%" + id + "." + targetVarName + "%>";
+                                //
+                                //     latestResultsFileList.forEach(function (file) {
+                                //         if (file.substr(0, 36) === id) {
+                                //             var val = getVarValFromFile(file, targetVarName);
+                                //             commandStr = commandStr.replace(repStr, val);
+                                //         }
+                                //     });
+                                // }
                             });
 
                             //If there are any <% patterns left in the line then raise error and abort
@@ -1881,43 +1984,43 @@ router.post("/run",function(req,res){
                                 item = item.substr(0, item.indexOf('%>'));
 
                                 if (item.length > 2 && item.length < 32) {
-
+                                    //console.log("Error: Component Variable not found: " + item + '\n');
                                     message("Error: Component Variable not found: " + item + '\n');
+                                    flushMessQueue();
                                     sshSuccess = false;
                                     stream.close();
                                     return ('');
                                 }
                             }
-
                             return (commandStr);
                         }
 
-                        function getVarValFromFile(file, targetVarName) {
-                            try {
-                                var results = JSON.parse(fs.readFileSync(resultsPath + file));
-                            } catch (e) {
-                                console.log(resultsPath + file + " not valid results JSON");
-                                return('');
-                            }
-                            var trimmedResults = '';
-                            results.forEach(function (row) {
-                                if (row.hasOwnProperty('results')) {
-                                    if (row.results.substr(0, 4) === 'var:') {
-                                        var varName = row.results.split(':')[1];
-                                        if (varName === targetVarName) {
-                                            trimmedResults += row.results.substr(('var:' + varName + ':').length)
-                                        }
-                                    }
-                                }
-                                if (row.hasOwnProperty('x') && row.x !== '') {
-                                    varName = row.x;
-                                    if (varName === targetVarName) {
-                                        trimmedResults += row.results
-                                    }
-                                }
-                            });
-                            return (trimmedResults.replace(/\n$/, "").replace(/\r$/, ""));
-                        }
+                        // function getVarValFromFilex(file, targetVarName) {
+                        //     try {
+                        //         var results = JSON.parse(fs.readFileSync(resultsPath + file));
+                        //     } catch (e) {
+                        //         console.log(resultsPath + file + " not valid results JSON");
+                        //         return('');
+                        //     }
+                        //     var trimmedResults = '';
+                        //     results.forEach(function (row) {
+                        //         if (row.hasOwnProperty('results')) {
+                        //             if (row.results.substr(0, 4) === 'var:') {
+                        //                 var varName = row.results.split(':')[1];
+                        //                 if (varName === targetVarName) {
+                        //                     trimmedResults += row.results.substr(('var:' + varName + ':').length)
+                        //                 }
+                        //             }
+                        //         }
+                        //         if (row.hasOwnProperty('x') && row.x !== '') {
+                        //             varName = row.x;
+                        //             if (varName === targetVarName) {
+                        //                 trimmedResults += row.results
+                        //             }
+                        //         }
+                        //     });
+                        //     return (trimmedResults.replace(/\n$/, "").replace(/\r$/, ""));
+                        // }   // delete--------------------
                     });
                     stream.stderr.on('data', function (data) {
                         clearTimeout(lastTimeout);
@@ -1931,7 +2034,7 @@ router.post("/run",function(req,res){
                 });
             });
 
-            //console.log('job.id: ' + jobId);
+            //console.log('jobId: ' + jobId);
             //console.log('runKey: ' + runKey);
 
             try {
@@ -2048,7 +2151,7 @@ router.get("/fileList",function(req,res){
     fs.readdir(filesPath + id + '/' , function(err, files){
         if(err || (id.trim() === '') || (id.indexOf('..') > 0) ){
             res.end(JSON.stringify([]));
-            console.log(err);
+            //console.log(err);
         }else{
             var returnArr = [];
             files.forEach(function(file){
@@ -2264,7 +2367,7 @@ router.post("/firstRun",function(req,res){
 
 
 function saveAllJSON(backup){
-    console.log("saving");
+    //console.log("saving");
     fs.writeFile('SystemsJSON.json', JSON.stringify(SystemsJSON), function (err) {
         if (err) {
             console.log('There has been an error saving your json.');
@@ -2284,7 +2387,7 @@ function saveAllJSON(backup){
                     var x = 1;
                     fs.readdir(__dirname + "/backup/", function(err, files){ // delete older backups files
                         if (err){
-                            console.log(err);
+                            console.log("Error reading " + __dirname + "/backup/ dir\n" + err);
                         }else{
                             files.forEach(function(mFile){
                                 if (fs.statSync(__dirname + "/backup/" + mFile).isFile()){

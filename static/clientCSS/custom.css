@@ -3,9 +3,11 @@ html, body {
    overflow: hidden;
 }
 .container-fluid {
-   height : 100vh;
    padding-right: 0px;
    padding-left: 0px;
+}
+.container-fluid-custom {
+   height : 100vh;
 }
 
 .row {
@@ -65,7 +67,7 @@ topLib-col-fixed-240{
 .top-col-offset-240{
    position:absolute;
    width: 100%;
-   overflow-x: auto;
+   /*overflow-x: auto;*/
    //left:250px;
    //padding-right: 0px;
    z-index:0;
@@ -163,6 +165,10 @@ topLib-col-fixed-240{
    //overflow: auto;
 }
 
+/*.jobScreen{*/
+   /*padding-top: 6px;*/
+/*}*/
+
 #job-form-panel {
    padding: 15px;
    height: calc(100vh - 20px - 22px);
@@ -176,6 +182,9 @@ topLib-col-fixed-240{
 
 .jobPanel{
    margin-bottom: 2px;
+}
+.sysPanel{
+
 }
 
 input[readonly].form-control {
@@ -234,6 +243,10 @@ padding-left: 0px;
 
 .cust-panel{
    margin-bottom: 0px;
+}
+
+.cust-panel-group{
+   margin-bottom: 15px;
 }
 
 .cust-panel-heading {
@@ -406,6 +419,7 @@ padding-left: 0px;
    /*width: 80%;*/
 
    box-shadow: 3px 5px 18px 1px rgba(51, 51, 51, 0.88);
+   width: 90%;
 }
 #screenShotImage {
    height: 330px;
@@ -538,5 +552,47 @@ input:checked + .slider:before {
    width: 30vw;
 }
 
+/* Tab Navigation */
+.nav-tabs {
+   margin: 0;
+   padding: 0;
+   border: 0;
+}
 
+.nav-tabs>li {
+   margin-bottom: -2px;
+   border-radius: 15px 50px 30px 5px;
+}
+
+.nav-tabs > li > a {
+   border-radius: 15px 50px 30px 5px;
+   padding: 10px 15px;
+   padding-top: 10px;
+   padding-right: 5px;
+   padding-bottom: 5px;
+   padding-left: 15px;
+}
+
+/* Tab Content */
+.tab-pane {
+   border-radius: 0;
+   text-align: left;
+   padding-top: 5px;
+}
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus{
+   border:0;
+   border-radius: 15px 50px 30px 5px;
+}
+
+.resultsStatus{
+   overflow: auto;
+   //padding-top: 15px;
+   margin: 5px;
+}
+
+.rightCol{
+   padding:0
+}
 
