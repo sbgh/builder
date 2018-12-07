@@ -129,7 +129,6 @@
                 //console.log('saved');
             }  );
 
-
             //Create Lib Tree
             $("#jslibtree_div").jstree({
                 "core" : {
@@ -202,7 +201,6 @@
             }).on(  'create_node.jstree', function(e, data) {
                 //console.log('saved');
             }  );
-
 
             //Lib Tree Collapse
             $("#treeCollapse").on("click",function(){
@@ -422,6 +420,7 @@
             //Lib tree click
             $('#jslibtree_div').on("select_node.jstree", function (e, data) {
                 $("#rightCol").show();
+                activaTab('Component_Details'); 
                 $('#componentTabs').hide();
                 $("#introCol").hide();
                 $("#screenShotCol").hide();
@@ -851,7 +850,7 @@
 
 
                $('#runModal').modal('show');
-               $('#runChildrenCb').prop('checked', false);
+//               $('#runChildrenCb').prop('checked', false);
 
                 var famTree = $('#ft').val().split('/');
                 var sys = famTree[1];
@@ -1978,7 +1977,7 @@
                      $("#job-form-panel").height(topHeight - (56 + 22 + 34));
                      $("#sys-form-panel").height(topHeight - (56 + 22 + 34));
                      $("#leftResultsCol").height(topHeight - (15 + 22 + 38));
-                     $("#build-results-row").height(topHeight - (15 + 22 + 24));
+                     $("#build-results-row").height(topHeight - (15 + 22 + 21));
 
 
                      $('#results_html').height(container.height() - topHeight - (23 + 15));
@@ -2030,7 +2029,7 @@
             function setFormColWidth(){
                 $("#rightCol").css("left", treeWidth + libTreeWidth + 1);
                 $("#screenShotCol").css("left", treeWidth + libTreeWidth + 1);
-                $("#rightCol").css('width',$(window).width() - (treeWidth + libTreeWidth) );
+                $("#rightCol").css('width',$(window).width() - (treeWidth + libTreeWidth) -5 );
             }
 
 
@@ -2301,8 +2300,6 @@
                         if(respJson.hasOwnProperty("username")){
                             $("#username").val(respJson.username);
                         }
-
-
                     },
                     error : function(error) {
                         console.log(error)
@@ -2993,7 +2990,7 @@
                 <form class="form">
                     <div class="form-group">
                        <label style="padding-left: 40px">
-                            <input name="runChildrenCb" id="runChildrenCb" value="yes" type="checkbox"/>Run all children?
+                            <input name="runChildrenCb" id="runChildrenCb" value="yes" type="checkbox" checked/>Run all children?
                        </label>
                     </div>
                     <hr>

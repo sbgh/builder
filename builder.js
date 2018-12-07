@@ -219,8 +219,10 @@ router.get("/Jobs",function(req,res){
                             rowdata.li_attr = { "class" : "runningJobCompleteFail" }
                         }
                     }else{
-                        rowdata.li_attr = { "class" : "runningJob" }
+                        rowdata.li_attr = { "class" : "" }
                     };
+                }else{
+                    rowdata.li_attr = { "class" : "" }
                 }
 
                 if(rowdata.icon){
