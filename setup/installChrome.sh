@@ -209,7 +209,7 @@ function install_missing_dependencies() {
 
             # Find the package name for this library.
             package=$(repoquery --repofrompath=centos7,http://mirror.centos.org/centos/7/os/`arch` \
-                --repoid=centos7 -q --qf="%{name}" --whatprovides "$file")
+                --repoid=centos7 -q --qf="%{name}" --whatprovides "$file" | head -n1)
 
             install_package "${package}"
 
@@ -262,6 +262,3 @@ else
     echo "If you're using using AWS, please include the AMI identifier for the instance."
     exit 1
 fi
-
-
-google-chrome-stable --version
