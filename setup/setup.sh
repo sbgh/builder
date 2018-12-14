@@ -81,7 +81,14 @@ chmod 700 restartServer.sh
 echo
 echo 'Setting Builder to start on reboot'
 cronjob="@reboot /home/ec2-user/builder/restartServer.sh"
-(sudo crontab -u ec2-user -l; echo "$cronjob" ) | sudo crontab -u ec2-user -
+while true; do
+    read -p "Do you wish to have Builder started automatically at reboot?" yn
+    case $yn in
+        [Yy]* ) (sudo crontab -u ec2-user -l; echo "$cronjob" ) | sudo crontab -u ec2-user - ;break;;
+        [Nn]* ) echo "Not setting to start automatically";break;;
+        * ) echo "Please answer y or n.";;
+    esac
+done
 
 echo
 while true; do
