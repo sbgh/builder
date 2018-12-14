@@ -1315,8 +1315,8 @@
                 $("#edit_sys_button").hide();
                 $("#save_sys_button").hide();
                 $("#remove_sys_button").show();
-                $("#clear_sys_button").show();
-                $("#new_syoves_button").hide();
+                $("#clear_sys_button").hide();
+                $("#new_sys_button").hide();
 
                 $('#iconPaste').hide()
             }
@@ -2027,7 +2027,7 @@
             setWindowWidth(JSON.parse(localStorage['locTreeWidth']).width, container);
 
             function setFormColWidth(){
-                $("#rightCol").css("left", treeWidth + libTreeWidth + 1);
+                $("#rightCol").css("left", treeWidth + libTreeWidth + 0);
                 $("#screenShotCol").css("left", treeWidth + libTreeWidth + 1);
                 $("#rightCol").css('width',$(window).width() - (treeWidth + libTreeWidth) -5 );
             }

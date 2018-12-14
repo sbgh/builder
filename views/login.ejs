@@ -3,7 +3,11 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
-
+    <script>
+        $(document).ready(function() {
+            $("#password")[0].focus();
+        })
+    </script>
 </head>
 <body>
     <div class="col-sm-4"></div>
@@ -13,7 +17,7 @@
         <form method="post" action="/login">
             <div class="form-group">
                 <label for="username" class="control-label">User Name</label>
-                <input type="text" class="form-control" id="username" name="username" placeholder="username" value=""/>
+                <input type="text" class="form-control" id="username" name="username" placeholder="username" value="Admin"/>
             </div><br>
             <div class="form-group">
                 <label for="password" class="control-label">Password</label>

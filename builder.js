@@ -219,10 +219,10 @@ router.get("/Jobs",function(req,res){
                             rowdata.li_attr = { "class" : "runningJobCompleteFail" }
                         }
                     }else{
-                        rowdata.li_attr = { "class" : "" }
+                        rowdata.li_attr = { "class" : "newJobRow" }
                     };
                 }else{
-                    rowdata.li_attr = { "class" : "" }
+                    rowdata.li_attr = { "class" : "newJobRow" }
                 }
 
                 if(rowdata.icon){
@@ -2438,7 +2438,7 @@ function saveSettings(name, value){
 app.use("/",router);
 
 app.use("*",function(req,res){
-    res.sendFile(viewPath + "404.html");
+    res.status(404).end("404")
     console.log('404 '+ req.baseUrl)
 });
 
