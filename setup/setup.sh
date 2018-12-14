@@ -78,10 +78,12 @@ node ./setup/setConfigJson.js;
 
 chmod 700 restartServer.sh
 
+echo
 echo 'Setting Builder to start on reboot'
 cronjob="@reboot /home/ec2-user/builder/restartServer.sh"
 (sudo crontab -u ec2-user -l; echo "$cronjob" ) | sudo crontab -u ec2-user -
 
+echo
 while true; do
     read -p "Do you wish to start /builder now?" yn
     case $yn in
@@ -90,7 +92,7 @@ while true; do
         * ) echo "Please answer y or n.";;
     esac
 done
-
+echo
 echo /builder installation is complete!
 echo /builder listens on port 8443. Ensure that you create a new inbound rule that allows port 8443.
 echo You will access the /builder application via https://your.ip.address.or.hostname:8443/builder.
