@@ -956,12 +956,8 @@
 
                         $("#Build_Results_tab").show();
                         activaTab('Build_Results');
-
+                        $("#screenShotCol").show();
                         rTextNew.split('<br>').forEach(function(row){
-//                            if(row.substr(0,8) === 'message:'){
-//                                $('#messageSpan').html(row.substr(8))
-//
-//                            }
 
                             //resultsStatus
                             if(row.substr(0,17) === 'message:Building:'){
@@ -1029,7 +1025,7 @@
                                 var timestamp = new Date().getTime();
                                 $('#screenShot')[0].src="/uploads/" + row.replace('message:img:','') + '?' +timestamp  ;
                                 //$("#rightCol").hide();
-                                //$("#screenShotCol").show();
+                                $("#screenShotCol").show();
                             }
                             else{
                                 if(localKey !== '' && sys.length !== 0){
