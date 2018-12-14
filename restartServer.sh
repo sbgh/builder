@@ -1,4 +1,5 @@
 #!/bin/sh
+cd /home/ec2-user/builder
 pwd;
 echo;
 echo Killing Chrome
