@@ -79,7 +79,9 @@ node ./setup/setConfigJson.js;
 chmod 700 restartServer.sh
 
 echo 'Setting Builder to start on reboot'
-sudo crontab -u ec2-user -e @reboot /home/ec2-user/builder/restartServer.sh
+cronjob="@reboot /home/ec2-user/builder/restartServer.sh"
+(crontab -u ec2-user -l; echo "$cronjob" ) | crontab -u ec2-user -
+
 while true; do
     read -p "Do you wish to start /builder now?" yn
     case $yn in
