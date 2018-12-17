@@ -16,7 +16,7 @@
 
 Drag and drop components into a new design. Edit the component variables then click build. Headless Chrome is used to display the web app being rebuilt.
 
-![/builder](http://EZStack.Systems/images/add_phone_field.gif "/builder") 
+![/builder](http://ezstack.systems/images/ezstack-build-contacts.gif "/builder") 
 
 ## Installation
 
