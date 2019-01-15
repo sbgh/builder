@@ -113,6 +113,9 @@
                         "icon" : "fa fa-repeat rerunnableRow",
                         "a_attr": { class : " rerunnableRow "}
                     },
+                    "dashboard" : {
+                        "icon" : "fa fa-server"
+                    },
                     "disabled" : {
                         "icon" : "fa fa-hand-paper-o disabledRow",
                         "li_attr": { class : "  "}
@@ -291,6 +294,14 @@
                         $('#componentEnabledVal').html('No');
                     }
 
+                    if(data[0].promoted === 1){
+                        $('#promoted').prop('checked', true);
+                        $('#promotedVal').html('Yes');
+                    }else{
+                        $('#promoted').prop('checked', false);
+                        $('#promotedVal').html('No');
+                    }
+
                     if(data[0].rerunnable === 1){
                         $('#rerunnable').prop('checked', true);
                         $('#rerunnableVal').html('Yes');
@@ -298,6 +309,22 @@
                         $('#rerunnable').prop('checked', false);
                         $('#rerunnableVal').html('No');
                     }
+
+                    if(data[0].systemFunction === 1){
+                        $('#sysFunc').prop('checked', true);
+                        $('#sysFuncVal').html('Yes');
+                    }else{
+                        $('#sysFunc').prop('checked', false);
+                        $('#sysFuncVal').html('No');
+                    }
+                    if(data[0].runLocal === 1){
+                        $('#runLoc').prop('checked', true);
+                        $('#runLocVal').html('Yes');
+                    }else{
+                        $('#runLoc').prop('checked', false);
+                        $('#runLocVal').html('No');
+                    }
+
 
                     $("#description").val(data[0].description);
                     $("#script").val(data[0].script);
@@ -502,8 +529,6 @@
                 if(refreshFlag){
                     refreshFlag = false;
                 }else{
-                    //$("#rightCol").show();
-                    //$("#screenShotCol").hide();
 
                     selectedNode = data.selected[0];
                     selectedTree = 'working'
@@ -515,10 +540,12 @@
 
                     //console.log(data.selected);
                     if (selectedNode ==='local'){
-                        $("#sysScreen").hide();
-                        $("#jobScreen").hide();
-                        $('#componentTabs').hide()
+
+                        loadDashboard();
+                       // $('#dashboard').show()
+
                     }else{
+                        $('#dashboard').hide();
                         if (data.instance.get_node(data.node.id).type === "job"
                             || data.instance.get_node(data.node.id).type === "disabled"
                             || data.instance.get_node(data.node.id).type === "needfull"
@@ -569,8 +596,174 @@
                     }
                 }
 
-
             });
+
+            function loadDashboard(){
+                $("#sysScreen").hide();
+                $("#jobScreen").hide();
+                $('#componentTabs').hide();
+//                hideBottom();
+                showBottom();
+                //
+                //$(".dashboardMenu").hide();
+                if(localStorage['lastSreenShot']) {
+                    $('#screenShotImageDashboard')[0].src=localStorage['lastSreenShot']
+                }else{
+                    $("#screenShotImageDashboard").hide();
+                };
+                if(localStorage['appLink']) {
+                    $("#link")[0].innerHTML=localStorage['appLink']
+                };
+
+                $("#dashboard").show();
+
+                var mydata = {};
+                $.ajax({
+                    type: 'get',
+                    data: mydata,
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    url: '/getPromoted',
+                    success : function(data) {
+
+                        const promoted = JSON.parse(data);
+                        if(promoted.length > 0){
+                            var pCompHtml = "";
+                            var oldSytemName = "";
+                            promoted.forEach(function(pComp){
+
+                                var dashListRowClicked = "";
+                                if(localStorage['dashListRowClicked'] === pComp.id){
+                                    dashListRowClicked = 'dashListRowClicked';
+                                    loadDashDetails(pComp.id, pComp.systemId, pComp.systemName);
+                                }
+
+                                var pHTML="";
+                                if(!pComp.hasOwnProperty("lastBuild")){
+                                    pHTML="<div class='col-sm-1 DashListStatusCol DashListNotBuilt'>Not Built</div>"
+                                    rowColorClass="DashListRowNotBuilt"
+                                }else if(!pComp.lastBuild.hasOwnProperty("pass")){
+                                    pHTML="<div class='col-sm-1 DashListStatusCol DashListNotBuilt'>Not Built</div>"
+                                    rowColorClass="DashListRowNotBuilt"
+                                }else{
+                                    if(pComp.lastBuild.pass === 1){
+                                        pHTML="<div class='col-sm-1 DashListStatusCol DashListPass'>Pass</div>"
+                                        rowColorClass="DashListRowPass"
+                                    }else{
+                                        pHTML="<div class='col-sm-1 DashListStatusCol DashListFail'>Fail</div>"
+                                        rowColorClass="DashListRowFail"
+                                    }
+                                }
+//                                if(pComp.systemName !== oldSytemName){
+//                                    pCompHtml += "<div class='row'>";
+//                                        pCompHtml += "<label>" + pComp.systemName + "</label>"
+//                                    pCompHtml += "</div>";
+//                                    oldSytemName = pComp.systemName;
+//                                }
+
+                                var sys = pComp.systemId;
+                                pCompHtml += "<div class='row dashBoardListRow "+rowColorClass+"'>";
+
+                                    pCompHtml += pHTML;
+
+                                    pCompHtml += "<div class='col-sm-10 dashCompNameRow dashListRowNotClicked "+dashListRowClicked+"' data-Id='"+pComp.id+"'  data-runSysName='"+pComp.systemName+"' data-runSys='"+sys+"' >"
+                                        pCompHtml +=  pComp.systemName + " : " + pComp.name ;
+                                    pCompHtml += "</div>";
+//                                    pCompHtml += "<div class='col-sm-1 dashPlayIcon' data-runId='"+pComp.id+"' data-runSys='"+sys+"'    >"
+//                                        pCompHtml +=  "<i class='fa fa-play fa-fw'></i>" ;
+//                                    pCompHtml += "</div>";
+
+                                pCompHtml += "</div>";
+
+                            })
+                            $("#dashboardList")[0].innerHTML = pCompHtml;
+
+                            $('#DashBuildMenu').on('click', function(){
+                                var id = $("#dashId").val();
+                                var sys = $("#dashSys").val();
+
+                                runJob(id, sys);
+
+                            });
+                            $('#DashOpenMenu').on('click', function(){
+                                var id = $("#dashId").val();
+
+                                $('#jstree_div').jstree('select_node',id);
+                                $('#jstree_div' + " li[id=" + id + "] a")[0].click();
+                               // $("#jstree_div").jstree("select_node", selector).trigger("select_node.jstree");
+
+                            });
+                            $('.dashCompNameRow').on('click', function(){
+                                var id = $(this).attr('data-Id');
+                                var sys = $(this).attr('data-runSys');
+                                var sysName = $(this).attr('data-runSysName');
+                                loadDashDetails(id, sys, sysName);
+                                $(".dashCompNameRow").each(function(){
+                                    $(this).removeClass('dashListRowClicked')
+                                })
+                                $(this).addClass("dashListRowClicked");
+                                localStorage['dashListRowClicked'] = id;
+                            });
+                            function loadDashDetails(id, sys, sysName){
+                                $("#dashId").val(id);
+                                $("#dashSys").val(sys);
+
+                                $("#dashboardDetailsTile")[0].innerHTML = '';
+                                $("#dashboardDetailsDescription")[0].innerHTML = '';
+
+                                $("#dashboardDetailsSysName")[0].innerHTML = "On System: "+sysName;
+
+                                getDashDetails(id, sysName) ;
+
+                                function getDashDetails(id,sysName){
+                                    $.get('/Jobs', { id: id }, function(data) {
+                                        var dispData = JSON.parse(JSON.stringify(data[0]) );
+
+                                        $("#dashboardDetailsTile")[0].innerHTML = dispData.name;
+                                        $("#dashboardDetailsDescription")[0].innerHTML = dispData.description;
+
+                                        $(".dashboardMenu").show();
+
+                                    });
+                                }
+
+                            }
+                        }
+                       //
+                    },
+                    error : function(error) {
+                        console.log(error)
+                    }
+                })
+            }
+
+            setInterval(serverStats, 5000);
+            function serverStats(){
+
+                var mydata = {};
+                $.ajax({
+                    type: 'get',
+                    data: mydata,
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    url: '/getCPUStats',
+                    success : function(data) {
+
+                        const statsJson = JSON.parse(data);
+                        $("#osCPUValue")[0].innerHTML = statsJson.last10.toString()+"%"
+                        $("#osFMValue")[0].innerHTML = (statsJson.freeMem/1024/1024/1024).toFixed(2).toString()+" GB"
+
+
+                    },
+                    error : function(error) {
+                        console.log(error)
+                    }
+                })
+            }
 
             //$("#rightCol").hide();
             //$("#screenShotCol").hide();
@@ -578,14 +771,6 @@
             var bottomHiddenFlag = true;
             function hideBottom(){
                 $("#bottomRow").hide(function(){
-//                    $("#jstree_div").height('calc(100vh - 23px - 22px)');
-//                    $("#jslibtree_div").height('calc(100vh - 23px - 22px)');
-//                    $("#rightCol").height('calc(100vh - 26px)');
-//                    $("#job-form-panel").height('calc(100vh - 44px)');
-//                    $("#sys-form-panel").height('calc(100vh - 44px)');
-//                    $("#treePanelHandle").height('calc(100vh - 26px)');
-//                    $("#libTreePanelHandle").height('calc(100vh - 26px)');
-
                     var container = $('#rowContainer');
                     bottomHiddenFlag = true;
                     setWindowHeight(container.height(), container);
@@ -606,8 +791,14 @@
                 $("#name").val('');
                 $("#componentEnabled").val('');
                 $("#componentEnabledVal").html('');
+                $("#promoted").val('');
+                $("#promotedVal").html('');
                 $("#rerunnable").val('');
                 $("#rerunnableVal").html('');
+                $("#sysFunc").html('');
+                $("#sysFuncVal").html('');
+                $("#runLoc").html('');
+                $("#runLocVal").html('');
                 $("#description").val('');
                 $("#script").val('');
                 $("#compVariables").val('');
@@ -635,11 +826,34 @@
                 }
             });
 
+            $('#promoted').change(function() {
+                if(this.checked) {
+                    $("#promotedVal").html('Yes');
+                }else{
+                    $("#promotedVal").html('No');
+                }
+            });
+
             $('#rerunnable').change(function() {
                 if(this.checked) {
                     $("#rerunnableVal").html('Yes');
                 }else{
                     $("#rerunnableVal").html('No');
+                }
+            });
+
+            $('#sysFunc').change(function() {
+                if(this.checked) {
+                    $("#sysFuncVal").html('Yes');
+                }else{
+                    $("#sysFuncVal").html('No');
+                }
+            });
+            $('#runLoc').change(function() {
+                if(this.checked) {
+                    $("#runLocVal").html('Yes');
+                }else{
+                    $("#runLocVal").html('No');
                 }
             });
 
@@ -671,12 +885,36 @@
                         $('#componentEnabledVal').html('No');
                     }
 
+                    if(data[0].promoted === 1){
+                        $('#promoted').prop('checked', true);
+                        $('#promotedVal').html('Yes');
+                    }else{
+                        $('#promoted').prop('checked', false);
+                        $('#promotedVal').html('No');
+                    }
+
                     if(data[0].rerunnable === 1){
                         $('#rerunnable').prop('checked', true);
                         $('#rerunnableVal').html('Yes');
                     }else{
                         $('#rerunnable').prop('checked', false);
                         $('#rerunnableVal').html('No');
+                    }
+
+                    if(data[0].systemFunction === 1){
+                        $('#sysFunc').prop('checked', true);
+                        $('#sysFuncVal').html('Yes');
+                    }else{
+                        $('#sysFunc').prop('checked', false);
+                        $('#sysFuncVal').html('No')
+                    }
+
+                    if(data[0].runLocal === 1){
+                        $('#runLoc').prop('checked', true);
+                        $('#runLocVal').html('Yes')
+                    }else{
+                        $('#runLoc').prop('checked', false);
+                        $('#runLocVal').html('No');
                     }
 
                     $("#description").val(data[0].description);
@@ -848,12 +1086,20 @@
             var refreshFlag = false;
             $("#run_button").click(function(event){
 
+                var id = $("#id").val();
+                var sys = $('#ft').val().split('/')[1];
+                runJob(id, sys);
 
-               $('#runModal').modal('show');
-//               $('#runChildrenCb').prop('checked', false);
+            });
 
-                var famTree = $('#ft').val().split('/');
-                var sys = famTree[1];
+            function runJob(id, sys){
+
+                $('#runModal').modal('show');
+
+                $("#idToBeRun").val(id);
+                $("#sysToBeRun").val(sys);
+
+//                var sys = famTree[1];
 
                 var storedKey ='';
                 var storedKeyName = '';
@@ -869,13 +1115,30 @@
                         $('#keyList').html('') ;
                     }
                 }
-            });
+
+                var storedAccess ='';
+                var storedAccessName = '';
+
+                if (sys.length !== 0){
+                    storedAccess = localStorage['access'];
+                    storedAccessName = localStorage['accessName'];
+                    if(storedAccess !== '' && typeof storedAccess !== 'undefined'){
+                        $('#localStoreAccessCb').prop('checked', true);
+                        $('#accessList').html(storedAccessName) ;
+                    }else{
+                        $('#localStoreAccessCb').prop('checked', false);
+                        $('#accessList').html('') ;
+                    }
+                }
+            }
+
             $("#runConfirmButton").on("click",function() {
 
-                var ids = $("#id").val();
+                var ids = $("#idToBeRun").val();
+                var sys = $("#sysToBeRun").val();
 
                 if($('#runChildrenCb').is(':checked')){
-                    var treeNode = $('#jstree_div').jstree(true).get_node($("#id").val());
+                    var treeNode = $('#jstree_div').jstree(true).get_node(ids);
                     var childs = treeNode.children_d;
                     if (childs.length > 0 ){
                         ids += ';' + childs.join(';');
@@ -895,9 +1158,6 @@
 
                 //console.log("ids: " + ids)
 
-                var famTree = $('#ft').val().split('/');
-                var sys = famTree[1];
-
                 if($('#localStoreKeyCb').is(':checked')){
                     formData.append('storeLocal', 'yes');
                     formData.append('localStoredKey',localStorage['key_' + sys]);
@@ -909,6 +1169,18 @@
 
                 }
 
+                if($('#localStoreAccessCb').is(':checked')){
+                    formData.append('storeLocalAccess', 'yes');
+                    formData.append('localStoredAccess',localStorage['access']);
+                    //console.log("key:"+localStorage['key_' + sys]);
+                }else{
+                    formData.append('storeLocalAccess', 'no');
+                    localStorage['access'] = '';
+                    localStorage['accessName' ]='';
+
+                }
+
+                var files;
                 files = $('#upload-key').get(0).files
                 if( files.length === 1) {
                     var file = files[0];
@@ -919,7 +1191,18 @@
                     }
                 }
 
+                files = $('#upload-access').get(0).files
+                if( files.length === 1) {
+                    var file = files[0];
+                    // add the files to formData object for the data payload
+                    formData.append('access', file, file.name);
+                    if($('#localStoreAccessCb').is(':checked')) {
+                        localStorage['accessName'] = file.name;
+                    }
+                }
+
                 var localKey="";
+                var localAccess="";
 
                 $('.runningJob').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
                 $('.runningJobCompleteSuccess').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
@@ -929,6 +1212,12 @@
                 $('#jstree_div li').each( function() {
                     $("#jstree_div").jstree().disable_node(this.id);
                 })
+//                $("#Build_Results_tab").show();
+//                activaTab('Build_Results');
+//                $("#screenShotCol").show();
+
+                loadDashboard();
+                //$("#dashboard").show();
 
                 $.ajax({
                     url: '/run',
@@ -954,16 +1243,13 @@
                         var famTree = $('#ft').val().split('/');
                         var sys = famTree[1];
 
-                        $("#Build_Results_tab").show();
-                        activaTab('Build_Results');
-                        $("#screenShotCol").show();
                         rTextNew.split('<br>').forEach(function(row){
 
                             //resultsStatus
                             if(row.substr(0,17) === 'message:Building:'){
-                                $("#resultsStatus")[0].innerHTML += "<span>Building: " + row.slice(17) + "</span>"
+                                $("#resultsStatus")[0].innerHTML += "<span>" + row.slice(17) + "</span>"
                             }else if(row.substr(0,28) === 'status:All scripts completed'){
-                                $("#resultsStatus")[0].innerHTML += "All scripts completed"
+                                $("#resultsStatus")[0].innerHTML += "<b>All scripts completed</b>"
                             }else if(row.substr(0,22) === 'status:Scripts Aborted'){
                                 $("#resultsStatus")[0].innerHTML += "Scripts aborted"
                             }else if(row.substr(0,26) === 'message:CompletionSuccess:'){
@@ -975,15 +1261,20 @@
                             }
 
 
-                            message:CompletionSuccess:true
+                            //message:CompletionSuccess:true
 
                             if(row.substr(0,4) === 'key:' &&  $("#results_html").html() === '') {
                                 localKey += row.substr(4) + '\n';
                             }
+                            else if(row.substr(0,7) === 'access:' &&  $("#results_html").html() === '') {
+                                localAccess += row.substr(7) + '\n';
+                            }
                             else if(row.substr(0,12) === 'message:url:'){
                                 //window.open('https://mynode:8445/cm', 'new_', '');
                                 //window.open('https://mynode:8445/cm');
-                                $("#link")[0].innerHTML = "<a href='" + row.slice(12)+"' target='_new'>Link: " + row.slice(12) + "</a>"
+                                var appLink = "Link: <a href='" + row.slice(12)+"' target='_new'>" + row.slice(12) + "</a>"
+                                $("#link")[0].innerHTML = appLink;
+                                localStorage['appLink'] = appLink;
                             }
                             else if(row.substr(0,16) === 'message:BuildID:'){
                                 buildIDRunning = row.substring(
@@ -1023,21 +1314,29 @@
                             }
                             else if(row.substr(0,12) === 'message:img:'){
                                 var timestamp = new Date().getTime();
-                                $('#screenShot')[0].src="/uploads/" + row.replace('message:img:','') + '?' +timestamp  ;
-                                //$("#rightCol").hide();
-                                $("#screenShotCol").show();
+                                //$('#screenShot')[0].src="/uploads/" + row.replace('message:img:','') + '?' +timestamp  ;
+                                var imageLink = "/uploads/" + row.replace('message:img:','') + '?' +timestamp;
+                                $('#screenShotImageDashboard')[0].src=imageLink  ;
+
+                                localStorage['lastSreenShot'] = imageLink;
+                                $("#screenShotImageDashboard").show();
                             }
                             else{
                                 if(localKey !== '' && sys.length !== 0){
-                                   if($('#localStoreKeyCb').is(':checked')) {
-                                       localStorage['key_' + sys] = localKey
-                                   }
+                                    if($('#localStoreKeyCb').is(':checked')) {
+                                        localStorage['key_' + sys] = localKey
+                                    }
+                                }
+                                if(localAccess !== '' && sys.length !== 0){
+                                    if($('#localStoreAccessCb').is(':checked')) {
+                                        localStorage['access'] = localAccess
+                                    }
                                 }
                                 $("#results_html").append(row + '<br>');
                             }
                         })
                         $('#results_html').animate({scrollTop: $('#results_html').get(0).scrollHeight}, 50);
-                        $('#leftResultsCol').animate({scrollTop: $('#leftResultsCol').get(0).scrollHeight}, 50);
+                        $('#status-panel-body').animate({scrollTop: $('#status-panel-body').get(0).scrollHeight}, 50);
                     };
 
                     return xhr;
@@ -1047,7 +1346,7 @@
                         //console.log(localKey)
                     }
                     updateResultsList(selectedNode);
-
+                    loadDashboard();
                     //Enable tree
                     $('#jstree_div li').each( function() {
                         $("#jstree_div").jstree().enable_node(this.id);
@@ -1063,7 +1362,7 @@
 
                 $('#runModal').modal('toggle');
             });
-            
+
             //remove
             $("#remove_button, #remove_sys_button").click(function(event){
                 $('#delModal').modal('show');
@@ -1169,7 +1468,10 @@
                 $("#idDisp")[0].readOnly = true;
 
                 $("#componentEnabledSlider").show();
+                $("#promotedSlider").show();
                 $("#rerunnableSlider").show();
+                $("#sysFuncSlider").show();
+                $("#runLocSlider").show();
 
                 $("#edit_button").hide();
                 $("#save_button").show();
@@ -1201,7 +1503,11 @@
                 inputFields.each(disableElement);
 
                 $("#componentEnabledSlider").hide();
+                $("#promotedSlider").hide();
+
                 $("#rerunnableSlider").hide();
+                $("#sysFuncSlider").hide();
+                $("#runLocSlider").hide();
 
                 function disableElement(index, element) {
                     element.readOnly = true;
@@ -1274,7 +1580,11 @@
                 inputFields.each(disableElement);
 
                 $("#componentEnabledSlider").hide();
+                $("#promotedSlider").hide();
                 $("#rerunnableSlider").hide();
+                $("#sysFuncSlider").hide();
+                $("#runLocSlider").hide();
+
 
                 function disableElement(index, element) {
                     element.readOnly = true;
@@ -1371,11 +1681,27 @@
                 }else{
                     mydata.enabled = 0;
                 }
+                if($('#promoted').is(':checked')) {
+                    mydata.promoted = 1;
+                }else{
+                    mydata.promoted = 0;
+                }
                 if($('#rerunnable').is(':checked')) {
                     mydata.rerunnable = 1;
                 }else{
                     mydata.rerunnable = 0;
                 }
+                if($('#sysFunc').is(':checked')) {
+                    mydata.systemFunction = 1;
+                }else{
+                    mydata.systemFunction = 0;
+                }
+                if($('#runLoc').is(':checked')) {
+                    mydata.runLocal = 1;
+                }else{
+                    mydata.runLocal = 0;
+                }
+
 
                 mydata.compVariables = $("#compVariables").val();
                 mydata.script = $("#script").val();
@@ -1452,7 +1778,7 @@
             })
 
             //re-sort components
-            $("#moveUp_button").click(function(event){
+            $("#moveUp_button, #moveUp_sys_button").click(function(event){
                 //console.log("up");
                 $.get('/Move', { id: selectedNode, direction: 'up' }, function(data) {
                    newPos = data.newPos;
@@ -1464,7 +1790,7 @@
                     }
                 })
             })
-            $("#moveDn_button").click(function(event){
+            $("#moveDn_button, #moveDn_sys_button").click(function(event){
                 //console.log("down");
                 $.get('/Move', { id: selectedNode, direction: 'down' }, function(data) {
                     //var dataJason = JSON.parse(data);
@@ -1503,7 +1829,7 @@
                     }
                 });
             });
-            
+
             //Insert Var
             $("#insertVarButton").on("click",function() {
 
@@ -1834,7 +2160,7 @@
             var selectedNode = "#"; //default Root
 
             //Define the current selected tree for several functions
-            var selectedTree = "working"; //default 'working' tree
+            var selectedTree = "working"; //default 'working' (aka local aka dashboard) tree
 
 
             //Create new component or system
@@ -1964,7 +2290,7 @@
                  }
 
                  if(!bottomHiddenFlag){
-                     $("#jstree_div").height(topHeight - (17 + 29));
+                     $("#jstree_div").height(topHeight - (17 + 30));
                      $("#jslibtree_div").height(topHeight - (17 + 29));
 
                      $("#treePanelHandle").height(topHeight - 17);
@@ -1972,6 +2298,7 @@
 
                      $("#job-form-panel").height(topHeight - (56 + 22 + 34));
                      $("#sys-form-panel").height(topHeight - (56 + 22 + 34));
+                     $("#dashboard").height(topHeight - 22);
                      $("#leftResultsCol").height(topHeight - (15 + 22 + 38));
                      $("#build-results-row").height(topHeight - (15 + 22 + 21));
 
@@ -1980,13 +2307,14 @@
                      $('#results_codes').height(container.height() - topHeight - (23 + 15));
                      $('#results-group').height(container.height() - topHeight - (23 + 15));
                  }else{
-                     $("#jstree_div").height(topHeight );
-                     $("#jslibtree_div").height(topHeight );
+                     $("#jstree_div").height(topHeight -11);
+                     $("#jslibtree_div").height(topHeight -10 );
 
                      $("#treePanelHandle").height(topHeight +10 );
                      $("#libTreePanelHandle").height(topHeight +10);
 
                      $("#rightCol").height(topHeight - 24);
+                     $("#dashboard").height(topHeight);
                      $("#job-form-panel").height(topHeight );
                      $("#sys-form-panel").height(topHeight );
 
@@ -2169,12 +2497,20 @@
                 }
             });
 
-            //Key file management
-            $('.newKey').on('click', function(){
+            //pem Key file management
+            $('#newKeyButton').on('click', function(){
                 $('#upload-key').click();
             });
             $('#upload-key').on('change', function() {
                 $('#keyList').html($(this)[0].files[0].name);
+            });
+
+            //csv Key file management
+            $('#newAccessButton').on('click', function(){
+                $('#upload-access').click();
+            });
+            $('#upload-access').on('change', function() {
+                $('#accessList').html($(this)[0].files[0].name);
             });
 
             //settings Style Pick event
@@ -2357,7 +2693,7 @@
                 $('.nav-tabs a[href="#' + tab + '"]').tab('show');
             };
 
-            $("#Build_Results_tab").hide();
+           // $("#Build_Results_tab").hide();
 //            $('.nav').on('show.bs.tab', function (e) {
 //                $('.nav .active').removeClass('active');
 //            })
@@ -2597,12 +2933,7 @@
 
             <div id="leftCol" class="top-col-fixed-240" >
                 <div id="treePanel" class='panel panel-default cust-panel locTree-panel-body' style="float: left;"  >
-                    <div class='panel-heading cust-panel-heading'><i class='fa  fa-cloud  fa-fw'></i>Systems <a class='newSys' href='#'>[+]</a> <a href="#" data-toggle="modal" data-target="#welcomeModal">  [<i class="fa fa-question"></i>]</a>  </div>
-
-
-
-
-
+                    <div class='panel-heading cust-panel-heading'><i class='fa fa-align-justify  fa-fw'></i>Systems <a class='newSys' href='#'>[+]</a> <a href="#" data-toggle="modal" data-target="#welcomeModal">  [<i class="fa fa-question"></i>]</a>  </div>
 
                     <div class='panel-body tree-panel-body'>
                         <div id="jstree_div" class="SysTree"></div>
@@ -2621,14 +2952,14 @@
                 <ul class="nav nav-tabs " role="tablist" id="componentTabs">
                     <li class="active">
                         <a href="#Component_Details" role="tab" data-toggle="tab"">
-                            <icon class="fa fa-bars"></icon> Component Details
+                            <icon class="fa fa-th-large"></icon> Component Details
                         </a>
                     </li>
-                    <li class="" id="Build_Results_tab">
-                        <a href="#Build_Results" role="tab" data-toggle="tab">
-                            <i class="fa fa-check-square-o"></i> Build Results
-                        </a>
-                    </li>
+                    <!--<li class="" id="Build_Results_tab">-->
+                        <!--<a href="#Build_Results" role="tab" data-toggle="tab">-->
+                            <!--<i class="fa fa-check-square-o"></i> Build Results-->
+                        <!--</a>-->
+                    <!--</li>-->
                 </ul>
                 <div class="tab-content">
                     <div class="tab-pane fade active in" id="Component_Details">
@@ -2636,6 +2967,8 @@
                             <div class="buttonRow">
                                 <button id = "edit_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
                                 <button id = "save_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
+                                <button id = "moveUp_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-up fa-fw"></i>Move Up</button>
+                                <button id = "moveDn_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-down fa-fw"></i>Move Down</button>
                                 <button id = "new_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Comp</button>
                                 <button id = "remove_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
                                 <button id = "clear_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-history fa-fw"></i>Clear History</button>
@@ -2701,19 +3034,20 @@
                                         <div class="row">
                                             <div id="topLeftForm" class="col-lg-6 topLeftForm">
                                                 <div class="row" id="firstRow" >
-                                                    <div class="col-lg-6 " style="padding: 0px">
+                                                    <div class="col-lg-4 " style="padding: 0px">
                                                         <div class="form-group">
                                                             <label class="build-label">Component Name</label>
                                                             <input class="form-control form-custom" placeholder="Enter name" id="name">
                                                         </div>
                                                     </div>
-                                                    <div class="col-lg-2">
+
+                                                    <div class="col-sm-2">
                                                         <div class="form-group">
                                                             <label class="build-label">Version</label>
                                                             <div id="version" class="statusBox"></div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-lg-2">
+                                                    <div class="col-sm-2">
                                                         <div class="form-group">
                                                             <label class="build-label">Enabled</label>
                                                             <div>
@@ -2726,19 +3060,21 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-lg-2">
+                                                    <div class="col-sm-2">
                                                         <div class="form-group">
-                                                            <label class="build-label">Rerunnable</label>
+                                                            <label class="build-label">Promoted</label>
                                                             <div>
-                                                                <label class="switch" id="rerunnableSlider">
-                                                                    <input name="rerunnable" id="rerunnable" type="checkbox">
+                                                                <label class="switch" id="promotedSlider">
+                                                                    <input name="promoted" id="promoted" type="checkbox">
                                                                     <span class="slider round"></span>
                                                                 </label>
-                                                                <span id="rerunnableVal" class="statusBox"></span>
+                                                                <span id="promotedVal" class="statusBox"></span>
 
                                                             </div>
                                                         </div>
                                                     </div>
+
+
                                                     <!--     https://stackoverflow.com/questions/19865158/what-is-the-difference-among-col-lg-col-md-and-col-sm-in-bootstrap   -->
                                                 </div>
 
@@ -2769,6 +3105,48 @@
                                                     <div class="panel-heading cust-panel-heading BuildCode-Heading ">Build Code<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
                                                     </div>
                                                     <div class="panel-body code-panel-body">
+                                                        <div class="row" >
+                                                            <div class="col-sm-2">
+                                                                <div class="form-group">
+                                                                    <label class="build-label">Rerunnable</label>
+                                                                    <div>
+                                                                        <label class="switch" id="rerunnableSlider">
+                                                                            <input name="rerunnable" id="rerunnable" type="checkbox">
+                                                                            <span class="slider round"></span>
+                                                                        </label>
+                                                                        <span id="rerunnableVal" class="statusBox"></span>
+
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-sm-2">
+                                                                <div class="form-group">
+                                                                    <label class="build-label">System Function</label>
+                                                                    <div>
+                                                                        <label class="switch" id="sysFuncSlider">
+                                                                            <input name="System Function" id="sysFunc" type="checkbox">
+                                                                            <span class="slider round"></span>
+                                                                        </label>
+                                                                        <span id="sysFuncVal" class="statusBox"></span>
+
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-sm-2">
+                                                                <div class="form-group">
+                                                                    <label class="build-label">Run Locally</label>
+                                                                    <div>
+                                                                        <label class="switch" id="runLocSlider">
+                                                                            <input name="System Function" id="runLoc" type="checkbox">
+                                                                            <span class="slider round"></span>
+                                                                        </label>
+                                                                        <span id="runLocVal" class="statusBox"></span>
+
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
 
                                                         <div class="form-group">
                                                             <label class="build-label">Build Script</label><i class="fa fa-fw"></i>
@@ -2862,15 +3240,86 @@
                             <div class="row" id="build-results-row">
 
                                 <div id="leftResultsCol" class="col-lg-3 resultsStatus" >
-                                    <div class="resultsStatus" id="resultsStatus"></div>
+                                    <!--<div class="resultsStatus" id="resultsStatus"></div>-->
                                 </div>
                                 <div id="rightResultsCol" class="col-lg-8" >
                                     <div id="screenShotCol" class="screenShotCol"  >
-                                        <div id="link"></div>
+                                        <!--<div id="link"></div>-->
                                         <img id="screenShot">
                                     </div>
                                 </div>
 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default dashboardPanel" id="dashboard">
+
+                    <input name="dashId" id="dashId" type="hidden" />
+                    <input name="dashSys" id="dashSys" type="hidden" />
+                    <!--<input name="dashSysName" id="dashSysName" type="hidden" />-->
+
+                    <div class='panel-body'>
+                        <div class="row ">
+
+                            <div class="col-sm-2" >
+
+                            </div>
+                            <div class="col-sm-2" >
+
+                            </div>
+
+                        </div>
+
+                        <div class="row ">
+                            <div class="col-md-4" >
+                                <div class='panel os-panel'>
+                                    <div class='panel-heading dashboardPanelHeading os-panel-heading'>CPU Load</div>
+                                    <div class='panel-body os-panel-body'>
+                                        <div id="osCPUValue" >%</div>
+                                    </div>
+                                </div>
+                                <div class='panel os-panel'>
+                                    <div class='panel-heading dashboardPanelHeading os-panel-heading'>Free Mem</div>
+                                    <div class='panel-body os-panel-body'>
+                                        <div id="osFMValue" >GB</div>
+                                    </div>
+                                </div>
+                                <div class="dashboardDetails">
+                                    <div id="dashboardDetailsTile" class="dashboardDetailsTile"></div>
+                                    <div id="dashboardDetailsSysName" class="dashboardDetailsSysName"></div>
+                                    <div id="dashboardDetailsDescription" class="dashboardDetailsDescription"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4" >
+                                <div class='panel'>
+                                    <div class='panel-heading dashboardPanelHeading '>Last Screenshot</div>
+                                    <div class='panel-body screenshot-panel-body' >
+                                        <img id="screenShotImageDashboard" class="screenShotImageDashboard">
+                                        <div id="link" class="screenShotLink"></div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-md-4" >
+                                <div class='panel'>
+                                    <div class='panel-heading dashboardPanelHeading '>Build Status</div>
+                                    <div class='panel-body status-panel-body' id="status-panel-body">
+                                        <div class="resultsStatus" id="resultsStatus"></div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="dashboardMenu"><div class="dashboardMenuItem" id="DashBuildMenu">Build</div><div class="dashboardMenuItem dashboardMenuItemLast" id="DashOpenMenu">Open</div></div>
+
+
+                        <div class="panel launchPadPanel">
+                            <div class='panel-heading dashboardPanelHeading launchPadHeading'>Launch Pad</div>
+
+                            <div class="row dashBoardList">
+                                <div id="dashboardList" class="panel-body launchPadBody "></div>
                             </div>
                         </div>
                     </div>
@@ -2984,6 +3433,9 @@
             </div>
             <div id='runConfirmationBody' class="modal-body">
                 <form class="form">
+                    <input name="idToBeRun" id="idToBeRun" type="hidden" />
+                    <input name="sysToBeRun" id="sysToBeRun" type="hidden" />
+
                     <div class="form-group">
                        <label style="padding-left: 40px">
                             <input name="runChildrenCb" id="runChildrenCb" value="yes" type="checkbox" checked/>Run all children?
@@ -2991,13 +3443,25 @@
                     </div>
                     <hr>
                     <div class="form-group">
-                        <label style="padding-left: 40px">Key: </label><span id = 'keyList' class = 'keyList'></span>
+                        <label style="padding-left: 40px">AWS Key Pair File (.pem): </label><span id = 'keyList' class = 'keyList'></span>
                         <label style="padding-left: 10px"><a id='newKeyButton' class='newKey' href='#'>[select]</a></label>
                         <input id="upload-key" type="file" name="key" multiple="single">
                     </div>
                     <div class="form-group">
                         <label style="padding-left: 40px">
                             <input name="localStoreKeyCb" id="localStoreKeyCb" value="yes" type="checkbox"/>Store key in browser?</label>
+                        </label>
+                    </div>
+
+                    <hr>
+                    <div class="form-group">
+                        <label style="padding-left: 40px">AWS Access code File (.csv): </label><span id = 'accessList' class = 'keyList'></span>
+                        <label style="padding-left: 10px"><a id='newAccessButton' class='newKey' href='#'>[select]</a></label>
+                        <input id="upload-access" type="file" name="key" multiple="single">
+                    </div>
+                    <div class="form-group">
+                        <label style="padding-left: 40px">
+                            <input name="localStoreAccessCb" id="localStoreAccessCb" value="yes" type="checkbox"/>Store access code in browser?</label>
                         </label>
                     </div>
                 </form>

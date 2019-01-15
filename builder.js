@@ -14,6 +14,7 @@ const CDP = require('chrome-remote-interface');
 
 const app = express();
 const fs = require('fs');
+const os = require('os')
 
 const router = express.Router();
 const viewPath = __dirname + '/views/';
@@ -41,7 +42,7 @@ app.use(express.static('static'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
-
+const homedir = require('os').homedir();
 //***************************************************************************************************
 const SystemsJSONContents = fs.readFileSync('SystemsJSON.json');
 global.SystemsJSON = JSON.parse(SystemsJSONContents);
@@ -187,11 +188,19 @@ router.get("/Jobs",function(req,res){
         var rowdata={};
         rowdata.id = "local";
         rowdata.name = "local";
-        rowdata.text = "working";
+        rowdata.text = "Dashboard";
+        rowdata.type = "dashboard";
         rowdata.parent = '#';
         resJSON.push(rowdata);
         for (var key in SystemsJSON) {
             if (SystemsJSON.hasOwnProperty(key)) {
+
+                //====masss updtes=======================================================
+                // if(SystemsJSON[key].parent === "local"){
+                //     SystemsJSON[key].parent = "#"
+                // }
+
+
                 rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
                 rowdata.id = key;
                 rowdata.text = rowdata.name;
@@ -467,7 +476,7 @@ router.get("/move",function(req,res){
     var id = req.query.id;
     var direction = req.query.direction[0];
 
-    //console.log(id+":"+direction);
+    console.log(id+":"+direction);
 
     if(id === '' || direction === ''){
         res.end('');
@@ -480,18 +489,21 @@ router.get("/move",function(req,res){
     var beforeId = '';
     var posId = ''
     var afterId = '';
+    var lastId ='';
     // var pos = 0;
     for (var key in SystemsJSON) {
         if (parent === SystemsJSON[key].parent) {
+            //console.log("found: " , SystemsJSON[key].name,  SystemsJSON[key].sort, parent , SystemsJSON[key].parent);
             if (afterId === '') {
                 if (beforeId !== '') {
                     afterId = key;
                 }
                 if (key === id) {
                     beforeId = lastId;
+
                     posId = key;
                 }
-                var lastId = key;
+                lastId = key;
             }
             SystemsJSON[key].sort = x;
             x++;
@@ -500,7 +512,7 @@ router.get("/move",function(req,res){
 
     var newPos = SystemsJSON[posId].sort;
     if(direction === 'u' && beforeId !== ''){
-        //console.log('direction:' + direction);
+        //console.log('direction:' + direction, beforeId, SystemsJSON[beforeId].sort);
         var tmp = SystemsJSON[posId].sort;
         SystemsJSON[posId].sort = SystemsJSON[beforeId].sort;
         SystemsJSON[beforeId].sort = tmp;
@@ -524,7 +536,7 @@ router.get("/move",function(req,res){
 
     SystemsArr_sorted.sort(function(a,b){
         return a[1].sort > b[1].sort ? 1 : -1;
-    })
+    });
 
     var SystemsJson_sorted = {};
     for (var i=0; i < SystemsArr_sorted.length; i++){
@@ -634,7 +646,7 @@ router.post("/save",function(req,res){
             var hist=[{username:config.username, ds: ds, fromId: ""}];
 
             id = generateUUID();
-            foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1, enabled:1, rerunnable:0, comType: 'job', description: req.body.description, script:req.body.script, variables:req.body.compVariables, template:req.body.template, text:req.body.name, resourceFiles:{}, sort:x, hist:hist};
+            foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1, enabled:1, promoted:0, rerunnable:0, systemFunction:0,  runLocal:0, comType: 'job', description: req.body.description, script:req.body.script, variables:req.body.compVariables, template:req.body.template, text:req.body.name, resourceFiles:[], sort:x, hist:hist};
             SystemsJSON[id] = foundRow;
         }else{
                 //not new
@@ -644,7 +656,12 @@ router.post("/save",function(req,res){
                 newData.name = req.body.name;
                 newData.enabled = req.body.enabled;
                 newData.rerunnable = req.body.rerunnable;
-                if(SystemsJSON[id].hasOwnProperty("lastBuild") ){
+                newData.promoted = req.body.promoted;
+                newData.systemFunction = req.body.systemFunction;
+                newData.runLocal = req.body.runLocal;
+
+
+            if(SystemsJSON[id].hasOwnProperty("lastBuild") ){
                     newData.lastBuild = SystemsJSON[id].lastBuild
                 }
                 newData.comType = 'job';
@@ -654,7 +671,14 @@ router.post("/save",function(req,res){
                 newData.template = req.body.template;
                 newData.text = req.body.name;
                 newData.custTemplates = req.body.custTemplates;
-                newData.resourceFiles = req.body.resourceFiles;
+
+                if(req.body.resourceFiles === "[object Object]"){   ////bugged data
+                    newData.resourceFiles = "[]";
+                }else{
+                    newData.resourceFiles = req.body.resourceFiles;
+                }
+
+
                 newData.sort = SystemsJSON[id].sort;
 
                 //add history json to SystemsJSON if not there
@@ -698,7 +722,8 @@ router.post("/save",function(req,res){
         }else{ //not new
             var newData = {};
             newData.parent = SystemsJSON[id].parent;
-            newData.ft = SystemsJSON[id].ft;
+            //newData.ft = SystemsJSON[id].ft;
+            newData.ft = "#"
             newData.comType =  "system";
             newData.description = req.body.description;
             newData.text = req.body.name;
@@ -831,6 +856,9 @@ router.post("/copy",function(req,res){
                 if(fromNode.comType === 'job' ){
                     NewRow.enabled=fromNode.enabled;
                     NewRow.rerunnable=fromNode.rerunnable;
+                    NewRow.promoted=fromNode.promoted;
+                    NewRow.systemFunction=fromNode.systemFunction;
+                    NewRow.runLocal=fromNode.runLocal;
                     NewRow.script=fromNode.script;
                     NewRow.variables=fromNode.variables;
                     NewRow.template=fromNode.template;
@@ -934,6 +962,9 @@ router.post("/copy",function(req,res){
                     NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
                     NewRow.enabled=fromNode.enabled;
                     NewRow.rerunnable=fromNode.rerunnable;
+                    NewRow.promoted=fromNode.promoted;
+                    NewRow.systemFunction=fromNode.systemFunction;
+                    NewRow.runLocal=fromNode.runLocal;
                     NewRow.script=fromNode.script;
                     NewRow.template=fromNode.template;
                     NewRow.custTemplates=fromNode.custTemplates;
@@ -1069,6 +1100,9 @@ router.post("/copyToLib",function(req,res){
                 NewRow.custTemplates=fromNode.custTemplates;
                 NewRow.resourceFiles=fromNode.resourceFiles;
                 NewRow.rerunnable=fromNode.rerunnable;
+                NewRow.promoted=fromNode.promoted;
+                NewRow.systemFunction=fromNode.systemFunction;
+                NewRow.runLocal=fromNode.runLocal;
                 NewRow.enabled=fromNode.enabled;
             }
 
@@ -1196,13 +1230,38 @@ router.post("/run",function(req,res){
 
     var job;
     var jobIndex;
-
     var ids;
     var storeLocal;
     var runKey="";
     var newKey=false;
+    var runAccess="";
+    var newAccess=false;
 
     var conn;
+
+    var remoteIP = req.connection.remoteAddress.toString();
+    remoteIP = remoteIP.substring(remoteIP.lastIndexOf(":") + 1);
+
+    var builderIP = getIPAddress();
+    function getIPAddress() {
+        // var interfaces = require('os').networkInterfaces();
+        // for (var devName in interfaces) {
+        //     var iface = interfaces[devName];
+        //     console.log(JSON.stringify(iface));
+        //     for (var i = 0; i < iface.length; i++) {
+        //         var alias = iface[i];
+        //         if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal)
+        //             return alias.address;
+        //     }
+        // }
+        //
+        // return '';
+
+    }
+
+    // console.log('builderIP: '+builderIP);
+    // console.log('remoteIP: '+remoteIP);
+    fs.writeFileSync("sec_group_ips.json",JSON.stringify({'builderIP':builderIP, 'remoteIP':remoteIP}))
 
     var timeOut = 30000;  //By default - how many ms all connections should wait for the prompt to reappear before connection is terminated
     const timeoutNumber = parseInt(config.timeout);
@@ -1222,7 +1281,7 @@ router.post("/run",function(req,res){
         }else{
             ids = fields.ids.split(';');
 
-            storeLocal = fields.storeLocal;
+            var storeLocal = fields.storeLocal;
             if(files.hasOwnProperty('key')   ){
                 var myFiles = files['key'];
 
@@ -1232,13 +1291,35 @@ router.post("/run",function(req,res){
                     fs.unlink(myFiles.path,function(err){
                         if(err) console.log('Error: unable to delete uploaded key file')
                     });
-                   //console.log('runKey file: ' + runKey);
+                    //console.log('runKey file: ' + runKey);
                 }
             }else{
                 if(storeLocal = 'yes'){
                     if(fields.hasOwnProperty('localStoredKey')){
                         runKey = fields.localStoredKey;
                         //console.log('runKey local: ' + runKey);
+                    }
+                }
+            }
+
+            var storeLocalAccess = fields.storeLocalAccess;
+            if(files.hasOwnProperty('access')   ){
+                var myFiles = files['access'];
+
+                if (myFiles.hasOwnProperty('path')) {
+                    runAccess = fs.readFileSync(myFiles.path);
+                    runAccess = runAccess.toString().split('\n')[1];
+                    newAccess = true;
+                    fs.unlink(myFiles.path,function(err){
+                        if(err) console.log('Error: unable to delete uploaded key file')
+                    });
+                    //console.log('access file: ' + runAccess);
+                }
+            }else{
+                if(storeLocalAccess = 'yes'){
+                    if(fields.hasOwnProperty('localStoredAccess')){
+                        runAccess = fields.localStoredAccess;
+                        //console.log('access file: ' + runAccess);
                     }
                 }
             }
@@ -1261,6 +1342,31 @@ router.post("/run",function(req,res){
 
         if(runKey.toString() !== '' && newKey === true){
             res.write("key:"+runKey.toString().split('\n').join('key:') );
+        }
+
+        if(runAccess.toString() !== '' ){
+
+            var trimmedAccess = runAccess.toString().split('\n');
+            var find = '\r';
+            var re = new RegExp(find, 'g');
+            trimmedAccess = trimmedAccess.toString().replace(re, '');
+
+            if( newAccess === true){
+                res.write("access:"+ trimmedAccess.toString());
+            };
+
+            //console.log("trimmedAccess: "+trimmedAccess);
+            if(trimmedAccess.toString().split(',').length > 1){
+                var accessCode =  { "accessKeyId": trimmedAccess.toString().split(',')[0], "secretAccessKey": trimmedAccess.toString().split(',')[1] };
+                //console.log('accessCode: ' + accessCode);
+                fs.writeFile( homedir + "/accessConfig.json", JSON.stringify(accessCode), function (err) {
+                    if (err) {
+                        console.log('There has been an error saving your access json: ./accessConfig.json');
+                        console.log(err.message);
+                        return;
+                    }
+                })
+            }
         }
 
         var disabledIds = [];
@@ -1527,10 +1633,67 @@ router.post("/run",function(req,res){
                                     delete latestVarCache[jobId]
                                 }
                                 cacheVarVals([fileName],job.ft.split('/')[1]);
+
+                                if(SystemsJSON[jobId].systemFunction === 1){
+                                    copyVarsToSystem(jobId, fileName)
+                                }
+
                                 conn.end();
                             }
 
                         });
+
+
+                        function copyVarsToSystem(id, fileName){
+                            if(typeof SystemsJSON[id] !== "undefined"){
+
+                                var resultsSystem = SystemsJSON[id].ft.split('/')[1];
+
+                                //grab system vars
+                                var varListAr = SystemsJSON[resultsSystem].variables.split('\n');
+                                var systemVars = {};
+                                varListAr.forEach(function(pair){
+                                    if (pair !== "" && pair.split("=").length > 1){
+                                        var kName = pair.split('=')[0];
+                                        var kVal = pair.split('=')[1];
+                                        systemVars[kName] = kVal
+                                    }
+                                });
+
+                                 try {
+                                     var results = JSON.parse(fs.readFileSync(resultsPath + fileName));
+                                 } catch (e) {
+                                     console.log("copyVarsToSystem:" + resultsPath + file + " not valid results JSON");
+                                     return('');
+                                 };
+
+                                 var trimmedResults = '';
+                                 results.forEach(function (row) {
+                                     if (row.hasOwnProperty('results')) {
+                                         if (row.results.substr(0, 4) === 'var:') {
+                                             var varName = row.results.split(':')[1];
+                                             trimmedResults = row.results.substr(('var:' + varName + ':').length).replace("\n","");
+                                             systemVars[varName] = trimmedResults
+                                         }
+                                     }
+                                     if (row.hasOwnProperty('x') && row.x !== '') {
+                                         var varName = row.x;
+                                         trimmedResults = row.results;
+                                         systemVars[varName] = trimmedResults
+                                     }
+                                 });
+
+                                 var newVariables = "";
+                                for (var property in systemVars) {
+                                    if (systemVars.hasOwnProperty(property)) {
+                                        newVariables += property + "=" + systemVars[property] + "\n";
+                                    }
+                                }
+                                SystemsJSON[resultsSystem].variables = newVariables;
+                                saveAllJSON(false)
+                            }
+                        }
+
                     });
                     stream.on('data', function (data) {
 
@@ -2040,8 +2203,14 @@ router.post("/run",function(req,res){
             //console.log('runKey: ' + runKey);
 
             try {
+                var connectHost;
+                if(SystemsJSON[jobId].runLocal === 1){
+                    connectHost = "127.0.0.1"
+                }else{
+                    connectHost = getSystemVarVal(jobId, 'host')
+                }
                 conn.connect({
-                    host: getSystemVarVal(jobId, 'host'),
+                    host: connectHost ,
                     port: getSystemVarVal(jobId, 'port'),
                     username: getSystemVarVal(jobId, 'username'),
                     privateKey: runKey
@@ -2087,8 +2256,9 @@ router.get("/getVars",function(req,res){
             var listOfVars = {};
             var listOfVarsIndex = [];
             files.forEach(function (file) {
-
+                // console.log(file)
                 var id = file.split('_')[0];
+                // console.log(id)
                 if(SystemsJSON.hasOwnProperty(id)){
                     var name = SystemsJSON[id].name;
                     var ftRaw = SystemsJSON[id].ft;
@@ -2096,6 +2266,9 @@ router.get("/getVars",function(req,res){
                     var t = [];
                     ftAr.forEach(function(id){
                         if (id !== '#'){
+                            if((typeof SystemsJSON[id]) === "undefined"){
+                                // console.log(JSON.stringify(SystemsJSON[id]),id, ftRaw, name)
+                            }
                             t.push(SystemsJSON[id].name)
                         }
                     })//convert id/id/... to name/name/... for fam tree
@@ -2145,25 +2318,6 @@ router.get("/getVars",function(req,res){
         }
     })
 });
-
-router.get("/fileList",function(req,res){
-    //res.writeHead(200, {"Content-Type": "application/json"});
-    var id = req.query.id;
-    //console.log("id: "+id);
-    fs.readdir(filesPath + id + '/' , function(err, files){
-        if(err || (id.trim() === '') || (id.indexOf('..') > 0) ){
-            res.end(JSON.stringify([]));
-            //console.log(err);
-        }else{
-            var returnArr = [];
-            files.forEach(function(file){
-                returnArr.push({name:file})
-            })
-            res.end(JSON.stringify(returnArr))
-        }
-    })
-});
-
 router.post("/upload",function(req,res){ //https://coligo.io/building-ajax-file-uploader-with-node/
 
     // create an incoming form object;
@@ -2359,13 +2513,103 @@ router.post("/firstRun",function(req,res){
     var reqJSON = req.body;
     var firstRun = reqJSON.firstRun;
 
-        if( !saveSettings("firstRun", 1) ){
-            res.write("firstRun set")
-        }else{
-            res.write("Error setting firstRun")
-        }
+    if( !saveSettings("firstRun", 1) ){
+        res.write("firstRun set")
+    }else{
+        res.write("Error setting firstRun")
+    }
     res.end('')
 });
+
+router.get("/getPromoted",function(req,res){
+
+    var rowdata={};
+    var resJSON = [];
+    for (var key in SystemsJSON) {
+        if (SystemsJSON.hasOwnProperty(key)) {
+            if(SystemsJSON[key].promoted === 1){
+                rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
+                rowdata.id = key;
+                rowdata.systemName =  SystemsJSON[rowdata.ft.split("/")[1]].name;
+                rowdata.systemId =  rowdata.ft.split("/")[1];
+
+                resJSON.push(rowdata);
+            }
+        }
+    };
+
+    //resJSONSorted = resJSON.sort();
+    resJSON.sort(function(a, b){
+        var sortTxta = " ";
+        var sortTxtb = " ";
+        a.ft.split('/').forEach(function(row){
+            sortTxta += row.length>20 ? "?" + SystemsJSON[row].sort.toString() : "";
+        });
+        b.ft.split('/').forEach(function(row){
+            sortTxtb += row.length>20 ? "?" + SystemsJSON[row].sort.toString() : "";
+        });
+
+        var keyA = sortTxta + (a.sort.toString()),
+            keyB = sortTxtb + (b.sort.toString());
+
+        if(keyA < keyB) return -1;
+        if(keyA > keyB) return 1;
+        return 0;
+    });
+
+    // for (var key in resJSON) {
+    //     var sortTxta = " ";
+    //     resJSON[key].ft.split('/').forEach(function(row){
+    //         sortTxta += row.length>20 ? "?" + SystemsJSON[row].sort.toString() : "";
+    //     });
+    //
+    //     console.log(resJSON[key].name + " " + sortTxta)
+    //
+    // }
+
+    res.end(JSON.stringify(resJSON));
+});
+router.get("/getCPUStats",function(req,res){
+
+    function buildCPUStats() {
+        var result = {last10:null, last50:null, last100:null, freeMem:null};
+        var percent = 0;
+        var i = samples.length;
+        var j = 0;
+        while (i--) {
+            j++;
+            if (samples[i].total > 0)
+                percent += (100 - Math.round(100 * samples[i].idle / samples[i].total));
+            if (j === 10)       result.last10  = percent/j;
+            else if (j === 50)  result.last50  = percent/j;
+            else if (j === 100) result.last100 = percent/j
+        }
+        result.freeMem = os.freemem();
+        return(result)
+    };
+
+
+    res.end(JSON.stringify(buildCPUStats()));
+
+});
+var samples = [];
+var prevCpus = os.cpus();
+setInterval(sample,1000); //run every 1000 ms
+function sample() {
+    currCpus = os.cpus();
+    for (var i=0,len=currCpus.length;i<len;i++) {
+        var prevCpu = prevCpus[i];
+        var currCpu = currCpus[i];
+        var deltas = {total:0};
+        for (var t in prevCpu.times)
+            deltas.total += currCpu.times[t] - prevCpu.times[t]
+        for (var t in prevCpu.times)
+            deltas[t] = currCpu.times[t] - prevCpu.times[t]
+    }
+    prevCpus = currCpus;
+    samples.push(deltas);
+    if (samples.length>100) samples.shift()
+}
 
 
 function saveAllJSON(backup){
