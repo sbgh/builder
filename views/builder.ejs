@@ -1240,8 +1240,11 @@
                         currentRespText = rText;
                         var rTextNew = ansi_up.ansi_to_html(rTextNew).replace(/(?:\r\n|\r|\n)/g, '<br>');
 
-                        var famTree = $('#ft').val().split('/');
-                        var sys = famTree[1];
+                        //var famTree = $('#ft').val().split('/');
+                        //var sys = famTree[1];
+
+                        var sys = $("#sysToBeRun").val();
+
 
                         rTextNew.split('<br>').forEach(function(row){
 
@@ -1327,7 +1330,7 @@
                                         localStorage['key_' + sys] = localKey
                                     }
                                 }
-                                if(localAccess !== '' && sys.length !== 0){
+                                if(localAccess !== ''){
                                     if($('#localStoreAccessCb').is(':checked')) {
                                         localStorage['access'] = localAccess
                                     }
