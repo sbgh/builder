@@ -557,7 +557,7 @@
 
                             $("#sysScreen").hide();
                             $("#jobScreen").show();
-                            $('#componentTabs').show()
+                            $('#componentTabs').show();
                             $("#comType").val('Job');
                             updateResultsList(selectedNode);
 
@@ -2215,7 +2215,7 @@
 
             var container = $('#rowContainer');
 
-            currentRatio = 1;
+//            currentRatio = 1;
 
             var currentHeight = container.height()- 25   //container.height() * .75; //default height
             currentHeight += currentHeight < 10 ? 10 - currentHeight : 0;
@@ -2643,7 +2643,7 @@
 
             });
 
-            //Open Welcome modal if first run
+            //signal server to set 'firstRun' flag in settings
             function setFirstRun(){
                 var mydata = {};
                 mydata.firstRun = true;
@@ -2657,13 +2657,15 @@
                     },
                     url: '/firstRun',
                     success : function(result) {
-                        console.log(result)
+                        console.log(result);
+                        firstRunTasks(result);
                     },
                     error : function(error) {
                        console.log(error)
                     }
                 });
             }
+            //Open Welcome modal if first run
             function openWelcome(){
                 var mydata = {};
                 $.ajax({
@@ -2689,6 +2691,15 @@
                         console.log(error)
                     }
                 })
+            };
+            function firstRunTasks(result){
+
+                $("#sysScreen").hide();
+                $("#jobScreen").hide();
+                $('#componentTabs').hide();
+                $('#dashboard').hide();
+                //$('#jstree_div' + " li[id=" + "local" + "] a")[0].click();
+
             };
             openWelcome();
 
@@ -3274,7 +3285,7 @@
 
                         </div>
 
-                        <div class="row ">
+                        <div class="row dashBoardTopRow">
                             <div class="col-md-4" >
                                 <div class='panel os-panel'>
                                     <div class='panel-heading dashboardPanelHeading os-panel-heading'>CPU Load</div>
@@ -3731,7 +3742,7 @@
 
 </div>
 <div id="welcomeModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-welcome">
 
         <nav class="modal-content welcome-modal-content">
             <!--<div class="modal-header">-->
@@ -3739,10 +3750,12 @@
                 <!--<h1 class="modal-title">Component Variables</h1>-->
             <!--</div>-->
 
-            <div id='welcomeBody' class="modal-body welcome-modal-body" style="overflow-y: auto;height: 50vh;">
-                <br/><br/><br/><br/><br/>
-                <h2 >Welcome to /builder</h2>
-                <p>Click a system to the left or click [+] to create a new one.</p>
+            <div id='welcomeBody' class="modal-body welcome-modal-body">
+                <br/>
+                <h2>Welcome to ezStack Builder</h2>
+                <p>Click the Dashboard icon on the left to get started.</p>
+                <p></p>
+                <br/>
                 <p>
 
             </div>

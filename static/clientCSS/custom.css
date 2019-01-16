@@ -757,7 +757,7 @@ input:checked + .slider:before {
    margin-bottom: 10px;
 }
 .dashboardMenuItem{
-    width:70px;
+    /*width:70px;*/
    font-size: 20px;
    font-weight: 700;
     display: inline-block;
@@ -793,4 +793,14 @@ input:checked + .slider:before {
 
 .locTree-panel-body {
    margin-top: 1px;
+}
+
+.modal-dialog-welcome{
+   width:50vw;
+   min-width: 100px;
+}
+
+.dashBoardTopRow{
+   margin-bottom: 10px;
+   min-height: 330px;
 }
