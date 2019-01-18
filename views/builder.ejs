@@ -1189,6 +1189,7 @@
                     if($('#localStoreKeyCb').is(':checked')) {
                         localStorage['keyName_' + sys] = file.name;
                     }
+                    $('#upload-key').val("");
                 }
 
                 files = $('#upload-access').get(0).files
@@ -1199,10 +1200,12 @@
                     if($('#localStoreAccessCb').is(':checked')) {
                         localStorage['accessName'] = file.name;
                     }
+                    $('#upload-access').val("");
                 }
 
                 var localKey="";
                 var localAccess="";
+
 
                 $('.runningJob').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
                 $('.runningJobCompleteSuccess').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
@@ -1266,10 +1269,10 @@
 
                             //message:CompletionSuccess:true
 
-                            if(row.substr(0,4) === 'key:' &&  $("#results_html").html() === '') {
+                            if(row.substr(0,4) === 'key:' &&  $("#results_html").html().split("<br>").join("") === "") {
                                 localKey += row.substr(4) + '\n';
                             }
-                            else if(row.substr(0,7) === 'access:' &&  $("#results_html").html() === '') {
+                            else if(row.substr(0,7) === 'access:' &&  $("#results_html").html().split("<br>").join("") === "") {
                                 localAccess += row.substr(7) + '\n';
                             }
                             else if(row.substr(0,12) === 'message:url:'){
@@ -2505,7 +2508,9 @@
                 $('#upload-key').click();
             });
             $('#upload-key').on('change', function() {
-                $('#keyList').html($(this)[0].files[0].name);
+                if($(this)[0].files[0].name !== ""){
+                    $('#keyList').html($(this)[0].files[0].name);
+                }
             });
 
             //csv Key file management
@@ -2513,7 +2518,9 @@
                 $('#upload-access').click();
             });
             $('#upload-access').on('change', function() {
-                $('#accessList').html($(this)[0].files[0].name);
+                if($(this)[0].files[0].name !== ""){
+                    $('#accessList').html($(this)[0].files[0].name);
+                }
             });
 
             //settings Style Pick event

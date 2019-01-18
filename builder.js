@@ -1294,7 +1294,7 @@ router.post("/run",function(req,res){
                     //console.log('runKey file: ' + runKey);
                 }
             }else{
-                if(storeLocal = 'yes'){
+                if(storeLocal === 'yes'){
                     if(fields.hasOwnProperty('localStoredKey')){
                         runKey = fields.localStoredKey;
                         //console.log('runKey local: ' + runKey);
@@ -1316,7 +1316,7 @@ router.post("/run",function(req,res){
                     //console.log('access file: ' + runAccess);
                 }
             }else{
-                if(storeLocalAccess = 'yes'){
+                if(storeLocalAccess === 'yes'){
                     if(fields.hasOwnProperty('localStoredAccess')){
                         runAccess = fields.localStoredAccess;
                         //console.log('access file: ' + runAccess);
@@ -1341,7 +1341,9 @@ router.post("/run",function(req,res){
         res.setHeader('Transfer-Encoding', 'chunked');
 
         if(runKey.toString() !== '' && newKey === true){
+            res.write("\n");
             res.write("key:"+runKey.toString().split('\n').join('key:') );
+            res.write("\n");
         }
 
         if(runAccess.toString() !== '' ){
@@ -1352,7 +1354,9 @@ router.post("/run",function(req,res){
             trimmedAccess = trimmedAccess.toString().replace(re, '');
 
             if( newAccess === true){
+                res.write("\n");
                 res.write("access:"+ trimmedAccess.toString());
+                res.write("\n");
             };
 
             //console.log("trimmedAccess: "+trimmedAccess);
@@ -1392,6 +1396,7 @@ router.post("/run",function(req,res){
         });
         if(y>0){
             res.write( "Skipping " + y.toString() + " disabled components (" + nameList.join(', ') + ")");
+            res.write("\n");
         }
         var id = ids[0];
         //console.log("running: "+ ids);
@@ -1567,8 +1572,8 @@ router.post("/run",function(req,res){
                                 runScript(id, job ,"SSH");
 
                         } else {
-                            message("Script Aborted\n");
-                            flushMessQueue();
+                            // message("Script Aborted\n");
+                            // flushMessQueue();
                             res.end("status:Scripts Aborted\n");
                         }
                     } else {
