@@ -196,9 +196,8 @@ router.get("/Jobs",function(req,res){
             if (SystemsJSON.hasOwnProperty(key)) {
 
                 //====masss updtes=======================================================
-                // if(SystemsJSON[key].parent === "local"){
-                //     SystemsJSON[key].parent = "#"
-                // }
+                //SystemsJSON[key].ft = SystemsJSON[key].ft.replace("undefined","#")
+
 
 
                 rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
@@ -1092,9 +1091,14 @@ router.post("/copyToLib",function(req,res){
             // }
             //console.log(fromNode.icon);
 
+            if(newParentId === "#"){
+                NewRow.ft = "#"
+            }else{
+                NewRow.ft = libJSON[newParentId].ft + '/' + newParentId;
+            }
+
             const nodeType = fromNode.comType;
             if (nodeType === 'job' ){
-                NewRow.ft=libJSON[newParentId].ft + '/' + newParentId;
                 NewRow.script=fromNode.script;
                 NewRow.template=fromNode.template;
                 NewRow.custTemplates=fromNode.custTemplates;
