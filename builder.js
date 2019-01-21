@@ -803,7 +803,7 @@ router.post("/copy",function(req,res){
     if(lib === 'local'){
         var error = false;
         var errorID = '';
-        if (!SystemsJSON.hasOwnProperty(targetId)){
+        if ((SystemsJSON.hasOwnProperty(targetId)) && (targetId !== '#')){
             error = true;
             errorID = targetId;
         }
@@ -843,7 +843,6 @@ router.post("/copy",function(req,res){
 
                 var NewRow = {
                     parent: newParentId,
-                    ft: SystemsJSON[newParentId].ft + '/' + newParentId,
                     name: fromNode.name,
                     description: fromNode.description,
                     ver: 1,
@@ -852,6 +851,13 @@ router.post("/copy",function(req,res){
                     text: fromNode.name,
                     hist: hist
                 };
+
+                if(newParentId === "#"){
+                    NewRow.ft = "#"
+                }else{
+                    NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
+                }
+
                 if(fromNode.comType === 'job' ){
                     NewRow.enabled=fromNode.enabled;
                     NewRow.rerunnable=fromNode.rerunnable;
@@ -957,6 +963,13 @@ router.post("/copy",function(req,res){
                     hist: hist,
                     icon: fromNode.icon
                 };
+
+                if(newParentId === "#"){
+                    NewRow.ft = "#"
+                }else{
+                    NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
+                }
+
                 if(fromNode.comType === 'job'){
                     NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
                     NewRow.enabled=fromNode.enabled;
