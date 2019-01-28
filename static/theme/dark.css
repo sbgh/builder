@@ -361,3 +361,14 @@ input:focus + .slider {
 .dashboardDetails{
     color: #fcfcfd;
 }
+
+.dashboardPanelBody{
+    background: transparent;
+}
+.dashboardPanel{
+    background: url("/images/dark-pattern-op.png") ;
+}
+
+.screenShotLink > a, .screenShotLink > a:hover{
+    color: #80a8db;
+}

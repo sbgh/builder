@@ -803,7 +803,7 @@ router.post("/copy",function(req,res){
     if(lib === 'local'){
         var error = false;
         var errorID = '';
-        if ((SystemsJSON.hasOwnProperty(targetId)) && (targetId !== '#')){
+        if ((!SystemsJSON.hasOwnProperty(targetId)) && (targetId !== '#')){
             error = true;
             errorID = targetId;
         }
@@ -2340,6 +2340,7 @@ router.get("/getVars",function(req,res){
         }
     })
 });
+
 router.post("/upload",function(req,res){ //https://coligo.io/building-ajax-file-uploader-with-node/
 
     // create an incoming form object;
@@ -2550,12 +2551,17 @@ router.get("/getPromoted",function(req,res){
     for (var key in SystemsJSON) {
         if (SystemsJSON.hasOwnProperty(key)) {
             if(SystemsJSON[key].promoted === 1){
-                rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
-                rowdata.id = key;
-                rowdata.systemName =  SystemsJSON[rowdata.ft.split("/")[1]].name;
-                rowdata.systemId =  rowdata.ft.split("/")[1];
 
-                resJSON.push(rowdata);
+                var  hostIP = getSystemVarVal(key, "host");
+
+                if(hostIP !=="" || SystemsJSON[key].runLocal === 1){
+                    rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
+                    rowdata.id = key;
+                    rowdata.systemName =  SystemsJSON[rowdata.ft.split("/")[1]].name;
+                    rowdata.systemId =  rowdata.ft.split("/")[1];
+
+                    resJSON.push(rowdata);
+                }
             }
         }
     };
@@ -2591,6 +2597,7 @@ router.get("/getPromoted",function(req,res){
 
     res.end(JSON.stringify(resJSON));
 });
+
 router.get("/getCPUStats",function(req,res){
 
     function buildCPUStats() {

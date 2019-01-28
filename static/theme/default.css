@@ -292,3 +292,13 @@ a.libListRow {
 .systemRow{
 
 }
+
+.dashboardPanel{
+    background: url("/images/light-pattern2.png") no-repeat center top;
+    background-size: cover;
+
+}
+
+.screenShotLink > a, .screenShotLink > a:hover{
+    color: #49494b;
+}

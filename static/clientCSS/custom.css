@@ -612,6 +612,7 @@ input:checked + .slider:before {
 .dashboard{
    /*overflow-y: auto;*/
    padding-top: 3px;
+   /*background-image: url("/images/light-pattern.png");*/
 
 }
 
@@ -656,7 +657,7 @@ input:checked + .slider:before {
 }
 
 .DashListStatusCol{
-   min-width: 70px;
+   min-width: 115px;
    padding-right: 5px;
    padding-left: 5px;
 }
@@ -691,8 +692,8 @@ input:checked + .slider:before {
    text-align: center;
    font-weight: 700;
    padding: 5px;
-   background-color: #f3f3f3;
-   color: #49494b;
+   /*background-color: #f3f3f3;*/
+   /*color: #49494b;*/
 }
 
 .launchPadHeading{
@@ -775,19 +776,17 @@ input:checked + .slider:before {
 .screenshot-panel-body{
 
    max-height: 300px;
-   background-color: #f3f3f3;
-   color: #49494b;
+   /*background-color: #f3f3f3;*/
+   /*color: #49494b;*/
    text-align: center;
 }
 
-.screenShotLink > a, .screenShotLink > a:hover{
-   color: #49494b;
-}
+
 .status-panel-body{
    max-height: 300px;
    overflow-y: auto;
-   background-color: #f3f3f3;
-   color: #49494b;
+   /*background-color: #f3f3f3;*/
+   /*color: #49494b;*/
 }
 
 
@@ -804,3 +803,4 @@ input:checked + .slider:before {
    margin-bottom: 10px;
    min-height: 330px;
 }
+
