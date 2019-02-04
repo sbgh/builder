@@ -41,6 +41,11 @@ a {
 .treePanelHandle {
     background-color: #313335;
 }
+
+.jstree-anchor {
+    color: #fcfcfd;
+}
+
 #rowHandle {
     background-color: #313335;
 }
@@ -288,6 +293,14 @@ border: 1px solid #adadad;
     color: red;
 }
 .rerunnableRow{
+    color: white;
+}
+
+.needfull{
+    color: white;
+}
+
+.jobRow{
     color: white;
 }
 

@@ -222,9 +222,11 @@ router.get("/Jobs",function(req,res){
                 if(rowdata.comType === "job"){
                     if(rowdata.hasOwnProperty("lastBuild")){
                         if (rowdata.lastBuild.pass===1){
-                            rowdata.li_attr = { "class" : "runningJobCompleteSuccess" }
+                            rowdata.li_attr = { "class" : "runningJobCompleteSuccess" };
+                            rowdata.a_attr = { "class" : "runningJobCompleteSuccess" }
                         }else if(rowdata.lastBuild.pass===0){
-                            rowdata.li_attr = { "class" : "runningJobCompleteFail" }
+                            rowdata.li_attr = { "class" : "runningJobCompleteFail" };
+                            rowdata.a_attr = { "class" : "runningJobCompleteFail" }
                         }
                     }else{
                         rowdata.li_attr = { "class" : "newJobRow" }

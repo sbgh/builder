@@ -104,10 +104,12 @@
                         "a_attr": { class : " systemRow "}
                     },
                     "job" : {
-                        "icon" : "fa fa-code"
+                        "icon" : "fa fa-code jobRow"
                     },
                     "needfull" : {
-                        "icon" : "fa fa-play-circle-o"
+                        "icon" : "fa fa-play-circle-o",
+                        "a_attr": { class : " needfull "},
+                        "li_attr": { class : " needfull "}
                     },
                     "rerunnable" : {
                         "icon" : "fa fa-repeat rerunnableRow",
@@ -118,6 +120,7 @@
                     },
                     "disabled" : {
                         "icon" : "fa fa-hand-paper-o disabledRow",
+                        "li_attr": { class : "  "},
                         "li_attr": { class : "  "}
                     }
                 },
@@ -584,6 +587,8 @@
 
 
                     $("#results_html").html('');
+                    $("#codes_btn").hide();
+
                     $("#results_codes").html('');
                     $('#messageSpan').html('');
 
@@ -1252,22 +1257,23 @@
                         rTextNew.split('<br>').forEach(function(row){
 
                             //resultsStatus
+
                             if(row.substr(0,17) === 'message:Building:'){
-                                $("#resultsStatus")[0].innerHTML += "<span>" + row.slice(17) + "</span>"
+                                $("#resultsStatus")[0].innerHTML += "<span>" + row.slice(17) + " <img src='/images/throbber.gif'></span>"
                             }else if(row.substr(0,28) === 'status:All scripts completed'){
-                                $("#resultsStatus")[0].innerHTML += "<b>All scripts completed</b>"
+                                $("#resultsStatus")[0].innerHTML += "<b>All scripts completed</b>";
                             }else if(row.substr(0,22) === 'status:Scripts Aborted'){
                                 $("#resultsStatus")[0].innerHTML += "Scripts aborted"
                             }else if(row.substr(0,26) === 'message:CompletionSuccess:'){
                                 if(row.slice(26) === 'true'){
-                                    $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-check fa-fw' style='color:darkgreen'></i><br>"
+                                    $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-check fa-fw' style='color:darkgreen'></i><br>";
+                                    $("#resultsStatus")[0].innerHTML = $("#resultsStatus")[0].innerHTML.replace('<img src="/images/throbber.gif">',"")
+
                                 }else{
-                                    $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-times fa-fw' style='color:darkred'></i><br>"
+                                    $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-times fa-fw' style='color:darkred'></i><br>";
+                                    $("#resultsStatus")[0].innerHTML = $("#resultsStatus")[0].innerHTML.replace('<img src="/images/throbber.gif">',"")
                                 }
                             }
-
-
-                            //message:CompletionSuccess:true
 
                             if(row.substr(0,4) === 'key:' &&  $("#results_html").html().split("<br>").join("") === "") {
                                 localKey += row.substr(4) + '\n';
@@ -1646,6 +1652,7 @@
             $("#new_sys_button").disabled = true;
 
             $('#iconPaste').hide();
+            $("#codes_btn").hide();
 
             //extend jq - exists function
             $.fn.exists = function () {
@@ -2033,6 +2040,7 @@
                         $("#results_html").html('');
                         $("#results_codes").html('');
                         $('#messageSpan').html('');
+                        $("#codes_btn").show();
                         $.get('/getResults', { id: id }, function(data) {
                             var results = JSON.parse(data);
                             //var htmlrows="";
@@ -3324,7 +3332,7 @@
                             </div>
                             <div class="col-md-4" >
                                 <div class='panel'>
-                                    <div class='panel-heading dashboardPanelHeading '>Build Status</div>
+                                    <div class='panel-heading dashboardPanelHeading '>Current Build Status</div>
                                     <div class='panel-body status-panel-body' id="status-panel-body">
                                         <div class="resultsStatus" id="resultsStatus"></div>
                                     </div>
