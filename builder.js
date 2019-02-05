@@ -1330,7 +1330,7 @@ router.post("/run",function(req,res){
                     runAccess = runAccess.toString().split('\n')[1];
                     newAccess = true;
                     fs.unlink(myFiles.path,function(err){
-                        if(err) console.log('Error: unable to delete uploaded key file')
+                        if(err) console.log('Error: unable to delete uploaded access file')
                     });
                     //console.log('access file: ' + runAccess);
                 }
@@ -1379,16 +1379,31 @@ router.post("/run",function(req,res){
             };
 
             //console.log("trimmedAccess: "+trimmedAccess);
-            if(trimmedAccess.toString().split(',').length > 1){
-                var accessCode =  { "accessKeyId": trimmedAccess.toString().split(',')[0], "secretAccessKey": trimmedAccess.toString().split(',')[1] };
+            const accessParaCount = trimmedAccess.toString().split(',').length;
+            var accessCode = {};
+            if(accessParaCount > 1){
+                if(accessParaCount === 2){
+                    accessCode =  { "accessKeyId": trimmedAccess.toString().split(',')[0], "secretAccessKey": trimmedAccess.toString().split(',')[1] };
+                    saveAccessConfig()
+                }else if(accessParaCount === 4){
+                    accessCode =  { "accessKeyId": trimmedAccess.toString().split(',')[2], "secretAccessKey": trimmedAccess.toString().split(',')[3] };
+                    saveAccessConfig()
+                }else{
+                    console.log('Error: Unable to parse provided access file, accessParaCount = ' + accessParaCount.toString());
+                }
                 //console.log('accessCode: ' + accessCode);
-                fs.writeFile( homedir + "/accessConfig.json", JSON.stringify(accessCode), function (err) {
-                    if (err) {
-                        console.log('There has been an error saving your access json: ./accessConfig.json');
-                        console.log(err.message);
-                        return;
-                    }
-                })
+                function saveAccessConfig(){
+                    fs.writeFile( homedir + "/accessConfig.json", JSON.stringify(accessCode), function (err) {
+                        if (err) {
+                            console.log('There has been an error saving your access json: ./accessConfig.json');
+                            console.log(err.message);
+                            return;
+                        }
+                    })
+                }
+
+            }else{
+                console.log('Error: Unable to parse provided access file, accessParaCount = ' + accessParaCount.toString());
             }
         }
 
