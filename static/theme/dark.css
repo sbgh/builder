@@ -17,9 +17,10 @@ body {
 .panel-default {
     border-color: #313335;
 }
-.panel {
-    background-color: #313335;
-}
+/*. dashPanel {*/
+    /*!*background-color: #313335;*!*/
+    /*opacity: .5;*/
+/*}*/
 .panel-default>.panel-heading {
     color: #adadad;
     background-color: #313335;
@@ -384,4 +385,11 @@ input:focus + .slider {
 
 .screenShotLink > a, .screenShotLink > a:hover{
     color: #80a8db;
+}
+
+
+
+.dashPanelBody{
+    /*opacity: 1;*/
+    background-color: rgba(8, 8, 8, 0.42);
 }

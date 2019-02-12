@@ -163,9 +163,9 @@ topLib-col-fixed-240{
    color: #bbd9e8;
    padding: 3px;
 }
-.panel-body {
-   //overflow: auto;
-}
+/*.panel-body {*/
+   /*//overflow: auto;*/
+/*}*/
 
 /*.jobScreen{*/
    /*padding-top: 6px;*/
@@ -291,9 +291,9 @@ padding-left: 0px;
    padding: 0px 12px;
 }
 
-.modal-dialog {
-   width: 80vw;
-}
+/*.modal-dialog {*/
+   /*width: 80vw;*/
+/*}*/
 
 .modal-run-dialog {
    width: 30vw
@@ -301,9 +301,7 @@ padding-left: 0px;
 .modal-copy-dialog {
    width: 30vw
 }
-.modal-del-dialog {
-   width: 30vw
-}
+
 
 .modal-footer {
    border-top: 0px;
@@ -637,6 +635,8 @@ input:checked + .slider:before {
 
 .dashCompNameRow{
    cursor: pointer;
+   padding-right: 0px;
+   padding-left: 5px;
 }
 
 .dashListRowNotClicked{
@@ -661,7 +661,7 @@ input:checked + .slider:before {
 }
 
 .DashListStatusCol{
-   min-width: 115px;
+   width: 30px;
    padding-right: 5px;
    padding-left: 5px;
 }
@@ -685,6 +685,7 @@ input:checked + .slider:before {
 .os-panel{
    /*width:80px;*/
    display: inline-block;
+   box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);
 }
 .os-panel-heading{
    border: 1px solid #0f6ab4;
@@ -700,9 +701,17 @@ input:checked + .slider:before {
    /*color: #49494b;*/
 }
 
+.currentBuildStatusPanel{
+   box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);
+}
+
 .launchPadHeading{
 
 
+}
+
+.lastScreeenshotPanel{
+   box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);
 }
 
 .dashboardPanelHeading{
@@ -713,9 +722,13 @@ input:checked + .slider:before {
 }
 
 .launchPadPanel{
-   margin-right: 20px;
-   margin-left: 20px;
+   /*margin-right: 20px;*/
+   /*margin-left: 20px;*/
+   margin-bottom: 20px;
    border: 1px solid #0f6ab4;
+   /*max-width: 350px;*/
+   /*display: inline-grid;*/
+   box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);
 }
 
 .launchPadBody{
@@ -725,6 +738,9 @@ input:checked + .slider:before {
    padding-left: 0px;
 }
 
+.launchPadCol{
+   min-width: 350px;
+}
 .dashboardDetails{
    /*height: 320px;*/
 }
@@ -787,7 +803,8 @@ input:checked + .slider:before {
 
 
 .status-panel-body{
-   max-height: 300px;
+   /*max-height: 300px;*/
+   height: 300px;
    overflow-y: auto;
    /*background-color: #f3f3f3;*/
    /*color: #49494b;*/
@@ -803,8 +820,26 @@ input:checked + .slider:before {
    min-width: 100px;
 }
 
+.modal-del-dialog {
+   width: 30vw
+}
+
 .dashBoardTopRow{
    margin-bottom: 10px;
    min-height: 330px;
 }
 
+
+
+.launchPanelBody{
+   padding: 0px;
+}
+
+.panel{
+   background-color: rgba(0,0,0,0);
+}
+
+.dashPanel {
+   border: 0px solid transparent;
+   /*opacity: .3;*/
+}

@@ -1382,14 +1382,15 @@ router.post("/run",function(req,res){
             const accessParaCount = trimmedAccess.toString().split(',').length;
             var accessCode = {};
             if(accessParaCount > 1){
-                if(accessParaCount === 2){
+                if(accessParaCount === 2 || accessParaCount === 3){
                     accessCode =  { "accessKeyId": trimmedAccess.toString().split(',')[0], "secretAccessKey": trimmedAccess.toString().split(',')[1] };
                     saveAccessConfig()
-                }else if(accessParaCount === 4){
+                }else if(accessParaCount === 5 || accessParaCount === 6){
                     accessCode =  { "accessKeyId": trimmedAccess.toString().split(',')[2], "secretAccessKey": trimmedAccess.toString().split(',')[3] };
                     saveAccessConfig()
                 }else{
                     console.log('Error: Unable to parse provided access file, accessParaCount = ' + accessParaCount.toString());
+                    console.log(trimmedAccess.toString());
                 }
                 //console.log('accessCode: ' + accessCode);
                 function saveAccessConfig(){

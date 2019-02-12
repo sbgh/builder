@@ -16,9 +16,9 @@ body {
 .panel-default {
     border-color: #d0d0d0;
 }
-.panel {
-    background-color: #ececec;
-}
+/*.panel {*/
+    /*background-color: #ececec;*/
+/*}*/
 .panel-default>.panel-heading {
     color: #555555;
     background-color: #dcdcdc;
@@ -320,3 +320,11 @@ a.libListRow {
 .screenShotLink > a, .screenShotLink > a:hover{
     color: #49494b;
 }
+
+
+
+.dashPanelBody{
+    /*opacity: 1;*/
+    background-color: rgba(132, 132, 132, 0.38);
+}
+

@@ -637,8 +637,23 @@
                         if(promoted.length > 0){
                             var pCompHtml = "";
                             var oldSytemName = "";
+
+
+                            var lastSystemName = "";
                             promoted.forEach(function(pComp){
 
+                                if(lastSystemName !== pComp.systemName){
+                                    if(lastSystemName !== ""){
+                                        pCompHtml += '      </div>';
+                                        pCompHtml += '   </div></div>';
+                                        pCompHtml += '</div></div>';
+                                    };
+                                    pCompHtml += '<div class="col-sm-3 launchPadCol" ><div class="panel dashPanel launchPadPanel">';
+                                    pCompHtml += '   <div class="panel-heading dashboardPanelHeading launchPadHeading">' + pComp.systemName + '</div>';
+
+                                    pCompHtml += '<div class="panel-body dashPanelBody launchPanelBody">'
+                                    pCompHtml += '      <div class="row dashBoardList">';
+                                };
                                 var dashListRowClicked = "";
                                 if(localStorage['dashListRowClicked'] === pComp.id){
                                     dashListRowClicked = 'dashListRowClicked';
@@ -647,17 +662,17 @@
 
                                 var pHTML="";
                                 if(!pComp.hasOwnProperty("lastBuild")){
-                                    pHTML="<div class='col-sm-1 DashListStatusCol DashListNotBuilt'>Not Built</div>"
+                                    pHTML="<div class='col-sm-1 DashListStatusCol DashListNotBuilt'><i class='fa  fa-play fa-fw'></i></div>"
                                     rowColorClass="DashListRowNotBuilt"
                                 }else if(!pComp.lastBuild.hasOwnProperty("pass")){
-                                    pHTML="<div class='col-sm-1 DashListStatusCol DashListNotBuilt'>Not Built</div>"
+                                    pHTML="<div class='col-sm-1 DashListStatusCol DashListNotBuilt'><i class='fa  fa-play fa-fw'></i></div>"
                                     rowColorClass="DashListRowNotBuilt"
                                 }else{
                                     if(pComp.lastBuild.pass === 1){
-                                        pHTML="<div class='col-sm-1 DashListStatusCol DashListPass'>Build Completed</div>"
+                                        pHTML="<div class='col-sm-1 DashListStatusCol DashListPass'><i class='fa  fa-check fa-fw'></i></div>"
                                         rowColorClass="DashListRowPass"
                                     }else{
-                                        pHTML="<div class='col-sm-1 DashListStatusCol DashListFail'>Build Aborted</div>"
+                                        pHTML="<div class='col-sm-1 DashListStatusCol DashListFail'><i class='fa  fa-times fa-fw'></i></div>"
                                         rowColorClass="DashListRowFail"
                                     }
                                 }
@@ -669,20 +684,27 @@
 //                                }
 
                                 var sys = pComp.systemId;
-                                pCompHtml += "<div class='row dashBoardListRow "+rowColorClass+"'>";
+                                pCompHtml += "         <div class='row dashBoardListRow "+rowColorClass+"'>";
 
                                     pCompHtml += pHTML;
 
-                                    pCompHtml += "<div class='col-sm-10 dashCompNameRow dashListRowNotClicked "+dashListRowClicked+"' data-Id='"+pComp.id+"'  data-runSysName='"+pComp.systemName+"' data-runSys='"+sys+"' >"
-                                        pCompHtml +=  pComp.systemName + " : " + pComp.name ;
-                                    pCompHtml += "</div>";
+                                    pCompHtml += "            <div class='col-sm-10 dashCompNameRow dashListRowNotClicked "+dashListRowClicked+"' data-Id='"+pComp.id+"'  data-runSysName='"+pComp.systemName+"' data-runSys='"+sys+"' >"
+                                        pCompHtml +=  pComp.name ;
+                                    pCompHtml += "            </div>";
 //                                    pCompHtml += "<div class='col-sm-1 dashPlayIcon' data-runId='"+pComp.id+"' data-runSys='"+sys+"'    >"
 //                                        pCompHtml +=  "<i class='fa fa-play fa-fw'></i>" ;
 //                                    pCompHtml += "</div>";
 
-                                pCompHtml += "</div>";
+                                pCompHtml += "         </div>";
+
+                                lastSystemName = pComp.systemName;
 
                             })
+                            if(lastSystemName !== ""){
+                                pCompHtml += '      </div>';
+                                pCompHtml += '   </div></div>';
+                                pCompHtml += '</div></div>';
+                            };
                             $("#dashboardList")[0].innerHTML = pCompHtml;
 
                             $('#DashBuildMenu').on('click', function(){
@@ -3302,15 +3324,15 @@
 
                         <div class="row dashBoardTopRow">
                             <div class="col-md-4" >
-                                <div class='panel os-panel'>
+                                <div class='panel dashPanel os-panel'>
                                     <div class='panel-heading dashboardPanelHeading os-panel-heading'>CPU Load</div>
-                                    <div class='panel-body os-panel-body'>
+                                    <div class='panel-body dashPanelBody os-panel-body'>
                                         <div id="osCPUValue" >%</div>
                                     </div>
                                 </div>
-                                <div class='panel os-panel'>
+                                <div class='panel dashPanel os-panel'>
                                     <div class='panel-heading dashboardPanelHeading os-panel-heading'>Free Mem</div>
-                                    <div class='panel-body os-panel-body'>
+                                    <div class='panel-body dashPanelBody os-panel-body'>
                                         <div id="osFMValue" >GB</div>
                                     </div>
                                 </div>
@@ -3321,9 +3343,9 @@
                                 </div>
                             </div>
                             <div class="col-md-4" >
-                                <div class='panel'>
+                                <div class='panel dashPanel lastScreeenshotPanel'>
                                     <div class='panel-heading dashboardPanelHeading '>Last Screenshot</div>
-                                    <div class='panel-body screenshot-panel-body' >
+                                    <div class='panel-body dashPanelBody screenshot-panel-body' >
                                         <img id="screenShotImageDashboard" class="screenShotImageDashboard">
                                         <div id="link" class="screenShotLink"></div>
                                     </div>
@@ -3331,9 +3353,9 @@
 
                             </div>
                             <div class="col-md-4" >
-                                <div class='panel'>
+                                <div class='panel dashPanel currentBuildStatusPanel'>
                                     <div class='panel-heading dashboardPanelHeading '>Current Build Status</div>
-                                    <div class='panel-body status-panel-body' id="status-panel-body">
+                                    <div class='panel-body dashPanelBody status-panel-body' id="status-panel-body">
                                         <div class="resultsStatus" id="resultsStatus"></div>
                                     </div>
                                 </div>
@@ -3343,14 +3365,14 @@
 
                         <div class="dashboardMenu"><div class="dashboardMenuItem" id="DashBuildMenu">Build</div><div class="dashboardMenuItem dashboardMenuItemLast" id="DashOpenMenu">Open</div></div>
 
+                        <div id="dashboardList" class="row launchPadBody "></div>
+                        <!--<div class="panel launchPadPanel">-->
+                            <!--<div class='panel-heading dashboardPanelHeading launchPadHeading'>Launch Pad</div>-->
 
-                        <div class="panel launchPadPanel">
-                            <div class='panel-heading dashboardPanelHeading launchPadHeading'>Launch Pad</div>
-
-                            <div class="row dashBoardList">
-                                <div id="dashboardList" class="panel-body launchPadBody "></div>
-                            </div>
-                        </div>
+                            <!--<div class="row dashBoardList">-->
+                                <!--<div id="dashboardList" class="panel-body launchPadBody "></div>-->
+                            <!--</div>-->
+                        <!--</div>-->
                     </div>
                 </div>
             </div>
