@@ -1084,11 +1084,11 @@ router.post("/copyToLib",function(req,res){
 
             //console.log('copy from:'+fromNode.name);
 
-            var newIcon = '';
-            if(fromNode.hasOwnProperty('icon')){
-
-                var newIcon = "/library/" + lib + fromNode.icon.replace(fromId, id);
-            }
+            // var newIcon = '';
+            // if(fromNode.hasOwnProperty('icon')){
+            //     console.log("fromNode.icon: "+fromNode.icon);
+            //     var newIcon = "/library/" + lib + fromNode.icon.replace(fromId, id);
+            // }
 
             var NewRow = {
                 parent: newParentId,
