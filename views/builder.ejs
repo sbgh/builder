@@ -649,7 +649,12 @@
                                         pCompHtml += '</div></div>';
                                     };
                                     pCompHtml += '<div class="col-sm-3 launchPadCol" ><div class="panel dashPanel launchPadPanel">';
-                                    pCompHtml += '   <div class="panel-heading dashboardPanelHeading launchPadHeading">' + pComp.systemName + '</div>';
+                                    var urlString = "'/uploads/"+pComp.systemId+"/icon.png'";
+                                    pCompHtml += '   <div class="panel-heading dashboardPanelHeading launchPadHeading">'
+                                   // pCompHtml += '<div id="launchPadPanelIcon" class="launchPadPanelIcon" style="background-image: url('+urlString+');"></div>';
+                                    pCompHtml += '<img id="launchPadPanelIcon" class="launchPadPanelIcon" src='+urlString+'></img>';
+
+                                    pCompHtml += pComp.systemName + '</div>';
 
                                     pCompHtml += '<div class="panel-body dashPanelBody launchPanelBody">'
                                     pCompHtml += '      <div class="row dashBoardList">';
@@ -3338,6 +3343,10 @@
                                 </div>
                                 <div class="dashboardDetails">
                                     <div id="dashboardDetailsTile" class="dashboardDetailsTile"></div>
+                                    <div class="dashboardMenu">
+                                        <div class="dashboardMenuItem" id="DashBuildMenu">Build</div>
+                                        <div class="dashboardMenuItem dashboardMenuItemLast" id="DashOpenMenu">Open</div>
+                                    </div>
                                     <div id="dashboardDetailsSysName" class="dashboardDetailsSysName"></div>
                                     <div id="dashboardDetailsDescription" class="dashboardDetailsDescription"></div>
                                 </div>
@@ -3362,9 +3371,6 @@
 
                             </div>
                         </div>
-
-                        <div class="dashboardMenu"><div class="dashboardMenuItem" id="DashBuildMenu">Build</div><div class="dashboardMenuItem dashboardMenuItemLast" id="DashOpenMenu">Open</div></div>
-
                         <div id="dashboardList" class="row launchPadBody "></div>
                         <!--<div class="panel launchPadPanel">-->
                             <!--<div class='panel-heading dashboardPanelHeading launchPadHeading'>Launch Pad</div>-->
