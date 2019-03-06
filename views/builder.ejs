@@ -1131,42 +1131,58 @@
                 $("#idToBeRun").val(id);
                 $("#sysToBeRun").val(sys);
 
-//                var sys = famTree[1];
+                $.get('/ClosestRerunnableAn', { id: id }, function(data) {
 
-                var storedKey ='';
-                var storedKeyName = '';
-
-                if (sys.length !== 0){
-                    storedKey = localStorage['key_' + sys];
-                    storedKeyName = localStorage['keyName_' + sys];
-                    if(storedKey !== '' && typeof storedKey !== 'undefined'){
-                        $('#localStoreKeyCb').prop('checked', true);
-                        $('#keyList').html(storedKeyName) ;
+                    const dataObj = JSON.parse(data);
+                    $("#ClosestRerunnableAn").val(dataObj.id );
+                    if (dataObj.id === ""){
+                        $('#runClosestAnGroup').hide()
                     }else{
-                        $('#localStoreKeyCb').prop('checked', false);
-                        $('#keyList').html('') ;
+                        $('#runClosestAnGroup').show()
                     }
-                }
 
-                var storedAccess ='';
-                var storedAccessName = '';
+                    var storedKey ='';
+                    var storedKeyName = '';
 
-                if (sys.length !== 0){
-                    storedAccess = localStorage['access'];
-                    storedAccessName = localStorage['accessName'];
-                    if(storedAccess !== '' && typeof storedAccess !== 'undefined'){
-                        $('#localStoreAccessCb').prop('checked', true);
-                        $('#accessList').html(storedAccessName) ;
-                    }else{
-                        $('#localStoreAccessCb').prop('checked', false);
-                        $('#accessList').html('') ;
+                    if (sys.length !== 0){
+                        storedKey = localStorage['key_' + sys];
+                        storedKeyName = localStorage['keyName_' + sys];
+                        if(storedKey !== '' && typeof storedKey !== 'undefined'){
+                            $('#localStoreKeyCb').prop('checked', true);
+                            $('#keyList').html(storedKeyName) ;
+                        }else{
+                            $('#localStoreKeyCb').prop('checked', false);
+                            $('#keyList').html('') ;
+                        }
                     }
-                }
+
+                    var storedAccess ='';
+                    var storedAccessName = '';
+
+                    if (sys.length !== 0){
+                        storedAccess = localStorage['access'];
+                        storedAccessName = localStorage['accessName'];
+                        if(storedAccess !== '' && typeof storedAccess !== 'undefined'){
+                            $('#localStoreAccessCb').prop('checked', true);
+                            $('#accessList').html(storedAccessName) ;
+                        }else{
+                            $('#localStoreAccessCb').prop('checked', false);
+                            $('#accessList').html('') ;
+                        }
+                    }
+                })
+
             }
 
             $("#runConfirmButton").on("click",function() {
-
                 var ids = $("#idToBeRun").val();
+                if($('#runClosestAn').is(':checked')){
+                    if($("#ClosestRerunnableAn").val() !== ""){
+                        ids = $("#ClosestRerunnableAn").val();
+                    }
+                }
+
+
                 var sys = $("#sysToBeRun").val();
 
                 if($('#runChildrenCb').is(':checked')){
@@ -3492,11 +3508,17 @@
                 <form class="form">
                     <input name="idToBeRun" id="idToBeRun" type="hidden" />
                     <input name="sysToBeRun" id="sysToBeRun" type="hidden" />
+                    <input name="ClosestRerunnableAn" id="ClosestRerunnableAn" type="hidden" />
 
                     <div class="form-group">
-                       <label style="padding-left: 40px">
+                        <label style="padding-left: 40px">
                             <input name="runChildrenCb" id="runChildrenCb" value="yes" type="checkbox" checked/>Run all children?
-                       </label>
+                        </label>
+                    </div>
+                    <div class="form-group" id="runClosestAnGroup">
+                        <label style="padding-left: 40px">
+                            <input name="runClosestAn" id="runClosestAn" value="yes" type="checkbox" checked/>Run from closest rerunnable ancestor?
+                        </label>
                     </div>
                     <hr>
                     <div class="form-group">

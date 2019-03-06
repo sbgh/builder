@@ -2507,6 +2507,35 @@ router.get("/getStyle",function(req,res){
 
 });
 
+router.get("/ClosestRerunnableAn",function(req,res){
+    var id = req.query.id;
+
+    var ClosestRerunnableAn = {};
+    var ClosestRerunnableAnID = "";
+    if (SystemsJSON.hasOwnProperty(id) ){
+        if(SystemsJSON[id].rerunnable !== 1){
+            var parentID = SystemsJSON[id].parent;
+            var x = 0;
+            while ((parentID !== "#") && (ClosestRerunnableAnID === "") && (x < 100)){
+
+                if (SystemsJSON.hasOwnProperty(parentID) ){
+                    if(SystemsJSON[parentID].rerunnable === 1){
+                        ClosestRerunnableAn = SystemsJSON[parentID];
+                        ClosestRerunnableAnID = parentID
+                    }
+                }
+                parentID = SystemsJSON[parentID].parent;
+                x++
+            }
+        }
+
+    }else{
+
+    }
+    res.end(JSON.stringify({id:ClosestRerunnableAnID, ClosestRerunnableAn:ClosestRerunnableAn}));
+
+});
+
 router.post("/setTimeout",function(req,res){
 
     var reqJSON = req.body;
