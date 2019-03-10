@@ -853,3 +853,21 @@ input:checked + .slider:before {
    display: inline-block;
    margin-right: 5px;
 }
+
+.search-group{
+   float: right;
+   width: calc(100% - 130px);
+   max-width: 200px;
+   margin-bottom: 0px;
+   padding-left: 5px;
+}
+
+.searchInput{
+   height: 20px;
+   width: 100%;
+   padding-left: 5px;
+}
+
+.search-icon{
+   float: right;
+}

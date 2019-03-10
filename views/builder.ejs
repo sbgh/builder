@@ -43,11 +43,10 @@
                     },
                     "data" : {
                         'url' : function (node) {
+                                var searchText = $("#searchInput").val();
                                 return node.id === '#' ?
-                                    'jobs' :
+                                    'jobs?searchSt='+searchText :
                                     'jobs';
-
-                            //return 'Jobs';
                             },
                         'data' : function (node) {return { 'id' : node.id };}
                     },
@@ -212,6 +211,7 @@
             $("#treeCollapse").on("click",function(){
                 setLibWindowWidth(20, container);
             });
+
 
 
             $("#copyConfirmButton").on("click",function() {
@@ -2765,7 +2765,21 @@
                 $('.nav-tabs a[href="#' + tab + '"]').tab('show');
             };
 
-           // $("#Build_Results_tab").hide();
+
+            $("#search-icon").on("click",function(){
+                $('#jstree_div').jstree(true).refresh(true);
+            //    $('#jstree_div').jstree(true).redraw(true);
+            });
+            $("#searchInput").on('keyup', function (e) {
+                if (e.keyCode == 13) {
+                    $('#jstree_div').jstree(true).refresh(true);
+                }
+            });
+
+
+
+
+            // $("#Build_Results_tab").hide();
 //            $('.nav').on('show.bs.tab', function (e) {
 //                $('.nav .active').removeClass('active');
 //            })
@@ -3005,7 +3019,13 @@
 
             <div id="leftCol" class="top-col-fixed-240" >
                 <div id="treePanel" class='panel panel-default cust-panel locTree-panel-body' style="float: left;"  >
-                    <div class='panel-heading cust-panel-heading'><i class='fa fa-align-justify  fa-fw'></i>Systems <a class='newSys' href='#'>[+]</a> <a href="#" data-toggle="modal" data-target="#welcomeModal">  [<i class="fa fa-question"></i>]</a>  </div>
+                    <div class='panel-heading cust-panel-heading'><i class='fa fa-align-justify  fa-fw'></i>Systems <a class='newSys' href='#'>[+]</a> <a href="#" data-toggle="modal" data-target="#welcomeModal">  [<i class="fa fa-question"></i>]</a>
+
+                        <i id="search-icon" class="fa fa-search  fa-fw search-icon"></i>
+                        <div class="form-group search-group">
+                            <input class="form-control form-custom searchInput" placeholder="" id="searchInput" >
+                        </div>
+                    </div>
 
                     <div class='panel-body tree-panel-body'>
                         <div id="jstree_div" class="SysTree"></div>
