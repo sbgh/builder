@@ -267,7 +267,7 @@ router.get("/Jobs",function(req,res){
                             }
 
 
-                            var searchModClass = foundInSearchBool ? " searchModClass" : "";
+                            var searchModClass = foundInSearchBool ? " searchFoundModClass" : " searchNotFoundModClass";
 
                             if (rowdata.comType === "job") {
                                 if (rowdata.hasOwnProperty("lastBuild")) {

@@ -873,6 +873,10 @@ input:checked + .slider:before {
    float: right;
 }
 
-.searchModClass{
+.searchFoundModClass{
    font-weight: 700;
+}
+
+.searchNotFoundModClass{
+   font-weight: 500;
 }
