@@ -183,10 +183,10 @@ router.get("/Jobs",function(req,res){
         //console.log('gv:' + SystemsJSON[id].variables);
         rowdata.id = id;
         resJSON.push(rowdata);
-    }else{
+    }else {
 
         //Create parent row and place entire tree under it
-        var rowdata={};
+        var rowdata = {};
         rowdata.id = "local";
         rowdata.name = "local";
         rowdata.text = "Dashboard";
@@ -196,116 +196,110 @@ router.get("/Jobs",function(req,res){
         for (var key in SystemsJSON) {
             if (SystemsJSON.hasOwnProperty(key)) {
 
-                //====masss updtes=======================================================
-                //SystemsJSON[key].ft = SystemsJSON[key].ft.replace("undefined","#")
-
                 //filter by search string
-                var filter = false;
-                if(SystemsJSON[key].comType === "system"){
-                    filter = true
-                }else if(searchSt.length > 0){
+                if (searchSt.length === 0) {
+                    resJSON.push(getTreeFormattedRowData(key, false));
+                } else {
+                    if(isFoundIn(key, searchSt)){
+                        var found = resJSON.find(function (row) {
+                            return row.id === key;
+                        });
+                        if (!found) {
+                            resJSON.push(getTreeFormattedRowData(key, true));
+                        };
 
-                    if(SystemsJSON[key].description.includes(searchSt)){
-                        filter = true
-                    }
-                    if(SystemsJSON[key].script.includes(searchSt)){
-                        filter = true
-                    }
-                    if(SystemsJSON[key].hasOwnProperty("template")){
-                        if(SystemsJSON[key].template.includes(searchSt)){
-                            filter = true
-                        }
-                    }
-
-                }else{
-                    filter = true
-                }
-
-                if(filter === true){
-
-                    if(searchSt.length > 0){
                         var parents = SystemsJSON[key].ft.split("/");
-                        parents.forEach(function(parent){
-                            if(parent !== "#"){
+                        parents.forEach(function (parent) {
+                            if (parent !== "#") {
                                 if (SystemsJSON.hasOwnProperty(parent)) {
-                                    if(SystemsJSON[parent].comType !== "system"){
 
-                                        var found = resJSON.find(function(row) {
-                                            return row.id === parent;
-                                        });
+                                    var found = resJSON.find(function (row) {
+                                        return row.id === parent;
+                                    });
 
-                                        if(!found){
-                                            resJSON.push(getTreeFormattedRowData(parent));
-                                        }
+                                    if (!found) {
+                                        resJSON.push(getTreeFormattedRowData(parent, isFoundIn(parent, searchSt)));
                                     }
                                 }
                             }
                         })
-
                     }
-
-                   // if(!resJSON.hasOwnProperty(key)){
-                    var found = resJSON.find(function(row) {
-                        return row.id === key;
-                    });
-
-                    if(!found){
-                        resJSON.push(getTreeFormattedRowData(key));
-                    }
-                   //     resJSON.push(getTreeFormattedRowData(key));
-                 //   }
-
-
-                    function getTreeFormattedRowData(key){
-                        rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
-                        rowdata.id = key;
-                        rowdata.text = rowdata.name;
-
-                        if(SystemsJSON[key].comType === "system"){
-                            rowdata.type="system"
-                        }else{
-                            rowdata.type="job";
-                            if(rowdata.hasOwnProperty("enabled")){
-                                if(rowdata.enabled === 0){
-                                    rowdata.type="disabled";
-                                }else if(!rowdata.hasOwnProperty("lastBuild") ){
-                                    rowdata.type="needfull"
-                                }else if(rowdata.rerunnable === 1){
-                                    rowdata.type="rerunnable"
-                                }
-                            }
-                        }
-
-                        if(rowdata.comType === "job"){
-                            if(rowdata.hasOwnProperty("lastBuild")){
-                                if (rowdata.lastBuild.pass===1){
-                                    rowdata.li_attr = { "class" : "runningJobCompleteSuccess" };
-                                    rowdata.a_attr = { "class" : "runningJobCompleteSuccess" }
-                                }else if(rowdata.lastBuild.pass===0){
-                                    rowdata.li_attr = { "class" : "runningJobCompleteFail" };
-                                    rowdata.a_attr = { "class" : "runningJobCompleteFail" }
-                                }
-                            }else{
-                                rowdata.li_attr = { "class" : "newJobRow" }
-                            };
-                        }else{
-                            rowdata.li_attr = { "class" : "newJobRow" }
-                        }
-
-                        if(rowdata.icon){
-                            rowdata.icon = "/uploads/" + key + "/" + "icon.png"
-                        }
-
-                        var pt = rowdata.parent;
-                        if(pt === "#"){
-                            rowdata.parent = "local";
-                        };
-
-                        return rowdata;
-                    }
-
                 }
 
+                function isFoundIn(key, searchSt) {
+                    var filter = false;
+                    if (SystemsJSON[key].name.includes(searchSt)) {
+                        filter = true
+                    }
+                    if (SystemsJSON[key].description.includes(searchSt)) {
+                        filter = true
+                    }
+                    if (SystemsJSON[key].hasOwnProperty("script")) {
+                        if (SystemsJSON[key].script.includes(searchSt)) {
+                            filter = true
+                        }
+                    }
+                    if (SystemsJSON[key].hasOwnProperty("template")) {
+                        if (SystemsJSON[key].template.includes(searchSt)) {
+                            filter = true
+                        }
+                    }
+                    return filter
+                }
+                function getTreeFormattedRowData(key, foundInSearchBool) {
+                            rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]));
+                            rowdata.id = key;
+                            rowdata.text = rowdata.name;
+
+                            if (SystemsJSON[key].comType === "system") {
+                                rowdata.type = "system"
+                            } else {
+                                rowdata.type = "job";
+                                if (rowdata.hasOwnProperty("enabled")) {
+                                    if (rowdata.enabled === 0) {
+                                        rowdata.type = "disabled";
+                                    } else if (!rowdata.hasOwnProperty("lastBuild")) {
+                                        rowdata.type = "needfull"
+                                    } else if (rowdata.rerunnable === 1) {
+                                        rowdata.type = "rerunnable"
+                                    }
+                                }
+                            }
+
+
+                            var searchModClass = foundInSearchBool ? " searchModClass" : "";
+
+                            if (rowdata.comType === "job") {
+                                if (rowdata.hasOwnProperty("lastBuild")) {
+                                    if (rowdata.lastBuild.pass === 1) {
+                                        rowdata.li_attr = {"class": "runningJobCompleteSuccess" + searchModClass};
+                                        rowdata.a_attr = {"class": "runningJobCompleteSuccess" + searchModClass}
+                                    } else if (rowdata.lastBuild.pass === 0) {
+                                        rowdata.li_attr = {"class": "runningJobCompleteFail" + searchModClass};
+                                        rowdata.a_attr = {"class": "runningJobCompleteFail" + searchModClass}
+                                    }
+                                } else {
+                                    rowdata.li_attr = {"class": "newJobRow"};
+                                    rowdata.a_attr = {"class": searchModClass}
+                                }
+                                ;
+                            } else {
+                                rowdata.li_attr = {"class": "newJobRow"};
+                                rowdata.a_attr = {"class": searchModClass}
+                            }
+
+                            if (rowdata.icon) {
+                                rowdata.icon = "/uploads/" + key + "/" + "icon.png"
+                            }
+
+                            var pt = rowdata.parent;
+                            if (pt === "#") {
+                                rowdata.parent = "local";
+                            }
+                            ;
+
+                            return rowdata;
+                        }
             }
         }
     }
