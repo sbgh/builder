@@ -234,6 +234,11 @@ router.get("/Jobs",function(req,res){
                     if (SystemsJSON[key].description.includes(searchSt)) {
                         filter = true
                     }
+                    if (SystemsJSON[key].hasOwnProperty("variables")) {
+                        if (SystemsJSON[key].variables.includes(searchSt)) {
+                            filter = true
+                        }
+                    }
                     if (SystemsJSON[key].hasOwnProperty("script")) {
                         if (SystemsJSON[key].script.includes(searchSt)) {
                             filter = true
