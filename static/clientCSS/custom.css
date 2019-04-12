@@ -880,3 +880,12 @@ input:checked + .slider:before {
 .searchNotFoundModClass{
    font-weight: 500;
 }
+
+.icon {
+   display: inline-block;
+   width: .8em;
+   height: 1em;
+   stroke-width: 0;
+   stroke: currentColor;
+   fill: currentColor;
+}
