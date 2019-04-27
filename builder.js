@@ -1,3 +1,8 @@
+/*
+ builder.js
+ Usage: node builder
+ Complete back-end code for ezStack Builder Prototype. Ensure SystemsJSON.json (at least "{}") exists in the builder folder.
+*/
 const express = require("express");
 const http = require('http');
 const https = require('https');
@@ -7,6 +12,10 @@ const bodyParser = require("body-parser");
 const execSync = require('child_process').execSync;
 const passwordHash = require('password-hash');
 const Client = require('ssh2').Client;
+
+//const connect = require('ssh2-connect');
+
+
 const getuid = require('getuid');
 const formidable = require('formidable');
 const chromeLauncher = require('chrome-launcher');
@@ -24,10 +33,11 @@ const libsPath = __dirname + '/library/';
 const stylesPath = __dirname + '/static/theme/';
 const treeStylesPath = __dirname + '/static/jstree/dist/themes/';
 
-//Load configs
+//Load configs into global config obj
 const cf = fs.readFileSync('config.json');
 const config = JSON.parse(cf);
 
+//Enable express-session
 app.use(session({
         store: new FileStore, // ./sessions
         secret: config.session_secret,
@@ -36,20 +46,25 @@ app.use(session({
         name:config.session_name
     }));
 
+//Enable static assets in the ./static folder
 app.use(express.static('static'));
 
 // all templates are located in `/views` directory
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
+//Captur location of the current uses home folder
 const homedir = require('os').homedir();
-//***************************************************************************************************
+
+//Define required globals
 const SystemsJSONContents = fs.readFileSync('SystemsJSON.json');
 global.SystemsJSON = JSON.parse(SystemsJSONContents);
 
 global.Page = '';
 global.protocol='';
 global.chrome='';
+
+//Launch headless Chrome async
 (async function () {
     async function launchChrome() {
         return await chromeLauncher.launch({
@@ -86,12 +101,15 @@ global.chrome='';
 
 })();
 
+//Define user table global
 var userTable = fs.readFileSync("./identity/identity.json");
 var userTableJSON = JSON.parse(userTable);
 
+//Use bodyParser in various router.post to assist in parcing req data
 app.use(bodyParser.json({limit: '10mb'}));
 app.use(bodyParser.urlencoded({limit: '10mb', extended: true}));
 
+//Log all reqs in accesslog.txt
 router.use(function (req,res,next) {
     var log = "{"+"date:"+new Date().toISOString().replace(/T/, '_').replace(/:/g, '-')+",";
 
@@ -104,43 +122,48 @@ router.use(function (req,res,next) {
     next();
 });
 
+//Reqs to / endpoint are ignored for now
 router.get("/",function(req,res){
     res.end('')
 });
 
+//Service Rt: /login, Method: get, Requires: Nothing, Returns: render(login)
 router.get("/login",function(req,res){
     //console.log("error: " + req.query.error);
     //console.log("rd: " + req.query.rd);
     res.render('login', {error: req.query.error});
 });
 
+//Service Rt: /login, Method: post, Requires: rd=[redirect uri], Returns: redirect(rd)
 router.post("/login",function(req,res) {
 
     console.log("login - referrer:" + req.headers.referer + ' remoteAddress:' + req.connection.remoteAddress); //sic
+    //if name and pw are empty, set errpr and redirect
     if (req.body.username === "" || req.body.password === "") {
         res.redirect("/login?rd=" + encodeURIComponent(req.body.rd) +"&error=" + encodeURIComponent("ERROR: Please enter userID & password"))
+    //else find user in user table and validate
     }else{
         var userJSON = userTableJSON.filter(function (row) {
             return row.id === req.body.username;
         });
-        if((typeof userJSON[0]) !== "undefined"){
-            if (  !passwordHash.isHashed( userJSON[0].pw)   ){
+        if((typeof userJSON[0]) !== "undefined"){//Varify username is in user table
+            if (  !passwordHash.isHashed( userJSON[0].pw)   ){ //Check if supplied pw is hashed and log error if not hashed
                 console.log('password not hashed - referrer:' + req.headers.referer + ' connection:' + req.connection.remoteAddress + " username:" + req.body.username);
                 res.redirect("/login?rd=" + encodeURIComponent(req.body.rd) +"&error=" + encodeURIComponent("User identity not setup"))
             }else{
-                if (passwordHash.verify(req.body.password, userJSON[0].pw)) {
+                if (passwordHash.verify(req.body.password, userJSON[0].pw)) { //Verify PW and redirect to para rd if correct
                     const redirectTo = req.body.rd ? req.body.rd : '/';
                     req.session.authenticated = true;
                     req.session.username = "Admin";
 
                     res.redirect(redirectTo);
-                } else {
+                } else { //log in incorrect. Redirect back to /login
                     console.log('Login credentials incorrect - referer:' + req.headers.referer + ' connection:' + req.connection.remoteAddress + " username:" + req.body.username);
                     res.redirect("/login?rd=" + encodeURIComponent(req.body.rd) +"&error=" + encodeURIComponent("Login credentials incorrect"))
                 }
             }
         }
-        else{
+        else{ // username is not in user table. Log error and redirect to login
             console.log('username not found - referrer:' + req.headers.referer + ' connection:' + req.connection.remoteAddress + " username:" + req.body.username);
             res.redirect("/login?rd=" + encodeURIComponent(req.body.rd) +"&error=" + encodeURIComponent("User identity not setup"))
         }
@@ -150,6 +173,7 @@ router.post("/login",function(req,res) {
 });
 
 //-------------------All routes below require authentication-----------------------------------------------------
+//Service Rt: /* [All], Method: get, Requires: none, Returns:  if auth then next() else redirect(rd)
 router.get("/*",function(req,res,next) {
     var sess = req.session; //Check if authenticated
     if (!sess.authenticated) {
@@ -160,17 +184,20 @@ router.get("/*",function(req,res,next) {
     }
 });
 
+//Service Rt: /logout, Method: get, Requires: none, Returns: cleared session then redirect(/)
 router.get('/logout', function (req, res) {
     delete req.session.authenticated;
     delete req.session.username;
     res.redirect('/');
 });
 
+//Service Rt: /builder, Method: get, Requires: none, Returns:  render(builder)
 router.get("/builder",function(req,res){
     var sess = req.session;
     res.render("builder", {username: sess.username});
 });
 
+//Service Rt: /jobs [components], Method: get, Requires: id = component ID or # [all], Returns:  SystemsJSON[id] or new responce json array of all components filtered by req.query.searchSt
 router.get("/Jobs",function(req,res){
     //console.log("url: " + req.url);
     var id = req.query.id;
@@ -193,21 +220,24 @@ router.get("/Jobs",function(req,res){
         rowdata.type = "dashboard";
         rowdata.parent = '#';
         resJSON.push(rowdata);
+
+        //Loop through all SystemJSON and filter if search term is present.
         for (var key in SystemsJSON) {
             if (SystemsJSON.hasOwnProperty(key)) {
 
                 //filter by search string
-                if (searchSt.length === 0) {
+                if (searchSt.length === 0) { //If no search then simply add row
                     resJSON.push(getTreeFormattedRowData(key, false));
-                } else {
-                    if(isFoundIn(key, searchSt)){
+                } else { //if there is filter spcified, use isFound function to flag rows that match
+                    if(isFoundIn(key, searchSt)){ //Component matches
                         var found = resJSON.find(function (row) {
-                            return row.id === key;
+                            return row.id === key;  //Add a prop ID to hold component ID
                         });
-                        if (!found) {
+                        if (!found) { //Add to return array
                             resJSON.push(getTreeFormattedRowData(key, true));
                         };
 
+                        //Add all parents aswell if they ane not present
                         var parents = SystemsJSON[key].ft.split("/");
                         parents.forEach(function (parent) {
                             if (parent !== "#") {
@@ -226,7 +256,10 @@ router.get("/Jobs",function(req,res){
                     }
                 }
 
+                //function isFoundIn: Return flag to indicate if a given component has search term, Requires: key = component ID | searSt = serch term string, Returns: true if found false if not
                 function isFoundIn(key, searchSt) {
+                    //search in  name, Description, variables, script, template
+                    //Note: not included custom templates in prototype
                     var filter = false;
                     if (SystemsJSON[key].name.includes(searchSt)) {
                         filter = true
@@ -251,17 +284,20 @@ router.get("/Jobs",function(req,res){
                     }
                     return filter
                 }
+
+                //function getTreeFormattedRowData: Formats the return row json to include li_attr, a_attr for jstree styling, Requires: key = component ID | foundInSearchBool = bool to indicate search hit, Returns: row data obj
                 function getTreeFormattedRowData(key, foundInSearchBool) {
                             rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]));
                             rowdata.id = key;
                             rowdata.text = rowdata.name;
 
+                            //if type of component = 'system' then add type
                             if (SystemsJSON[key].comType === "system") {
                                 rowdata.type = "system"
-                            } else {
+                            } else { //if non-system add type as 'job'
                                 rowdata.type = "job";
                                 if (rowdata.hasOwnProperty("enabled")) {
-                                    if (rowdata.enabled === 0) {
+                                    if (rowdata.enabled === 0) { //If enabled set type that is used in jstree type plugin
                                         rowdata.type = "disabled";
                                     } else if (!rowdata.hasOwnProperty("lastBuild")) {
                                         rowdata.type = "needfull"
@@ -272,6 +308,7 @@ router.get("/Jobs",function(req,res){
                             }
 
 
+                            //Set searchModClass to a found class or not found class to set color of jstree row
                             var searchModClass = foundInSearchBool ? " searchFoundModClass" : " searchNotFoundModClass";
 
                             if (rowdata.comType === "job") {
@@ -308,10 +345,13 @@ router.get("/Jobs",function(req,res){
             }
         }
     }
+    //return new formated json
     res.end(JSON.stringify(resJSON));
 });
 
+//Global to store the library that the user is currently using
 var currentPickedLib = '';
+//Service Rt: /getLib, Method: get, Requires: pickedLib file name string | id = '#' for all components or id for one component, Returns:  one or all components in json string array
 router.get("/getLib",function(req,res) {
     const pickedLib = req.query.pickedLib;
     currentPickedLib = pickedLib;
@@ -373,27 +413,23 @@ router.get("/getLib",function(req,res) {
 
 });
 
+//Service Rt: /Sys, Method: get, Requires: id = id of the system component, Returns:  system json if exists
 router.get("/Sys",function(req,res){
-    //console.log("url: " + req.url);
     var id = req.query.id;
-    //console.log("sys:" + id+":");
     res.writeHead(200, {"Content-Type": "application/json"});
     var resJSON = [];
     if (id !== ''){
         var rowdata = SystemsJSON[id];
-        //console.log("rowdata " + rowdata);
         rowdata.id = id;
         resJSON.push(rowdata);
-        //console.log("resJSON.id = " + resJSON.id);
         res.end(JSON.stringify(resJSON));
-        //console.log(JSON.stringify(resJSON));
     }else{
         res.end("");
     }
 });
 
+//Service Rt: /LibSys provide json of a specified system in a library, Method: get, Requires: id = id of the system component | pickedLib = library file name, Returns:  system json if exists
 router.get("/LibSys",function(req,res){
-    //console.log("url: " + req.url);
     const pickedLib = req.query.pickedLib;
 
     const id = req.query.id;
@@ -405,27 +441,25 @@ router.get("/LibSys",function(req,res){
         var rowdata = libJSON[id];
         rowdata.id = id;
         resJSON.push(rowdata);
-        //console.log("resJSON.id = " + resJSON.id);
         res.end(JSON.stringify(resJSON));
-        //console.log(JSON.stringify(resJSON));
     }else{
         res.end("");
     }
 });
 
+//Service Rt: /remove deletes specified rows in SystemJSON or Lib and all upload files that are attached, Method: post, Requires: ids = the ids of rows to be removed sepetrated by ';' | tree = working or name of library file name , Returns:  ""
 router.post("/remove",function(req,res){
     //remove id from systems json and remove /uploads/ dir
     var reqJSON= req.body;
     var ids =reqJSON.ids.split(';');
     var tree =reqJSON.tree;
 
-    if(tree === 'working'){
-        ids.forEach(function(id) {
+    if(tree === 'working'){ //Is the specified tree the working tree?
+        ids.forEach(function(id) { //Loop throu all ids
             if(SystemsJSON.hasOwnProperty(id)) {
                 delete SystemsJSON[id]; //delete from main datastore
                 rmDir(filesPath + id + "/"); //delete all uploaded files
                 fs.readdir(resultsPath, function(err, files){ // delete results files
-                    // console.log(files);
                     if (err){
                         console.log(err);
                     }else{
@@ -444,7 +478,7 @@ router.post("/remove",function(req,res){
         });
         saveAllJSON(true);
 
-    }else{
+    }else{ //Specified tree is a library
         const libJSON =  JSON.parse(fs.readFileSync(libsPath + tree + "/SystemsJSON.json"));
         const libPath = __dirname + "/library/" + tree;
         ids.forEach(function(id) {
@@ -465,8 +499,8 @@ router.post("/remove",function(req,res){
     res.end('');
 });
 
+//Service Rt: /clear all build history for a system(results files & job.lastBuild), Method: post, Requires: id = the id of syem to be cleared , Returns:  "Completed" or "Error"
 router.post("/clear",function(req,res){
-    //clear all build history foe a system(results files & job.lastBuild)
     var reqJSON= req.body;
     var id =reqJSON.ids.split(';')[0];
     if(SystemsJSON[id].comType !== "system"){
@@ -519,6 +553,7 @@ router.post("/clear",function(req,res){
 
 });
 
+//Function: rmDir(dirPath) recursivly delete specified directory and all children, Requires: dirPath = the folder to be removed , Returns:  nothing
 function rmDir(dirPath) { //sync remove dir
     try { var files = fs.readdirSync(dirPath); }
     catch(e) { return; }
@@ -533,12 +568,11 @@ function rmDir(dirPath) { //sync remove dir
     fs.rmdirSync(dirPath);
 };
 
+//Service Rt: /move up or down the current selected component in sort order, Method: get, Requires: id = the id of component to be moved | direction = 'u' or 'd' , Returns: resorted SystemJSON | json string {newPos:[new sort index]}
 router.get("/move",function(req,res){
     //console.log("move...");
     var id = req.query.id;
-    var direction = req.query.direction[0];
-
-    console.log(id+":"+direction);
+    var direction = req.query.direction[0]; //either u or d
 
     if(id === '' || direction === ''){
         res.end('');
@@ -553,6 +587,7 @@ router.get("/move",function(req,res){
     var afterId = '';
     var lastId ='';
     // var pos = 0;
+    //find the position of the current component and the ids of the components before & after
     for (var key in SystemsJSON) {
         if (parent === SystemsJSON[key].parent) {
             //console.log("found: " , SystemsJSON[key].name,  SystemsJSON[key].sort, parent , SystemsJSON[key].parent);
@@ -572,15 +607,16 @@ router.get("/move",function(req,res){
         }
     }
 
+    //set new sort para for current and before if up
     var newPos = SystemsJSON[posId].sort;
     if(direction === 'u' && beforeId !== ''){
-        //console.log('direction:' + direction, beforeId, SystemsJSON[beforeId].sort);
         var tmp = SystemsJSON[posId].sort;
         SystemsJSON[posId].sort = SystemsJSON[beforeId].sort;
         SystemsJSON[beforeId].sort = tmp;
         newPos = SystemsJSON[posId].sort;
     }
 
+    //set new sort para for current and after if down
     if(direction === 'd' && afterId !== ''){
         //console.log('direction:' + direction);
         var tmp = SystemsJSON[posId].sort;
@@ -589,6 +625,7 @@ router.get("/move",function(req,res){
         newPos = SystemsJSON[posId].sort;
     }
 
+    //Create new json obj
     var SystemsArr_sorted = [],i;
     for(i in SystemsJSON){
         if(SystemsJSON.hasOwnProperty(i)){
@@ -596,17 +633,21 @@ router.get("/move",function(req,res){
         }
     }
 
+    //sort new SystemsArr_sorted obj
     SystemsArr_sorted.sort(function(a,b){
         return a[1].sort > b[1].sort ? 1 : -1;
     });
 
+    //Create new SystemsJson_sorted obj and load with SystemsArr_sorted
     var SystemsJson_sorted = {};
     for (var i=0; i < SystemsArr_sorted.length; i++){
         SystemsJson_sorted[SystemsArr_sorted[i][0]] = SystemsArr_sorted[i][1];
     }
 
+    //over write current SystemJSON
     SystemsJSON = SystemsJson_sorted;
 
+    //Save the resorted SystemJSON
     saveAllJSON(true);
 
     res.writeHead(200, {"Content-Type": "application/json"});
@@ -614,36 +655,46 @@ router.get("/move",function(req,res){
 
 });
 
+//Service Rt: /getResults get last result file of the current component, Method: get, Requires: id = the id of component to be returning results of , Returns: the string contents of the last result file
 router.get("/getResults",function(req,res) {
     var fileName = req.query.id;
     var results = fs.readFileSync(resultsPath + fileName + ".json");
     res.end(results)
 });
 
-function checkIfFile(file, cb) {
-    fs.stat(file, function fsStat(err, stats) {
-        if (err) {
-            if (err.code === 'ENOENT') {
-                return cb(null, false);
-            } else {
-                return cb(err);
-            }
-        }
-        return cb(null, stats.isFile());
-    });
-};
+//Not used
+//Function: checkIfFile(file, cb)
+// function checkIfFile(file, cb) {
+//     fs.stat(file, function fsStat(err, stats) {
+//         if (err) {
+//             if (err.code === 'ENOENT') {
+//                 return cb(null, false);
+//             } else {
+//                 return cb(err);
+//             }
+//         }
+//         return cb(null, stats.isFile());
+//     });
+// };
 
+//Service Rt: /resultsList get list of all results file names foir a given id, Method: get, Requires: id = the id of component to be returning results list of , Returns: new array of file names
 router.get("/resultsList",function(req,res){
     var id = req.query.id;
     res.writeHead(200, {"Content-Type": "application/json"});
+
+    //Read the results folder file list
     fs.readdir(resultsPath, function (err, files) {
         if (err) {
             throw err;
         } else {
+
+            //Filter by id part of file name
             var resultsFileArray = [];
             files = files.filter(function (file) {
                 return (file.substr(0, id.length) == id);
             });
+
+            //Sort by the datetime part of each file (DEC)
             files = files.sort(function(a, b)
             {
                 var ap = b.split('_')[1];
@@ -659,6 +710,7 @@ router.get("/resultsList",function(req,res){
     });
 });
 
+//Service Rt: /saveId handle the saving of USER ID/PW info from setup UI, Method: post, Requires: new password & new password again , Returns: "Password saved" mess or error mess | updated user table (saved)
 router.post("/saveId",function(req,res){
 
     var sess = req.session;
@@ -667,12 +719,15 @@ router.post("/saveId",function(req,res){
     var reqJSON = req.body;
     var pw1 = reqJSON.newPassword;
     var pw2 = reqJSON.newPasswordAgain;
+
+    //Are the new password the same?
     if(pw1 !== pw2){
         res.end("Passwords are not the same")
     }else if(pw1.length < 8){
         res.end("Password is less then 8 Chrs.")
     }else{
-        //var passwordHash = require('password-hash');
+
+        //Find user in user table and update
         for (var x in userTableJSON) {
             if (userTableJSON[x].id === userId) {
                 userTableJSON[x].pw = passwordHash.generate(pw1);
@@ -684,18 +739,26 @@ router.post("/saveId",function(req,res){
     };
 });
 
+//Service Rt: /save to save the current working or new component to SystemJSON & file save after save button click, Method: post, Requires: id = component ID , Returns: "Password saved" mess or error mess | updated user table (saved)
 router.post("/save",function(req,res){
     //console.log("submit");
 
     var reqJSON = req.body;
     var id = reqJSON.id;
     var foundRow = {};
-    //console.log("comType: "+req.body.comType);
+
+    //if component is not of type system
     if(req.body.comType !== "system"){
         var comType = "job";
-        if (id.length < 32){ //new
+
+        //If new
+        if (id.length < 32){
+
+            //Capture parent ID + family tree
             var pid = req.body.parent;
             var parentFamTree = SystemsJSON[pid].ft;
+
+            //get number of siblings
             var x =0;
             for (var key in SystemsJSON) {
                 if (SystemsJSON[key].parent === pid) {
@@ -707,67 +770,82 @@ router.post("/save",function(req,res){
             var ds = new Date().toISOString();
             var hist=[{username:config.username, ds: ds, fromId: ""}];
 
+            //Gen new ID
             id = generateUUID();
+
+            //Build new OBJ
             foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1, enabled:1, promoted:0, rerunnable:0, systemFunction:0,  runLocal:0, comType: 'job', description: req.body.description, script:req.body.script, variables:req.body.compVariables, template:req.body.template, text:req.body.name, resourceFiles:[], sort:x, hist:hist};
+
+            //Add row to SysemJSON
             SystemsJSON[id] = foundRow;
+
+            //If not new
         }else{
-                //not new
-                var newData = {};
-                newData.parent = SystemsJSON[id].parent;;
-                newData.ft = SystemsJSON[id].ft;
-                newData.name = req.body.name;
-                newData.enabled = req.body.enabled;
-                newData.rerunnable = req.body.rerunnable;
-                newData.promoted = req.body.promoted;
-                newData.systemFunction = req.body.systemFunction;
-                newData.runLocal = req.body.runLocal;
 
+        //Build new obj and move values over
+        var newData = {};
+        newData.parent = SystemsJSON[id].parent;;
+        newData.ft = SystemsJSON[id].ft;
+        newData.name = req.body.name;
+        newData.enabled = req.body.enabled;
+        newData.rerunnable = req.body.rerunnable;
+        newData.promoted = req.body.promoted;
+        newData.systemFunction = req.body.systemFunction;
+        newData.runLocal = req.body.runLocal;
 
-            if(SystemsJSON[id].hasOwnProperty("lastBuild") ){
-                    newData.lastBuild = SystemsJSON[id].lastBuild
-                }
-                newData.comType = 'job';
-                newData.description = req.body.description;
-                newData.variables = req.body.compVariables;
-                newData.script = req.body.script;
-                newData.template = req.body.template;
-                newData.text = req.body.name;
-                newData.custTemplates = req.body.custTemplates;
+        if(SystemsJSON[id].hasOwnProperty("lastBuild") ){
+            newData.lastBuild = SystemsJSON[id].lastBuild
+        }
+        newData.comType = 'job';
+        newData.description = req.body.description;
+        newData.variables = req.body.compVariables;
+        newData.script = req.body.script;
+        newData.template = req.body.template;
+        newData.text = req.body.name;
+        newData.custTemplates = req.body.custTemplates;
 
-                if(req.body.resourceFiles === "[object Object]"){   ////bugged data
-                    newData.resourceFiles = "[]";
-                }else{
-                    newData.resourceFiles = req.body.resourceFiles;
-                }
+        //Proto has some incorrect data in resourceFiles. this is temp work around.
+        if(req.body.resourceFiles === "[object Object]"){   ////bugged data
+            newData.resourceFiles = "[]";
+        }else{
+            newData.resourceFiles = req.body.resourceFiles;
+        }
 
+        //Move sort value over
+        newData.sort = SystemsJSON[id].sort;
 
-                newData.sort = SystemsJSON[id].sort;
+        //add history json to SystemsJSON if not there
+        if(!SystemsJSON[id].hasOwnProperty("hist")){
+            SystemsJSON[id].hist = [];
+        }
 
-                //add history json to SystemsJSON if not there
-                if(!SystemsJSON[id].hasOwnProperty("hist")){
-                    SystemsJSON[id].hist = [];
-                }
-                //append history json
-                var ds = new Date().toISOString();
-                var currentHist = SystemsJSON[id].hist;
-                currentHist.push({username:config.username, ds: ds, fromId: ""});
-                newData.hist=currentHist;
+        //append history json
+        var ds = new Date().toISOString();
+        var currentHist = SystemsJSON[id].hist;
+        currentHist.push({username:config.username, ds: ds, fromId: ""});
+        newData.hist=currentHist;
 
-            if ( SystemsJSON[id].hasOwnProperty('ver') ) {
-                newData.ver = SystemsJSON[id].ver + 1;
-            }else{
-                newData.ver = 1;
-            }
+        //Increment component version number
+        if ( SystemsJSON[id].hasOwnProperty('ver') ) {
+            newData.ver = SystemsJSON[id].ver + 1;
+        }else{
+            newData.ver = 1;
+        }
 
-                SystemsJSON[id] = newData;
-                foundRow = SystemsJSON[id];
-               //console.log('v:' + req.body.compVariables)
+            SystemsJSON[id] = newData;
+            foundRow = SystemsJSON[id];
+           //console.log('v:' + req.body.compVariables)
         }
     }else{
+        //Component type = System
         var comType = "system";
+
+        //if new component
         if (id.length < 32){ //new
             var pid = '#';
             var x =0;
+
+            //Count number of siblings
             for (var key in SystemsJSON) {
                 if (SystemsJSON[key].parent === pid) {
                     x++;
@@ -779,9 +857,14 @@ router.post("/save",function(req,res){
             var ds = new Date().toISOString();
             var hist=[{username:config.username, ds: ds, fromId: ''}];
 
+            //Build new component obj
             foundRow = {parent:pid, ft:pid, name:req.body.name, ver:1, comType: "system", description: req.body.description, text:req.body.name, variables:req.body.variables, sort:x, hist:hist};
+
+            //Replace old w/ new
             SystemsJSON[id] = foundRow;
-        }else{ //not new
+
+            //Not new component
+        }else{
             var newData = {};
             newData.parent = SystemsJSON[id].parent;
             //newData.ft = SystemsJSON[id].ft;
@@ -804,6 +887,7 @@ router.post("/save",function(req,res){
             currentHist.push({username:config.username, ds: ds, fromId: ""});
             newData.hist=currentHist;
 
+            //Inc version number
             if ( SystemsJSON[id].hasOwnProperty('ver') ) {
                 newData.ver = SystemsJSON[id].ver + 1;
             }else{
@@ -815,11 +899,12 @@ router.post("/save",function(req,res){
         }
     }
 
+    //save new icon file
     if (reqJSON.hasOwnProperty('iconURL')){
+        //if reqJSON.iconURL has data then a new icon has been copied to UI
         var base64Data = reqJSON.iconURL.replace(/^data:image\/png;base64,/, "");
         //console.log("base64Data: "+base64Data);
         if (base64Data !== '') {
-            //console.log("base64Data !== '' - "+base64Data);
             var iconPath = filesPath + id + '/' + "icon.png";
             foundRow.icon = "icon.png";
 
@@ -833,17 +918,14 @@ router.post("/save",function(req,res){
         }
     }
 
-    //console.log("icon: "+SystemsJSON[id].icon);
-
     saveAllJSON(true);
-    //res.sendStatus(200);
     res.writeHead(200, {"Content-Type": "application/json"});
     foundRow.id = id;
     res.end(JSON.stringify(foundRow));
-    //console.log("saving script"+ JSON.stringify(foundRow));
 
-}); // and New
+});
 
+//Function: generateUUID() Generate unique id string, Requires: nothing , Returns:  unique string of format xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
 function generateUUID() { // Public Domain/MIT
     var d = new Date().getTime();
     if (typeof performance !== 'undefined' && typeof performance.now === 'function'){
@@ -856,6 +938,7 @@ function generateUUID() { // Public Domain/MIT
     });
 }
 
+//Service Rt: /copy to copy a specified component to the working SystemsJSON, Method: post, Requires: fromIds = list of ids to be copied seperated by ';' | targetId = new parent component id | lib = local or filename of source library, Returns: empty string or error string
 router.post("/copy",function(req,res){
     var reqJSON= req.body;
 
@@ -863,14 +946,18 @@ router.post("/copy",function(req,res){
     var targetId = reqJSON.parent;
     var lib = reqJSON.lib;
 
+    //If the specified source library is 'local' (ie the working library) varify each id exists then process each id
     if(lib === 'local'){
         var error = false;
         var errorID = '';
+
+        //Set error flag if target not exist
         if ((!SystemsJSON.hasOwnProperty(targetId)) && (targetId !== '#')){
             error = true;
             errorID = targetId;
         }
 
+        //set error flag if from ID not exist
         fromIds.forEach(function(id){
             if (!SystemsJSON.hasOwnProperty(id) && error === false ){
                 error = true;
@@ -878,11 +965,16 @@ router.post("/copy",function(req,res){
             }
         });
 
+        //If no error
         if(error === false){
+
+            //build id map of old parents and new parents
             var idMap = {};
+
+            //add from parent and new parent to id map
             idMap[SystemsJSON[fromIds[0]].parent] = targetId;
 
-            //give new sort to 1st node
+            //count target siblings and give new sort number to 1st node
             var x =0;
             for (var key in SystemsJSON) {
                 if (SystemsJSON[key].parent === targetId) {
@@ -890,11 +982,12 @@ router.post("/copy",function(req,res){
                 }
             }
 
-            //var resultRows = {};
+            //loop through all fromIds and copy
             fromIds.forEach(function(fromId) {
                 var fromNode = SystemsJSON[fromId];
                 var id = generateUUID();
 
+                //update parent id map
                 idMap[fromId] = id;
                 var newParentId = idMap[SystemsJSON[fromId].parent]
                 //console.log('move to:'+SystemsJSON[newParentId].name);
@@ -903,7 +996,7 @@ router.post("/copy",function(req,res){
                 var ds = new Date().toISOString();
                 var hist=[{username:config.username, ds: ds, fromId: fromId}];
 
-
+                //Build new component obj. Version 1
                 var NewRow = {
                     parent: newParentId,
                     name: fromNode.name,
@@ -915,12 +1008,14 @@ router.post("/copy",function(req,res){
                     hist: hist
                 };
 
+                //Add new family tree
                 if(newParentId === "#"){
                     NewRow.ft = "#"
                 }else{
                     NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
                 }
 
+                //Add more properties to the new component obj if type = 'job' (ie component)
                 if(fromNode.comType === 'job' ){
                     NewRow.enabled=fromNode.enabled;
                     NewRow.rerunnable=fromNode.rerunnable;
@@ -933,12 +1028,11 @@ router.post("/copy",function(req,res){
                     NewRow.custTemplates=fromNode.custTemplates;
                     NewRow.resourceFiles=fromNode.resourceFiles;
                     NewRow.icon=fromNode.icon;
-                // }else{
-                //     NewRow.icon=fromNode.icon.replace(fromId, id);
                 }
 
                 SystemsJSON[id] = NewRow;
 
+                //Copy file resources
                 if ( fs.existsSync( filesPath + fromId ) ) { //copy file resources if they exist
                     fs.mkdirSync(filesPath + id);
                     const files = fs.readdirSync(filesPath + fromId);
@@ -952,30 +1046,37 @@ router.post("/copy",function(req,res){
                 }
             });
 
+            //add new sort order value to the 1st id
             SystemsJSON[idMap[fromIds[0]]].sort = x;
 
+            //Save SystemsJSON and backup
             saveAllJSON(true);
 
+            Return OK statue
             res.sendStatus(200);
             res.end('');
             //console.log("saving script"+ JSON.stringify(foundRow));
 
         }else{
+            //error detected. Return error message
             res.sendStatus(500);
             res.end("Error:System ID not found - " + errorID)
         }
     }else{
-        //console.log(reqJSON);
+        //The source library is not the working lib
 
+        //Create error flag
         var error = false;
         var errorID = '';
 
+        //Validate target ID
         if ((!SystemsJSON.hasOwnProperty(targetId)) && (targetId !== '#')){
             error = true;
             errorID = targetId;
             console.log("Target ID not found in SystemsJSON: " + errorID);
         }
 
+        //Open and parce the source lib from the file system
         libJSON = JSON.parse(fs.readFileSync("library/" + lib + "/SystemsJSON.json"));
         fromIds.forEach(function(id){
             if (!libJSON.hasOwnProperty(id) && error === false ){
@@ -985,11 +1086,13 @@ router.post("/copy",function(req,res){
             }
         });
 
+        //If no error detected
         if(error === false){
+            //build id map of old parents and new parents
             var idMap = {};
             idMap[libJSON[fromIds[0]].parent] = targetId;
 
-            //give new sort to 1st node
+            //count target siblings and give new sort number to 1st node
             var x =0;
             for (var key in libJSON) {
                 if (libJSON[key].parent === targetId) {
@@ -997,22 +1100,22 @@ router.post("/copy",function(req,res){
                 }
             }
 
+            //loop through all fromIds and copy
             fromIds.forEach(function(fromId) {
                 var fromNode = libJSON[fromId];
+
+                //New id
                 var id = generateUUID();
 
+                //update parent id map
                 idMap[fromId] = id;
                 var newParentId = idMap[libJSON[fromId].parent];
-
-                // var newIcon = '';
-                // if(fromNode.hasOwnProperty('icon')){
-                //     var newIcon = fromNode.icon;
-                // }
 
                 //initial history json
                 const ds = new Date().toISOString();
                 const hist=[{username:config.username, ds: ds, fromId: fromId}];
 
+                //build new component object version 1
                 var NewRow = {
                     parent: newParentId,
                     name: fromNode.name,
@@ -1027,12 +1130,14 @@ router.post("/copy",function(req,res){
                     icon: fromNode.icon
                 };
 
+                //build family tree string
                 if(newParentId === "#"){
                     NewRow.ft = "#"
                 }else{
                     NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
                 }
 
+                /Add more properties to the new component obj if type = 'job' (ie component)
                 if(fromNode.comType === 'job'){
                     NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
                     NewRow.enabled=fromNode.enabled;
@@ -1049,11 +1154,13 @@ router.post("/copy",function(req,res){
                 //     NewRow.icon=fromNode.icon;
                 }
 
+                //Add to SystemsJSON
                 SystemsJSON[id] = NewRow;
 
+                //create libPath string
                 const libPath = libsPath + lib + "/";
 
-                //console.log("libPath:" + libPath );
+                //copy resource files
                 if ( fs.existsSync( libPath + "/uploads/" + fromId ) ) { //copy file resources if they exist
 
                     fs.mkdirSync(filesPath + id);
@@ -1070,8 +1177,10 @@ router.post("/copy",function(req,res){
                 }
             });
 
+            //add new sort order value to the 1st id
             SystemsJSON[idMap[fromIds[0]]].sort = x;
 
+            //Save SystemsJSON and backup
             saveAllJSON(true);
 
             res.sendStatus(200);
@@ -1086,22 +1195,28 @@ router.post("/copy",function(req,res){
 
 });
 
+//Service Rt: /copyToLib to copy a specified component to a specified library SystemsJSON, Method: post, Requires: fromIds = list of ids to be copied seperated by ';' | targetId = new parent component id | lib = local or filename of source library, Returns: empty string or error string
 router.post("/copyToLib",function(req,res){
     var reqJSON= req.body;
 
-    var fromIds =reqJSON.ids.split(';').filter(Boolean);
+    //Get fromIds and filter out bad ones
+    var fromIds =reqJSON.ids.split(';').filter(Boolean); //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean
     var targetId = reqJSON.parent;
     var lib = reqJSON.lib;
 
-   // console.log(targetId);
+   //If targetId is 'lib' then set the target id to 'root' of tree
     if(targetId === 'lib'){
         targetId = '#'
     }
 
+    //Open specified lib from file system
     libJSON = JSON.parse(fs.readFileSync("library/" + lib + "/SystemsJSON.json"));
 
+    //create error flag
     var error = false;
     var errorID = '';
+
+    //varify targetId
     if ((!libJSON.hasOwnProperty(targetId)) && (targetId !== '#')){
         error = true;
         errorID = targetId;
@@ -1109,6 +1224,8 @@ router.post("/copyToLib",function(req,res){
         console.log("Error:Target ID not found in library system json - " + errorID);
         res.end("")
     }
+
+    //Verify fromIds
     fromIds.forEach(function(id){
 
         if (!SystemsJSON.hasOwnProperty(id) && error === false ){
@@ -1120,7 +1237,10 @@ router.post("/copyToLib",function(req,res){
         }
     });
 
+    //If no error
     if(error === false){
+
+        //build id map of old parents and new parents
         var idMap = {};
         idMap[SystemsJSON[fromIds[0]].parent] = targetId;
 
@@ -1132,25 +1252,21 @@ router.post("/copyToLib",function(req,res){
             }
         }
 
+        //build lib path
         const libPath = __dirname + "/library/" + lib;
 
+        //loop through each id
         fromIds.forEach(function(fromId) {
             var fromNode = SystemsJSON[fromId];
+
+            //gen new id
             var id = generateUUID();
 
+            //add old id & new id to parent map
             idMap[fromId] = id;
             var newParentId = idMap[SystemsJSON[fromId].parent];
 
-            //console.log('copy to:'+libJSON[newParentId].name);
-
-            //console.log('copy from:'+fromNode.name);
-
-            // var newIcon = '';
-            // if(fromNode.hasOwnProperty('icon')){
-            //     console.log("fromNode.icon: "+fromNode.icon);
-            //     var newIcon = "/library/" + lib + fromNode.icon.replace(fromId, id);
-            // }
-
+            //build new component object
             var NewRow = {
                 parent: newParentId,
                 name: fromNode.name,
@@ -1162,17 +1278,15 @@ router.post("/copyToLib",function(req,res){
                 hist: fromNode.hist,
                 icon: fromNode.icon
             };
-            // if (newIcon !== ''){
-            //     NewRow.icon = newIcon
-            // }
-            //console.log(fromNode.icon);
 
+            //build family tree string
             if(newParentId === "#"){
                 NewRow.ft = "#"
             }else{
                 NewRow.ft = libJSON[newParentId].ft + '/' + newParentId;
             }
 
+            //if type = job (component) then copy other prpoerties
             const nodeType = fromNode.comType;
             if (nodeType === 'job' ){
                 NewRow.script=fromNode.script;
@@ -1186,9 +1300,11 @@ router.post("/copyToLib",function(req,res){
                 NewRow.enabled=fromNode.enabled;
             }
 
+            //Add new row to lib json
             libJSON[id] = NewRow;
 
-            if ( fs.existsSync( filesPath + fromId ) ) { //copy file resources if they exist
+            //copy file resources if they exist
+            if ( fs.existsSync( filesPath + fromId ) ) {
                 fs.mkdirSync(libPath + '/uploads/' + id);
                 const files = fs.readdirSync(filesPath + fromId);
                 files.forEach(function (file) {
@@ -1201,8 +1317,10 @@ router.post("/copyToLib",function(req,res){
             }
         });
 
+        //set sort order
         libJSON[idMap[fromIds[0]]].sort = x;
 
+        //Save library
         fs.writeFile(libPath + '/SystemsJSON.json', JSON.stringify(libJSON), function (err) {
             if (err) {
                 console.log('There has been an error saving your library json');
@@ -1211,13 +1329,13 @@ router.post("/copyToLib",function(req,res){
             //console.log('json saved successfully.')
         });
 
+        //return OK status
         res.sendStatus(200);
         res.end('');
-
     }
-
 });
 
+//Service Rt: /libraryList to get a list of public and private libs then exist on this builder instance, Method: get, Requires: nothing , Returns: json string of format {pri:priFiles, pub:pubFiles}
 router.get("/libraryList",function(req,res){
     res.writeHead(200, {"Content-Type": "application/json"});
 
@@ -1227,8 +1345,8 @@ router.get("/libraryList",function(req,res){
         res.end(JSON.stringify(respObj));
 });
 
+//Function: getSystemVarVal(jobId, vari) to get the value of a specified variable in the system of a specified component, Requires: jobId = id of component | vari = name of system variable  , Returns:  value of variable or nothing
 function getSystemVarVal(jobId, vari){
-    //console.log('jobId: '+jobId);
     if (SystemsJSON.hasOwnProperty(jobId)){
         var ft = SystemsJSON[jobId].ft;
         var sysId = ft.split('/')[1];
@@ -1248,6 +1366,7 @@ function getSystemVarVal(jobId, vari){
 
 }
 
+//experimental gif encoding. not used
 /*
 var GIFEncoder = require('gifencoder');
 var base64 = require('base64-stream');
@@ -1303,10 +1422,12 @@ router.get("/stream",function(req,res){
 
 */
 
+//build global variables to cache results variables for fast lookups during runs
 var latestResultsFileList = [];
 var latestVarCache = {};
+
+//Service Rt: /run to build a list of components. Disabled components and thier children will be skipped, Method: post, Requires: ids = list of ids to build seperated by ';' , Returns: A very long chunked responcse containg ssh output and imbedded codes to update the ui
 router.post("/run",function(req,res){
-    //console.log("running");
 
     var job;
     var jobIndex;
@@ -1317,8 +1438,10 @@ router.post("/run",function(req,res){
     var runAccess="";
     var newAccess=false;
 
+    //the ssh connect obj
     var conn;
 
+    //users remote ip
     var remoteIP = req.connection.remoteAddress.toString();
     remoteIP = remoteIP.substring(remoteIP.lastIndexOf(":") + 1);
 
@@ -1341,9 +1464,13 @@ router.post("/run",function(req,res){
 
     // console.log('builderIP: '+builderIP);
     // console.log('remoteIP: '+remoteIP);
+    //save file with remote ip
     fs.writeFileSync("sec_group_ips.json",JSON.stringify({'builderIP':builderIP, 'remoteIP':remoteIP}))
 
+    //set default timeout. May be over written by user prefs
     var timeOut = 30000;  //By default - how many ms all connections should wait for the prompt to reappear before connection is terminated
+
+    //lookup user pref timeout value
     const timeoutNumber = parseInt(config.timeout);
     //console.log("timeoutNumber: " + timeoutNumber)
     if (timeoutNumber > 0 ){ //If config holds timeout, use it.
@@ -1353,25 +1480,29 @@ router.post("/run",function(req,res){
     var lastTimeout;
     var exportVar = "";
 
+    //formidable used to parce form
     var form = new formidable.IncomingForm();
     form.parse(req, function(err, fields, files) {
         if(err){
             console.log(err);
             //message(err);
         }else{
+
+            //set list of ids into ids array
             ids = fields.ids.split(';');
 
+            //storeLocal holds val of 'store key in browser' checkbox
             var storeLocal = fields.storeLocal;
+            //if key-pair file is attached
             if(files.hasOwnProperty('key')   ){
+                //capture the key-pair in runKey and delete the attached file
                 var myFiles = files['key'];
-
                 if (myFiles.hasOwnProperty('path')) {
                     runKey = fs.readFileSync(myFiles.path);
                     newKey = true;
                     fs.unlink(myFiles.path,function(err){
                         if(err) console.log('Error: unable to delete uploaded key file')
                     });
-                    //console.log('runKey file: ' + runKey);
                 }
             }else{
                 if(storeLocal === 'yes'){
@@ -1382,10 +1513,12 @@ router.post("/run",function(req,res){
                 }
             }
 
+            //storeLocalAccess holds val of 'store access key in browser' checkbox
             var storeLocalAccess = fields.storeLocalAccess;
             if(files.hasOwnProperty('access')   ){
                 var myFiles = files['access'];
 
+                //if runAccess file is attached
                 if (myFiles.hasOwnProperty('path')) {
                     runAccess = fs.readFileSync(myFiles.path);
                     runAccess = runAccess.toString().split('\n')[1];
@@ -1508,10 +1641,15 @@ router.post("/run",function(req,res){
 
     var resultsArray = [];
 
+    //queue to store messages to to sent to ui
     var messQueue = [];
+
+    //function to push messesages to queue
     function message(mess) {
         messQueue.push(mess)
     }
+
+    //function to flush messesages from queue ti ui and results file
     function flushMessQueue() {
         var ds = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-');
         messQueue.forEach(function (mess) {
@@ -1524,6 +1662,7 @@ router.post("/run",function(req,res){
         messQueue = [];
     }
 
+    //function conTimeout () to perforn action when no prompt timeout occures
     function conTimeout () {
         console.log('SSH2 conn timed out ' + timeOut.toString());
         message("No prompt detected " + timeOut.toString() + " ms");
@@ -1532,6 +1671,7 @@ router.post("/run",function(req,res){
         conn.end();
      }
 
+     //function to return file names array of latest results of all componnents
     function getLatestResultsFileList() {
         var files = fs.readdirSync(resultsPath);  //!!Sync
         files = files.sort(function (a, b) //sort by id_time desc
@@ -1556,6 +1696,7 @@ router.post("/run",function(req,res){
     latestResultsFileList = getLatestResultsFileList(); //cache the list of results files to make var lookups quicker
 
 
+    //function to parse all results files in latestResultsFileList and cache all resuts variables (var:key:val)
     function cacheVarVals(latestResultsFileList, systemId){
 
         //getSystemVarVal(jobId, vari)
@@ -1615,11 +1756,13 @@ router.post("/run",function(req,res){
         });
     }
 
+    //disply results of cacheVarVals in log
     console.log("complete cacheVarVals - " + Object.keys(latestVarCache).length.toString() + " results files" );
 
+    //function runScript to build a specified component. requires: jobId = job id string | job = component obj , runMethod = "exec" or "SSH"
     function runScript(jobId, job, runMethod) {
-        var script = job.script + "\n";
-        var scriptArray = script.split("\n");
+        var script = job.script + "\n"; //add return to end of string to ensure prpompt is returned at end of script
+        var scriptArray = script.split("\n"); // the list of commands by row
 
         if (runMethod === "exec") {
             scriptArray.forEach(function (item) {
@@ -1630,20 +1773,22 @@ router.post("/run",function(req,res){
                 //     res.end(stdout)
                 // });
             });
-        } //experimental
+        } //experimental not used
 
+        //create ssh connection
         if (runMethod === "SSH") {
-            var sshSuccess = false;
-            //var Client = require('ssh2').Client;
-            conn = new Client();
-            //var username = 'SysStackUser';
-            var exportCommand = "";
+            var sshSuccess = false; //error flag creation
 
+            conn = new Client(); //connection obj
 
+            var exportCommand = "";// holds command to be exported (saved as variable) flag
+
+            //meggege ui that build is starting for the current job
             message('Building:' + job.name);
-            message('BuildID:[' +jobId+ ']');
+            message('BuildID:[' +jobId+ ']'); //send id to trigger ui functions
 
 
+            //connection error event. Message UI
             conn.on('error', function (err) {
                 console.log('SSH - Connection Error: ' + err);
                 message('SSH - Connection Error: ' + err);
@@ -1651,10 +1796,9 @@ router.post("/run",function(req,res){
                 res.end("status:Scripts Aborted\n");
             });
 
+            //connection (job run) end event. Run next job in list or send success message or error message
             conn.on('end', function () {
-                //console.log('SSH - Connection Closed');
                 jobIndex++;
-                //console.log('conn end, jobIndex: ' + jobIndex + " / " + ids.length);
 
                 if (ids.length > jobIndex) {
 
@@ -1689,33 +1833,37 @@ router.post("/run",function(req,res){
                 }
             });
 
+            //connection ready event. create shell and send commands
             conn.on('ready', function () {
-
-
                 var commandIndex = 0;
-                var prompt = "[SysStack]";
-                var atPrompt = false;
-                var aSyncInProgress = 0;
-                var deferredExit = false;
-                var respBufferAccu = new Buffer([]);
-                resultsArray = [];
+                var prompt = "[SysStack]"; //prompt will be chaned to this
+                var atPrompt = false; //flag to indicate if prompt returned
+                var aSyncInProgress = 0; //counter to indicate number of async processes in flight
+                var deferredExit = false; //flag to indicate async processes exist
+                var respBufferAccu = new Buffer([]); //responce buffer
+
+                resultsArray = []; //global array to hold resuktes key vals init
+
+                //spawn a command shell
                 conn.shell(function (err, stream) {
                     if (err) throw err;
 
+                    /close event to update ui, save log
                     stream.on('close', function (code, signal) {
-                        var dsString = new Date().toISOString();
+                        var dsString = new Date().toISOString(); //date stamp
 
-                        //writeCloseResponse(sshSuccess === true ? "CompletionSuccess:true\n" : "CompletionSuccess:false\n", dsString);
                         clearTimeout(lastTimeout);
-                        //sshSuccess = true;
 
+                        //message ui
                         message("Completed " + job.name);
                         message(sshSuccess === true ? "CompletionSuccess:true\n" : "CompletionSuccess:false\n");
                         flushMessQueue();
 
+                        //format date string
                         var fds = dsString.replace(/_/g, '-').replace(/T/, '-').replace(/:/g, '-').replace(/\..+/, '');
                         var fileName = "";
 
+                        //update SystemsJSON component with pass or fail and build results file name
                         if (sshSuccess === true) {
                             SystemsJSON[jobId].lastBuild = {ct:fds,pass:1};
                             fileName =  jobId + '_' + fds + '_p.json';
@@ -1724,8 +1872,10 @@ router.post("/run",function(req,res){
                             fileName = jobId + '_' + fds + '_f.json';
                         }
 
+                        //save SystemsJSON no backup
                         saveAllJSON(false);
 
+                        //save results file
                         fs.writeFile(resultsPath + fileName, JSON.stringify(resultsArray), function (err) {
                             if (err) {
                                 console.log('There has been an error saving your json.\n'+err.message);
@@ -1735,7 +1885,7 @@ router.post("/run",function(req,res){
                                 }
                                 cacheVarVals([fileName],job.ft.split('/')[1]);
 
-                                if(SystemsJSON[jobId].systemFunction === 1){
+                                if(SystemsJSON[jobId].systemFunction === 1){ //A job set as a system function will copy its vars to the system. Can be used to set host of system.
                                     copyVarsToSystem(jobId, fileName)
                                 }
 
@@ -1745,6 +1895,7 @@ router.post("/run",function(req,res){
                         });
 
 
+                        //function to copy all variables from the current job to its system.
                         function copyVarsToSystem(id, fileName){
                             if(typeof SystemsJSON[id] !== "undefined"){
 
@@ -1796,16 +1947,20 @@ router.post("/run",function(req,res){
                         }
 
                     });
+
+                    //event when data is returned on ssh session
                     stream.on('data', function (data) {
 
+                        //send data to ui
                         res.write(data.toString());
 
                         //Accumulate to buffer until the prompt appears
                         respBufferAccu = Buffer.concat([respBufferAccu, data]);
 
-                        var tempVal = respBufferAccu.toString();
-                        //console.log('data: ' + tempVal);
 
+                        //var tempVal = respBufferAccu.toString();
+
+                        //if the responce contains the current prompt string send next command and process directives
                         if( respBufferAccu.toString().split('\n').slice(-1)[0]  === prompt){
                             //console.log(respBufferAccu.toString().split('\n').slice(-1)[0] + '===' + prompt);
 
@@ -1828,19 +1983,23 @@ router.post("/run",function(req,res){
                                  processDirectives();
                              }
 
+                             //if all commands have been sent
                             if (commandIndex === scriptArray.length) {
                                 commandIndex++;
 
+                                //exit stream if no async processes
                                 if (aSyncInProgress < 1){
                                     stream.write("exit" + '\n');
                                     sshSuccess = true
-                                }else{
+                                }else{ //otherwise set deferredExit flag
                                     message('Waiting for asynchronous processes to complete...');
                                     deferredExit = true
                                 }
                                 flushMessQueue();
                             }
                         };
+
+                        //Function to create responce obj to add to results file
                         function writeResponse(newData) {
 
                             var ds = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-');
@@ -1883,6 +2042,7 @@ router.post("/run",function(req,res){
                             resultsArray.push({t: ds, x: '', cc: newData});
                         }
 
+                        //function to send next command to ssh stream
                         function sendCommand() {
                             if (data.slice(-(prompt.length)).toString() === prompt) {
                                 exportVar = '';
@@ -1901,15 +2061,16 @@ router.post("/run",function(req,res){
                             }
                         }
 
+                        //function to process the directives on the current command .
                         function processDirectives(){
                             do{
                                 // console.log("commandIndex: " + commandIndex);
                                 // console.log("process:" + currentCommand);
                                 // console.log("");
 
-                                var isDirective = false;
-                                //console.log(currentCommand);
+                                var isDirective = false;//flag to indicate current command was indeed a directive
 
+                                //parse each line and search for directives. while found it is processed and the next line is parsed
                                 if (currentCommand.substr(0, 7) === "noWait:") {
                                     currentCommand = currentCommand.substr(currentCommand.indexOf(":") + 1);
                                     stream.write(currentCommand + '\n');
@@ -1960,7 +2121,7 @@ router.post("/run",function(req,res){
                                                 aSyncInProgress--;
                                                 return console.log(err);
                                             }
-                                            var chownResp = execSync("sudo chown " + getSystemVarVal(jobId, 'username') + ":" + getSystemVarVal(jobId, 'username') + ' /tmp/' + aFileName);
+                                            //var chownResp = execSync("sudo chown " + getSystemVarVal(jobId, 'username') + ":" + getSystemVarVal(jobId, 'username') + ' /tmp/' + aFileName);
                                             conn.sftp(
                                                 function (err, sftp) {
                                                     //var msg = "";
@@ -1984,6 +2145,17 @@ router.post("/run",function(req,res){
                                                                 aSyncInProgress--;
                                                                 //console.log('saveTemplate:Sent - ' + aFileName);
                                                                 sftp.end();
+                        conn.exec('"sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " /tmp/" + aFileName', function(err, stream) {
+                                    if (err) throw err;
+                                    stream.on('close', function(code, signal) {
+                                        console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
+                                        //conn.end();
+                                    }).on('data', function(data) {
+                                        console.log('STDOUT: ' + data);
+                                    }).stderr.on('data', function(data) {
+                                        console.log('STDERR: ' + data);
+                                    });
+                                });
                                                                 message('saveTemplate:send complete - ' + aPathFileName);
                                                                 var rmResp = execSync("sudo rm -f /tmp/" + aFileName);
                                                                 if(deferredExit == true && aSyncInProgress == 0){
@@ -2117,10 +2289,9 @@ router.post("/run",function(req,res){
                             }while(isDirective === true);
                          }
 
+                         //function to replace the embedded var refrences with values
                         function replaceVar(commandStr, job) {// find and replace inserted vars eg. <%0ae3461e-d3c3-4214-acfb-35f44199ab5c.mVar4%>
                             //console.log("-"+commandStr+"-");
-
-                            //console.log("replaceVar " + commandIndex.toString());
 
                             const items = commandStr.split(new RegExp('<%', 'g'));
                             items.forEach(function (item) {
@@ -2295,7 +2466,7 @@ router.post("/run",function(req,res){
                     });
 
                     //first command
-                    stream.write('stty cols 200' + '\n' + "PS1='[SysStack]'" + '\n');
+                    stream.write('stty cols 200' + '\n' + "PS1='[SysStack]'" + '\n'); //set prompt
                     lastTimeout = setTimeout(conTimeout, timeOut);
                 });
             });
