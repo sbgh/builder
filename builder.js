@@ -13,9 +13,6 @@ const execSync = require('child_process').execSync;
 const passwordHash = require('password-hash');
 const Client = require('ssh2').Client;
 
-//const connect = require('ssh2-connect');
-
-
 const getuid = require('getuid');
 const formidable = require('formidable');
 const chromeLauncher = require('chrome-launcher');
@@ -206,12 +203,14 @@ router.get("/Jobs",function(req,res){
     res.writeHead(200, {"Content-Type": "application/json"});
     var resJSON = [];
     if (id !== '#'){
+        //id is not '#' and is assumed to be a valid SystemsJSON[id]
         var rowdata = JSON.parse(JSON.stringify(SystemsJSON[id]) );
+
         //console.log('gv:' + SystemsJSON[id].variables);
         rowdata.id = id;
         resJSON.push(rowdata);
     }else {
-
+        //id is '#' so return entire tree
         //Create parent row and place entire tree under it
         var rowdata = {};
         rowdata.id = "local";
@@ -287,61 +286,79 @@ router.get("/Jobs",function(req,res){
 
                 //function getTreeFormattedRowData: Formats the return row json to include li_attr, a_attr for jstree styling, Requires: key = component ID | foundInSearchBool = bool to indicate search hit, Returns: row data obj
                 function getTreeFormattedRowData(key, foundInSearchBool) {
-                            rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]));
-                            rowdata.id = key;
-                            rowdata.text = rowdata.name;
 
-                            //if type of component = 'system' then add type
-                            if (SystemsJSON[key].comType === "system") {
-                                rowdata.type = "system"
-                            } else { //if non-system add type as 'job'
-                                rowdata.type = "job";
-                                if (rowdata.hasOwnProperty("enabled")) {
-                                    if (rowdata.enabled === 0) { //If enabled set type that is used in jstree type plugin
-                                        rowdata.type = "disabled";
-                                    } else if (!rowdata.hasOwnProperty("lastBuild")) {
-                                        rowdata.type = "needfull"
-                                    } else if (rowdata.rerunnable === 1) {
-                                        rowdata.type = "rerunnable"
-                                    }
-                                }
+                    //rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]));
+                    let rowdata = {};
+                    //fast obj clone - https://stackoverflow.com/questions/5055746/cloning-an-object-in-node-js
+                    // for(var keys = Object.keys(SystemsJSON[key]), l = keys.length; l; --l)
+                    // {
+                    //     rowdata[ keys[l-1] ] = SystemsJSON[key][ keys[l-1] ];
+                    // }
+                    //
+                    // delete rowdata.script;
+                    // delete rowdata.template;
+                    // delete rowdata.custTemplates;
+                    rowdata.id = key;
+                    rowdata.name = SystemsJSON[key].name;
+                    rowdata.text = SystemsJSON[key].name;
+
+                    //if type of component = 'system' then add type
+                    if (SystemsJSON[key].comType === "system") {
+                        rowdata.type = "system"
+                    } else { //if non-system add type as 'job'
+                        rowdata.type = "job";
+                        if (SystemsJSON[key].hasOwnProperty("enabled")) {
+                            rowdata.enabled = SystemsJSON[key].enabled;
+
+                            if (rowdata.enabled === 0) { //If enabled set type that is used in jstree type plugin
+                                rowdata.type = "disabled";
+                            } else if (!SystemsJSON[key].hasOwnProperty("lastBuild")) {
+                                rowdata.type = "needfull"
+                            } else if (SystemsJSON[key].rerunnable === 1) {
+                                rowdata.type = "rerunnable"
                             }
-
-
-                            //Set searchModClass to a found class or not found class to set color of jstree row
-                            var searchModClass = foundInSearchBool ? " searchFoundModClass" : " searchNotFoundModClass";
-
-                            if (rowdata.comType === "job") {
-                                if (rowdata.hasOwnProperty("lastBuild")) {
-                                    if (rowdata.lastBuild.pass === 1) {
-                                        rowdata.li_attr = {"class": "runningJobCompleteSuccess" + searchModClass};
-                                        rowdata.a_attr = {"class": "runningJobCompleteSuccess" + searchModClass}
-                                    } else if (rowdata.lastBuild.pass === 0) {
-                                        rowdata.li_attr = {"class": "runningJobCompleteFail" + searchModClass};
-                                        rowdata.a_attr = {"class": "runningJobCompleteFail" + searchModClass}
-                                    }
-                                } else {
-                                    rowdata.li_attr = {"class": "newJobRow"};
-                                    rowdata.a_attr = {"class": searchModClass}
-                                }
-                                ;
-                            } else {
-                                rowdata.li_attr = {"class": "newJobRow"};
-                                rowdata.a_attr = {"class": searchModClass}
-                            }
-
-                            if (rowdata.icon) {
-                                rowdata.icon = "/uploads/" + key + "/" + "icon.png"
-                            }
-
-                            var pt = rowdata.parent;
-                            if (pt === "#") {
-                                rowdata.parent = "local";
-                            }
-                            ;
-
-                            return rowdata;
                         }
+                    }
+
+
+                    //Set searchModClass to a found class or not found class to set color of jstree row
+                    var searchModClass = foundInSearchBool ? " searchFoundModClass" : " searchNotFoundModClass";
+
+                    rowdata.comType = SystemsJSON[key].comType;
+
+                    if (rowdata.comType === "job") {
+                        if (SystemsJSON[key].hasOwnProperty("lastBuild")) {
+                            if (SystemsJSON[key].lastBuild.pass === 1) {
+                                rowdata.li_attr = {"class": "runningJobCompleteSuccess" + searchModClass};
+                                rowdata.a_attr = {"class": "runningJobCompleteSuccess" + searchModClass}
+                            } else if (SystemsJSON[key].lastBuild.pass === 0) {
+                                rowdata.li_attr = {"class": "runningJobCompleteFail" + searchModClass};
+                                rowdata.a_attr = {"class": "runningJobCompleteFail" + searchModClass}
+                            }
+                        } else {
+                            rowdata.li_attr = {"class": "newJobRow"};
+                            rowdata.a_attr = {"class": searchModClass}
+                        }
+
+                    } else {
+                        rowdata.li_attr = {"class": "newJobRow"};
+                        rowdata.a_attr = {"class": searchModClass}
+                    }
+
+                    if (SystemsJSON[key].icon) {
+                        rowdata.icon = "/uploads/" + key + "/" + "icon.png"
+                    }
+
+                    var pt = SystemsJSON[key].parent;
+                    if (pt === "#") {
+                        rowdata.parent = "local"
+                    }else{
+                        rowdata.parent = SystemsJSON[key].parent
+                    }
+
+
+                    return rowdata;
+                }
             }
         }
     }
@@ -1052,7 +1069,7 @@ router.post("/copy",function(req,res){
             //Save SystemsJSON and backup
             saveAllJSON(true);
 
-            Return OK statue
+            //Return OK status
             res.sendStatus(200);
             res.end('');
             //console.log("saving script"+ JSON.stringify(foundRow));
@@ -1137,7 +1154,7 @@ router.post("/copy",function(req,res){
                     NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
                 }
 
-                /Add more properties to the new component obj if type = 'job' (ie component)
+                //Add more properties to the new component obj if type = 'job' (ie component)
                 if(fromNode.comType === 'job'){
                     NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
                     NewRow.enabled=fromNode.enabled;
@@ -1848,7 +1865,7 @@ router.post("/run",function(req,res){
                 conn.shell(function (err, stream) {
                     if (err) throw err;
 
-                    /close event to update ui, save log
+                    //close event to update ui, save log
                     stream.on('close', function (code, signal) {
                         var dsString = new Date().toISOString(); //date stamp
 
@@ -1895,7 +1912,7 @@ router.post("/run",function(req,res){
                         });
 
 
-                        //function to copy all variables from the current job to its system.
+                        //function to copy all variables from the current job to its system. Used to set host etc.
                         function copyVarsToSystem(id, fileName){
                             if(typeof SystemsJSON[id] !== "undefined"){
 
@@ -2289,9 +2306,8 @@ router.post("/run",function(req,res){
                             }while(isDirective === true);
                          }
 
-                         //function to replace the embedded var refrences with values
-                        function replaceVar(commandStr, job) {// find and replace inserted vars eg. <%0ae3461e-d3c3-4214-acfb-35f44199ab5c.mVar4%>
-                            //console.log("-"+commandStr+"-");
+                         //function to replace the embedded var refrences with values. Returns new formatted commandStr
+                        function replaceVar(commandStr, job) {// find and replace inserted command vars eg. <%p.mVar4%>
 
                             const items = commandStr.split(new RegExp('<%', 'g'));
                             items.forEach(function (item) {
@@ -2307,8 +2323,7 @@ router.post("/run",function(req,res){
                                             commandStr = commandStr.replace(repStr, val)
                                         }
                                     })
-                                }
-                                ; //look in job for vars
+                                }; //look in job for vars
 
                                 if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 'p.') {
                                     var targetVarName = item.substr(2);
@@ -2320,8 +2335,7 @@ router.post("/run",function(req,res){
                                             commandStr = commandStr.replace(repStr, val)
                                         }
                                     }
-                                }
-                                ; //look in parent for vars
+                                }; //look in parent for vars
 
                                 if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 'a.') {
                                     var targetVarName = item.substr(2);
@@ -2335,8 +2349,7 @@ router.post("/run",function(req,res){
                                             }
                                         }
                                     })//reverse the ancestor list so that closer ancestor values are used first.
-                                }
-                                ; //look in ancestors for vars
+                                }; //look in ancestors for vars
 
                                 if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 's.') {
                                     var targetVarName = item.substr(2);
@@ -2380,12 +2393,10 @@ router.post("/run",function(req,res){
 
 
 
-                                }
-                                ; //look in same system for vars
+                                }; //look in same system for vars
 
-                                function calcRelativeScore(jobFT, foundFT){
-                                    //how many gr/parents does the current running job have in common with the found var job..
-                                    debugger;
+                                //function to return number of ancesters the current running job has in common with the found var job. Requires: jobFT and foundFT job ID strings seperated by "/".
+                                function calcRelativeScore(jobFT, foundFT){//how many gr/parents does the current running job have in common with the found var job..
                                     const jobFTArr = jobFT.split('/');
                                     const foundFTArr = foundFT.split('/');
                                     var x = 0;
@@ -2398,19 +2409,6 @@ router.post("/run",function(req,res){
                                     }
                                     return score;
                                 }
-
-                                // if (item.length > 37 && item.length < 67 && item.split("-").length == 5 && item.substr(14, 1) == '4' && item.substr(36, 1) == '.') {
-                                //     var targetVarName = item.substr(37);
-                                //     var id = item.substr(0, 36);
-                                //     var repStr = "<%" + id + "." + targetVarName + "%>";
-                                //
-                                //     latestResultsFileList.forEach(function (file) {
-                                //         if (file.substr(0, 36) === id) {
-                                //             var val = getVarValFromFile(file, targetVarName);
-                                //             commandStr = commandStr.replace(repStr, val);
-                                //         }
-                                //     });
-                                // }
                             });
 
                             //If there are any <% patterns left in the line then raise error and abort
@@ -2471,11 +2469,11 @@ router.post("/run",function(req,res){
                 });
             });
 
-            //console.log('jobId: ' + jobId);
-            //console.log('runKey: ' + runKey);
-
+            //Try to connect to the host
             try {
                 var connectHost;
+
+                //If commponent is set 'run local' set connectHost to local host (127.0.0.1) otherwise use system var 'host' value and 'username' value
                 if(SystemsJSON[jobId].runLocal === 1){
                     connectHost = "127.0.0.1"
                 }else{
@@ -2498,6 +2496,8 @@ router.post("/run",function(req,res){
     }
 });
 
+//Service Rt: /getVars to return a list of all vars in current system , Method: get, Requires: nothing , Returns: json string of format {pri:priFiles, pub:pubFiles}
+//The service is to be rewritten utalizing new lookups
 router.get("/getVars",function(req,res){
     res.writeHead(200, {"Content-Type": "application/json"});
 
@@ -2522,7 +2522,7 @@ router.get("/getVars",function(req,res){
                 }else{
                     return (false)
                 }
-            }); //include most resent of each id
+            }); //include most recent of each id
 
             //console.log(files);
             var listOfVars = {};
@@ -2591,9 +2591,10 @@ router.get("/getVars",function(req,res){
     })
 });
 
+//Service Rt: /upload to upoad file and attach to specified id, Method: post, Requires: form including id = component ID | uploads = file list , Returns: array of files attached to component format {name:file} or Error String
 router.post("/upload",function(req,res){ //https://coligo.io/building-ajax-file-uploader-with-node/
 
-    // create an incoming form object;
+    // create an incoming form object using formidable;
     var form = new formidable.IncomingForm();
 
     form.parse(req, function(err, fields, files) {
@@ -2603,6 +2604,7 @@ router.post("/upload",function(req,res){ //https://coligo.io/building-ajax-file-
         }
 
         var id = fields.id;
+        //if id exists check ./uploads/[id] file path. Create if not. Save files. Build return array.
         if (SystemsJSON.hasOwnProperty(id)){
             if (!fs.existsSync(filesPath +id)) {
                 fs.mkdirSync(filesPath +id);
@@ -2622,7 +2624,8 @@ router.post("/upload",function(req,res){ //https://coligo.io/building-ajax-file-
                     var returnArr = [];
                     files.forEach(function(file){
                         returnArr.push({name:file})
-                    })
+                    });
+                    //Return list of files that were successfully saved.
                     res.end(JSON.stringify(returnArr))
                 }
 
@@ -2652,6 +2655,7 @@ router.post("/upload",function(req,res){ //https://coligo.io/building-ajax-file-
     });
 });
 
+//Service Rt: /uploads/*", "/library/* to provide access to resources in ./library and ./uploads, Method: get, Requires: nothing , Returns: stream of the file specified in url
 router.get(["/uploads/*", "/library/*"],function(req,res){
 
     var link = req.originalUrl;
@@ -2668,14 +2672,16 @@ router.get(["/uploads/*", "/library/*"],function(req,res){
 
 });
 
+//Service Rt: /delFiles to delete specified component resource files from ./upload dir, Method: get, Requires: id = id of component to remove resource from | files = resource file names string seperated by ';' , Returns: array of files successfully deleted format {name:file} or error string
 router.get("/delFiles",function(req,res){
     var id = req.query.id;
     var filesBlob = req.query.files.split(';');
     if (fs.existsSync(filesPath +id) && id.length > 32) {
 
+        //create array of file names
         filesBlob.forEach(function(myFile){
             if (myFile.trim().length > 0){
-                try{
+                try{ //try to delete file
                     fs.unlinkSync(filesPath + id + '/' + myFile);
                 }catch(err){
                     message("error removing file: " + myFile.trim())
@@ -2698,9 +2704,12 @@ router.get("/delFiles",function(req,res){
     }
 });
 
+//Service Rt: /getStyle to return a style sheet , Method: get, Requires: styleName = name of style to be used . specify 'dark' for dark style else default syle will be used  , Returns: syle encoded in json obj format {css: cssJson}
+//Note that this service is to be improved by allowing user to select from a dynamic list of styles. Currently hardcoded with 'dark' or default.
 router.get("/getStyle",function(req,res){
     var styleName = req.query.styleName;
 
+    //If user config does not have property to store style then add default as current style.
     if(!config.hasOwnProperty('currentStyle')){
         saveSettings("currentStyle", 'default')
     }
@@ -2709,7 +2718,8 @@ router.get("/getStyle",function(req,res){
         styleName = config.currentStyle;
     }
 
-    if (styleName === 'dark') {
+    //if user specified 'dark'
+    if (styleName === 'dark') {//return dark.css
         try {
             var cssJson = fs.readFileSync(stylesPath + 'dark.css').toString();
 
@@ -2722,7 +2732,7 @@ router.get("/getStyle",function(req,res){
             res.end('');
             throw e;
         }
-    }else{
+    }else{ //return default.css
         try {
             var cssJson = fs.readFileSync(stylesPath + 'default.css').toString();
 
@@ -2739,6 +2749,8 @@ router.get("/getStyle",function(req,res){
 
 });
 
+//Service Rt: /ClosestRerunnableAn to return object containing the closest ansester that is rerunnable, Method: get, Requires: id = id of the component to search for ansester, Returns: id of closest rerunnable ansester and the SytemsJSON row of the same. format {id:ClosestRerunnableAnID, ClosestRerunnableAn:ClosestRerunnableAn}
+//Note that this service requires improvments to return current component if it is rerunnable.
 router.get("/ClosestRerunnableAn",function(req,res){
     var id = req.query.id;
 
@@ -2748,6 +2760,7 @@ router.get("/ClosestRerunnableAn",function(req,res){
         if(SystemsJSON[id].rerunnable !== 1){
             var parentID = SystemsJSON[id].parent;
             var x = 0;
+            //loop through parent > parent > parent etc (max 100 times) and capture compont that is rerunnable.
             while ((parentID !== "#") && (ClosestRerunnableAnID === "") && (x < 100)){
 
                 if (SystemsJSON.hasOwnProperty(parentID) ){
@@ -2768,6 +2781,7 @@ router.get("/ClosestRerunnableAn",function(req,res){
 
 });
 
+//Service Rt: /setTimeout set user config timeoout preference, Method: post, Requires: timeout = number of ms to set timeout to, Returns: confirmation string or error string
 router.post("/setTimeout",function(req,res){
 
     var reqJSON = req.body;
@@ -2786,6 +2800,7 @@ router.post("/setTimeout",function(req,res){
     res.end('')
 });
 
+//Service Rt: /setUsername set user config username preference, Method: post, Requires: username = user specified username, Returns: confirmation string or error string
 router.post("/setUsername",function(req,res){
 
     var reqJSON = req.body;
@@ -2803,6 +2818,7 @@ router.post("/setUsername",function(req,res){
     res.end('')
 });
 
+//Service Rt: /settings to return all user config seetings, Method: post, Requires: none, Returns: JSON string obj
 router.get("/settings",function(req,res){
     res.writeHead(200, {"Content-Type": "application/json"});
 
@@ -2810,6 +2826,8 @@ router.get("/settings",function(req,res){
     res.end(JSON.stringify(respObj));
 });
 
+//Service Rt: /firstRun to set firstrun flag in config, Method: post, Requires: firstRun, Returns: confirmation string or error string
+//Note that this service requires improvments. The reqJSON.firstRun property should not be required.
 router.post("/firstRun",function(req,res){
 
     var reqJSON = req.body;
@@ -2823,6 +2841,7 @@ router.post("/firstRun",function(req,res){
     res.end('')
 });
 
+//Service Rt: /getPromoted to return a sorted array of SystemJSON rows where promoted === 1 , Method: get, Requires: none, Returns: array of working SystemJSON rows plus added properties (id, systemName, systemId)
 router.get("/getPromoted",function(req,res){
 
     var rowdata={};
@@ -2845,10 +2864,11 @@ router.get("/getPromoted",function(req,res){
         }
     };
 
-    //resJSONSorted = resJSON.sort();
+    //sort all rows by sort property
     resJSON.sort(function(a, b){
         var sortTxta = " ";
         var sortTxtb = " ";
+        //convert family tree string to string containing sort values eg ?1?2?1?6?3
         a.ft.split('/').forEach(function(row){
             sortTxta += row.length>20 ? "?" + SystemsJSON[row].sort.toString() : "";
         });
@@ -2877,6 +2897,7 @@ router.get("/getPromoted",function(req,res){
     res.end(JSON.stringify(resJSON));
 });
 
+//Service Rt: /getCPUStats to return an array of CPU stats of the current server , Method: get, Requires: none, Returns: array of stats in the format {last10:[val], last50:[val], last100:[val], freeMem:[val]}
 router.get("/getCPUStats",function(req,res){
 
     function buildCPUStats() {
@@ -2900,9 +2921,10 @@ router.get("/getCPUStats",function(req,res){
     res.end(JSON.stringify(buildCPUStats()));
 
 });
-var samples = [];
-var prevCpus = os.cpus();
-setInterval(sample,1000); //run every 1000 ms
+var samples = []; //global to store cpu stats
+var prevCpus = os.cpus(); //global to hold previous cpu stats
+setInterval(sample,1000); //run function 'sample()' every 1000 ms
+
 function sample() {
     currCpus = os.cpus();
     for (var i=0,len=currCpus.length;i<len;i++) {
