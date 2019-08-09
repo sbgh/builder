@@ -283,7 +283,7 @@ padding-left: 0px;
 .navbar {
    position: relative;
    min-height: 0px;
-   margin-bottom: 3px;
+   margin-bottom: 0px;
    border: 1px solid transparent;
 }
 
@@ -685,7 +685,7 @@ input:checked + .slider:before {
 .os-panel{
    /*width:80px;*/
    display: inline-block;
-   box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);
+   /*box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);*/
 }
 .os-panel-heading{
    border: 1px solid #0f6ab4;
@@ -702,7 +702,7 @@ input:checked + .slider:before {
 }
 
 .currentBuildStatusPanel{
-   box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);
+   /*box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);*/
 }
 
 .launchPadHeading{
@@ -711,7 +711,7 @@ input:checked + .slider:before {
 }
 
 .lastScreeenshotPanel{
-   box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);
+   /*box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);*/
 }
 
 .dashboardPanelHeading{
@@ -728,7 +728,7 @@ input:checked + .slider:before {
    border: 1px solid #0f6ab4;
    /*max-width: 350px;*/
    /*display: inline-grid;*/
-   box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);
+   /*box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);*/
 }
 
 .launchPadBody{
@@ -771,7 +771,7 @@ input:checked + .slider:before {
    height: 100%;
    max-height: 260px;
    max-width: 350px;
-   box-shadow: 3px 5px 18px 1px rgba(51, 51, 51, 0.88);
+   /*box-shadow: 3px 5px 18px 1px rgba(51, 51, 51, 0.88);*/
 }
 
 .dashboardMenu{
@@ -831,14 +831,12 @@ input:checked + .slider:before {
    min-height: 330px;
 }
 
-
-
 .launchPanelBody{
    padding: 0px;
 }
 
 .panel{
-   background-color: rgba(0,0,0,0);
+   /*background-color: rgba(0,0,0,0);*/
 }
 
 .dashPanel {
@@ -888,4 +886,86 @@ input:checked + .slider:before {
    stroke-width: 0;
    stroke: currentColor;
    fill: currentColor;
+}
+
+.icon-EZStack {
+   width: 2em;
+   height: 1.8em;
+   stroke-width: 0;
+   stroke: currentColor;
+   fill: currentColor;
+}
+
+.nav > li > a {
+   position: relative;
+   display: block;
+   #padding: 10px 15px;
+}
+
+.navbar-nav > li > a {
+   #padding-top: 10px;
+   #padding-bottom: 10px;
+   line-height: 21px;
+}
+
+@media (min-width: 768px) {
+   .navbar-nav > li > a {
+      padding-top: 2px;
+      padding-bottom: 2px;
+   }
+}
+
+
+@media (min-width: 768px) {
+   .navbar-header {
+      float: left;
+   }
+}
+
+.builder_nav_container{
+   width:100%
+}
+
+.builder_dash_btn{
+   margin-left: 30px;
+   margin-right: 3px;
+   font-weight: 700;
+}
+
+.builder_dash_btn{
+   width: 110px;
+}
+
+.dashSystemLabel{
+   margin-left: 50px;
+   font-weight: 700;
+   font-size: 16px;
+}
+
+.dashSystemDropdownButton{
+
+   background: none;
+   padding: 0;
+   border: none;
+   font-size: 16px;
+}
+
+.dashDropButtonHR{
+   margin-top: 2px;
+   margin-bottom: 20px;
+}
+
+.dashListCol{
+
+}
+
+.dashSystemsDropdownMenu{
+   padding:10px ;
+}
+.dropdown-item{
+
+}
+
+.dashSystemIcon{
+   padding-right:3px;
 }

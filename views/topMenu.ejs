@@ -1,40 +1,49 @@
 <div >
-    <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
 
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <ul class="nav navbar-nav">
-                <li id="HomeBtn"><a href="http://ezStack.Systems">Home</a></li>
-                <li id="builderBtn"><a href="/builder">/builder</a></li>
-            </ul>
-        </div>
+    <nav id="myNavbar" class="navbar navbar-default navbar-fixed-top anchor">
+        <div class="container nav_container builder_nav_container">
 
-        <% if (typeof username !== 'undefined' && username.length > 0) { %>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 
-        <ul class="nav navbar-top-links navbar-right">
+                <ul class="nav navbar-nav">
 
-            <!-- /.dropdown -->
-            <li class="dropdown">
-                <a aria-expanded="false" class="dropdown-toggle" data-toggle="dropdown" href="#">
-                    <i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
-                </a>
-                <ul class="dropdown-menu dropdown-user">
-                    <li><a href="#" data-toggle="modal" data-target="#profileModal">
-                    <i class="fa fa-user fa-fw"></i> <%= username %> Profile</a></li>
-                    <li><a href="#" data-toggle="modal" data-target="#setupModal"><i class="fa fa-gear fa-fw"></i> Settings</a></li>
-                    <li class="divider"></li>
-                    <li><a href="/logout"><i class="fa fa-sign-out fa-fw"></i> Logout</a></li>
+                    <li class="hidden active">
+                        <a href="#page-top"></a>
+                    </li>
+                    <li>
+                        <svg class="icon icon-EZStack"><use xlink:href="#icon-EZStack"></use></svg>
+                    </li>
+                    <li id="dashBtn" class="builder_dash_btn " >
+                        <a class="builder_dash_link" href="#">Dashboard</a>
+                    </li>
+                    <li id="componentsBtn" class="builder_dash_btn">
+                        <a class="builder_dash_link" href="#">Components</a>
+                    </li>
                 </ul>
-                <!-- /.dropdown-user -->
-            </li>
-            <!-- /.dropdown -->
-        </ul>
-            <% } %>
+                <% if (typeof username !== 'undefined' && username.length > 0) { %>
 
+                <ul class="nav navbar-top-links navbar-right">
+
+                    <!-- /.dropdown -->
+                    <li class="dropdown">
+                        <a aria-expanded="false" class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            <i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-user">
+                            <li><a href="#" data-toggle="modal" data-target="#profileModal">
+                                    <i class="fa fa-user fa-fw"></i> <%= username %> Profile</a></li>
+                            <li><a href="#" data-toggle="modal" data-target="#setupModal"><i class="fa fa-gear fa-fw"></i> Settings</a></li>
+                            <li class="divider"></li>
+                            <li><a href="/logout"><i class="fa fa-sign-out fa-fw"></i> Logout</a></li>
+                        </ul>
+                        <!-- /.dropdown-user -->
+                    </li>
+                    <!-- /.dropdown -->
+                </ul>
+                <% } %>
+            </div>
+
+        </div>
     </nav>
+
 </div>

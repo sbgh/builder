@@ -393,3 +393,7 @@ input:focus + .slider {
     /*opacity: 1;*/
     background-color: rgba(8, 8, 8, 0.42);
 }
+
+.navbar-default .navbar-nav > li > a {
+    color: #d8d6d6;
+}

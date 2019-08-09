@@ -5,7 +5,7 @@
 }
 
 .navbar-default {
-    background-color: #dcdcdc;;
+    background-color: #ffffff;;
     border-color: #f0f0f0;
 }
 
@@ -145,23 +145,20 @@ div.grippie {
     color: #3c3e3f;
 }
 
-.navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:hover, .navbar-default .navbar-nav>.active>a:focus {
-    color: #3c3e3f;
-    background-color: #f9f9f9;
-}
+
 
 .modal-content {
     color: #3c3e3f;
     background-color: #ececec;
 }
 
-.navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {
-    color: #555555;
-}
+/*.navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {*/
+    /*color: #555555;*/
+/*}*/
 
-.navbar-default .navbar-nav > li > a {
-    color: #555555;
-}
+/*.navbar-default .navbar-nav > li > a {*/
+    /*color: #555555;*/
+/*}*/
 
 .form-control::-webkit-input-placeholder { color: #a3a3a3; }  /* WebKit, Blink, Edge */
 .form-control:-moz-placeholder { color: #a3a3a3; }  /* Mozilla Firefox 4 to 18 */
@@ -312,9 +309,9 @@ a.libListRow {
 }
 
 .dashboardPanel{
-    background: url("/images/light-pattern2.png") no-repeat center top;
-    background-size: cover;
-
+    /*background: url("/images/light-pattern2.png") no-repeat center top;*/
+    /*background-size: cover;*/
+background-color: #f9f8f9;
 }
 
 .screenShotLink > a, .screenShotLink > a:hover{
@@ -325,6 +322,37 @@ a.libListRow {
 
 .dashPanelBody{
     /*opacity: 1;*/
-    background-color: rgba(132, 132, 132, 0.38);
+    background-color: rgba(255, 255, 255,255);
 }
 
+.navbar-default .navbar-nav > li > a {
+    color: #49494b;
+}
+
+.dashPanel{
+    background-color: rgba(255, 255, 255, 255);
+}
+
+.navbar-default{
+    color: #3c3e3f;
+    background-color: #ffffff;
+}
+
+.builder_dash_btn{
+    border-bottom: 2px solid #0f6ab4;
+}
+.builder_dash_btn:hover, .navbar-nav>.active{
+    border-bottom: 4px solid #0f6ab4;
+    background-color: #f9f9f9;
+
+}
+
+.dashSystemDropdownButton{
+
+    color:#0f6ab4;
+
+}
+
+.dashDropButtonHR{
+    border-top: 1px solid #000;
+}

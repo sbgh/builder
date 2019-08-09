@@ -215,7 +215,7 @@ router.get("/Jobs",function(req,res){
         var rowdata = {};
         rowdata.id = "local";
         rowdata.name = "local";
-        rowdata.text = "Dashboard";
+        rowdata.text = "Working";
         rowdata.type = "dashboard";
         rowdata.parent = '#';
         resJSON.push(rowdata);
@@ -2841,8 +2841,8 @@ router.post("/firstRun",function(req,res){
     res.end('')
 });
 
-//Service Rt: /getPromoted to return a sorted array of SystemJSON rows where promoted === 1 , Method: get, Requires: none, Returns: array of working SystemJSON rows plus added properties (id, systemName, systemId)
-router.get("/getPromoted",function(req,res){
+//Service Rt: /getPromotedSystems to return a sorted array of SystemJSON rows where promoted === 1 , Method: get, Requires: none, Returns: Obj of working SystemJSON rows eg. {id:name, id2:name2}
+router.get("/getPromotedSystems",function(req,res){
 
     var rowdata={};
     var resJSON = [];
@@ -2853,13 +2853,38 @@ router.get("/getPromoted",function(req,res){
                 var  hostIP = getSystemVarVal(key, "host");
 
                 if(hostIP !=="" || SystemsJSON[key].runLocal === 1){
-                    rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
-                    rowdata.id = key;
-                    rowdata.systemName =  SystemsJSON[rowdata.ft.split("/")[1]].name;
-                    rowdata.systemId =  rowdata.ft.split("/")[1];
-
-                    resJSON.push(rowdata);
+                    var systemName =  SystemsJSON[SystemsJSON[key].ft.split("/")[1]].name;
+                    var systemId =  SystemsJSON[key].ft.split("/")[1];
+                    rowdata[systemId] = systemName
                 }
+            }
+        }
+    };
+    res.end(JSON.stringify(rowdata));
+});
+
+//Service Rt: /getPromoted to return a sorted array of SystemJSON rows where promoted === 1 and systemId === id of system to include. Rows where its system does not have a hostip defined will be excluded unless it has runlocal set. , Method: get, Requires: none, Returns: array of working SystemJSON systems plus added properties (id, systemName, systemId)
+router.get("/getPromoted",function(req,res){
+    var systemId = req.query.systemId;
+    var rowdata={};
+    var resJSON = [];
+    for (var key in SystemsJSON) {
+        if (SystemsJSON.hasOwnProperty(key)) {
+            if(SystemsJSON[key].promoted === 1){
+
+                var  hostIP = getSystemVarVal(key, "host");
+
+                if(SystemsJSON[key].ft.split("/")[1] == systemId){
+                    if(hostIP !=="" || SystemsJSON[key].runLocal === 1){
+                        rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
+                        rowdata.id = key;
+                         rowdata.systemName =  SystemsJSON[rowdata.ft.split("/")[1]].name;
+                         rowdata.systemId =  rowdata.ft.split("/")[1];
+
+                        resJSON.push(rowdata);
+                    }
+                }
+
             }
         }
     };
@@ -2883,16 +2908,6 @@ router.get("/getPromoted",function(req,res){
         if(keyA > keyB) return 1;
         return 0;
     });
-
-    // for (var key in resJSON) {
-    //     var sortTxta = " ";
-    //     resJSON[key].ft.split('/').forEach(function(row){
-    //         sortTxta += row.length>20 ? "?" + SystemsJSON[row].sort.toString() : "";
-    //     });
-    //
-    //     console.log(resJSON[key].name + " " + sortTxta)
-    //
-    // }
 
     res.end(JSON.stringify(resJSON));
 });
