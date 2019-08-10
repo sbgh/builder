@@ -128,23 +128,23 @@ div.grippie {
     color: #bbbbbb;
 }
 
-.navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:hover, .navbar-default .navbar-nav>.active>a:focus {
-    color: #bbbbbb;
-    background-color: #3c3e3f;
-}
+/*.navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:hover, .navbar-default .navbar-nav>.active>a:focus {*/
+    /*color: #bbbbbb;*/
+    /*background-color: #3c3e3f;*/
+/*}*/
 
 .modal-content {
     color: #bbbbbb;
     background-color: #3c3e3f;
 }
 
-.navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {
-    color: #bbbbbb;
-}
+/*.navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {*/
+    /*color: #bbbbbb;*/
+/*}*/
 
-.navbar-default .navbar-nav > li > a {
-    color: #555555;
-}
+/*.navbar-default .navbar-nav > li > a {*/
+    /*color: #555555;*/
+/*}*/
 
 .form-control::-webkit-input-placeholder { color: #555555; }  /* WebKit, Blink, Edge */
 .form-control:-moz-placeholder { color: #555555; }  /* Mozilla Firefox 4 to 18 */
@@ -391,9 +391,52 @@ input:focus + .slider {
 
 .dashPanelBody{
     /*opacity: 1;*/
-    background-color: rgba(8, 8, 8, 0.42);
+    background-color: rgb(49, 51, 53);
 }
 
 .navbar-default .navbar-nav > li > a {
-    color: #d8d6d6;
+    color: #cfcdcd;
+}
+
+.dashPanel{
+    background-color: rgb(49, 51, 53);
+}
+
+
+.navbar-default .navbar-nav > li >a,
+.navbar-default .navbar-nav > li >a:hover,
+.navbar-default .navbar-nav > li >a:focus {
+    color: #cfcdcd;
+    /*background-color: #3c3f41;*/
+}
+
+
+.navbar-default .navbar-nav > li > a {
+    color: #cfcdcd;
+}
+
+.navbar-default .navbar-nav>.active>a,
+.navbar-default .navbar-nav>.active>a:hover,
+.navbar-default .navbar-nav>.active>a:focus
+{
+    color: #cfcdcd;
+    background-color: #1a1b1c;
+    /*border-bottom: 4px solid #0f6ab4;*/
+}
+
+.builder_dash_btn{
+    background-color: #3c3f41;
+    border-bottom: 2px solid #0f6ab4;
+}
+.navbar-nav>builder_dash_btn>a:hover, .navbar-nav>.active{
+    /*color: #cfcdcd;*/
+    border-bottom: 4px solid #0f6ab4;
+    background-color: #313335;
+
+}
+
+.dashSystemDropdownButton{
+
+    color:#0f6ab4;
+
 }

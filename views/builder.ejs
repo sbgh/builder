@@ -213,7 +213,6 @@
             });
 
 
-
             $("#copyConfirmButton").on("click",function() {
                 var mydata = {};
                 mydata.ids = $('#copyModal_listOfIds').val();
@@ -607,7 +606,7 @@
 //                $("#sysScreen").hide();
 //                $("#jobScreen").hide();
 //                $('#componentTabs').hide();
-          //     hideBottom();
+  //             hideBottom();
  //               showBottom();
                 //
                 //$(".dashboardMenu").hide();
@@ -2431,22 +2430,22 @@
                  }
 
                  if(!bottomHiddenFlag){
-                     $("#jstree_div").height(topHeight - (17 + 30));
-                     $("#jslibtree_div").height(topHeight - (17 + 29));
+                     $("#jstree_div").height(topHeight - (28 + 30));
+                     $("#jslibtree_div").height(topHeight - (28 + 29));
 
-                     $("#treePanelHandle").height(topHeight - 17);
-                     $("#libTreePanelHandle").height(topHeight - 17);
+                     $("#treePanelHandle").height(topHeight - 28);
+                     $("#libTreePanelHandle").height(topHeight - 28);
 
-                     $("#job-form-panel").height(topHeight - (56 + 22 + 34));
-                     $("#sys-form-panel").height(topHeight - (56 + 22 + 34));
-                     $("#dashboard").height(topHeight - 22);
-                     $("#leftResultsCol").height(topHeight - (15 + 22 + 38));
-                     $("#build-results-row").height(topHeight - (15 + 22 + 21));
+                     $("#job-form-panel").height(topHeight - (56 + 33 + 34));
+                     $("#sys-form-panel").height(topHeight - (56 + 33 + 34));
+                     $("#dashboard").height(topHeight - 33);
+                     $("#leftResultsCol").height(topHeight - (15 + 33 + 38));
+                     $("#build-results-row").height(topHeight - (15 + 33 + 21));
 
 
-                     $('#results_html').height(container.height() - topHeight - (23 + 15));
-                     $('#results_codes').height(container.height() - topHeight - (23 + 15));
-                     $('#results-group').height(container.height() - topHeight - (23 + 15));
+                     $('#results_html').height(container.height() - topHeight - (34 + 15));
+                     $('#results_codes').height(container.height() - topHeight - (34 + 15));
+                     $('#results-group').height(container.height() - topHeight - (34 + 15));
                  }else{
                      $("#jstree_div").height(topHeight -11);
                      $("#jslibtree_div").height(topHeight -10 );
@@ -2864,6 +2863,7 @@
             $("#dashBtn").addClass("active");
             $("#componentsRow").hide();
             loadDashboard();
+            hideBottom();
 
             $("#dashBtn").on("click",function(){
                 loadDashboard();
@@ -2871,7 +2871,7 @@
                 $("#dashRow").show();
                 $("#dashBtn").addClass("active");
                 $("#componentsBtn").removeClass("active");
-
+hideBottom();
             });
             $("#componentsBtn").on("click",function(){
                 $("#componentsRow").show();
