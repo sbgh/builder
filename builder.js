@@ -116,8 +116,31 @@ router.use(function (req,res,next) {
         if (err) throw err;
         //console.log('Saved!');
     });
+
+    //Reset no client timeout
+
+    clearTimeout(lastnoClientTimeout);
+    resetlastnoClientTimeout();
+
     next();
 });
+
+
+
+
+var lastnoClientTimeout;
+var noClientTimeout = config.hasOwnProperty("noClientTimeout") ? config.noClientTimeout : "15";
+function resetlastnoClientTimeout(){
+    //lookup user pref noClientTimeout value
+    noClientTimeout = config.hasOwnProperty("noClientTimeout") ? config.noClientTimeout : "15";
+    var noClientTimeoutNumber = parseInt(noClientTimeout) * 1000 * 60; //Convert minutes to ms
+    lastnoClientTimeout = setTimeout(noClientTimeoutProcess, noClientTimeoutNumber);
+}
+resetlastnoClientTimeout();
+function noClientTimeoutProcess(){
+    console.log("No client request within timeout: " + noClientTimeout + " minutes. Shutting server down..." );
+    execSync('sudo shutdown now');
+};
 
 //Reqs to / endpoint are ignored for now
 router.get("/",function(req,res){
@@ -1869,6 +1892,7 @@ router.post("/run",function(req,res){
                     stream.on('close', function (code, signal) {
                         var dsString = new Date().toISOString(); //date stamp
 
+                        //
                         clearTimeout(lastTimeout);
 
                         //message ui
@@ -2799,6 +2823,26 @@ router.post("/setTimeout",function(req,res){
     }
     res.end('')
 });
+
+//Service Rt: /setnoClientTimeout set user config no client timeout preference, Method: post, Requires: noClientTimeout = number of minutes to wait without a client calling any service, Returns: confirmation string or error string
+router.post("/setnoClientTimeout",function(req,res){
+
+    var reqJSON = req.body;
+    var timeout = reqJSON.noClientTimeout;
+    const timeoutNumber = parseInt(timeout);
+
+    if(timeoutNumber > 0) {
+        if( !saveSettings("noClientTimeout", timeout) ){
+            res.write("No client timeout set to " + timeout + " minutes")
+        }else{
+            res.write("Error setting no client timeout")
+        }
+    }else{
+        res.write("No client timeout not set. Must be greater than 0 minutes")
+    }
+    res.end('')
+});
+
 
 //Service Rt: /setUsername set user config username preference, Method: post, Requires: username = user specified username, Returns: confirmation string or error string
 router.post("/setUsername",function(req,res){
