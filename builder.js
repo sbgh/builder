@@ -2186,10 +2186,12 @@ router.post("/run",function(req,res){
                                                                 aSyncInProgress--;
                                                                 //console.log('saveTemplate:Sent - ' + aFileName);
                                                                 sftp.end();
-                        conn.exec('"sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " /tmp/" + aFileName', function(err, stream) {
+
+                                                                //Execute sudo chown to change file ownership to the user as defined in the system
+                        conn.exec("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName, function(err, stream) {
                                     if (err) throw err;
                                     stream.on('close', function(code, signal) {
-                                        console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
+                                        //console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
                                         //conn.end();
                                     }).on('data', function(data) {
                                         console.log('STDOUT: ' + data);
@@ -3084,8 +3086,7 @@ var secureServer = https.createServer({
 }, app).listen('8443', function() {
     console.log("Secure Express server listening on port 8443");
 });
+console.log(new Date().toISOString());
 
-// http.createServer(app).listen('8080');
-// console.log("Express server listening on port 8080");
 
 
