@@ -567,7 +567,12 @@
                             const rSystemId = targetNode.parents[targetNode.parents.length - 2];
                             const rSystemNode =  $('#jstree_div').jstree(true).get_node( rSystemId);
                             if(rSystemNode.text !== 'Library'){
-                                showBottom()
+                                if($("#componentsBtn").hasClass('active')){
+                                    showBottom()
+                                }else{
+                                    hideBottom()
+                                }
+
                             }else{
                                 hideBottom()
                             }
@@ -3163,7 +3168,7 @@ hideBottom();
                     </div>
 
                     <div class="row dashBoardTopRow">
-                        <div class="col-md-4" >
+                        <div class="col-md-6" >
                             <div class='panel dashPanel os-panel'>
                                 <!--<div class='panel-heading dashboardPanelHeading os-panel-heading'>CPU Load</div>-->
                                 <div class='panel-body dashPanelBody os-panel-body'>
@@ -3196,7 +3201,7 @@ hideBottom();
                             </div>
 
                         </div>
-                        <div class="col-md-4" >
+                        <div class="col-md-2" >
                             <div class='panel dashPanel currentBuildStatusPanel'>
                                 <!--<div class='panel-heading dashboardPanelHeading '>Current Build Status</div>-->
                                 <div class='panel-body dashPanelBody status-panel-body' id="status-panel-body">
@@ -3207,29 +3212,32 @@ hideBottom();
                         </div>
                     </div>
 
-                    <div class="col-md-10 dashListCol">
-                        <div class="dropdown">
-                            <span class="dashSystemLabel">System: </span><button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Pick...
-                            </button>
-                            <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
-                                <div><a class="dropdown-item" href="#">Action</a></div>
+                    <div class="row justify-content-center dashBoardBottomRow">
+                        <div class="col-md-10 dashListCol">
+                            <div class="dropdown">
+                                <span class="dashSystemLabel">System: </span><button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Pick...
+                                </button>
+                                <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
+                                    <div><a class="dropdown-item" href="#">Action</a></div>
+                                </div>
                             </div>
-                        </div>
-                        <hr class="dashDropButtonHR">
-                        <table class="table">
-                            <thead>
-                            <tr>
-                                <th scope="col">Name</th>
-                                <th scope="col">Success</th>
-                                <th scope="col">Description</th>
-                            </tr>
-                            </thead>
-                            <tbody id="dashTable">
-                            </tbody>
-                        </table>
+                            <hr class="dashDropButtonHR">
+                            <table class="table dashTable">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Success</th>
+                                    <th scope="col">Description</th>
+                                </tr>
+                                </thead>
+                                <tbody id="dashTable" class="dashTbody">
+                                </tbody>
+                            </table>
 
+                        </div>
                     </div>
+
 
 
                     <div id="dashboardList" class="row launchPadBody ">

@@ -593,7 +593,8 @@ input:checked + .slider:before {
 }
 
 .resultsStatus{
-   overflow: auto;
+   overflow-y: auto;
+   overflow-x: hidden;
    //padding-top: 15px;
    margin: 5px;
    text-align: left;
@@ -956,7 +957,7 @@ input:checked + .slider:before {
 }
 
 .dashListCol{
-
+   width:100%;
 }
 
 .dashSystemsDropdownMenu{
@@ -968,4 +969,22 @@ input:checked + .slider:before {
 
 .dashSystemIcon{
    padding-right:3px;
+}
+
+tr {
+   width: 100%;
+   display: inline-table;
+   table-layout: fixed;
+}
+
+
+.dashTable{
+   //height:300px;
+display: -moz-groupbox;    // Firefox Bad Effect
+}
+.dashTbody{
+   overflow-y: auto;
+   //height: 200px;
+   width: 100%;
+   position: absolute;
 }
