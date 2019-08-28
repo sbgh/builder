@@ -872,12 +872,19 @@ input:checked + .slider:before {
    float: right;
 }
 
-.searchFoundModClass{
+a.foundInSearch{
    font-weight: 700;
+   font-style: normal;
 }
 
-.searchNotFoundModClass{
+a.foundNotInSearch{
+   font-weight: 200;
+   font-style: italic;
+}
+
+a.foundInSearchParent{
    font-weight: 500;
+   font-style: normal;
 }
 
 .icon {

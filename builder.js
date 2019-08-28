@@ -249,32 +249,40 @@ router.get("/Jobs",function(req,res){
 
                 //filter by search string
                 if (searchSt.length === 0) { //If no search then simply add row
-                    resJSON.push(getTreeFormattedRowData(key, false));
+                    resJSON.push(getTreeFormattedRowData(key, ""));
                 } else { //if there is filter spcified, use isFound function to flag rows that match
                     if(isFoundIn(key, searchSt)){ //Component matches
+
                         var found = resJSON.find(function (row) {
                             return row.id === key;  //Add a prop ID to hold component ID
                         });
                         if (!found) { //Add to return array
-                            resJSON.push(getTreeFormattedRowData(key, true));
+                            resJSON.push(getTreeFormattedRowData(key, "foundInSearch"));
                         };
 
-                        //Add all parents aswell if they ane not present
+                        //Add all parents as well if they ane not present or change search classes if they are
                         var parents = SystemsJSON[key].ft.split("/");
+
                         parents.forEach(function (parent) {
                             if (parent !== "#") {
                                 if (SystemsJSON.hasOwnProperty(parent)) {
 
-                                    var found = resJSON.find(function (row) {
-                                        return row.id === parent;
-                                    });
+                                    var foundIndex = resJSON.findIndex(x => x.id == parent);
 
-                                    if (!found) {
-                                        resJSON.push(getTreeFormattedRowData(parent, isFoundIn(parent, searchSt)));
+                                    if (foundIndex == -1) {
+                                        resJSON.push(getTreeFormattedRowData(parent,""));
+                                    }else{
+                                        resJSON[foundIndex] = setRowDataClasses(resJSON[foundIndex], "foundInSearchParent");
                                     }
                                 }
                             }
                         })
+                    }else{
+
+                        var foundIndex = resJSON.findIndex(x => x.id == key);
+                        if (foundIndex == -1) {
+                            resJSON.push(getTreeFormattedRowData(key, "foundNotInSearch"));
+                        }
                     }
                 }
 
@@ -307,8 +315,8 @@ router.get("/Jobs",function(req,res){
                     return filter
                 }
 
-                //function getTreeFormattedRowData: Formats the return row json to include li_attr, a_attr for jstree styling, Requires: key = component ID | foundInSearchBool = bool to indicate search hit, Returns: row data obj
-                function getTreeFormattedRowData(key, foundInSearchBool) {
+                //function getTreeFormattedRowData: Formats the return row json to include li_attr, a_attr for jstree styling, Requires: key = component ID | searchResultsClassToAdd = string name of class to add to indicate search hit, Returns: row data obj
+                function getTreeFormattedRowData(key, searchResultsClassToAdd) {
 
                     //rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]));
                     let rowdata = {};
@@ -343,30 +351,9 @@ router.get("/Jobs",function(req,res){
                         }
                     }
 
-
-                    //Set searchModClass to a found class or not found class to set color of jstree row
-                    var searchModClass = foundInSearchBool ? " searchFoundModClass" : " searchNotFoundModClass";
-
                     rowdata.comType = SystemsJSON[key].comType;
 
-                    if (rowdata.comType === "job") {
-                        if (SystemsJSON[key].hasOwnProperty("lastBuild")) {
-                            if (SystemsJSON[key].lastBuild.pass === 1) {
-                                rowdata.li_attr = {"class": "runningJobCompleteSuccess" + searchModClass};
-                                rowdata.a_attr = {"class": "runningJobCompleteSuccess" + searchModClass}
-                            } else if (SystemsJSON[key].lastBuild.pass === 0) {
-                                rowdata.li_attr = {"class": "runningJobCompleteFail" + searchModClass};
-                                rowdata.a_attr = {"class": "runningJobCompleteFail" + searchModClass}
-                            }
-                        } else {
-                            rowdata.li_attr = {"class": "newJobRow"};
-                            rowdata.a_attr = {"class": searchModClass}
-                        }
-
-                    } else {
-                        rowdata.li_attr = {"class": "newJobRow"};
-                        rowdata.a_attr = {"class": searchModClass}
-                    }
+                    rowdata = setRowDataClasses(rowdata, searchResultsClassToAdd);
 
                     if (SystemsJSON[key].icon) {
                         rowdata.icon = "/uploads/" + key + "/" + "icon.png"
@@ -380,6 +367,32 @@ router.get("/Jobs",function(req,res){
                     }
 
 
+                    return rowdata;
+                }
+
+
+                function setRowDataClasses(rowdata, searchResultsClassToAdd){
+                    //Set searchModClass to a class name to set color of jstree row
+                    var searchModClass = searchResultsClassToAdd;
+
+                    if (rowdata.comType === "job") {
+                        if (SystemsJSON[rowdata.id].hasOwnProperty("lastBuild")) {
+                            if (SystemsJSON[rowdata.id].lastBuild.pass === 1) {
+                                rowdata.li_attr = {"class": "runningJobCompleteSuccess " + searchModClass};
+                                rowdata.a_attr = {"class": "runningJobCompleteSuccess " + searchModClass}
+                            } else if (SystemsJSON[rowdata.id].lastBuild.pass === 0) {
+                                rowdata.li_attr = {"class": "runningJobCompleteFail " + searchModClass};
+                                rowdata.a_attr = {"class": "runningJobCompleteFail " + searchModClass}
+                            }
+                        } else {
+                            rowdata.li_attr = {"class": "newJobRow"};
+                            rowdata.a_attr = {"class": searchModClass}
+                        }
+
+                    } else {
+                        rowdata.li_attr = {"class": "newJobRow"};
+                        rowdata.a_attr = {"class": searchModClass}
+                    }
                     return rowdata;
                 }
             }
