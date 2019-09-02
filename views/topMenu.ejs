@@ -1,9 +1,9 @@
 <div >
 
     <nav id="myNavbar" class="navbar navbar-default navbar-fixed-top anchor">
-        <div class="container nav_container builder_nav_container">
+        <!--<div class="container nav_container builder_nav_container">-->
 
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <!--<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">-->
 
                 <ul class="nav navbar-nav">
 
@@ -25,13 +25,13 @@
                 <ul class="nav navbar-top-links navbar-right">
 
                     <!-- /.dropdown -->
-                    <li class="dropdown">
+                    <li class="dropdown dropdown-settings">
                         <a aria-expanded="false" class="dropdown-toggle" data-toggle="dropdown" href="#">
-                            <i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
+                            <i class="fa fa-user fa-fw userIcon"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-user">
                             <li><a href="#" data-toggle="modal" data-target="#profileModal">
-                                    <i class="fa fa-user fa-fw"></i> <%= username %> Profile</a></li>
+                                    <i class="fa fa-user fa-fw "></i> <%= username %> Profile</a></li>
                             <li><a href="#" data-toggle="modal" data-target="#setupModal"><i class="fa fa-gear fa-fw"></i> Settings</a></li>
                             <li class="divider"></li>
                             <li><a href="/logout"><i class="fa fa-sign-out fa-fw"></i> Logout</a></li>
@@ -41,9 +41,9 @@
                     <!-- /.dropdown -->
                 </ul>
                 <% } %>
-            </div>
+            <!--</div>-->
 
-        </div>
+        <!--</div>-->
     </nav>
 
 </div>

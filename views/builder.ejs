@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <title>/builder</title>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.3/jstree.min.js"></script>
 
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="/theme/startbootstrap-sb-admin-2-gh-pages/dist/css/sb-admin-2.min.css">
     <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
@@ -413,10 +414,10 @@
                             const LibDropDownListDiv = $("#LibDropDownList")[0];
                             var libListHTML = '<button type="button" class="close" id="closeLibListHTML">×</button><br>';
                             priArr.forEach(function (dir) {
-                                libListHTML += '<a class="dropdown-item libListRow" data-id="private/' + dir + '" href="#">private/' + dir + '</a><br>';
+                                libListHTML += '<a class="dropdown-item libListRow" data-id="private/' + dir + '" href="#">private/' + dir + '</a>';
                             })
                             pubArr.forEach(function (dir) {
-                                libListHTML += '<a class="dropdown-item libListRow" data-id="public/' + dir + '" href="#">public/' + dir + '</a><br>';
+                                libListHTML += '<a class="dropdown-item libListRow" data-id="public/' + dir + '" href="#">public/' + dir + '</a>';
                             })
                             LibDropDownListDiv.innerHTML = libListHTML
 
@@ -666,7 +667,7 @@
                                 var urlString = "'/uploads/" + thisSysId + "/icon.png'";
                                 var iconHTML = '<img id="dashSystemIcon" class="dashSystemIcon" src='+urlString+'></img>';
 
-                                dropDownListHtml += "<div>"+iconHTML+"<a class='dropdown-item dashSystemDropdownItem' href='#' data-id='"+ thisSysId +"' data-sysName='"+ thisSysName +"'>"+ thisSysName +"</a></div>"
+                                dropDownListHtml += "<div><a class='dropdown-item dashSystemDropdownItem' href='#' data-id='"+ thisSysId +"' data-sysName='"+ thisSysName +"'>"+ iconHTML+" " + thisSysName +"</a></div>"
 
 
                             }
@@ -689,6 +690,11 @@
 //                                    $(this).removeClass('dashListRowClicked')
 //                                })
 //                                $(this).addClass("dashListRowClicked");
+
+
+                            $("#dashboardDetailsTile")[0].innerHTML  = "";
+                            $("#dashboardDetailsDescription")[0].innerHTML  = "";
+
                             localStorage['dashSystemDropItemClicked'] = JSON.stringify({ id:id, sysName:sysName }) ;
                         });
 //                            var lastSystemName = "";
@@ -756,22 +762,7 @@
 
                         $("#dashboardList")[0].innerHTML = pCompHtml;
 
-                        $('#DashBuildMenu').on('click', function(){
-                            var id = $("#dashId").val();
-                            var sys = $("#dashSys").val();
 
-                            runJob(id, sys);
-
-                        });
-                        $('#DashOpenMenu').on('click', function(){
-                            var id = $("#dashId").val();
-
-                            $('#jstree_div').jstree('select_node',id);
-                            $('#jstree_div' + " li[id=" + id + "] a")[0].click();
-
-                            $("#componentsBtn").click();
-
-                        });
 
 
 
@@ -793,7 +784,7 @@
                 $("#dashboardDetailsTile")[0].innerHTML = '';
                 $("#dashboardDetailsDescription")[0].innerHTML = '';
 
-                $("#dashboardDetailsSysName")[0].innerHTML = "On System: "+sysName;
+//                $("#dashboardDetailsSysName")[0].innerHTML = "On System: "+sysName;
 
                 getDashDetails(id, sysName) ;
 
@@ -804,7 +795,7 @@
                         $("#dashboardDetailsTile")[0].innerHTML = dispData.name;
                         $("#dashboardDetailsDescription")[0].innerHTML = dispData.description;
 
-                        $(".dashboardMenu").show();
+//                        $(".dashboardMenu").show();
 
                     });
                 }
@@ -827,31 +818,81 @@
                         const promoted = JSON.parse(data);
                         var pCompHtml = "";
 
+                        var dashListRowClicked = localStorage['dashListRowClicked'];
 
                         for (var row in promoted){
 
                             rowJson = promoted[row];
-                            pCompHtml += "<tr>"
-                            pCompHtml += "<td class='dashTableNameRow' data-id='" + rowJson.id +"' data-runSys='"+ rowJson.systemId +"' data-runSysName='"+ rowJson.systemName +   "'>  " + rowJson.name + "</td>"
 
-                            var success = rowJson.hasOwnProperty("lastBuild") ? (rowJson.lastBuild.pass ? "pass":"fail") : ""
-                            pCompHtml += "<td>" + success + "</td>"
-                            pCompHtml += "<td>" + rowJson.description + "</td>"
+                            var thisClass = 'dashTableRow';
+                            var thisNameColHtml = "<div>" + rowJson.name + "</div>";
+                            thisNameColHtml += "<div class='dashTableNameButtonRow' ><i id='DashBuildMenu' class='fa  fa-play fa-fw  dashTableBuildButton'></i>  <i id='DashOpenMenu' class='fa  fa-folder-open fa-fw dashTableOpenButton'></i></div>";
+
+                            pCompHtml += "<tr id='row_" + rowJson.id +"' data-id='" + rowJson.id +"' data-runSys='"+ rowJson.systemId +"' data-runSysName='"+ rowJson.systemName + "' class='" + thisClass + "'>";
+
+                            pCompHtml += "<td class='dashTableNameItem'>  " + thisNameColHtml + "</td>";
+
+                            var success = rowJson.hasOwnProperty("lastBuild") ? (rowJson.lastBuild.pass ? "<i class='fa fa-check fa-fw'></i>":"<i class='fa fa-cross fa-fw'></i>") : "";
+
+                            pCompHtml += "<td class='dashTableSuccessItem'>" + success + "</td>";
+                            pCompHtml += "<td class='dashTableDescriptionItem'>" + rowJson.description + "</td>";
                             pCompHtml += "</tr>"
+
+                            if(dashListRowClicked === rowJson.id){
+                                loadDashDetails(rowJson.id, rowJson.systemId, rowJson.systemName)
+                            }
+
                         }
 
                         $("#dashTable")[0].innerHTML = pCompHtml;
-                        $('.dashTableNameRow').on('click', function(){
+
+                        selectDashTableRow(dashListRowClicked);
+
+
+                        function selectDashTableRow(id){
+
+                            $(".dashTableRow").each(function(){
+                                $(this).removeClass('dashListRowClicked');
+                                $(this).addClass('dashListRowNotClicked');
+                                $(this).off("click");
+                            });
+                            $("#row_" + id).addClass("dashListRowClicked");
+                            $("#row_" + id).removeClass("dashListRowNotClicked");
+
+                            $('.dashListRowNotClicked').on('click', function(){
+                                var id = $(this).attr('data-Id');
+                                var sys = $(this).attr('data-runSys');
+                                var sysName = $(this).attr('data-runSysName');
+                                loadDashDetails(id, sys, sysName);
+                                selectDashTableRow(id);
+
+                                localStorage['dashListRowClicked'] = id;
+                            });
+
+                        }
+                        $('.dashListRowNotClicked').on('click', function(){
                             var id = $(this).attr('data-Id');
                             var sys = $(this).attr('data-runSys');
                             var sysName = $(this).attr('data-runSysName');
                             loadDashDetails(id, sys, sysName);
-                            $(".dashTableNameRow").each(function(){
-                                $(this).removeClass('dashListRowClicked')
-                            })
-                            $(this).addClass("dashListRowClicked");
+                            selectDashTableRow(id)
+
                             localStorage['dashListRowClicked'] = id;
                         });
+
+                        $('.dashTableBuildButton').on('click', function(){
+                            var id = $("#dashId").val();
+                            var sys = $("#dashSys").val();
+                            runJob(id, sys);
+                        });
+                        $('.dashTableOpenButton').on('click', function(){
+                            var id = $("#dashId").val();
+                            $('#jstree_div').jstree('select_node',id);
+                            $('#jstree_div' + " li[id=" + id + "] a")[0].click();
+                            $("#componentsBtn").click();
+                        });
+
+
 
                     },
                     error : function(error) {
@@ -1211,58 +1252,7 @@
                 var id = $("#id").val();
                 var sys = $('#ft').val().split('/')[1];
                 runJob(id, sys);
-
             });
-
-            function runJob(id, sys){
-
-                $('#runModal').modal('show');
-
-                $("#idToBeRun").val(id);
-                $("#sysToBeRun").val(sys);
-
-                $.get('/ClosestRerunnableAn', { id: id }, function(data) {
-
-                    const dataObj = JSON.parse(data);
-                    $("#ClosestRerunnableAn").val(dataObj.id );
-                    if (dataObj.id === ""){
-                        $('#runClosestAnGroup').hide()
-                    }else{
-                        $('#runClosestAnGroup').show()
-                    }
-
-                    var storedKey ='';
-                    var storedKeyName = '';
-
-                    if (sys.length !== 0){
-                        storedKey = localStorage['key_' + sys];
-                        storedKeyName = localStorage['keyName_' + sys];
-                        if(storedKey !== '' && typeof storedKey !== 'undefined'){
-                            $('#localStoreKeyCb').prop('checked', true);
-                            $('#keyList').html(storedKeyName) ;
-                        }else{
-                            $('#localStoreKeyCb').prop('checked', false);
-                            $('#keyList').html('') ;
-                        }
-                    }
-
-                    var storedAccess ='';
-                    var storedAccessName = '';
-
-                    if (sys.length !== 0){
-                        storedAccess = localStorage['access'];
-                        storedAccessName = localStorage['accessName'];
-                        if(storedAccess !== '' && typeof storedAccess !== 'undefined'){
-                            $('#localStoreAccessCb').prop('checked', true);
-                            $('#accessList').html(storedAccessName) ;
-                        }else{
-                            $('#localStoreAccessCb').prop('checked', false);
-                            $('#accessList').html('') ;
-                        }
-                    }
-                })
-
-            }
 
             $("#runConfirmButton").on("click",function() {
                 var ids = $("#idToBeRun").val();
@@ -1357,7 +1347,7 @@
 //                activaTab('Build_Results');
 //                $("#screenShotCol").show();
 
-              //  loadDashboard();
+                //  loadDashboard();
                 //$("#dashboard").show();
 
                 $.ajax({
@@ -1368,123 +1358,123 @@
                     data: formData,
                     xhr: function () {
 
-                    $('#upload-key').val('');
+                        $('#upload-key').val('');
 
-                    var xhr = $.ajaxSettings.xhr();
+                        var xhr = $.ajaxSettings.xhr();
 
                         var buildIDRunningPrev = '';
                         var buildIDRunning = '';
                         xhr.onprogress = function e() {
-                        var rText = xhr.responseText
+                            var rText = xhr.responseText
 
-                        var rTextNew = rText.substr(currentRespText.length)
-                        currentRespText = rText;
-                        var rTextNew = ansi_up.ansi_to_html(rTextNew).replace(/(?:\r\n|\r|\n)/g, '<br>');
+                            var rTextNew = rText.substr(currentRespText.length)
+                            currentRespText = rText;
+                            var rTextNew = ansi_up.ansi_to_html(rTextNew).replace(/(?:\r\n|\r|\n)/g, '<br>');
 
-                        //var famTree = $('#ft').val().split('/');
-                        //var sys = famTree[1];
+                            //var famTree = $('#ft').val().split('/');
+                            //var sys = famTree[1];
 
-                        var sys = $("#sysToBeRun").val();
+                            var sys = $("#sysToBeRun").val();
 
 
-                        rTextNew.split('<br>').forEach(function(row){
+                            rTextNew.split('<br>').forEach(function(row){
 
-                            //resultsStatus
+                                //resultsStatus
 
-                            if(row.substr(0,17) === 'message:Building:'){
-                                $("#resultsStatus")[0].innerHTML += "<span>" + row.slice(17) + " <img src='/images/throbber.gif'></span>"
-                            }else if(row.substr(0,28) === 'status:All scripts completed'){
-                                $("#resultsStatus")[0].innerHTML += "<b>All scripts completed</b>";
-                            }else if(row.substr(0,22) === 'status:Scripts Aborted'){
-                                $("#resultsStatus")[0].innerHTML += "Scripts aborted"
-                            }else if(row.substr(0,26) === 'message:CompletionSuccess:'){
-                                if(row.slice(26) === 'true'){
-                                    $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-check fa-fw' style='color:darkgreen'></i><br>";
-                                    $("#resultsStatus")[0].innerHTML = $("#resultsStatus")[0].innerHTML.replace('<img src="/images/throbber.gif">',"")
+                                if(row.substr(0,17) === 'message:Building:'){
+                                    $("#resultsStatus")[0].innerHTML += "<span>" + row.slice(17) + " <img src='/images/throbber.gif'></span>"
+                                }else if(row.substr(0,28) === 'status:All scripts completed'){
+                                    $("#resultsStatus")[0].innerHTML += "<b>All scripts completed</b>";
+                                }else if(row.substr(0,22) === 'status:Scripts Aborted'){
+                                    $("#resultsStatus")[0].innerHTML += "Scripts aborted"
+                                }else if(row.substr(0,26) === 'message:CompletionSuccess:'){
+                                    if(row.slice(26) === 'true'){
+                                        $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-check fa-fw' style='color:darkgreen'></i><br>";
+                                        $("#resultsStatus")[0].innerHTML = $("#resultsStatus")[0].innerHTML.replace('<img src="/images/throbber.gif">',"")
 
-                                }else{
-                                    $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-times fa-fw' style='color:darkred'></i><br>";
-                                    $("#resultsStatus")[0].innerHTML = $("#resultsStatus")[0].innerHTML.replace('<img src="/images/throbber.gif">',"")
-                                }
-                            }
-
-                            if(row.substr(0,4) === 'key:' &&  $("#results_html").html().split("<br>").join("") === "") {
-                                localKey += row.substr(4) + '\n';
-                            }
-                            else if(row.substr(0,7) === 'access:' &&  $("#results_html").html().split("<br>").join("") === "") {
-                                localAccess += row.substr(7) + '\n';
-                            }
-                            else if(row.substr(0,12) === 'message:url:'){
-                                //window.open('https://mynode:8445/cm', 'new_', '');
-                                //window.open('https://mynode:8445/cm');
-                                var appLink = "Link: <a href='" + row.slice(12)+"' target='_new'>" + row.slice(12) + "</a>"
-                                $("#link")[0].innerHTML = appLink;
-                                localStorage['appLink'] = appLink;
-                            }
-                            else if(row.substr(0,16) === 'message:BuildID:'){
-                                buildIDRunning = row.substring(
-                                    row.lastIndexOf("[") + 1,
-                                    row.lastIndexOf("]")
-                                );
-                                if(buildIDRunning !== ''){
-                                    $('#' + buildIDRunning + '_anchor').removeClass('runningJobCompleteSuccess').removeClass('runningJobCompleteFail').addClass("runningJob");
-                                    if(buildIDRunningPrev !== ''){
-                                        $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteFail').addClass("runningJobCompleteSuccess");
+                                    }else{
+                                        $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-times fa-fw' style='color:darkred'></i><br>";
+                                        $("#resultsStatus")[0].innerHTML = $("#resultsStatus")[0].innerHTML.replace('<img src="/images/throbber.gif">',"")
                                     }
-                                    buildIDRunningPrev = buildIDRunning
                                 }
-                            }
-                            else if(row.substr(0,28) === 'status:All scripts completed'){
-                                //$('#jstree_div').jstree(true).refresh_node(buildIDRunningPrev);
-                                //$('#jstree_div').jstree(true).redraw(true);
 
-                                refreshFlag=true;
-                                $('#jstree_div').jstree(true).refresh(true);
-                                //$('#jstree_div').jstree(true).refresh_node(buildIDRunningPrev);
+                                if(row.substr(0,4) === 'key:' &&  $("#results_html").html().split("<br>").join("") === "") {
+                                    localKey += row.substr(4) + '\n';
+                                }
+                                else if(row.substr(0,7) === 'access:' &&  $("#results_html").html().split("<br>").join("") === "") {
+                                    localAccess += row.substr(7) + '\n';
+                                }
+                                else if(row.substr(0,12) === 'message:url:'){
+                                    //window.open('https://mynode:8445/cm', 'new_', '');
+                                    //window.open('https://mynode:8445/cm');
+                                    var appLink = "Link: <a href='" + row.slice(12)+"' target='_new'>" + row.slice(12) + "</a>"
+                                    $("#link")[0].innerHTML = appLink;
+                                    localStorage['appLink'] = appLink;
+                                }
+                                else if(row.substr(0,16) === 'message:BuildID:'){
+                                    buildIDRunning = row.substring(
+                                        row.lastIndexOf("[") + 1,
+                                        row.lastIndexOf("]")
+                                    );
+                                    if(buildIDRunning !== ''){
+                                        $('#' + buildIDRunning + '_anchor').removeClass('runningJobCompleteSuccess').removeClass('runningJobCompleteFail').addClass("runningJob");
+                                        if(buildIDRunningPrev !== ''){
+                                            $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteFail').addClass("runningJobCompleteSuccess");
+                                        }
+                                        buildIDRunningPrev = buildIDRunning
+                                    }
+                                }
+                                else if(row.substr(0,28) === 'status:All scripts completed'){
+                                    //$('#jstree_div').jstree(true).refresh_node(buildIDRunningPrev);
+                                    //$('#jstree_div').jstree(true).redraw(true);
+
+                                    refreshFlag=true;
+                                    $('#jstree_div').jstree(true).refresh(true);
+                                    //$('#jstree_div').jstree(true).refresh_node(buildIDRunningPrev);
 //                                if(buildIDRunningPrev !== ''){
 //                                    $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteFail').addClass("runningJobCompleteSuccess");
 //                                };
-                                //$('#jstree_div').jstree(true).refresh(true);
+                                    //$('#jstree_div').jstree(true).refresh(true);
 
-                            }
-                            else if(row.substr(0,22) === 'status:Scripts Aborted'){
-                                //$('#jstree_div').jstree(true).redraw(true);
-                                refreshFlag=true;
-                                $('#jstree_div').jstree(true).refresh(true);
+                                }
+                                else if(row.substr(0,22) === 'status:Scripts Aborted'){
+                                    //$('#jstree_div').jstree(true).redraw(true);
+                                    refreshFlag=true;
+                                    $('#jstree_div').jstree(true).refresh(true);
 //                                if(buildIDRunningPrev !== ''){
 //                                    $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteSuccess').addClass("runningJobCompleteFail");
 //                                };
-                                //$('#jstree_div').jstree(true).refresh();
-                                //$('#jstree_div').jstree(true).redraw(true);
-                            }
-                            else if(row.substr(0,12) === 'message:img:'){
-                                var timestamp = new Date().getTime();
-                                //$('#screenShot')[0].src="/uploads/" + row.replace('message:img:','') + '?' +timestamp  ;
-                                var imageLink = "/uploads/" + row.replace('message:img:','') + '?' +timestamp;
-                                $('#screenShotImageDashboard')[0].src=imageLink  ;
-
-                                localStorage['lastSreenShot'] = imageLink;
-                                $("#screenShotImageDashboard").show();
-                            }
-                            else{
-                                if(localKey !== '' && sys.length !== 0){
-                                    if($('#localStoreKeyCb').is(':checked')) {
-                                        localStorage['key_' + sys] = localKey
-                                    }
+                                    //$('#jstree_div').jstree(true).refresh();
+                                    //$('#jstree_div').jstree(true).redraw(true);
                                 }
-                                if(localAccess !== ''){
-                                    if($('#localStoreAccessCb').is(':checked')) {
-                                        localStorage['access'] = localAccess
-                                    }
-                                }
-                                $("#results_html").append(row + '<br>');
-                            }
-                        })
-                        $('#results_html').animate({scrollTop: $('#results_html').get(0).scrollHeight}, 50);
-                        $('#status-panel-body').animate({scrollTop: $('#status-panel-body').get(0).scrollHeight}, 50);
-                    };
+                                else if(row.substr(0,12) === 'message:img:'){
+                                    var timestamp = new Date().getTime();
+                                    //$('#screenShot')[0].src="/uploads/" + row.replace('message:img:','') + '?' +timestamp  ;
+                                    var imageLink = "/uploads/" + row.replace('message:img:','') + '?' +timestamp;
+                                    $('#screenShotImageDashboard')[0].src=imageLink  ;
 
-                    return xhr;
+                                    localStorage['lastSreenShot'] = imageLink;
+                                    $("#screenShotImageDashboard").show();
+                                }
+                                else{
+                                    if(localKey !== '' && sys.length !== 0){
+                                        if($('#localStoreKeyCb').is(':checked')) {
+                                            localStorage['key_' + sys] = localKey
+                                        }
+                                    }
+                                    if(localAccess !== ''){
+                                        if($('#localStoreAccessCb').is(':checked')) {
+                                            localStorage['access'] = localAccess
+                                        }
+                                    }
+                                    $("#results_html").append(row + '<br>');
+                                }
+                            })
+                            $('#results_html').animate({scrollTop: $('#results_html').get(0).scrollHeight}, 50);
+                            $('#status-panel-body').animate({scrollTop: $('#status-panel-body').get(0).scrollHeight}, 50);
+                        };
+
+                        return xhr;
                     }
                 }).done(function (e) {
                     if (localKey !== ''){
@@ -1507,6 +1497,60 @@
 
                 $('#runModal').modal('toggle');
             });
+
+            function runJob(id, sys){
+
+                $('#runModal').modal('show');
+
+//                $('#runModal').on('shown.bs.modal', function () {
+//                //    $(document).delegate("#runConfirmButton", "click", function(event){
+//
+//                })
+
+                $("#idToBeRun").val(id);
+                $("#sysToBeRun").val(sys);
+
+                $.get('/ClosestRerunnableAn', { id: id }, function(data) {
+
+                    const dataObj = JSON.parse(data);
+                    $("#ClosestRerunnableAn").val(dataObj.id );
+                    if (dataObj.id === ""){
+                        $('#runClosestAnGroup').hide()
+                    }else{
+                        $('#runClosestAnGroup').show()
+                    }
+
+                    var storedKey ='';
+                    var storedKeyName = '';
+
+                    if (sys.length !== 0){
+                        storedKey = localStorage['key_' + sys];
+                        storedKeyName = localStorage['keyName_' + sys];
+                        if(storedKey !== '' && typeof storedKey !== 'undefined'){
+                            $('#localStoreKeyCb').prop('checked', true);
+                            $('#keyList').html(storedKeyName) ;
+                        }else{
+                            $('#localStoreKeyCb').prop('checked', false);
+                            $('#keyList').html('') ;
+                        }
+                    }
+
+                    var storedAccess ='';
+                    var storedAccessName = '';
+
+                    if (sys.length !== 0){
+                        storedAccess = localStorage['access'];
+                        storedAccessName = localStorage['accessName'];
+                        if(storedAccess !== '' && typeof storedAccess !== 'undefined'){
+                            $('#localStoreAccessCb').prop('checked', true);
+                            $('#accessList').html(storedAccessName) ;
+                        }else{
+                            $('#localStoreAccessCb').prop('checked', false);
+                            $('#accessList').html('') ;
+                        }
+                    }
+                })
+            }
 
             //remove
             $("#remove_button, #remove_sys_button").click(function(event){
@@ -2441,8 +2485,8 @@
                      $("#treePanelHandle").height(topHeight - 28);
                      $("#libTreePanelHandle").height(topHeight - 28);
 
-                     $("#job-form-panel").height(topHeight - (56 + 33 + 34));
-                     $("#sys-form-panel").height(topHeight - (56 + 33 + 34));
+                     $("#job-form-panel").height(topHeight - (56 + 33 + 24));
+                     $("#sys-form-panel").height(topHeight - (56 + 33 + 24));
                      $("#dashboard").height(topHeight - 33);
                      $("#leftResultsCol").height(topHeight - (15 + 33 + 38));
                      $("#build-results-row").height(topHeight - (15 + 33 + 21));
@@ -2668,25 +2712,25 @@
                 setStyle(pickedStyle);
             });
 
-            //close BuildCode box
-            $('.code-panel-body').slideUp();
-            $('.BuildCode-Heading').addClass('panel-collapsed');
-            $('.BuildCode-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-
-            //close TestCode box
-            $('.test-panel-body').slideUp();
-            $('.BuildTest-Heading').addClass('panel-collapsed');
-            $('.BuildTest-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-
-            //close Meta box
-            $('.meta-panel-body').slideUp();
-            $('.BuildMeta-Heading').addClass('panel-collapsed');
-            $('.BuildMeta-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-
-            //close Resources box
-            $('.res-panel-body').slideUp();
-            $('.BuildRes-Heading').addClass('panel-collapsed');
-            $('.BuildRes-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+//            //close BuildCode box
+//            $('.code-panel-body').slideUp();
+//            $('.BuildCode-Heading').addClass('panel-collapsed');
+//            $('.BuildCode-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+//
+//            //close TestCode box
+//            $('.test-panel-body').slideUp();
+//            $('.BuildTest-Heading').addClass('panel-collapsed');
+//            $('.BuildTest-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+//
+//            //close Meta box
+//            $('.meta-panel-body').slideUp();
+//            $('.BuildMeta-Heading').addClass('panel-collapsed');
+//            $('.BuildMeta-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+//
+//            //close Resources box
+//            $('.res-panel-body').slideUp();
+//            $('.BuildRes-Heading').addClass('panel-collapsed');
+//            $('.BuildRes-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
 
             //settings - set time out button event
             $('#set_timeout').on('click', function(){
@@ -2980,57 +3024,57 @@ hideBottom();
 
         }
 
-        $(document).on('click', '.BuildCode-Heading', function(e){
-            var $this = $(this);
-            if(!$this.hasClass('panel-collapsed')) {
-                $this.parents('.codePanel').find('.panel-body').slideUp();
-                $this.addClass('panel-collapsed');
-                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-            } else {
-                $this.parents('.codePanel').find('.panel-body').slideDown();
-                $this.removeClass('panel-collapsed');
-                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
-            }
-        })
-
-        $(document).on('click', '.BuildTest-Heading', function(e){
-            var $this = $(this);
-            if(!$this.hasClass('panel-collapsed')) {
-                $this.parents('.testPanel').find('.panel-body').slideUp();
-                $this.addClass('panel-collapsed');
-                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-            } else {
-                $this.parents('.testPanel').find('.panel-body').slideDown();
-                $this.removeClass('panel-collapsed');
-                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
-            }
-        })
-
-        $(document).on('click', '.BuildMeta-Heading', function(e){
-            var $this = $(this);
-            if(!$this.hasClass('panel-collapsed')) {
-                $this.parents('.metaPanel').find('.panel-body').slideUp();
-                $this.addClass('panel-collapsed');
-                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-            } else {
-                $this.parents('.metaPanel').find('.panel-body').slideDown();
-                $this.removeClass('panel-collapsed');
-                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
-            }
-        })
-
-        $(document).on('click', '.BuildRes-Heading', function(e){
-            var $this = $(this);
-            if(!$this.hasClass('panel-collapsed')) {
-                $this.parents('.resPanel').find('.panel-body').slideUp();
-                $this.addClass('panel-collapsed');
-                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-            } else {
-                $this.parents('.resPanel').find('.panel-body').slideDown();
-                $this.removeClass('panel-collapsed');
-                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
-            }
-        })
+//        $(document).on('click', '.BuildCode-Heading', function(e){
+//            var $this = $(this);
+//            if(!$this.hasClass('panel-collapsed')) {
+//                $this.parents('.codePanel').find('.panel-body').slideUp();
+//                $this.addClass('panel-collapsed');
+//                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+//            } else {
+//                $this.parents('.codePanel').find('.panel-body').slideDown();
+//                $this.removeClass('panel-collapsed');
+//                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+//            }
+//        })
+//
+//        $(document).on('click', '.BuildTest-Heading', function(e){
+//            var $this = $(this);
+//            if(!$this.hasClass('panel-collapsed')) {
+//                $this.parents('.testPanel').find('.panel-body').slideUp();
+//                $this.addClass('panel-collapsed');
+//                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+//            } else {
+//                $this.parents('.testPanel').find('.panel-body').slideDown();
+//                $this.removeClass('panel-collapsed');
+//                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+//            }
+//        })
+//
+//        $(document).on('click', '.BuildMeta-Heading', function(e){
+//            var $this = $(this);
+//            if(!$this.hasClass('panel-collapsed')) {
+//                $this.parents('.metaPanel').find('.panel-body').slideUp();
+//                $this.addClass('panel-collapsed');
+//                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+//            } else {
+//                $this.parents('.metaPanel').find('.panel-body').slideDown();
+//                $this.removeClass('panel-collapsed');
+//                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+//            }
+//        })
+//
+//        $(document).on('click', '.BuildRes-Heading', function(e){
+//            var $this = $(this);
+//            if(!$this.hasClass('panel-collapsed')) {
+//                $this.parents('.resPanel').find('.panel-body').slideUp();
+//                $this.addClass('panel-collapsed');
+//                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+//            } else {
+//                $this.parents('.resPanel').find('.panel-body').slideDown();
+//                $this.removeClass('panel-collapsed');
+//                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+//            }
+//        })
 
 
 
@@ -3182,12 +3226,14 @@ hideBottom();
                                 </div>
                             </div>
                             <div class="dashboardDetails">
+                                <hr class="dashboardDetailsHr">
                                 <div id="dashboardDetailsTile" class="dashboardDetailsTile"></div>
-                                <div class="dashboardMenu">
-                                    <div class="dashboardMenuItem" id="DashBuildMenu">Build</div>
-                                    <div class="dashboardMenuItem dashboardMenuItemLast" id="DashOpenMenu">Open</div>
-                                </div>
-                                <div id="dashboardDetailsSysName" class="dashboardDetailsSysName"></div>
+                                <hr class="dashboardDetailsHr">
+                                <!--<div class="dashboardMenu">-->
+                                    <!--<div class="dashboardMenuItem" id="DashBuildMenu">Build</div>-->
+                                    <!--<div class="dashboardMenuItem dashboardMenuItemLast" id="DashOpenMenu">Open</div>-->
+                                <!--</div>-->
+                                <!--<div id="dashboardDetailsSysName" class="dashboardDetailsSysName"></div>-->
                                 <div id="dashboardDetailsDescription" class="dashboardDetailsDescription"></div>
                             </div>
                         </div>
@@ -3213,7 +3259,7 @@ hideBottom();
                     </div>
 
                     <div class="row justify-content-center dashBoardBottomRow">
-                        <div class="col-md-10 dashListCol">
+                        <div class="col-md-12 dashListCol">
                             <div class="dropdown">
                                 <span class="dashSystemLabel">System: </span><button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Pick...
@@ -3262,8 +3308,8 @@ hideBottom();
             <div id="leftLibCol" class="topLib-col-fixed-240" >
                 <div id="libTreePanel" class='panel panel-default cust-panel' style="float: left;"  >
                     <div class='panel-heading cust-panel-heading' style="white-space: nowrap;"><i class='fa  fa-book' id="LibDropDownPickIcon"></i> Library
-                        <a class="dropdown-toggle" href="#" role="button" id="LibDropDownPick" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">[+]</a>
-                        <a class="dropdown-toggle" href="#" role="button" id="treeCollapse" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">[<]</a>
+                        <a href="#" id="LibDropDownPick">[+]</a>
+                        <a href="#" id="treeCollapse">[<]</a>
                     </div>
 
                     <div class="dropdown show" id="libDropDown">
@@ -3306,20 +3352,16 @@ hideBottom();
                </div>  -->
 
             <div id="rightCol" class="col-lg-12 top-col-offset-240 rightCol" >
-                <ul class="nav nav-tabs " role="tablist" id="componentTabs">
-                    <li class="active">
-                        <a href="#Component_Details" role="tab" data-toggle="tab">
-                            <icon class="fa fa-th-large"></icon> Component Details
-                        </a>
-                    </li>
-                    <!--<li class="" id="Build_Results_tab">-->
-                        <!--<a href="#Build_Results" role="tab" data-toggle="tab">-->
-                            <!--<i class="fa fa-check-square-o"></i> Build Results-->
+                <!--<ul class="nav nav-tabs " role="tablist" >-->
+                    <!--<li class="nav-item">-->
+                        <!--<a class="nav-link active" href="#Component_Details" role="tab" data-toggle="tab">-->
+                            <icon class="fa fa-th-large"></icon>Component Details
                         <!--</a>-->
                     <!--</li>-->
-                </ul>
+                <!--</ul>-->
+
                 <div class="tab-content">
-                    <div class="tab-pane fade active in" id="Component_Details">
+                    <div role="tabpanel"  class="tab-pane fade show active" id="Component_Details">
                         <div id="sysScreen">
                             <div class="buttonRow">
                                 <button id = "edit_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
@@ -3350,14 +3392,23 @@ hideBottom();
                                                 <div class="col-lg-8 "></div>
                                             </div>
                                             <div class="row">
-                                                <div class="form-group">
-                                                    <label>System Description</label>
-                                                    <textarea rows="4" class="form-control form-custom" placeholder="Enter description of this system" id="sysDescription"></textarea>
+                                                <div class="col-lg-12" style="padding: 0px">
+                                                    <div class="form-group">
+                                                        <label>System Description</label>
+                                                        <textarea rows="4" class="form-control form-custom" placeholder="Enter description of this system" id="sysDescription"></textarea>
+                                                    </div>
                                                 </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-lg-12" style="padding: 0px">
                                                 <div class="form-group">
                                                     <label>System Variables</label>
                                                     <textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="sysVariables"></textarea>
                                                 </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
                                                 <div class="form-group">
                                                     <label>Icon</label>
                                                     <div id="sysIcon"></div>
@@ -3367,6 +3418,7 @@ hideBottom();
                                                     </div>
                                                 </div>
                                             </div>
+
                                         </div>
                                     </form>
                                 </div>
@@ -3458,121 +3510,153 @@ hideBottom();
 
                                             <div class="col-lg-12 ">
 
-                                                <div class="panel panel-primary cust-panel-group codePanel">
-                                                    <div class="panel-heading cust-panel-heading BuildCode-Heading ">Build Code<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
-                                                    </div>
-                                                    <div class="panel-body code-panel-body">
-                                                        <div class="row" >
-                                                            <div class="col-sm-2">
-                                                                <div class="form-group">
-                                                                    <label class="build-label">Rerunnable</label>
-                                                                    <div>
-                                                                        <label class="switch" id="rerunnableSlider">
-                                                                            <input name="rerunnable" id="rerunnable" type="checkbox">
-                                                                            <span class="slider round"></span>
-                                                                        </label>
-                                                                        <span id="rerunnableVal" class="statusBox"></span>
+                                                <div id="buildCodeAccordion">
+                                                    <div class="card jobCard">
+                                                        <div class="card-header" id="codeHeading" data-toggle="collapse" data-target="#codeCollapse" aria-expanded="true" aria-controls="codeCollapse">
+                                                            <h5 class="mb-0">
+                                                                    Build Code
+                                                            </h5>
+                                                        </div>
 
+                                                        <div id="codeCollapse" class="collapse cardBody" aria-labelledby="codeHeading" data-parent="#buildCodeAccordion">
+                                                            <div class="card-body">
+                                                                <div class="row" >
+                                                                    <div class="col-sm-2">
+                                                                        <div class="form-group">
+                                                                            <label class="build-label">Rerunnable</label>
+                                                                            <div>
+                                                                                <label class="switch" id="rerunnableSlider">
+                                                                                    <input name="rerunnable" id="rerunnable" type="checkbox">
+                                                                                    <span class="slider round"></span>
+                                                                                </label>
+                                                                                <span id="rerunnableVal" class="statusBox"></span>
+
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-sm-2">
+                                                                        <div class="form-group">
+                                                                            <label class="build-label">System Function</label>
+                                                                            <div>
+                                                                                <label class="switch" id="sysFuncSlider">
+                                                                                    <input name="System Function" id="sysFunc" type="checkbox">
+                                                                                    <span class="slider round"></span>
+                                                                                </label>
+                                                                                <span id="sysFuncVal" class="statusBox"></span>
+
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-sm-2">
+                                                                        <div class="form-group">
+                                                                            <label class="build-label">Run Locally</label>
+                                                                            <div>
+                                                                                <label class="switch" id="runLocSlider">
+                                                                                    <input name="System Function" id="runLoc" type="checkbox">
+                                                                                    <span class="slider round"></span>
+                                                                                </label>
+                                                                                <span id="runLocVal" class="statusBox"></span>
+
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                            <div class="col-sm-2">
-                                                                <div class="form-group">
-                                                                    <label class="build-label">System Function</label>
-                                                                    <div>
-                                                                        <label class="switch" id="sysFuncSlider">
-                                                                            <input name="System Function" id="sysFunc" type="checkbox">
-                                                                            <span class="slider round"></span>
-                                                                        </label>
-                                                                        <span id="sysFuncVal" class="statusBox"></span>
 
+
+                                                                <div class="form-group">
+                                                                    <label class="build-label">Build Script</label><i class="fa fa-fw"></i>
+                                                                    <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal">[<i class="fa fa-question"></i>]</a>
+                                                                    <a href="#" id='insertVariable' data-toggle="modal" data-target="#varModal">[Insert Variable]</a>
+                                                                    <textarea class="form-control form-custom code" rows="4" id="script"></textarea>
+                                                                </div>
+
+                                                                <div class="form-group">
+                                                                    <label class="build-label">Template</label>
+                                                                    <textarea class="form-control form-custom code" rows="4" id="template"></textarea>
+                                                                </div>
+                                                                <div id="custTemplates">
+                                                                </div>
+                                                                <div id="newTemplateButton">
+                                                                    <label class="build-label">Template<a class='newCust' href='#'>[+]</a></label><br><br>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div id="buildResAccordion">
+                                                    <div class="card jobCard">
+                                                        <div class="card-header" id="resHeading" data-toggle="collapse" data-target="#resCollapse" aria-expanded="true" aria-controls="resCollapse">
+                                                            <h5 class="mb-0">
+                                                                    Resources
+                                                            </h5>
+                                                        </div>
+
+                                                        <div id="resCollapse" class="collapse cardBody" aria-labelledby="resHeading" data-parent="#buildResAccordion">
+                                                            <div class="card-body">
+
+                                                                <div class="form-group">
+                                                                    <label class="build-label">File Resources<a id='newFileButton' class='newFile' href='#'>[+]</a><a id='delFileButton' class='delFile' href='#'>[-]</a></label>
+                                                                    <div id = 'fileList' class = 'fileList'></div>
+                                                                    <div id = 'fileUpload'>
+                                                                        <div class="progress">
+                                                                            <div class="progress-bar" role="progressbar"></div>
+                                                                        </div>
+                                                                        <input id="upload-input" type="file" name="uploads[]" multiple="multiple">
                                                                     </div>
                                                                 </div>
+
                                                             </div>
-                                                            <div class="col-sm-2">
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div id="buildTestAccordion">
+                                                    <div class="card jobCard">
+                                                        <div class="card-header" id="testHeading" data-toggle="collapse" data-target="#testCollapse" aria-expanded="true" aria-controls="testCollapse">
+                                                            <h5 class="mb-0">
+                                                                Test
+                                                            </h5>
+                                                        </div>
+
+                                                        <div id="testCollapse" class="collapse cardBody" aria-labelledby="testHeading" data-parent="#buildTestAccordion">
+                                                            <div class="card-body">
+
                                                                 <div class="form-group">
-                                                                    <label class="build-label">Run Locally</label>
-                                                                    <div>
-                                                                        <label class="switch" id="runLocSlider">
-                                                                            <input name="System Function" id="runLoc" type="checkbox">
-                                                                            <span class="slider round"></span>
-                                                                        </label>
-                                                                        <span id="runLocVal" class="statusBox"></span>
-
-                                                                    </div>
+                                                                    <label class="build-label">Test Script</label>
+                                                                    <textarea class="form-control form-custom code" rows="4" id="test"></textarea>
                                                                 </div>
+
                                                             </div>
                                                         </div>
-
-
-                                                        <div class="form-group">
-                                                            <label class="build-label">Build Script</label><i class="fa fa-fw"></i>
-                                                            <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal">[<i class="fa fa-question"></i>]</a>
-                                                            <a href="#" id='insertVariable' data-toggle="modal" data-target="#varModal">[Insert Variable]</a>
-                                                            <textarea class="form-control form-custom code" rows="4" id="script"></textarea>
-                                                        </div>
-
-                                                        <div class="form-group">
-                                                            <label class="build-label">Template</label>
-                                                            <textarea class="form-control form-custom code" rows="4" id="template"></textarea>
-                                                        </div>
-                                                        <div id="custTemplates">
-                                                        </div>
-                                                        <div id="newTemplateButton">
-                                                            <label class="build-label">Template<a class='newCust' href='#'>[+]</a></label><br><br>
-                                                        </div>
-
                                                     </div>
                                                 </div>
-                                                <div class="panel panel-primary cust-panel-group resPanel">
-                                                    <div class="panel-heading cust-panel-heading BuildRes-Heading ">Resources<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
-                                                    </div>
-                                                    <div class="panel-body res-panel-body">
 
-                                                        <div class="form-group">
-                                                            <label class="build-label">File Resources<a id='newFileButton' class='newFile' href='#'>[+]</a><a id='delFileButton' class='delFile' href='#'>[-]</a></label>
-                                                            <div id = 'fileList' class = 'fileList'></div>
-                                                            <div id = 'fileUpload'>
-                                                                <div class="progress">
-                                                                    <div class="progress-bar" role="progressbar"></div>
+                                                <div id="buildMetaAccordion">
+                                                    <div class="card jobCard">
+                                                        <div class="card-header" id="metaHeading" data-toggle="collapse" data-target="#metaCollapse" aria-expanded="true" aria-controls="metaCollapse">
+                                                            <h5 class="mb-0">
+                                                                 Meta
+                                                            </h5>
+                                                        </div>
+
+                                                        <div id="metaCollapse" class="collapse cardBody" aria-labelledby="metaHeading" data-parent="#buildMetaAccordion">
+                                                            <div class="card-body">
+
+                                                                <div class="col-lg-6 ">
+                                                                    <div class="form-group"><label>Created Date: </label><input class="form-control form-custom" id="createdDate"></div>
+                                                                    <div class="form-group"><label>Created By: </label><input class="form-control form-custom" id="createdBy"></div>
                                                                 </div>
-                                                                <input id="upload-input" type="file" name="uploads[]" multiple="multiple">
+
+                                                                <div class="col-lg-6 ">
+                                                                    <div class="form-group"><label>ID: </label><input class="form-control form-custom" id="idDisp"></div>
+                                                                    <div class="form-group"><label>Price: </label><input class="form-control form-custom" id="price"></div>
+                                                                </div>
+
+
                                                             </div>
                                                         </div>
-
-
-
-                                                    </div>
-                                                </div>
-                                                <div class="panel panel-primary cust-panel-group testPanel">
-                                                    <div class="panel-heading cust-panel-heading BuildTest-Heading ">Test Code<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
-                                                    </div>
-                                                    <div class="panel-body test-panel-body">
-
-                                                        <div class="form-group">
-                                                            <label class="build-label">Test Script</label>
-                                                            <textarea class="form-control form-custom code" rows="4" id="test"></textarea>
-                                                        </div>
-
-                                                    </div>
-                                                </div>
-                                                <div class="panel panel-primary cust-panel-group metaPanel">
-                                                    <div class="panel-heading cust-panel-heading BuildMeta-Heading ">Meta<span class="pull-right clickable" ><i class="glyphicon glyphicon-chevron-up"></i></span>
-                                                    </div>
-                                                    <div id = "meta-panel-body" class="panel-body meta-panel-body">
-
-                                                        <div class="col-lg-6 ">
-                                                            <div class="form-group"><label>Created Date: </label><input class="form-control form-custom" id="createdDate"></div>
-                                                            <div class="form-group"><label>Created By: </label><input class="form-control form-custom" id="createdBy"></div>
-                                                        </div>
-
-                                                        <div class="col-lg-6 ">
-                                                            <div class="form-group"><label>ID: </label><input class="form-control form-custom" id="idDisp"></div>
-                                                            <div class="form-group"><label>Price: </label><input class="form-control form-custom" id="price"></div>
-                                                        </div>
-
-
-
                                                     </div>
                                                 </div>
 
@@ -3592,23 +3676,23 @@ hideBottom();
                         </div>
                     </div>
 
-                    <div class="tab-pane fade" id="Build_Results">
-                        <div class="container-fluid">
-                            <div class="row" id="build-results-row">
+                    <!--<div class="tab-pane fade" id="Build_Results">-->
+                        <!--<div class="container-fluid">-->
+                            <!--<div class="row" id="build-results-row">-->
 
-                                <div id="leftResultsCol" class="col-lg-3 resultsStatus" >
-                                    <!--<div class="resultsStatus" id="resultsStatus"></div>-->
-                                </div>
-                                <div id="rightResultsCol" class="col-lg-8" >
-                                    <div id="screenShotCol" class="screenShotCol"  >
-                                        <!--<div id="link"></div>-->
-                                        <img id="screenShot">
-                                    </div>
-                                </div>
+                                <!--<div id="leftResultsCol" class="col-lg-3 resultsStatus" >-->
+                                    <!--&lt;!&ndash;<div class="resultsStatus" id="resultsStatus"></div>&ndash;&gt;-->
+                                <!--</div>-->
+                                <!--<div id="rightResultsCol" class="col-lg-8" >-->
+                                    <!--<div id="screenShotCol" class="screenShotCol"  >-->
+                                        <!--&lt;!&ndash;<div id="link"></div>&ndash;&gt;-->
+                                        <!--<img id="screenShot">-->
+                                    <!--</div>-->
+                                <!--</div>-->
 
-                            </div>
-                        </div>
-                    </div>
+                            <!--</div>-->
+                        <!--</div>-->
+                    <!--</div>-->
                 </div>
 
             </div>
@@ -3652,7 +3736,6 @@ hideBottom();
     <div class="modal-dialog">
         <nav class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title"> <%= username %> Profile</h4>
             </div>
             <div class="modal-body">
@@ -3670,18 +3753,17 @@ hideBottom();
                     </ul>
                 </nav>
             </div>
+            <div class="modal-footer">
+                <button type="button" id="changeIdSaveButton" class="btn btn-default jobFormbtn">Save</button>
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+            </div>
         </nav>
-        <div class="modal-footer">
-            <button type="button" id="changeIdSaveButton" class="btn btn-default jobFormbtn">Save</button>
-            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
-        </div>
     </div>
 </div>
 <div id="setupModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <nav class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">Settings</h4>
             </div>
             <div class="modal-body">
@@ -3710,17 +3792,16 @@ hideBottom();
                     </div>
                 </nav>
             </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
+            </div>
         </nav>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
-        </div>
     </div>
 </div>
 <div id="runModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-run-dialog">
         <nav class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title"><i class="fa fa-play fa-fw"></i>Build</h4>
             </div>
             <div id='runConfirmationBody' class="modal-body">
@@ -3764,18 +3845,21 @@ hideBottom();
                     </div>
                 </form>
             </div>
+
+            <div class="modal-footer">
+                <button type="button" id="runConfirmButton" class="btn btn-default jobFormbtn">Build</button>
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+            </div>
+
+
         </nav>
-        <div class="modal-footer">
-            <button type="button" id="runConfirmButton" class="btn btn-default jobFormbtn">Build</button>
-            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
-        </div>
+
     </div>
 </div>
 <div id="copyModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-run-dialog">
         <nav class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">X</button>
                 <h4 class="modal-title"><i class="fa fa-code-fork fa-fw"></i>Copy</h4>
             </div>
             <div id='copyConfirmationBody' class="modal-body">
@@ -3791,18 +3875,17 @@ hideBottom();
 
                 <input type="hidden" id="copyModal_listOfIds"><input type="hidden" id="copyModal_newParent"><input type="hidden" id="copyModal_lib">
             </div>
+            <div class="modal-footer">
+                <button type="button" id="copyConfirmButton" class="btn btn-default jobFormbtn">Copy</button>
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+            </div>
         </nav>
-        <div class="modal-footer">
-            <button type="button" id="copyConfirmButton" class="btn btn-default jobFormbtn">Copy</button>
-            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
-        </div>
     </div>
 </div>
 <div id="copyToLibModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-run-dialog">
         <nav class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">X</button>
                 <h4 class="modal-title"><i class="fa fa-code-fork fa-fw"></i>Copy To Library</h4>
             </div>
             <div id='copyToLibConfirmationBody' class="modal-body">
@@ -3817,48 +3900,45 @@ hideBottom();
                 <br/>
 
                 <input type="hidden" id="copyToLibModal_listOfIds"><input type="hidden" id="copyToLibModal_newParent">
+            </div><div class="modal-footer">
+                <button type="button" id="copyToLibConfirmButton" class="btn btn-default jobFormbtn">Copy</button>
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
             </div>
         </nav>
-        <div class="modal-footer">
-            <button type="button" id="copyToLibConfirmButton" class="btn btn-default jobFormbtn">Copy</button>
-            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
-        </div>
+
     </div>
 </div>
 <div id="delModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-del-dialog">
         <nav class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">X</button>
                 <h4 class="modal-title"><i class="fa fa-minus-square-o fa-fw"></i>Remove</h4>
             </div>
 
             <div id='delConfirmationBody' class="modal-body">
                 Are you sure you want to remove this component and all children?
             </div>
+            <div class="modal-footer">
+                <button type="button" id="delConfirmButton" class="btn btn-default jobFormbtn" >Remove</button>
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+            </div>
         </nav>
-        <div class="modal-footer">
-            <button type="button" id="delConfirmButton" class="btn btn-default jobFormbtn" >Remove</button>
-            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
-        </div>
     </div>
 </div>
 <div id="clearModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-clear-dialog">
         <nav class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">X</button>
                 <h4 class="modal-title"><i class="fa fa-history fa-fw"></i>Clear Build History</h4>
             </div>
-
             <div id='clearConfirmationBody' class="modal-body">
                 Are you sure you want to clear all build history for this system?
             </div>
+            <div class="modal-footer">
+                <button type="button" id="clearConfirmButton" class="btn btn-default jobFormbtn" >Clear</button>
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+            </div>
         </nav>
-        <div class="modal-footer">
-            <button type="button" id="clearConfirmButton" class="btn btn-default jobFormbtn" >Clear</button>
-            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
-        </div>
     </div>
 </div>
 <div id="varModal" class="modal fade" role="dialog">
@@ -3866,7 +3946,6 @@ hideBottom();
 
         <nav class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">Insert Variable</h4>
             </div>
             <form class="form-inline">
@@ -3898,23 +3977,20 @@ hideBottom();
             <div id='insertVarBody' class="modal-body">
 
             </div>
+            <div class="modal-footer">
+                <button type="button" id="insertVarButton" class="btn btn-default jobFormbtn">Insert</button>
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+            </div>
         </nav>
-        <div class="modal-footer">
-            <button type="button" id="insertVarButton" class="btn btn-default jobFormbtn">Insert</button>
-            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
-        </div>
     </div>
 
 </div>
 <div id="buildHelpModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
-
         <nav class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h1 class="modal-title">Build Script</h1>
             </div>
-
             <div id='buildHelpBody' class="modal-body" style="overflow-y: auto;height: 80vh;">
                 <p>The build script is created and maintained by a developer and is the set of build instructions that are sent to the system server once an SSH connection is made. Builder assumes the initial CLI is bash.</p>
                 <p>One line is sent to the server at a time and the response is recorded until the prompt is detected or a timeout is exceeded. The remote system's prompt is set to a default value when the session starts. The prompt can be set by the developer to accommodate other CLIs.</p>
@@ -3995,10 +4071,10 @@ hideBottom();
 
                 </p>
             </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
+            </div>
         </nav>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
-        </div>
     </div>
 
 </div>
@@ -4007,10 +4083,8 @@ hideBottom();
 
         <nav class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h1 class="modal-title">Component Variables</h1>
             </div>
-
             <div id='varHelpBody' class="modal-body" style="overflow-y: auto;height: 80vh;">
                 <p>Component variables are used to provide configurability of components to non-developers. A build script developer can insert a component variable into the build script that a non-developer user can adjust.</p>
                 <p>Enter variable-name=value pairs. Separate each with a new line.<br></p>
@@ -4018,10 +4092,10 @@ hideBottom();
                     When the build script is executed the &lt;%c.variable-name%&gt; tag will be replaced with the value string in the component variable list.
                 </p>
             </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
+            </div>
         </nav>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
-        </div>
     </div>
 
 </div>
@@ -4029,11 +4103,6 @@ hideBottom();
     <div class="modal-dialog modal-dialog-welcome">
 
         <nav class="modal-content welcome-modal-content">
-            <!--<div class="modal-header">-->
-                <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
-                <!--<h1 class="modal-title">Component Variables</h1>-->
-            <!--</div>-->
-
             <div id='welcomeBody' class="modal-body welcome-modal-body">
                 <br/>
                 <h2>Welcome to ezStack Builder</h2>
@@ -4043,11 +4112,16 @@ hideBottom();
                 <p>
 
             </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
+            </div>
         </nav>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
-        </div>
     </div>
 
 </div>
+<script>
+
+
+
+</script>
 </html>

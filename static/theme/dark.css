@@ -444,3 +444,24 @@ input:focus + .slider {
     color:#0f6ab4;
 
 }
+
+.jobCard > .card-header {
+    background-color: rgb(60, 63, 65);
+    border-bottom: 1px solid rgba(0,0,0,.125);
+    color: #0066ff;
+}
+
+.card-body{
+    background-color: #3c3f41;
+    color: #fcfcef;
+}
+
+.dashTable > thead > tr > th {
+     border-color: inherit;
+}
+
+/*.rightCol > ul > li > a{*/
+    /*color: #f9f2e9;*/
+    /*background-color: #3c3f41;*/
+    /*border-color: #dee2e6 #dee2e6 #fff;*/
+/*}*/

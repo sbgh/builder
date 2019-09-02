@@ -270,6 +270,13 @@ padding-left: 0px;
    overflow: auto;
     margin-bottom: 0px;
 }
+
+.navbar-nav{
+   display: flex;
+   -ms-flex-direction: row;
+   flex-direction: row;
+}
+
 .navbar-nav>li>a {
    padding-top: 0px;
    padding-bottom: 0px;
@@ -622,66 +629,89 @@ input:checked + .slider:before {
 .dashBoardList{
    /*margin: auto;*/
    /*max-width: 1000px;*/
-
 }
 
 .dashBoardListRow{
-   white-space: nowrap;
-   margin-right: 0px;
-   margin-left: 0px;
-   margin-bottom: 2px;
-   margin-top: 2px;
+   /*white-space: nowrap;*/
+   /*margin-right: 0px;*/
+   /*margin-left: 0px;*/
+   /*margin-bottom: 2px;*/
+   /*margin-top: 2px;*/
 
 }
 
-.dashCompNameRow{
+.dashTableRow{
    cursor: pointer;
-   padding-right: 0px;
-   padding-left: 5px;
-}
-
-.dashListRowNotClicked{
-   font-weight: 500;
 }
 
 .dashListRowClicked{
+
+}
+
+.dashListRowClicked > td.dashTableNameItem{
    font-weight: 900;
-
-}
-.DashListPass{
-   color: #f3f3f3;
-   background-color: #10a54a;
-}
-.DashListFail{
-   color: #f3f3f3;
-   background-color: #c5862b;
-}
-.DashListNotBuilt{
-   color: #f3f3f3;
-   background-color: #0f6ab4;
+   font-size: 16px;
 }
 
-.DashListStatusCol{
-   width: 30px;
-   padding-right: 5px;
-   padding-left: 5px;
+.dashListRowClicked > td.dashTableNameItem{
+   font-weight: 900;
+   font-size: 16px;
 }
 
-.DashListRowPass{
-   color: #2c3433;
-   background-color: #e7f6ec;
-   border: 1px solid #10a54a;
+div.dashTableNameButtonRow{
+   display:none;
 }
-.DashListRowFail{
-   color: #2c3433;
-   background-color: #f9f2e9;
-   border: 1px solid #c5862b;
+.dashListRowClicked > td.dashTableNameItem > div.dashTableNameButtonRow{
+   display:unset;
 }
-.DashListRowNotBuilt{
-   color: #2c3433;
-   background-color: #e7f0f7;
-   border: 1px solid #0f6ab4;
+
+.dashTableBuildButton{
+   color: #0f6ab4;
 }
+.dashTableOpenButton{
+   color: #0f6ab4;
+}
+
+.dashboardDetailsHr{
+   border-top: 1px solid;
+   margin-top: 0px;
+   margin-bottom: 0px;
+}
+
+/*.DashListPass{*/
+   /*color: #f3f3f3;*/
+   /*background-color: #10a54a;*/
+/*}*/
+/*.DashListFail{*/
+   /*color: #f3f3f3;*/
+   /*background-color: #c5862b;*/
+/*}*/
+/*.DashListNotBuilt{*/
+   /*color: #f3f3f3;*/
+   /*background-color: #0f6ab4;*/
+/*}*/
+
+/*.DashListStatusCol{*/
+   /*width: 30px;*/
+   /*padding-right: 5px;*/
+   /*padding-left: 5px;*/
+/*}*/
+
+/*.DashListRowPass{*/
+   /*color: #2c3433;*/
+   /*background-color: #e7f6ec;*/
+   /*border: 1px solid #10a54a;*/
+/*}*/
+/*.DashListRowFail{*/
+   /*color: #2c3433;*/
+   /*background-color: #f9f2e9;*/
+   /*border: 1px solid #c5862b;*/
+/*}*/
+/*.DashListRowNotBuilt{*/
+   /*color: #2c3433;*/
+   /*background-color: #e7f0f7;*/
+   /*border: 1px solid #0f6ab4;*/
+/*}*/
 
 .os-panel{
    /*width:80px;*/
@@ -749,8 +779,8 @@ input:checked + .slider:before {
 
 .dashboardDetailsTile{
    display: inline-block;
+   margin-right: 20px;
    margin-left: 20px;
-   margin-top: 20px;
    font-size: 20px;
    font-weight: 700;
 }
@@ -910,6 +940,10 @@ a.foundInSearchParent{
    #padding: 10px 15px;
 }
 
+.navbar-nav > li{
+   text-align: center;
+}
+
 .navbar-nav > li > a {
    #padding-top: 10px;
    #padding-bottom: 10px;
@@ -931,7 +965,9 @@ a.foundInSearchParent{
 }
 
 .builder_nav_container{
-   width:100%
+   width:100%;
+   margin-right: 20px;
+   margin-left: 20px;
 }
 
 .builder_dash_btn{
@@ -945,7 +981,7 @@ a.foundInSearchParent{
 }
 
 .dashSystemLabel{
-   margin-left: 50px;
+   margin-left: 20px;
    font-weight: 700;
    font-size: 16px;
 }
@@ -961,6 +997,7 @@ a.foundInSearchParent{
 .dashDropButtonHR{
    margin-top: 2px;
    margin-bottom: 20px;
+   border-color: inherit;
 }
 
 .dashListCol{
@@ -970,7 +1007,7 @@ a.foundInSearchParent{
 .dashSystemsDropdownMenu{
    padding:10px ;
 }
-.dropdown-item{
+.dropdown-settings{
 
 }
 
@@ -986,12 +1023,45 @@ tr {
 
 
 .dashTable{
-   //height:300px;
-display: -moz-groupbox;    // Firefox Bad Effect
+   color: inherit;
+   border-color: white;
 }
+
+.dashTable > thead > tr > th{
+    border-top: 0px solid;
+    border-bottom: 2px solid;
+    border-color: inherit;
+ }
+
 .dashTbody{
    overflow-y: auto;
-   //height: 200px;
    width: 100%;
-   position: absolute;
+}
+
+.dashTbody > tr > td{
+   border-top: 0px solid;
+   border-bottom: 1px solid;
+}
+
+.userIcon{
+   font-size: 20px;
+}
+
+.dropdown-menu > a{
+   white-space: nowrap;
+}
+
+.navbar-fixed-top{
+
+   padding-bottom: 0px;
+}
+
+.jobCard{
+   margin-bottom: 30px;
+
+}
+
+.jobCard > .card-header {
+   cursor: pointer;
+   padding: 3px;
 }
