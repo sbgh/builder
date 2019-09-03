@@ -824,18 +824,18 @@
 
                             rowJson = promoted[row];
 
-                            var thisClass = 'dashTableRow';
+                            var thisClass = 'd-flex dashTableRow';
                             var thisNameColHtml = "<div>" + rowJson.name + "</div>";
                             thisNameColHtml += "<div class='dashTableNameButtonRow' ><i id='DashBuildMenu' class='fa  fa-play fa-fw  dashTableBuildButton'></i>  <i id='DashOpenMenu' class='fa  fa-folder-open fa-fw dashTableOpenButton'></i></div>";
 
                             pCompHtml += "<tr id='row_" + rowJson.id +"' data-id='" + rowJson.id +"' data-runSys='"+ rowJson.systemId +"' data-runSysName='"+ rowJson.systemName + "' class='" + thisClass + "'>";
 
-                            pCompHtml += "<td class='dashTableNameItem'>  " + thisNameColHtml + "</td>";
+                            pCompHtml += "<td class='col-2 dashTableNameItem'>  " + thisNameColHtml + "</td>";
 
-                            var success = rowJson.hasOwnProperty("lastBuild") ? (rowJson.lastBuild.pass ? "<i class='fa fa-check fa-fw'></i>":"<i class='fa fa-cross fa-fw'></i>") : "";
+                            var success = rowJson.hasOwnProperty("lastBuild") ? (rowJson.lastBuild.pass ? "<i class='fa fa-check fa-fw DashListRowPass'></i>":"<i class='fa fa-times fa-fw DashListRowFail'></i>") : "";
 
-                            pCompHtml += "<td class='dashTableSuccessItem'>" + success + "</td>";
-                            pCompHtml += "<td class='dashTableDescriptionItem'>" + rowJson.description + "</td>";
+                            pCompHtml += "<td class='col-1 dashTableSuccessItem'>" + success + "</td>";
+                            pCompHtml += "<td class='col-9 dashTableDescriptionItem'>" + rowJson.description + "</td>";
                             pCompHtml += "</tr>"
 
                             if(dashListRowClicked === rowJson.id){
@@ -2310,12 +2310,18 @@
                 }
             });
 
+            //Default set codes window to min
+//            min_codes_window();
+            function min_codes_window(){
+                var container = $('#rowContainer');
+                setWindowHeight(container.height()- 30 , container);
+                currentHeight = container.height()- 30
+                currentRatio = currentHeight / container.height();
+            }
+
             //min codes window
             $('.codes_btn_min').on('click', function(){
-                var container = $('#rowContainer');
-                setWindowHeight(container.height()- 25 , container);
-                currentHeight = container.height()- 25
-                currentRatio = currentHeight / container.height();
+                min_codes_window()
             });
 
             //max codes window
@@ -2403,7 +2409,7 @@
 
 //            currentRatio = 1;
 
-            var currentHeight = container.height()- 25   //container.height() * .75; //default height
+            var currentHeight = container.height()- 30   //container.height() * .75; //default height
             currentHeight += currentHeight < 10 ? 10 - currentHeight : 0;
             currentRatio = currentHeight / container.height();
 
@@ -3271,10 +3277,10 @@ hideBottom();
                             <hr class="dashDropButtonHR">
                             <table class="table dashTable">
                                 <thead>
-                                <tr>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Success</th>
-                                    <th scope="col">Description</th>
+                                <tr class="d-flex">
+                                    <th class="col-2">Name</th>
+                                    <th class="col-1">Success</th>
+                                    <th class="col-9">Description</th>
                                 </tr>
                                 </thead>
                                 <tbody id="dashTable" class="dashTbody">
@@ -3355,7 +3361,7 @@ hideBottom();
                 <!--<ul class="nav nav-tabs " role="tablist" >-->
                     <!--<li class="nav-item">-->
                         <!--<a class="nav-link active" href="#Component_Details" role="tab" data-toggle="tab">-->
-                            <icon class="fa fa-th-large"></icon>Component Details
+                            <icon class="fa fa-th-large"></icon> Component Details
                         <!--</a>-->
                     <!--</li>-->
                 <!--</ul>-->
@@ -3767,7 +3773,7 @@ hideBottom();
                 <h4 class="modal-title">Settings</h4>
             </div>
             <div class="modal-body">
-                <nav class="navbar ">
+                <div>
                     Theme:
                     <div class="radio stylePick" data-id="default">
                         <label><input type="radio" id ="defaultStyleRadio" name="setupRadio" checked>Light</label>
@@ -3790,7 +3796,7 @@ hideBottom();
                     <div class="form-group">
                         <input class="form-control form-custom-meta" placeholder="Enter your preferred user name" id="username" style="width:250px"> <button id = "set_username" class="btn btn-default jobFormbtn jobSetFormbtn">Set</button> <span id="set_username_results"></span>
                     </div>
-                </nav>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
@@ -3942,7 +3948,7 @@ hideBottom();
     </div>
 </div>
 <div id="varModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-var">
 
         <nav class="modal-content">
             <div class="modal-header">
@@ -4079,13 +4085,13 @@ hideBottom();
 
 </div>
 <div id="varHelpModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-varHelp">
 
         <nav class="modal-content">
             <div class="modal-header">
                 <h1 class="modal-title">Component Variables</h1>
             </div>
-            <div id='varHelpBody' class="modal-body" style="overflow-y: auto;height: 80vh;">
+            <div id='varHelpBody' class="modal-body" style="overflow-y: auto;height: 60vh;">
                 <p>Component variables are used to provide configurability of components to non-developers. A build script developer can insert a component variable into the build script that a non-developer user can adjust.</p>
                 <p>Enter variable-name=value pairs. Separate each with a new line.<br></p>
                 <p>Replace any hardcoded value in the build script with &lt;%c.variable-name%&gt;<br>

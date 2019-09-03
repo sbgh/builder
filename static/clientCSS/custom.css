@@ -190,6 +190,7 @@ topLib-col-fixed-240{
 }
 .dashboardPanel{
    overflow-y: auto;
+   width: 100%;
 }
 
 input[readonly].form-control {
@@ -204,16 +205,16 @@ padding-left: 0px;
 
 }
 
-.navbar-rightx{
-
+.navbar-right{
+   float: right;
    margin-top: 0;
    margin-bottom: 0px;
 }
 
-.right-menux {
-   color: #3c763d;
-   margin-bottom: 0px;
-}
+/*.right-menux {*/
+   /*color: #3c763d;*/
+   /*margin-bottom: 0px;*/
+/*}*/
 
 .jobFormbtn {
    padding: 1px 2px;
@@ -620,23 +621,16 @@ input:checked + .slider:before {
    padding:0px
 }
 .dashboard{
-   /*overflow-y: auto;*/
    padding-top: 3px;
-   /*background-image: url("/images/light-pattern.png");*/
 
 }
 
 .dashBoardList{
-   /*margin: auto;*/
-   /*max-width: 1000px;*/
+
 }
 
 .dashBoardListRow{
-   /*white-space: nowrap;*/
-   /*margin-right: 0px;*/
-   /*margin-left: 0px;*/
-   /*margin-bottom: 2px;*/
-   /*margin-top: 2px;*/
+
 
 }
 
@@ -697,21 +691,21 @@ div.dashTableNameButtonRow{
    /*padding-left: 5px;*/
 /*}*/
 
-/*.DashListRowPass{*/
-   /*color: #2c3433;*/
+.DashListRowPass{
+   color: #10a54a;
    /*background-color: #e7f6ec;*/
    /*border: 1px solid #10a54a;*/
-/*}*/
-/*.DashListRowFail{*/
-   /*color: #2c3433;*/
+}
+.DashListRowFail{
+   color: #d52322;
    /*background-color: #f9f2e9;*/
    /*border: 1px solid #c5862b;*/
-/*}*/
-/*.DashListRowNotBuilt{*/
-   /*color: #2c3433;*/
+}
+.DashListRowNotBuilt{
+   color: #2c3433;
    /*background-color: #e7f0f7;*/
    /*border: 1px solid #0f6ab4;*/
-/*}*/
+}
 
 .os-panel{
    /*width:80px;*/
@@ -852,12 +846,24 @@ div.dashTableNameButtonRow{
    width:50vw;
    min-width: 100px;
 }
+.modal-dialog-var{
+   width:50vw;
+   min-width: 500px;
+   max-width: 100vw;
+}
+
+.modal-dialog-varHelp{
+   width:50vw;
+   min-width: 500px;
+   max-width: 100vw;
+}
 
 .modal-del-dialog {
    width: 30vw
 }
 
 .dashBoardTopRow{
+   margin-top: 10px;
    margin-bottom: 10px;
    min-height: 330px;
 }
@@ -1052,8 +1058,8 @@ tr {
 }
 
 .navbar-fixed-top{
-
    padding-bottom: 0px;
+   padding-top: 0px;
 }
 
 .jobCard{
