@@ -818,28 +818,49 @@
                         const promoted = JSON.parse(data);
                         var pCompHtml = "";
 
-                        var dashListRowClicked = localStorage['dashListRowClicked'];
+                        const dashListRowClicked = localStorage['dashListRowClicked'];
+
+                        var clickedRowEnabled ="";
 
                         for (var row in promoted){
 
                             rowJson = promoted[row];
 
                             var thisClass = 'd-flex dashTableRow';
-                            var thisNameColHtml = "<div>" + rowJson.name + "</div>";
-                            thisNameColHtml += "<div class='dashTableNameButtonRow' ><i id='DashBuildMenu' class='fa  fa-play fa-fw  dashTableBuildButton'></i>  <i id='DashOpenMenu' class='fa  fa-folder-open fa-fw dashTableOpenButton'></i></div>";
-
                             pCompHtml += "<tr id='row_" + rowJson.id +"' data-id='" + rowJson.id +"' data-runSys='"+ rowJson.systemId +"' data-runSysName='"+ rowJson.systemName + "' class='" + thisClass + "'>";
+
+                            var thisNameColHtml = "<div>" + rowJson.name + "</div>";
+                            thisNameColHtml += "<div class='dashTableNameButtonRow' >"
+                            var display = rowJson.enabled == 1 ? 'style="display: inline;"' : 'style="display: none;"'
+                            thisNameColHtml += "<i id='DashBuildMenu' "+display+" class='fa  fa-play fa-fw  dashTableBuildButton'></i>  "
+                            thisNameColHtml += "<i id='DashOpenMenu' class='fa  fa-folder-open fa-fw dashTableOpenButton'></i></div>";
+
 
                             pCompHtml += "<td class='col-2 dashTableNameItem'>  " + thisNameColHtml + "</td>";
 
-                            var success = rowJson.hasOwnProperty("lastBuild") ? (rowJson.lastBuild.pass ? "<i class='fa fa-check fa-fw DashListRowPass'></i>":"<i class='fa fa-times fa-fw DashListRowFail'></i>") : "";
+                            var thisEnabledSliderHTML = "<div class='dashTableEnabledButtonRow'>"
+                            thisEnabledSliderHTML += rowJson.hasOwnProperty("enabled") ? (rowJson.enabled == '1' ? '<label class="switch "><input type="checkbox" checked class="success dashTableEnableButton"><span class="slider round"></span></label>':'<label class="switch "><input type="checkbox" class="success dashTableEnableButton"><span class="slider round"></span></label>') : "";
+                            thisEnabledSliderHTML += "</div>";
 
+                            if(rowJson.hasOwnProperty("enabled")){
+                                if(rowJson.enabled == 1){
+                                    enabledHTML = "<i class='fa fa-check fa-fw DashListRowPass'></i>";
+                                }else{
+                                    enabledHTML = "<i class='fa fa-times fa-fw DashListRowFail'></i>";
+                                }
+                            }
+
+                            pCompHtml += "<td class='col-1 dashTableEnableItem'>" + enabledHTML + thisEnabledSliderHTML +  "</td>";
+
+                            var success = rowJson.hasOwnProperty("lastBuild") ? (rowJson.lastBuild.pass ? "<i class='fa fa-check fa-fw DashListRowPass'></i>":"<i class='fa fa-times fa-fw DashListRowFail'></i>") : "";
                             pCompHtml += "<td class='col-1 dashTableSuccessItem'>" + success + "</td>";
-                            pCompHtml += "<td class='col-9 dashTableDescriptionItem'>" + rowJson.description + "</td>";
+
+                            pCompHtml += "<td class='col-8 dashTableDescriptionItem'>" + rowJson.description + "</td>";
                             pCompHtml += "</tr>"
 
                             if(dashListRowClicked === rowJson.id){
-                                loadDashDetails(rowJson.id, rowJson.systemId, rowJson.systemName)
+                                loadDashDetails(rowJson.id, rowJson.systemId, rowJson.systemName);
+                                clickedRowEnabled = rowJson.enabled;
                             }
 
                         }
@@ -848,6 +869,16 @@
 
                         selectDashTableRow(dashListRowClicked);
 
+                        setRowEnablement(dashListRowClicked,clickedRowEnabled);
+
+                        function setRowEnablement(id, enabled){
+                            if (enabled === 1){
+                                $("#row_"+id + " > td > div > i.dashTableBuildButton").show();
+                            }else{
+                                $("#row_"+id + " > td > div > i.dashTableBuildButton").hide();
+
+                            }
+                        }
 
                         function selectDashTableRow(id){
 
@@ -858,6 +889,8 @@
                             });
                             $("#row_" + id).addClass("dashListRowClicked");
                             $("#row_" + id).removeClass("dashListRowNotClicked");
+
+
 
                             $('.dashListRowNotClicked').on('click', function(){
                                 var id = $(this).attr('data-Id');
@@ -870,6 +903,7 @@
                             });
 
                         }
+
                         $('.dashListRowNotClicked').on('click', function(){
                             var id = $(this).attr('data-Id');
                             var sys = $(this).attr('data-runSys');
@@ -892,8 +926,43 @@
                             $("#componentsBtn").click();
                         });
 
+                        $('.dashTableEnableButton').on('click', function(){
+                            var id = $("#dashId").val();
 
+                            const checked = {id:id, checked: this.checked};
 
+                            $.ajax({
+                                type: 'get',
+                                data: checked,
+                                dataType : "text",
+                                headers: {
+                                    "content-type": "application/json"
+                                },
+                                url: '/setEnable',
+                                success : function(data) {
+
+                                   const enabledJson = JSON.parse(data);
+                                   const en = enabledJson.enabled;
+                                   const id = $("#dashId").val();
+
+                                   if (en === 1){
+                                       $("#row_"+id + " > td > div > i.dashTableBuildButton").show();
+                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").removeClass('fa-times').removeClass('DashListRowFail');
+                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").addClass('fa-check').addClass('DashListRowPass');
+                                   }else{
+                                       $("#row_"+id + " > td > div > i.dashTableBuildButton").hide();
+                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").removeClass('fa-check').removeClass('DashListRowPass');
+                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").addClass('fa-times').addClass('DashListRowFail');
+                                   }
+
+                                },
+                                error : function(error) {
+                                    alert("Error changing enable property for this component");
+                                    console.log(error)
+                                }
+                            })
+
+                        })
                     },
                     error : function(error) {
                         console.log(error)
@@ -3279,8 +3348,9 @@ hideBottom();
                                 <thead>
                                 <tr class="d-flex">
                                     <th class="col-2">Name</th>
-                                    <th class="col-1">Success</th>
-                                    <th class="col-9">Description</th>
+                                    <th class="col-1 center">Enabled</th>
+                                    <th class="col-1 center">Success</th>
+                                    <th class="col-8">Description</th>
                                 </tr>
                                 </thead>
                                 <tbody id="dashTable" class="dashTbody">

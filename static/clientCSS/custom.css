@@ -495,6 +495,10 @@ padding-left: 0px;
    transition: .4s;
 }
 
+input.success:checked + .slider {
+   background-color: #8bc34a;
+}
+
 .slider:before {
    position: absolute;
    content: "";
@@ -638,6 +642,14 @@ input:checked + .slider:before {
    cursor: pointer;
 }
 
+.dashTableEnableItem{
+   text-align: center;
+}
+.dashTableSuccessItem{
+   text-align: center;
+}
+
+
 .dashListRowClicked{
 
 }
@@ -656,7 +668,7 @@ div.dashTableNameButtonRow{
    display:none;
 }
 .dashListRowClicked > td.dashTableNameItem > div.dashTableNameButtonRow{
-   display:unset;
+   display:block;
 }
 
 .dashTableBuildButton{
@@ -665,6 +677,15 @@ div.dashTableNameButtonRow{
 .dashTableOpenButton{
    color: #0f6ab4;
 }
+
+div.dashTableEnabledButtonRow{
+   display:none;
+}
+.dashListRowClicked > td.dashTableEnableItem > div.dashTableEnabledButtonRow{
+   display:block
+}
+
+
 
 .dashboardDetailsHr{
    border-top: 1px solid;
@@ -828,6 +849,9 @@ div.dashTableNameButtonRow{
    text-align: center;
 }
 
+.center{
+   text-align: center;
+}
 
 .status-panel-body{
    /*max-height: 300px;*/
@@ -1011,7 +1035,7 @@ a.foundInSearchParent{
 }
 
 .dashSystemsDropdownMenu{
-   padding:10px ;
+   padding:2px ;
 }
 .dropdown-settings{
 
@@ -1057,6 +1081,10 @@ tr {
    white-space: nowrap;
 }
 
+.topMenuDropdown{
+   min-width: 11rem;
+}
+
 .navbar-fixed-top{
    padding-bottom: 0px;
    padding-top: 0px;
@@ -1071,3 +1099,4 @@ tr {
    cursor: pointer;
    padding: 3px;
 }
+

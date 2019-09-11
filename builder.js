@@ -2937,8 +2937,8 @@ router.get("/getPromoted",function(req,res){
                     if(hostIP !=="" || SystemsJSON[key].runLocal === 1){
                         rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
                         rowdata.id = key;
-                         rowdata.systemName =  SystemsJSON[rowdata.ft.split("/")[1]].name;
-                         rowdata.systemId =  rowdata.ft.split("/")[1];
+                        rowdata.systemName =  SystemsJSON[rowdata.ft.split("/")[1]].name;
+                        rowdata.systemId =  rowdata.ft.split("/")[1];
 
                         resJSON.push(rowdata);
                     }
@@ -2969,6 +2969,21 @@ router.get("/getPromoted",function(req,res){
     });
 
     res.end(JSON.stringify(resJSON));
+});
+
+router.get("/setEnable",function(req,res){
+    const id = req.query.id;
+    const checked = req.query.checked;
+
+    if (SystemsJSON.hasOwnProperty(id)) {
+        if(checked === "true") {
+            SystemsJSON[id].enabled = 1
+        }else{
+            SystemsJSON[id].enabled = 0
+        }
+        saveAllJSON(false)
+    }
+    res.end(JSON.stringify({enabled:SystemsJSON[id].enabled}));
 });
 
 //Service Rt: /getCPUStats to return an array of CPU stats of the current server , Method: get, Requires: none, Returns: array of stats in the format {last10:[val], last50:[val], last100:[val], freeMem:[val]}

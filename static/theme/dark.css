@@ -460,6 +460,12 @@ input:focus + .slider {
      border-color: inherit;
 }
 
+.dashSystemDropdownItem {
+    background-color: rgb(60, 63, 65);
+    border-bottom: 1px solid rgba(0,0,0,.125);
+    color: #fcfcef;
+}
+
 /*.rightCol > ul > li > a{*/
     /*color: #f9f2e9;*/
     /*background-color: #3c3f41;*/
