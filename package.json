@@ -5,7 +5,7 @@
     "start": "node Server.js"
   },
   "dependencies": {
-    "chrome-launcher": "^0.28.0",
+    "chrome-launcher": "^0.11.2",
     "chrome-remote-interface": "^0.28.0",
     "express": "latest",
     "express-session": "^1.15.2",
