@@ -1,5 +1,5 @@
 {
-  "name": "ezStack.Systems Builder",
+  "name": "ezStack.Systems-Builder",
   "version": "0.0.12",
   "scripts": {
     "start": "node Server.js"
@@ -9,7 +9,6 @@
     "chrome-remote-interface": "^0.28.0",
     "express": "latest",
     "express-session": "^1.15.2",
-    "forever": "^0.15.3",
     "formidable": "^1.1.1",
     "getuid": "0.0.1",
     "password-hash": "^1.2.2",
