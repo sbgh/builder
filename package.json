@@ -1,12 +1,12 @@
 {
-  "name": "website-using-express",
-  "version": "0.0.1",
+  "name": "ezStack.Systems Builder",
+  "version": "0.0.12",
   "scripts": {
     "start": "node Server.js"
   },
   "dependencies": {
-    "chrome-launcher": "^0.6.0",
-    "chrome-remote-interface": "^0.24.5",
+    "chrome-launcher": "^0.28.0",
+    "chrome-remote-interface": "^0.28.0",
     "express": "latest",
     "express-session": "^1.15.2",
     "forever": "^0.15.3",
