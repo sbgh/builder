@@ -547,6 +547,9 @@
                        // loadDashboard();
                        // $('#dashboard').show()
 
+                        $("#sysScreen").hide();
+                        $("#jobScreen").hide();
+
                     }else{
       //                  $('#dashboard').hide();
                         if (data.instance.get_node(data.node.id).type === "job"
@@ -844,9 +847,9 @@
 
                             if(rowJson.hasOwnProperty("enabled")){
                                 if(rowJson.enabled == 1){
-                                    enabledHTML = "<i class='fa fa-check fa-fw DashListRowPass'></i>";
+                                    enabledHTML = "<i class='fa fa-check-circle-o fa-fw DashListRowPass'></i>";
                                 }else{
-                                    enabledHTML = "<i class='fa fa-times fa-fw DashListRowFail'></i>";
+                                    enabledHTML = "<i class='fa fa-times-circle-o fa-fw DashListRowFail'></i>";
                                 }
                             }
 
@@ -947,12 +950,12 @@
 
                                    if (en === 1){
                                        $("#row_"+id + " > td > div > i.dashTableBuildButton").show();
-                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").removeClass('fa-times').removeClass('DashListRowFail');
-                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").addClass('fa-check').addClass('DashListRowPass');
+                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").removeClass('fa-times-circle-o').removeClass('DashListRowFail');
+                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").addClass('fa-check-circle-o').addClass('DashListRowPass');
                                    }else{
                                        $("#row_"+id + " > td > div > i.dashTableBuildButton").hide();
-                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").removeClass('fa-check').removeClass('DashListRowPass');
-                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").addClass('fa-times').addClass('DashListRowFail');
+                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").removeClass('fa-check-circle-o').removeClass('DashListRowPass');
+                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").addClass('fa-times-circle-o').addClass('DashListRowFail');
                                    }
 
                                 },
@@ -1253,7 +1256,10 @@
                 }else{
                     $("#rightCol").show();
                     $.get('/Sys', { id: NodeID }, function(data) {
-                        //console.log("getJobByID: "+data[0].script);
+
+                        var dispData = JSON.parse(JSON.stringify(data[0]) )  ;
+                        $("#sysNodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  ); // testing ---------------------
+
                         $("#id").val(data[0].id);
                         $("#comType").val(data[0].comType);
                         $("#parent").val(data[0].parent);
@@ -2175,7 +2181,7 @@
                     var compVarsArr = $("#compVariables").val().split('\n');
 
                     compVarsArr.forEach(function(thisVar) {
-                        html += "<tr role='row' class='gradeA odd' >";
+                        //html += "<tr role='row' class='gradeA odd' >";
 
                         var pair = thisVar.split('=');
                         var currentVal = thisVar.substr(thisVar.indexOf('=')+1);
@@ -2183,6 +2189,7 @@
                         html +="<input value='c."  + pair[0] + "' type='checkbox' class='varCheckbox pull-right'>";
                         html +="</td><td class='var_Table_td' width = '30%'>" + pair[0] + '</td>' + "<td class='var_Table_td' width = '60%'>" + currentVal  + '</td>'
                         html += "</tr>";
+                        $("#insertVarBody").html(html) ;
                     })
 
                     html += "</tbody></table></div>"
@@ -2225,8 +2232,8 @@
 
                             for (var key in ResultsJson) {
                                 if (ResultsJson.hasOwnProperty(key)) {
-                                    html += "<tr role='row' class='gradeA odd' >";
                                     if(ResultsJson[key].path !== last_path){
+                                        html += "<tr role='row' class='gradeA odd' >";
                                         html += "<td  class='sorting_1 var_Table_td ' colspan=3 >" + ResultsJson[key].path + '</td></tr>'
                                     }
                                     var last_path = ResultsJson[key].path;
@@ -2570,6 +2577,8 @@
                      $('#results_html').height(container.height() - topHeight - (34 + 15));
                      $('#results_codes').height(container.height() - topHeight - (34 + 15));
                      $('#results-group').height(container.height() - topHeight - (34 + 15));
+
+                     //$(#'dashListCol').
                  }else{
                      $("#jstree_div").height(topHeight -11);
                      $("#jslibtree_div").height(topHeight -10 );
@@ -2579,8 +2588,10 @@
 
                      $("#rightCol").height(topHeight - 24);
                      $("#dashboard").height(topHeight);
-                     $("#job-form-panel").height(topHeight );
-                     $("#sys-form-panel").height(topHeight );
+                     var topRowHeight = $("#dashBoardTopRow").height();
+                     $("tbody.dashTbody").height(container.height() - topRowHeight - 130)
+                     $("#job-form-panel").height(topHeight -80 );
+                     $("#sys-form-panel").height(topHeight -80 );
 
                  }
 
@@ -3286,8 +3297,9 @@ hideBottom();
 
                     </div>
 
-                    <div class="row dashBoardTopRow">
+                    <div id = "dashBoardTopRow" class="row dashBoardTopRow">
                         <div class="col-md-6" >
+
                             <div class='panel dashPanel os-panel'>
                                 <!--<div class='panel-heading dashboardPanelHeading os-panel-heading'>CPU Load</div>-->
                                 <div class='panel-body dashPanelBody os-panel-body'>
@@ -3300,6 +3312,17 @@ hideBottom();
                                     <div id="osFMValue" >GB</div> free mem
                                 </div>
                             </div>
+
+                            <hr class="dashDropButtonHR">
+                            <div class="dropdown">
+                                <span class="dashSystemLabel">System: </span><button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Pick...
+                                </button>
+                                <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
+                                    <div><a class="dropdown-item" href="#">Action</a></div>
+                                </div>
+                            </div>
+
                             <div class="dashboardDetails">
                                 <hr class="dashboardDetailsHr">
                                 <div id="dashboardDetailsTile" class="dashboardDetailsTile"></div>
@@ -3334,27 +3357,29 @@ hideBottom();
                     </div>
 
                     <div class="row justify-content-center dashBoardBottomRow">
-                        <div class="col-md-12 dashListCol">
-                            <div class="dropdown">
-                                <span class="dashSystemLabel">System: </span><button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Pick...
-                                </button>
-                                <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
-                                    <div><a class="dropdown-item" href="#">Action</a></div>
-                                </div>
-                            </div>
-                            <hr class="dashDropButtonHR">
+                        <div id="dashListCol" class="col-md-12 dashListCol">
+                            <!--<div class="dropdown">-->
+                                <!--<span class="dashSystemLabel">System: </span><button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
+                                    <!--Pick...-->
+                                <!--</button>-->
+                                <!--<div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">-->
+                                    <!--<div><a class="dropdown-item" href="#">Action</a></div>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                            <!--<hr class="dashDropButtonHR">-->
+                            <!--<div class="tableFixHead">-->
+
+                            <!--</div>-->
                             <table class="table dashTable">
                                 <thead>
                                 <tr class="d-flex">
                                     <th class="col-2">Name</th>
                                     <th class="col-1 center">Enabled</th>
                                     <th class="col-1 center">Success</th>
-                                    <th class="col-8">Description</th>
+                                    <th class="col-7">Description</th>
                                 </tr>
                                 </thead>
-                                <tbody id="dashTable" class="dashTbody">
-                                </tbody>
+                                <tbody id="dashTable" class="dashTbody"></tbody>
                             </table>
 
                         </div>
@@ -3494,6 +3519,16 @@ hideBottom();
                                                     </div>
                                                 </div>
                                             </div>
+
+
+
+                                            <!--TESTING-->
+                                            <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+                                            <div class="form-group">
+                                                <label class="build-label">nodeData</label>
+                                                <textarea type="disabled" class="form-control form-custom code" rows="25" id="sysNodeData"></textarea>
+                                            </div>
+
 
                                         </div>
                                     </form>

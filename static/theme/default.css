@@ -330,3 +330,22 @@ a.libListRow {
 .dashTable > thead > tr > th {
     border-color: #1a1b1c ;
 }
+
+.dashTbody > tr.dashListRowClicked > td.dashTableNameItem{
+    border-color: #0066ff;
+}
+
+.dashTbody > tr > td{
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.dashTbody > tr.dashListRowClicked > td{
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.dashTableBuildButton{
+    color: #0066ff;
+}
+.dashTableOpenButton{
+    color: #0066ff;
+}

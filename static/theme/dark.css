@@ -21,10 +21,7 @@ body {
 .panel-default {
     border-color: #313335;
 }
-/*. dashPanel {*/
-    /*!*background-color: #313335;*!*/
-    /*opacity: .5;*/
-/*}*/
+
 .panel-default>.panel-heading {
     color: #adadad;
     background-color: #313335;
@@ -383,8 +380,9 @@ input:focus + .slider {
 .dashboardPanelBody{
     background: transparent;
 }
+
 .dashboardPanel{
-    background: url("/images/dark-pattern-op.png") ;
+    //background: url("/images/dark-pattern-op.png") ;
 }
 
 .screenShotLink > a, .screenShotLink > a:hover{
@@ -440,9 +438,11 @@ input:focus + .slider {
 }
 
 .dashSystemDropdownButton{
-
     color:#8ecdec;
+}
 
+.os-panel{
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .jobCard > .card-header {
@@ -464,6 +464,31 @@ input:focus + .slider {
     background-color: rgb(60, 63, 65);
     border-bottom: 1px solid rgba(0,0,0,.125);
     color: #fcfcef;
+}
+
+.topMenuDropdown {
+    background-color: #555555;
+}
+
+.dashTbody > tr > td{
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+
+.dashTbody > tr.dashListRowClicked > td{
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+
+.dashTbody > tr.dashListRowClicked > td.dashTableNameItem{
+    border-color: #8ecdec;
+}
+
+.dashTableBuildButton{
+    color: #8ecdec;
+}
+.dashTableOpenButton{
+    color: #8ecdec;
 }
 
 /*.rightCol > ul > li > a{*/

@@ -671,12 +671,7 @@ div.dashTableNameButtonRow{
    display:block;
 }
 
-.dashTableBuildButton{
-   color: #0f6ab4;
-}
-.dashTableOpenButton{
-   color: #0f6ab4;
-}
+
 
 div.dashTableEnabledButtonRow{
    display:none;
@@ -731,7 +726,6 @@ div.dashTableEnabledButtonRow{
 .os-panel{
    /*width:80px;*/
    display: inline-block;
-   /*box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);*/
 }
 .os-panel-heading{
    border: 1px solid #0f6ab4;
@@ -844,8 +838,6 @@ div.dashTableEnabledButtonRow{
 .screenshot-panel-body{
 
    max-height: 300px;
-   /*background-color: #f3f3f3;*/
-   /*color: #49494b;*/
    text-align: center;
 }
 
@@ -854,11 +846,9 @@ div.dashTableEnabledButtonRow{
 }
 
 .status-panel-body{
-   /*max-height: 300px;*/
-   height: 300px;
+   max-height: 300px;
+   /*height: 300px;*/
    overflow-y: auto;
-   /*background-color: #f3f3f3;*/
-   /*color: #49494b;*/
 }
 
 
@@ -889,7 +879,7 @@ div.dashTableEnabledButtonRow{
 .dashBoardTopRow{
    margin-top: 10px;
    margin-bottom: 10px;
-   min-height: 330px;
+  // min-height: 330px;
 }
 
 .launchPanelBody{
@@ -1054,24 +1044,33 @@ tr {
 
 .dashTable{
    color: inherit;
-   border-color: white;
+   //border-color: white;
+   border: none;
 }
 
 .dashTable > thead > tr > th{
     border-top: 0px solid;
-    border-bottom: 2px solid;
-    border-color: inherit;
+    border-bottom: 0px solid;
+    //border-color: inherit;
  }
 
 .dashTbody{
    overflow-y: auto;
-   width: 100%;
+   width: 98%;
 }
+
+.dashTbody > tr.dashListRowClicked > td.dashTableNameItem{
+   border-left: 4px solid;
+}
+
 
 .dashTbody > tr > td{
    border-top: 0px solid;
-   border-bottom: 1px solid;
+   border-bottom: 0px solid;
+   margin-top: 0.5rem;
+   padding: 0.5rem;
 }
+
 
 .userIcon{
    font-size: 20px;
@@ -1099,4 +1098,18 @@ tr {
    cursor: pointer;
    padding: 3px;
 }
+
+tbody.dashTbody{
+   /*height: calc(100vh - 500px);*/
+   min-height: 100px;
+   position: absolute;
+}
+
+th.col-1, td.col-1{
+   min-width: max-content;
+
+}
+
+/*.tableFixHead          { overflow-y: auto; height: 100px; }*/
+/*.tableFixHead table thead tr th { position: sticky; top: 0; }*/
 
