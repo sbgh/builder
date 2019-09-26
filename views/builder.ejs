@@ -686,92 +686,11 @@
                             $("#dropdownMenuButton")[0].innerHTML += sysName;
                             loadDashTable(id);
 
-//                                var sys = $(this).attr('data-runSys');
-//                                var sysName = $(this).attr('data-runSysName');
-//                                loadDashDetails(id, sys, sysName);
-//                                $(".dashCompNameRow").each(function(){
-//                                    $(this).removeClass('dashListRowClicked')
-//                                })
-//                                $(this).addClass("dashListRowClicked");
-
-
-                            $("#dashboardDetailsTile")[0].innerHTML  = "";
-                            $("#dashboardDetailsDescription")[0].innerHTML  = "";
-
                             localStorage['dashSystemDropItemClicked'] = JSON.stringify({ id:id, sysName:sysName }) ;
                         });
-//                            var lastSystemName = "";
-//                            promoted.forEach(function(pComp){
-//
-//                                if(lastSystemName !== pComp.systemName){
-//                                    if(lastSystemName !== ""){
-//                                        pCompHtml += '      </div>';
-//                                        pCompHtml += '   </div></div>';
-//                                        pCompHtml += '</div></div>';
-//                                    };
-//                                    pCompHtml += '<div class="col-sm-3 launchPadCol" ><div class="panel dashPanel launchPadPanel">';
-//                                    var urlString = "'/uploads/"+pComp.systemId+"/icon.png'";
-//                                    pCompHtml += '   <div class="panel-heading dashboardPanelHeading launchPadHeading">'
-//                                   // pCompHtml += '<div id="launchPadPanelIcon" class="launchPadPanelIcon" style="background-image: url('+urlString+');"></div>';
-//                                    pCompHtml += '<img id="launchPadPanelIcon" class="launchPadPanelIcon" src='+urlString+'></img>';
-//
-//                                    pCompHtml += pComp.systemName + '</div>';
-//
-//                                    pCompHtml += '<div class="panel-body dashPanelBody launchPanelBody">'
-//                                    pCompHtml += '      <div class="row dashBoardList">';
-//                                };
-//                                var dashListRowClicked = "";
-//                                if(localStorage['dashListRowClicked'] === pComp.id){
-//                                    dashListRowClicked = 'dashListRowClicked';
-//                                    loadDashDetails(pComp.id, pComp.systemId, pComp.systemName);
-//                                }
-//
-//                                var pHTML="";
-//                                if(!pComp.hasOwnProperty("lastBuild")){
-//                                    pHTML="<div class='col-sm-1 DashListStatusCol DashListNotBuilt'><i class='fa  fa-play fa-fw'></i></div>"
-//                                    rowColorClass="DashListRowNotBuilt"
-//                                }else if(!pComp.lastBuild.hasOwnProperty("pass")){
-//                                    pHTML="<div class='col-sm-1 DashListStatusCol DashListNotBuilt'><i class='fa  fa-play fa-fw'></i></div>"
-//                                    rowColorClass="DashListRowNotBuilt"
-//                                }else{
-//                                    if(pComp.lastBuild.pass === 1){
-//                                        pHTML="<div class='col-sm-1 DashListStatusCol DashListPass'><i class='fa  fa-check fa-fw'></i></div>"
-//                                        rowColorClass="DashListRowPass"
-//                                    }else{
-//                                        pHTML="<div class='col-sm-1 DashListStatusCol DashListFail'><i class='fa  fa-times fa-fw'></i></div>"
-//                                        rowColorClass="DashListRowFail"
-//                                    }
-//                                }
-//
-//                                var sys = pComp.systemId;
-//                                pCompHtml += "         <div class='row dashBoardListRow "+rowColorClass+"'>";
-//
-//                                    pCompHtml += pHTML;
-//
-//                                    pCompHtml += "            <div class='col-sm-10 dashCompNameRow dashListRowNotClicked "+dashListRowClicked+"' data-Id='"+pComp.id+"'  data-runSysName='"+pComp.systemName+"' data-runSys='"+sys+"' >"
-//                                        pCompHtml +=  pComp.name ;
-//                                    pCompHtml += "            </div>";
-//
-//                                pCompHtml += "         </div>";
-//
-//                                lastSystemName = pComp.systemName;
-//
-//                            })
-//                            if(lastSystemName !== ""){
-//                                pCompHtml += '      </div>';
-//                                pCompHtml += '   </div></div>';
-//                                pCompHtml += '</div></div>';
-//                            };
 
                         $("#dashboardList")[0].innerHTML = pCompHtml;
 
-
-
-
-
-
-                        //}
-                        //
                     },
                     error : function(error) {
                         console.log(error)
@@ -780,32 +699,8 @@
 
             }
 
-            function loadDashDetails(id, sys, sysName){
-                $("#dashId").val(id);
-                $("#dashSys").val(sys);
+           function loadDashTable(systemId){
 
-                $("#dashboardDetailsTile")[0].innerHTML = '';
-                $("#dashboardDetailsDescription")[0].innerHTML = '';
-
-//                $("#dashboardDetailsSysName")[0].innerHTML = "On System: "+sysName;
-
-                getDashDetails(id, sysName) ;
-
-                function getDashDetails(id,sysName){
-                    $.get('/Jobs', { id: id }, function(data) {
-                        var dispData = JSON.parse(JSON.stringify(data[0]) );
-
-                        $("#dashboardDetailsTile")[0].innerHTML = dispData.name;
-                        $("#dashboardDetailsDescription")[0].innerHTML = dispData.description;
-
-//                        $(".dashboardMenu").show();
-
-                    });
-                }
-
-            }
-
-            function loadDashTable(systemId){
 
                 var mydata = {systemId:systemId}
                 $.ajax({
@@ -859,11 +754,12 @@
                             pCompHtml += "<td class='col-1 dashTableSuccessItem'>" + success + "</td>";
 
                             pCompHtml += "<td class='col-8 dashTableDescriptionItem'>" + rowJson.description + "</td>";
+
                             pCompHtml += "</tr>"
 
                             if(dashListRowClicked === rowJson.id){
-                                loadDashDetails(rowJson.id, rowJson.systemId, rowJson.systemName);
                                 clickedRowEnabled = rowJson.enabled;
+                                $("#dashSys").val(rowJson.systemId);
                             }
 
                         }
@@ -893,13 +789,16 @@
                             $("#row_" + id).addClass("dashListRowClicked");
                             $("#row_" + id).removeClass("dashListRowNotClicked");
 
-
+                            $("#dashId").val(id);
 
                             $('.dashListRowNotClicked').on('click', function(){
                                 var id = $(this).attr('data-Id');
                                 var sys = $(this).attr('data-runSys');
                                 var sysName = $(this).attr('data-runSysName');
-                                loadDashDetails(id, sys, sysName);
+
+                                $("#dashId").val(id);
+                                $("#dashSys").val(sys);
+
                                 selectDashTableRow(id);
 
                                 localStorage['dashListRowClicked'] = id;
@@ -911,7 +810,11 @@
                             var id = $(this).attr('data-Id');
                             var sys = $(this).attr('data-runSys');
                             var sysName = $(this).attr('data-runSysName');
-                            loadDashDetails(id, sys, sysName);
+
+                            $("#dashId").val(id);
+                            $("#dashSys").val(sys);
+
+                            //loadDashDetails(id, sys, sysName);
                             selectDashTableRow(id)
 
                             localStorage['dashListRowClicked'] = id;
@@ -924,9 +827,11 @@
                         });
                         $('.dashTableOpenButton').on('click', function(){
                             var id = $("#dashId").val();
-                            $('#jstree_div').jstree('select_node',id);
-                            $('#jstree_div' + " li[id=" + id + "] a")[0].click();
                             $("#componentsBtn").click();
+                            $('#jstree_div').jstree("deselect_all");
+                            $('#jstree_div').jstree('select_node',id);
+                            getJobByID(id);
+                            $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
                         });
 
                         $('.dashTableEnableButton').on('click', function(){
@@ -1424,6 +1329,7 @@
 
                 //  loadDashboard();
                 //$("#dashboard").show();
+                $("#status-panel-body").show();
 
                 $.ajax({
                     url: '/run',
@@ -1500,36 +1406,25 @@
                                     }
                                 }
                                 else if(row.substr(0,28) === 'status:All scripts completed'){
-                                    //$('#jstree_div').jstree(true).refresh_node(buildIDRunningPrev);
-                                    //$('#jstree_div').jstree(true).redraw(true);
 
                                     refreshFlag=true;
                                     $('#jstree_div').jstree(true).refresh(true);
-                                    //$('#jstree_div').jstree(true).refresh_node(buildIDRunningPrev);
-//                                if(buildIDRunningPrev !== ''){
-//                                    $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteFail').addClass("runningJobCompleteSuccess");
-//                                };
-                                    //$('#jstree_div').jstree(true).refresh(true);
 
                                 }
                                 else if(row.substr(0,22) === 'status:Scripts Aborted'){
                                     //$('#jstree_div').jstree(true).redraw(true);
                                     refreshFlag=true;
                                     $('#jstree_div').jstree(true).refresh(true);
-//                                if(buildIDRunningPrev !== ''){
-//                                    $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteSuccess').addClass("runningJobCompleteFail");
-//                                };
-                                    //$('#jstree_div').jstree(true).refresh();
-                                    //$('#jstree_div').jstree(true).redraw(true);
                                 }
                                 else if(row.substr(0,12) === 'message:img:'){
                                     var timestamp = new Date().getTime();
-                                    //$('#screenShot')[0].src="/uploads/" + row.replace('message:img:','') + '?' +timestamp  ;
                                     var imageLink = "/uploads/" + row.replace('message:img:','') + '?' +timestamp;
                                     $('#screenShotImageDashboard')[0].src=imageLink  ;
+                                    $('#screenShotImage')[0].src=imageLink  ;
 
                                     localStorage['lastSreenShot'] = imageLink;
                                     $("#screenShotImageDashboard").show();
+                                    $("#screenShotImage").show();
                                 }
                                 else{
                                     if(localKey !== '' && sys.length !== 0){
@@ -2589,7 +2484,7 @@
                      $("#rightCol").height(topHeight - 24);
                      $("#dashboard").height(topHeight);
                      var topRowHeight = $("#dashBoardTopRow").height();
-                     $("tbody.dashTbody").height(container.height() - topRowHeight - 130)
+                     $("tbody.dashTbody").height(container.height() - topRowHeight - 115)
                      $("#job-form-panel").height(topHeight -80 );
                      $("#sys-form-panel").height(topHeight -80 );
 
@@ -3049,6 +2944,8 @@ hideBottom();
                 $("#componentsBtn").addClass("active");
                 showBottom();
             });
+            var statusPanel = $("#resultsStatus")[0].innerHTML;
+            if(statusPanel === ""){$("#status-panel-body").hide()}
 
 
             // $("#Build_Results_tab").hide();
@@ -3303,19 +3200,23 @@ hideBottom();
                             <div class='panel dashPanel os-panel'>
                                 <!--<div class='panel-heading dashboardPanelHeading os-panel-heading'>CPU Load</div>-->
                                 <div class='panel-body dashPanelBody os-panel-body'>
-                                    <div id="osCPUValue" >%</div> cpu load
+                                    <div class="dashboardLabel" >cpu load</div>
+                                    <div class="osValue" id="osCPUValue" >%</div>
                                 </div>
                             </div>
                             <div class='panel dashPanel os-panel'>
                                 <!--<div class='panel-heading dashboardPanelHeading os-panel-heading'>Free Mem</div>-->
+
                                 <div class='panel-body dashPanelBody os-panel-body'>
-                                    <div id="osFMValue" >GB</div> free mem
+                                    <div class="dashboardLabel" >free mem</div>
+                                    <div class="osValue" id="osFMValue" >GB</div>
                                 </div>
                             </div>
 
-                            <hr class="dashDropButtonHR">
-                            <div class="dropdown">
-                                <span class="dashSystemLabel">System: </span><button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <!--<hr class="dashDropButtonHR">-->
+                            <div class="panel dashPanel ">
+                                <div class="dashboardLabel">System</div>
+                                <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Pick...
                                 </button>
                                 <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
@@ -3324,9 +3225,9 @@ hideBottom();
                             </div>
 
                             <div class="dashboardDetails">
-                                <hr class="dashboardDetailsHr">
+                                <!--<hr class="dashboardDetailsHr">-->
                                 <div id="dashboardDetailsTile" class="dashboardDetailsTile"></div>
-                                <hr class="dashboardDetailsHr">
+                                <!--<hr class="dashboardDetailsHr">-->
                                 <!--<div class="dashboardMenu">-->
                                     <!--<div class="dashboardMenuItem" id="DashBuildMenu">Build</div>-->
                                     <!--<div class="dashboardMenuItem dashboardMenuItemLast" id="DashOpenMenu">Open</div>-->
@@ -3336,7 +3237,7 @@ hideBottom();
                             </div>
                         </div>
                         <div class="col-md-4" >
-                            <div class='panel dashPanel lastScreeenshotPanel'>
+                            <div class='panel'>
                                 <!--<div class='panel-heading dashboardPanelHeading '>Last Screenshot</div>-->
                                 <div class='panel-body dashPanelBody screenshot-panel-body' >
                                     <img id="screenShotImageDashboard" class="screenShotImageDashboard">
@@ -3373,10 +3274,10 @@ hideBottom();
                             <table class="table dashTable">
                                 <thead>
                                 <tr class="d-flex">
-                                    <th class="col-2">Name</th>
-                                    <th class="col-1 center">Enabled</th>
-                                    <th class="col-1 center">Success</th>
-                                    <th class="col-7">Description</th>
+                                    <th class="col-2 dashboardLabel">Name</th>
+                                    <th class="col-1 dashboardLabel center">Enabled</th>
+                                    <th class="col-1 dashboardLabel center">Success</th>
+                                    <th class="col-7 dashboardLabel">Description</th>
                                 </tr>
                                 </thead>
                                 <tbody id="dashTable" class="dashTbody"></tbody>
@@ -3612,7 +3513,7 @@ hideBottom();
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div id="screenShotImageHolder" class="col-lg-6 ">
+                                            <div id="screenShotImageHolder" class="col-lg-6 screenShotImageHolder">
                                                 <img id="screenShotImage">
                                             </div>
 
@@ -3786,24 +3687,6 @@ hideBottom();
                             </div>
                         </div>
                     </div>
-
-                    <!--<div class="tab-pane fade" id="Build_Results">-->
-                        <!--<div class="container-fluid">-->
-                            <!--<div class="row" id="build-results-row">-->
-
-                                <!--<div id="leftResultsCol" class="col-lg-3 resultsStatus" >-->
-                                    <!--&lt;!&ndash;<div class="resultsStatus" id="resultsStatus"></div>&ndash;&gt;-->
-                                <!--</div>-->
-                                <!--<div id="rightResultsCol" class="col-lg-8" >-->
-                                    <!--<div id="screenShotCol" class="screenShotCol"  >-->
-                                        <!--&lt;!&ndash;<div id="link"></div>&ndash;&gt;-->
-                                        <!--<img id="screenShot">-->
-                                    <!--</div>-->
-                                <!--</div>-->
-
-                            <!--</div>-->
-                        <!--</div>-->
-                    <!--</div>-->
                 </div>
 
             </div>
@@ -3836,6 +3719,7 @@ hideBottom();
                         <div id="terminal-container" >
                             <div id="results_html" class='scroller'></div>
                             <div id="results_codes" class='scroller'></div>
+                            <!--<div id="console_connect" class='' contentEditable="true">jnkjn,kjn.kb.bhb,j</div>-->
                         </div>
                     </div>
                 </div>

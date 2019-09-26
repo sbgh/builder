@@ -441,8 +441,9 @@ padding-left: 0px;
    box-shadow: 3px 5px 18px 1px rgba(51, 51, 51, 0.88);
 }
 
-#screenShotImageHolder{
+.screenShotImageHolder{
    text-align: center;
+   padding-bottom: 20px;
 }
 
 .topLeftForm{
@@ -629,6 +630,12 @@ input:checked + .slider:before {
 
 }
 
+.dashboardLabel{
+   font-size: 1rem;
+   font-weight: 400;
+   line-height: 24px;
+}
+
 .dashBoardList{
 
 }
@@ -664,29 +671,31 @@ input:checked + .slider:before {
    font-size: 16px;
 }
 
-div.dashTableNameButtonRow{
-   display:none;
+div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
+   -moz-transition: max-height 0.2s;
+   -ms-transition: max-height 0.2s;
+   -o-transition: max-height 0.2s;
+   -webkit-transition: max-height 0.2s;
+   transition: max-height 0.2s;
+   overflow: hidden;
+   max-height:0px;
+
 }
-.dashListRowClicked > td.dashTableNameItem > div.dashTableNameButtonRow{
-   display:block;
+.dashListRowClicked > td.dashTableNameItem > div.dashTableNameButtonRow, .dashListRowClicked > td.dashTableEnableItem > div.dashTableEnabledButtonRow{
+   -moz-transition: max-height 0.2s;
+   -ms-transition: max-height 0.2s;
+   -o-transition: max-height 0.2s;
+   -webkit-transition: max-height 0.2s;
+   transition: max-height 0.2s;
+   overflow: hidden;
+   max-height: 1.2em;
 }
 
-
-
-div.dashTableEnabledButtonRow{
-   display:none;
-}
-.dashListRowClicked > td.dashTableEnableItem > div.dashTableEnabledButtonRow{
-   display:block
-}
-
-
-
-.dashboardDetailsHr{
-   border-top: 1px solid;
-   margin-top: 0px;
-   margin-bottom: 0px;
-}
+/*.dashboardDetailsHr{*/
+   /*border-top: 1px solid;*/
+   /*margin-top: 0px;*/
+   /*margin-bottom: 0px;*/
+/*}*/
 
 /*.DashListPass{*/
    /*color: #f3f3f3;*/
@@ -726,6 +735,8 @@ div.dashTableEnabledButtonRow{
 .os-panel{
    /*width:80px;*/
    display: inline-block;
+   margin-bottom: 20px;
+   margin-right: 20px;
 }
 .os-panel-heading{
    border: 1px solid #0f6ab4;
@@ -739,6 +750,10 @@ div.dashTableEnabledButtonRow{
    padding: 5px;
    /*background-color: #f3f3f3;*/
    /*color: #49494b;*/
+}
+
+#firstRow div.col-sm-2{
+   min-width: 90px;
 }
 
 .currentBuildStatusPanel{
@@ -836,7 +851,6 @@ div.dashTableEnabledButtonRow{
 }
 
 .screenshot-panel-body{
-
    max-height: 300px;
    text-align: center;
 }
@@ -879,7 +893,6 @@ div.dashTableEnabledButtonRow{
 .dashBoardTopRow{
    margin-top: 10px;
    margin-bottom: 10px;
-  // min-height: 330px;
 }
 
 .launchPanelBody{
@@ -930,6 +943,7 @@ a.foundInSearch{
 a.foundNotInSearch{
    font-weight: 200;
    font-style: italic;
+   font-size: .75rem;
 }
 
 a.foundInSearchParent{
@@ -1001,9 +1015,9 @@ a.foundInSearchParent{
 }
 
 .dashSystemLabel{
-   margin-left: 20px;
-   font-weight: 700;
-   font-size: 16px;
+   /*margin-left: 20px;*/
+   /*font-weight: 700;*/
+   /*font-size: 16px;*/
 }
 
 .dashSystemDropdownButton{
@@ -1049,10 +1063,14 @@ tr {
 }
 
 .dashTable > thead > tr > th{
-    border-top: 0px solid;
-    border-bottom: 0px solid;
-    //border-color: inherit;
- }
+   border-top: 0px solid;
+   border-bottom: 0px solid;
+   padding-bottom: 0px;
+}
+/*.dashTable > thead > tr.dashListRowClicked > th{*/
+  /*color: #fff;*/
+/*}*/
+
 
 .dashTbody{
    overflow-y: auto;
@@ -1060,7 +1078,7 @@ tr {
 }
 
 .dashTbody > tr.dashListRowClicked > td.dashTableNameItem{
-   border-left: 4px solid;
+   border-left: 3px solid;
 }
 
 
@@ -1113,3 +1131,8 @@ th.col-1, td.col-1{
 /*.tableFixHead          { overflow-y: auto; height: 100px; }*/
 /*.tableFixHead table thead tr th { position: sticky; top: 0; }*/
 
+.dashTbody > tr{
+   transition: height .5s;
+   //height: 0;
+   overflow: hidden;
+}

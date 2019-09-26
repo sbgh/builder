@@ -20,7 +20,7 @@ const CDP = require('chrome-remote-interface');
 
 const app = express();
 const fs = require('fs');
-const os = require('os')
+const os = require('os');
 
 const router = express.Router();
 const viewPath = __dirname + '/views/';
@@ -108,25 +108,25 @@ app.use(bodyParser.urlencoded({limit: '10mb', extended: true}));
 
 //Log all reqs in accesslog.txt
 router.use(function (req,res,next) {
-    var log = "{"+"date:"+new Date().toISOString().replace(/T/, '_').replace(/:/g, '-')+",";
-
-    log +=  "md:" + req.method + ",url:'" + req.url+"',";
-    log += "rfr:" + req.headers.referer + ",rad:" + req.connection.remoteAddress+"}\n"
+   var log = {
+        date: new Date().toISOString().replace(/T/, '_').replace(/:/g, '-'),
+        md: req.method,
+        protocol: req.protocol,
+        host: req.get('host'),
+        pathname: req.originalUrl,
+        rad: req.connection.remoteAddress
+    };
     fs.appendFile('accesslog.txt', log, function (err) {
         if (err) throw err;
         //console.log('Saved!');
     });
 
     //Reset no client timeout
-
     clearTimeout(lastnoClientTimeout);
     resetlastnoClientTimeout();
 
     next();
 });
-
-
-
 
 var lastnoClientTimeout;
 var noClientTimeout = config.hasOwnProperty("noClientTimeout") ? config.noClientTimeout : "15";
@@ -193,6 +193,7 @@ router.post("/login",function(req,res) {
 });
 
 //-------------------All routes below require authentication-----------------------------------------------------
+
 //Service Rt: /* [All], Method: get, Requires: none, Returns:  if auth then next() else redirect(rd)
 router.get("/*",function(req,res,next) {
     var sess = req.session; //Check if authenticated
@@ -2902,7 +2903,6 @@ router.post("/firstRun",function(req,res){
 
 //Service Rt: /getPromotedSystems to return a sorted array of SystemJSON rows where promoted === 1 , Method: get, Requires: none, Returns: Obj of working SystemJSON rows eg. {id:name, id2:name2}
 router.get("/getPromotedSystems",function(req,res){
-
     var rowdata={};
     var resJSON = [];
     for (var key in SystemsJSON) {
@@ -2940,28 +2940,27 @@ router.get("/getPromoted",function(req,res){
                         rowdata.systemName =  SystemsJSON[rowdata.ft.split("/")[1]].name;
                         rowdata.systemId =  rowdata.ft.split("/")[1];
 
+                        //convert family tree+key string to string containing sort values eg ?1?2?1?6?3
+                        var sortStr = " ";
+                        var sArr = rowdata.ft.split('/');
+                        sArr.push(key);
+                        sArr.forEach(function(parent_id){
+                            sortStr += parent_id.length>20 ? "?" + SystemsJSON[parent_id].sort.toString() : "";
+                        });
+
+                        rowdata.sortStr = sortStr;
+
                         resJSON.push(rowdata);
                     }
                 }
-
             }
         }
     };
 
     //sort all rows by sort property
     resJSON.sort(function(a, b){
-        var sortTxta = " ";
-        var sortTxtb = " ";
-        //convert family tree string to string containing sort values eg ?1?2?1?6?3
-        a.ft.split('/').forEach(function(row){
-            sortTxta += row.length>20 ? "?" + SystemsJSON[row].sort.toString() : "";
-        });
-        b.ft.split('/').forEach(function(row){
-            sortTxtb += row.length>20 ? "?" + SystemsJSON[row].sort.toString() : "";
-        });
-
-        var keyA = sortTxta + (a.sort.toString()),
-            keyB = sortTxtb + (b.sort.toString());
+        var keyA = a.sortStr,
+            keyB = b.sortStr;
 
         if(keyA < keyB) return -1;
         if(keyA > keyB) return 1;
@@ -3012,8 +3011,8 @@ router.get("/getCPUStats",function(req,res){
 });
 var samples = []; //global to store cpu stats
 var prevCpus = os.cpus(); //global to hold previous cpu stats
-setInterval(sample,1000); //run function 'sample()' every 1000 ms
 
+setInterval(sample,1000); //run function 'sample()' every 1000 ms
 function sample() {
     currCpus = os.cpus();
     for (var i=0,len=currCpus.length;i<len;i++) {
@@ -3029,7 +3028,6 @@ function sample() {
     samples.push(deltas);
     if (samples.length>100) samples.shift()
 }
-
 
 function saveAllJSON(backup){
     //console.log("saving");

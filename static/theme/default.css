@@ -24,7 +24,7 @@ body {
 }
 
 a {
-    color: #0066ff;
+    color: #367ae0;
 }
 .form-control[readonly], fieldset[disabled] .form-control {
     background-color: #f0f0f0;
@@ -273,14 +273,20 @@ a.libListRow {
     background-color: #f9f8f9;
 }
 
+.dashPanelBody{
+    background-color: rgba(255, 255, 255,255);
+}
+
 .screenShotLink > a, .screenShotLink > a:hover{
     color: #49494b;
 }
 
+.screenshot-panel-body{
+    background-color: rgba(70, 72, 74, 0);
+}
 
-
-.dashPanelBody{
-    background-color: rgba(255, 255, 255,255);
+.screenShotImageDashboard{
+    box-shadow: 3px 5px 18px 1px rgba(51, 51, 51, 0.88);
 }
 
 .navbar-default .navbar-nav > li > a {
@@ -297,17 +303,17 @@ a.libListRow {
 }
 
 .builder_dash_btn{
-    border-bottom: 2px solid #0066ff;
+    border-bottom: 2px solid #367ae0;
 }
 .builder_dash_btn:hover, .navbar-nav>.active{
-    border-bottom: 4px solid #0066ff;
+    border-bottom: 4px solid #367ae0;
     background-color: #f9f9f9;
 
 }
 
 .dashSystemDropdownButton{
 
-    color:#0066ff;
+    color:#367ae0;
 
 }
 
@@ -318,7 +324,7 @@ a.libListRow {
 .jobCard > .card-header {
     background-color: rgba(0,0,0,.03);
     border-bottom: 1px solid rgba(0,0,0,.125);
-    color: #0066ff;
+    color: #367ae0;
 }
 
 .card-body{
@@ -331,8 +337,15 @@ a.libListRow {
     border-color: #1a1b1c ;
 }
 
+
 .dashTbody > tr.dashListRowClicked > td.dashTableNameItem{
-    border-color: #0066ff;
+
+    border-color: #367ae0;
+    color: black;
+}
+
+.dashTbody > tr.dashListRowClicked > td.dashTableDescriptionItem{
+    color: black;
 }
 
 .dashTbody > tr > td{
@@ -344,8 +357,8 @@ a.libListRow {
 }
 
 .dashTableBuildButton{
-    color: #0066ff;
+    color: #367ae0;
 }
-.dashTableOpenButton{
-    color: #0066ff;
+.dashTableOpenButton{ 
+    color: #367ae0;
 }

@@ -8,10 +8,18 @@
             $("#password")[0].focus();
         })
     </script>
+    <style>
+        .login-block{
+            left: calc(20vw/2);
+            position: absolute;
+            width: calc(80vw);
+            max-width: 600px;
+        }
+
+    </style>
 </head>
 <body>
-    <div class="col-sm-4"></div>
-    <div class="col-sm-4">
+    <div class="login-block">
         <h1>Login</h1>
         Please provide User Name and Password<br/><br/>
         <form method="post" action="/login">
@@ -32,8 +40,6 @@
             </div>
             <input type="submit" value="Login"/>
         </form>
-    </div>
-    <div class="col-sm-4">
     </div>
 </body>
 <script type = "text/javascript" language = "javascript" >
