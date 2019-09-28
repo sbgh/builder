@@ -639,6 +639,7 @@
                     $("#dropdownMenuButton")[0].innerHTML = '<img id="dashSystemIcon" class="dashSystemIcon" src='+urlString+'></img>';
                     $("#dropdownMenuButton")[0].innerHTML += dashSystemDropItemClickedJson.sysName;
                     loadDashTable(dashSystemDropItemClickedJson.id);
+                    loadDashSystemDetails(dashSystemDropItemClickedJson.id);
                 }
 
             }
@@ -685,6 +686,7 @@
                             $("#dropdownMenuButton")[0].innerHTML = '<img id="dashSystemIcon" class="dashSystemIcon" src='+urlString+'></img>';
                             $("#dropdownMenuButton")[0].innerHTML += sysName;
                             loadDashTable(id);
+                            loadDashSystemDetails(id);
 
                             localStorage['dashSystemDropItemClicked'] = JSON.stringify({ id:id, sysName:sysName }) ;
                         });
@@ -699,9 +701,28 @@
 
             }
 
+            function loadDashSystemDetails(systemId){
+
+                $.get('/Sys', { id: systemId }, function(data) {
+
+                    var sysJson = data[0] ;
+
+
+                    var host = sysJson.variables.split("\n").filter(s => s.includes('host'))[0].split("=")[1];
+                    host = host === "" ? "[Unspecified]" : host;
+                    var description = sysJson.description;
+
+                    var dashSystemDetailsHtml = '<div class="dashboardLabel">Host</div>';
+                    dashSystemDetailsHtml += '<p>' + host + '</p>';
+                    dashSystemDetailsHtml += '<p>' + description + '</p>';
+
+                    $("#dashSystemDetails")[0].innerHTML = dashSystemDetailsHtml;
+
+                });
+                
+            }
+
            function loadDashTable(systemId){
-
-
                 var mydata = {systemId:systemId}
                 $.ajax({
                     type: 'get',
@@ -3222,19 +3243,13 @@ hideBottom();
                                 <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
                                     <div><a class="dropdown-item" href="#">Action</a></div>
                                 </div>
+
+                                <div id="dashSystemDetails" class="dashSystemDetails"></div>
+
+
                             </div>
 
-                            <div class="dashboardDetails">
-                                <!--<hr class="dashboardDetailsHr">-->
-                                <div id="dashboardDetailsTile" class="dashboardDetailsTile"></div>
-                                <!--<hr class="dashboardDetailsHr">-->
-                                <!--<div class="dashboardMenu">-->
-                                    <!--<div class="dashboardMenuItem" id="DashBuildMenu">Build</div>-->
-                                    <!--<div class="dashboardMenuItem dashboardMenuItemLast" id="DashOpenMenu">Open</div>-->
-                                <!--</div>-->
-                                <!--<div id="dashboardDetailsSysName" class="dashboardDetailsSysName"></div>-->
-                                <div id="dashboardDetailsDescription" class="dashboardDetailsDescription"></div>
-                            </div>
+
                         </div>
                         <div class="col-md-4" >
                             <div class='panel'>
@@ -3799,44 +3814,46 @@ hideBottom();
             <div class="modal-header">
                 <h4 class="modal-title"><i class="fa fa-play fa-fw"></i>Build</h4>
             </div>
-            <div id='runConfirmationBody' class="modal-body">
+            <div id='runConfirmationBody' class="modal-body run-model-body">
                 <form class="form">
                     <input name="idToBeRun" id="idToBeRun" type="hidden" />
                     <input name="sysToBeRun" id="sysToBeRun" type="hidden" />
                     <input name="ClosestRerunnableAn" id="ClosestRerunnableAn" type="hidden" />
 
                     <div class="form-group">
-                        <label style="padding-left: 40px">
-                            <input name="runChildrenCb" id="runChildrenCb" value="yes" type="checkbox" checked/>Run all children?
-                        </label>
+                        <!--<label style="padding-left: 40px">-->
+                        <span class="model-label"><input name="runChildrenCb" id="runChildrenCb" value="yes" type="checkbox" checked/>Run all children?</span>
+                        <!--</label>-->
                     </div>
                     <div class="form-group" id="runClosestAnGroup">
-                        <label style="padding-left: 40px">
-                            <input name="runClosestAn" id="runClosestAn" value="yes" type="checkbox" checked/>Run from closest rerunnable ancestor?
-                        </label>
+                        <!--<label style="padding-left: 40px">-->
+                        <span class="model-label"><input name="runClosestAn" id="runClosestAn" value="yes" type="checkbox" checked/>Run from closest rerunnable ancestor?</span>
+                        <!--</label>-->
                     </div>
-                    <hr>
                     <div class="form-group">
-                        <label style="padding-left: 40px">AWS Key Pair File (.pem): </label><span id = 'keyList' class = 'keyList'></span>
-                        <label style="padding-left: 10px"><a id='newKeyButton' class='newKey' href='#'>[select]</a></label>
+                        <!--<label style="padding-left: 40px">-->
+                        <span class="model-label">AWS Key Pair File (.pem):</span>
+                        <!--</label>-->
+                        <div><span id = 'keyList' class = 'keyList'></span><label style="padding-left: 10px"><a id='newKeyButton' class='newKey' href='#'>[select]</a></label></div>
                         <input id="upload-key" type="file" name="key" multiple="single">
                     </div>
                     <div class="form-group">
-                        <label style="padding-left: 40px">
-                            <input name="localStoreKeyCb" id="localStoreKeyCb" value="yes" type="checkbox"/>Store key in browser?</label>
-                        </label>
+                        <!--<label style="padding-left: 40px">-->
+                        <span class="model-label"><input name="localStoreKeyCb" id="localStoreKeyCb" value="yes" type="checkbox"/>Store key in browser?</label></span>
+                        <!--</label>-->
                     </div>
 
-                    <hr>
                     <div class="form-group">
-                        <label style="padding-left: 40px">AWS Access code File (.csv): </label><span id = 'accessList' class = 'keyList'></span>
-                        <label style="padding-left: 10px"><a id='newAccessButton' class='newKey' href='#'>[select]</a></label>
+                        <!--<label style="padding-left: 40px">-->
+                        <span class="model-label">AWS Access code File (.csv):</span>
+                        <!--</label>-->
+                        <div><span id = 'accessList' class = 'keyList'></span><label style="padding-left: 10px"><a id='newAccessButton' class='newKey' href='#'>[select]</a></label></div>
                         <input id="upload-access" type="file" name="key" multiple="single">
                     </div>
                     <div class="form-group">
-                        <label style="padding-left: 40px">
-                            <input name="localStoreAccessCb" id="localStoreAccessCb" value="yes" type="checkbox"/>Store access code in browser?</label>
-                        </label>
+                        <!--<label >-->
+                        <span class="model-label"><input name="localStoreAccessCb" id="localStoreAccessCb" value="yes" type="checkbox"/>Store access code in browser?</label></span>
+                        <!--</label>-->
                     </div>
                 </form>
             </div>

@@ -304,8 +304,18 @@ padding-left: 0px;
 /*}*/
 
 .modal-run-dialog {
-   width: 30vw
+   width: 400px;
 }
+
+.run-model-body {
+   padding-left: 50px
+}
+
+.model-label{
+   font-weight: 560;
+   font-size: 14px;
+}
+
 .modal-copy-dialog {
    width: 30vw
 }
@@ -1024,6 +1034,7 @@ a.foundInSearchParent{
 
    background: none;
    padding: 0;
+   padding-bottom: 15px;
    border: none;
    font-size: 16px;
 }

@@ -2712,6 +2712,26 @@ router.get(["/uploads/*", "/library/*"],function(req,res){
 
 });
 
+router.get("/fileList",function(req,res){
+    var id = req.query.id;
+
+    fs.readdir(filesPath + id + '/' , function(err, files){
+        if(err){
+            //console.log(err);
+            res.end(JSON.stringify([]))
+        }else{
+            var returnArr = [];
+            files.forEach(function(file){
+                returnArr.push({name:file})
+            });
+            res.end(JSON.stringify(returnArr))
+        }
+
+    })
+
+});
+
+
 //Service Rt: /delFiles to delete specified component resource files from ./upload dir, Method: get, Requires: id = id of component to remove resource from | files = resource file names string seperated by ';' , Returns: array of files successfully deleted format {name:file} or error string
 router.get("/delFiles",function(req,res){
     var id = req.query.id;
