@@ -87,7 +87,7 @@ topLib-col-fixed-240{
    width: 3px;
    height: 100%;
    cursor: w-resize;
-   background-color: #dedcdc;
+   //background-color: #dedcdc;
 }
 
 
@@ -150,26 +150,16 @@ topLib-col-fixed-240{
 }
 
 #results_codes{
-   //border: 1px solid red;
    width: 50%;
    white-space: pre;
    display: inline-block;
-   //display: inline;
    float: right;
    overflow-x: auto;
-   //overflow-y: hidden;
    height: calc(50vh - 23px - 10px);
    background-color: #63657c;
    color: #bbd9e8;
    padding: 3px;
 }
-/*.panel-body {*/
-   /*//overflow: auto;*/
-/*}*/
-
-/*.jobScreen{*/
-   /*padding-top: 6px;*/
-/*}*/
 
 #job-form-panel {
    padding: 15px;
@@ -211,11 +201,6 @@ padding-left: 0px;
    margin-bottom: 0px;
 }
 
-/*.right-menux {*/
-   /*color: #3c763d;*/
-   /*margin-bottom: 0px;*/
-/*}*/
-
 .jobFormbtn {
    padding: 1px 2px;
    font-size: 12px;
@@ -230,9 +215,7 @@ padding-left: 0px;
 }
 
 .SysTree{
-   /*height: calc(50vh - 23px - 22px);*/
-   /*overflow: auto;*/
-   /*margin-bottom: 2px;*/
+
 }
 
 
@@ -258,8 +241,6 @@ padding-left: 0px;
 
 .cust-panel-heading {
    padding: 1px 1px;
-   /*margin-top: 5px;*/
-   /*margin-bottom: 1px;*/
 }
 
 .resultsListRow{
@@ -299,10 +280,6 @@ padding-left: 0px;
    padding: 0px 12px;
 }
 
-/*.modal-dialog {*/
-   /*width: 80vw;*/
-/*}*/
-
 .modal-run-dialog {
    width: 400px;
 }
@@ -340,15 +317,12 @@ padding-left: 0px;
   }
 
 .varBody{
- //  max-height: 60vh;
-   max-height: 80%;
+   /*max-height: 80%;*/
    overflow: auto;
    max-height: 300px;
 }
 
 .varCheckbox {
-   /*position: relative;*/
-   /*display: block;*/
    margin-top: 0px;
    margin-bottom: 0px;
 }
@@ -363,8 +337,6 @@ padding-left: 0px;
 }
 #rowHandle {
     position: absolute;
-    /*top: -4px;*/
-    /*bottom: 0;*/
     height: 4px;
     width: 100%;
     cursor: s-resize;
@@ -374,12 +346,6 @@ padding-left: 0px;
 .jstree-proton .jstree-anchor {
     margin: 0px 0 0px;
 }
-
-/*.jstree-dnd-parent {*/
-   /*font-weight: bold;*/
-/*}*/
-
-
 
 .jstree-leaf a.jstree-hovered {
    //height: 30px;
@@ -392,20 +358,21 @@ padding-left: 0px;
 #upload-input {
    display: none;
 }
-.upload-btn {
-   color: #ffffff;
-   background-color: #F89406;
-   border: none;
-}
 
-.upload-btn:hover,
-.upload-btn:focus,
-.upload-btn:active,
-.upload-btn.active {
-   color: #ffffff;
-   background-color: #FA8900;
-   border: none;
-}
+/*.upload-btn {*/
+   /*color: #ffffff;*/
+   /*background-color: #F89406;*/
+   /*border: none;*/
+/*}*/
+
+/*.upload-btn:hover,*/
+/*.upload-btn:focus,*/
+/*.upload-btn:active,*/
+/*.upload-btn.active {*/
+   /*color: #ffffff;*/
+   /*background-color: #FA8900;*/
+   /*border: none;*/
+/*}*/
 
 #upload-key {
    display: none;
@@ -413,20 +380,20 @@ padding-left: 0px;
 #upload-access {
    display: none;
 }
-.uploadKey-btn {
-   color: #ffffff;
-   background-color: #F89406;
-   border: none;
-}
+/*.uploadKey-btn {*/
+   /*color: #ffffff;*/
+   /*background-color: #F89406;*/
+   /*border: none;*/
+/*}*/
 
-.uploadKey-btn:hover,
-.uploadKey-btn:focus,
-.uploadKey-btn:active,
-.uploadKey-btn.active {
-   color: #ffffff;
-   background-color: #FA8900;
-   border: none;
-}
+/*.uploadKey-btn:hover,*/
+/*.uploadKey-btn:focus,*/
+/*.uploadKey-btn:active,*/
+/*.uploadKey-btn.active {*/
+   /*color: #ffffff;*/
+   /*background-color: #FA8900;*/
+   /*border: none;*/
+/*}*/
 
 .statusBox{
    /*display: block;*/
@@ -440,9 +407,6 @@ padding-left: 0px;
 }
 
 #screenShot {
-
-   /*width: 80%;*/
-
    box-shadow: 3px 5px 18px 1px rgba(51, 51, 51, 0.88);
    width: 90%;
 }
@@ -467,8 +431,8 @@ padding-left: 0px;
 }
 
 #jstree-marker{
-   /*z-index:2;*/
-   display: none !important
+   z-index:2;
+   /*display: none !important*/
 }
 
 .form-custom-meta{
@@ -478,8 +442,6 @@ padding-left: 0px;
 .jobSetFormbtn{
    width: 30px;
 }
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 .switch {
    position: relative;
@@ -506,9 +468,9 @@ padding-left: 0px;
    transition: .4s;
 }
 
-input.success:checked + .slider {
-   background-color: #8bc34a;
-}
+/*input.success:checked + .slider {*/
+   /*background-color: #8bc34a;*/
+/*}*/
 
 .slider:before {
    position: absolute;
@@ -701,73 +663,33 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
    max-height: 1.2em;
 }
 
-/*.dashboardDetailsHr{*/
-   /*border-top: 1px solid;*/
-   /*margin-top: 0px;*/
-   /*margin-bottom: 0px;*/
+/*.DashListRowPass{*/
+   /*color: #10a54a;*/
 /*}*/
-
-/*.DashListPass{*/
-   /*color: #f3f3f3;*/
-   /*background-color: #10a54a;*/
+/*.DashListRowFail{*/
+   /*color: #d52322;*/
 /*}*/
-/*.DashListFail{*/
-   /*color: #f3f3f3;*/
-   /*background-color: #c5862b;*/
-/*}*/
-/*.DashListNotBuilt{*/
-   /*color: #f3f3f3;*/
-   /*background-color: #0f6ab4;*/
-/*}*/
-
-/*.DashListStatusCol{*/
-   /*width: 30px;*/
-   /*padding-right: 5px;*/
-   /*padding-left: 5px;*/
-/*}*/
-
-.DashListRowPass{
-   color: #10a54a;
-   /*background-color: #e7f6ec;*/
-   /*border: 1px solid #10a54a;*/
-}
-.DashListRowFail{
-   color: #d52322;
-   /*background-color: #f9f2e9;*/
-   /*border: 1px solid #c5862b;*/
-}
 .DashListRowNotBuilt{
    color: #2c3433;
-   /*background-color: #e7f0f7;*/
-   /*border: 1px solid #0f6ab4;*/
 }
 
 .os-panel{
-   /*width:80px;*/
    display: inline-block;
    margin-bottom: 20px;
    margin-right: 20px;
-}
-.os-panel-heading{
-   border: 1px solid #0f6ab4;
-   background-color: #0f6ab4;
-   color: #fcfcfd;
-   white-space: nowrap;
 }
 .os-panel-body{
    text-align: center;
    font-weight: 700;
    padding: 5px;
-   /*background-color: #f3f3f3;*/
-   /*color: #49494b;*/
 }
 
-#firstRow div.col-sm-2{
-   min-width: 90px;
+div.col-sm-2{
+   min-width: 120px;
 }
 
 .currentBuildStatusPanel{
-   /*box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);*/
+
 }
 
 .launchPadHeading{
@@ -776,24 +698,12 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
 }
 
 .lastScreeenshotPanel{
-   /*box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);*/
-}
 
-.dashboardPanelHeading{
-   padding: 3px 5px;
-   border: 1px solid #0f6ab4;
-   background-color: #0f6ab4;
-   color: #fcfcfd;
 }
 
 .launchPadPanel{
-   /*margin-right: 20px;*/
-   /*margin-left: 20px;*/
    margin-bottom: 20px;
    border: 1px solid #0f6ab4;
-   /*max-width: 350px;*/
-   /*display: inline-grid;*/
-   /*box-shadow: 3px 5px 18px 1px rgba(0, 0, 0, 0.5);*/
 }
 
 .launchPadBody{
@@ -807,7 +717,7 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
    min-width: 350px;
 }
 .dashboardDetails{
-   /*height: 320px;*/
+
 }
 
 
@@ -826,7 +736,6 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
 .dashboardDetailsSysName{
    margin-left: 20px;
    margin-top: 5px;
-   /*white-space: nowrap;*/
    font-size: 18px;
    font-weight: 500;
 }
@@ -836,7 +745,6 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
    height: 100%;
    max-height: 260px;
    max-width: 350px;
-   /*box-shadow: 3px 5px 18px 1px rgba(51, 51, 51, 0.88);*/
 }
 
 .dashboardMenu{
@@ -849,8 +757,8 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
    font-size: 16px;
    font-weight: 700;
     display: inline-block;
-    border-right: 3px solid #0f6ab4;
-    color:#0f6ab4;
+    //border-right: 3px solid #0f6ab4;
+    //color:#0f6ab4;
     /*padding-left: 5px;*/
    padding-right: 5px;
    text-align: center;
@@ -910,12 +818,15 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
 }
 
 .panel{
-   /*background-color: rgba(0,0,0,0);*/
+
 }
 
 .dashPanel {
    border: 0px solid transparent;
-   /*opacity: .3;*/
+}
+
+.systemDetailPanel{
+   padding-left: 8px;
 }
 
 .launchPadPanelIcon{
@@ -980,7 +891,7 @@ a.foundInSearchParent{
 
 .nav > li > a {
    position: relative;
-   display: block;
+   /*display: block;*/
    #padding: 10px 15px;
 }
 
@@ -1025,9 +936,7 @@ a.foundInSearchParent{
 }
 
 .dashSystemLabel{
-   /*margin-left: 20px;*/
-   /*font-weight: 700;*/
-   /*font-size: 16px;*/
+
 }
 
 .dashSystemDropdownButton{
@@ -1078,9 +987,6 @@ tr {
    border-bottom: 0px solid;
    padding-bottom: 0px;
 }
-/*.dashTable > thead > tr.dashListRowClicked > th{*/
-  /*color: #fff;*/
-/*}*/
 
 
 .dashTbody{
@@ -1130,7 +1036,7 @@ tr {
 
 tbody.dashTbody{
    /*height: calc(100vh - 500px);*/
-   min-height: 100px;
+   min-height: 90px;
    position: absolute;
 }
 
@@ -1146,4 +1052,13 @@ th.col-1, td.col-1{
    transition: height .5s;
    //height: 0;
    overflow: hidden;
+}
+
+.stylePickTop{
+   padding-left: 10px;
+   padding-right: 10px;
+}
+
+.stylePickTop > label{
+   margin-bottom: 0rem;
 }

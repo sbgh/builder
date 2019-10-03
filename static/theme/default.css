@@ -5,7 +5,8 @@
 }
 
 .navbar-default {
-    background-color: #ffffff;;
+    transition: background-color 1s;
+     transition: background-color 1s;: #ffffff;;
     border-color: #f0f0f0;
 }
 
@@ -19,6 +20,7 @@ body {
 
 .panel-default>.panel-heading {
     color: #555555;
+    transition: background-color 1s;
     background-color: #dcdcdc;
     border-color: #d0d0d0;
 }
@@ -27,29 +29,43 @@ a {
     color: #367ae0;
 }
 .form-control[readonly], fieldset[disabled] .form-control {
+
+    transition: background-color 1s;
     background-color: #f0f0f0;
 }
 .form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
+
+    transition: background-color 1s;
     background-color: #d4d4d4;
 }
 .table-striped > tbody > tr:nth-child(2n+1) {
+
+    transition: background-color 1s;
     background-color: #f0f0f0;
 }
 .treePanelHandle {
+
+    transition: background-color 1s;
     background-color: #d4d4d4;
 }
 
 #rowHandle {
+
+    transition: background-color 1s;
     background-color: #d4d4d4;
 }
 a.list-group-item {
     color: #adadad;
 }
 #terminal-container {
+
+    transition: background-color 1s;
     background-color: #2b2b2b;
     color: #bbbbbb;
 }
 #results_html {
+
+    transition: background-color 1s;
     background-color: #383630;
 }
 .result_fresh {
@@ -59,6 +75,8 @@ a.list-group-item {
     color: #f9f9f9;
 }
 #results_codes {
+
+    transition: background-color 1s;
     background-color: #555555;
     color: #bbbbbb;
 }
@@ -95,6 +113,7 @@ div.grippie {
 }
 
 .list-group-item {
+    transition: background-color 1s;
     background-color: #f9f9f9;
     border: 0px solid #ddd;
     border-bottom: 1px solid #bcbcbc;
@@ -103,18 +122,21 @@ div.grippie {
 
 .form-control {
     color: #383630;
+    transition: background-color 1s;
     background-color: #f9f9f9;
     border-color: #555555;
 }
 
 .form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
     cursor: not-allowed;
+    transition: background-color 1s;
     background-color: #ececec;
     color: #555555;
     opacity: 1;
 }
 
 .jobFormbtn{
+    transition: background-color 1s;
     background-color: #d4d4d4;
     color: #3c3e3f;
 }
@@ -123,6 +145,7 @@ div.grippie {
 
 .modal-content {
     color: #3c3e3f;
+    transition: background-color 1s;
     background-color: #ececec;
 }
 
@@ -143,17 +166,21 @@ div.grippie {
 }
 
 .customLibDropBox{
+    transition: background-color 1s;
     background-color: #ececec;
 }
 
 .jstree-disabled{
+    transition: background-color 1s;
     background-color: transparent !important;
 }
 
 .libTree-panel-body{
+    transition: background-color 1s;
     background-color: #ececec;
 }
 .locTree-panel-body{
+    transition: background-color 1s;
     background-color: #ececec;
 }
 
@@ -176,6 +203,7 @@ div.grippie {
 }
 
 .jstree-default .jstree-wholerow-clicked {
+    transition: background 1s;
     background: #dcdcdc;
     color: #2c3433;
     /*background: -webkit-linear-gradient(top, #0078d7 0%, #0078d7 100%);*/
@@ -203,7 +231,7 @@ div.grippie {
 }
 
 .disabledRow{
-    color: red;
+    color: #901514;
 }
 .rerunnableRow{
     color: #2b2b2b;
@@ -218,6 +246,7 @@ div.grippie {
 }
 
 .sys-form-panel{
+    transition: background-color 1s;
     background-color: #ececec;
     color: #555555;
 }
@@ -232,6 +261,7 @@ a.libListRow {
 
 .panel-primary>.panel-heading {
     color: #323232;
+    transition: background-color 1s;
     background-color: #dcdcdc;
     border-color: #555555;
 }
@@ -243,12 +273,14 @@ a.libListRow {
 /* Tab Navigation */
 .nav-tabs,
 .nav-tabs > li > a {
+    transition: background-color 1s;
     background-color: #ececec;
     box-shadow: inset 0 -8px 7px -9px rgba(0,0,0,.4),-2px -2px 5px -2px rgba(0,0,0,.4);
 }
 .nav-tabs > li.active > a,
 .nav-tabs > li.active > a:hover {
     color: #3c3e3f;
+    transition: background-color 1s;
     background-color: #ffffff;
     box-shadow: inset 0 0 0 0 rgba(0,0,0,.4),-2px -3px 5px -2px rgba(0,0,0,.4);
 }
@@ -261,6 +293,7 @@ a.libListRow {
 .nav-tabs > li.active > a,
 .nav-tabs > li.active > a:hover,
 .nav-tabs > li.active > a:focus{
+    transition: background-color 1s;
     background-color: #f3f3f3;
     color: #3c3e3f;
 }
@@ -270,10 +303,12 @@ a.libListRow {
 }
 
 .dashboardPanel{
+    transition: background-color 1s;
     background-color: #f9f8f9;
 }
 
 .dashPanelBody{
+    transition: background-color 1s;
     background-color: rgba(255, 255, 255,255);
 }
 
@@ -282,6 +317,7 @@ a.libListRow {
 }
 
 .screenshot-panel-body{
+    transition: background-color 1s;
     background-color: rgba(70, 72, 74, 0);
 }
 
@@ -294,11 +330,13 @@ a.libListRow {
 }
 
 .dashPanel{
+    transition: background-color 1s;
     background-color: rgba(255, 255, 255, 255);
 }
 
 .navbar-default{
     color: #3c3e3f;
+    transition: background-color 1s;
     background-color: #ffffff;
 }
 
@@ -307,6 +345,7 @@ a.libListRow {
 }
 .builder_dash_btn:hover, .navbar-nav>.active{
     border-bottom: 4px solid #367ae0;
+    transition: background-color 1s;
     background-color: #f9f9f9;
 
 }
@@ -322,12 +361,14 @@ a.libListRow {
 }
 
 .jobCard > .card-header {
+    transition: background-color 1s;
     background-color: rgba(0,0,0,.03);
     border-bottom: 1px solid rgba(0,0,0,.125);
     color: #367ae0;
 }
 
 .card-body{
+    transition: background-color 1s;
     background-color: #f7f7f7;
 
     color: #1a1b1c;
@@ -349,11 +390,18 @@ a.libListRow {
 }
 
 .dashTbody > tr > td{
-    background-color: rgba(0, 0, 0, 0.2);
+    transition: background-color 1s;
+    background-color: rgba(80, 80, 80, 0.3);
+}
+
+.dashTbody > tr:hover > td {
+    transition: background-color .3s;
+    background-color: rgba(40, 40, 40, 0.2);
 }
 
 .dashTbody > tr.dashListRowClicked > td{
-    background-color: rgba(0, 0, 0, 0.1);
+    transition: background-color 1s;
+    background-color: rgba(40, 40, 40, 0.1);
 }
 
 .dashTableBuildButton{
@@ -361,4 +409,15 @@ a.libListRow {
 }
 .dashTableOpenButton{ 
     color: #367ae0;
+}
+
+.stylePickTop{
+    color: #367ae0
+}
+
+.DashListRowPass{
+    color: #009b23;
+}
+.DashListRowFail{
+    color: #901514;
 }

@@ -89,6 +89,8 @@
                                     $('#copyModal_newParent').val(targetNode.id );  //targetId
                                 }
 
+
+
                                 $('#copyModal').modal('show');
                                 $('#copyChildrenCb').prop('checked', false);
 
@@ -124,13 +126,19 @@
                         "li_attr": { class : "  "}
                     }
                 },
+                "sort" : function(a, b) {
+                    a1 = this.get_node(a);
+                    b1 = this.get_node(b);
+                    return (a1.original.sort < b1.original.sort) ? -1 : 1;
+
+                },
                 "state": { "key": "myTree" },
                 "dnd": {
                     check_while_dragging: false,
                     always_copy:true,
                     large_drop_target:true
                 },
-                "plugins" : [ "state", "types", "dnd", "wholerow"]
+                "plugins" : [ "sort",  "state", "types", "dnd", "wholerow"]
             }).on(  'create_node.jstree', function(e, data) {
                 //console.log('saved');
             }  );
@@ -926,9 +934,6 @@
                 })
             }
 
-            //$("#rightCol").hide();
-            //$("#screenShotCol").hide();
-
             var bottomHiddenFlag = true;
             function hideBottom(){
                 $("#bottomRow").hide(function(){
@@ -1391,11 +1396,11 @@
                                     $("#resultsStatus")[0].innerHTML += "Scripts aborted"
                                 }else if(row.substr(0,26) === 'message:CompletionSuccess:'){
                                     if(row.slice(26) === 'true'){
-                                        $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-check fa-fw' style='color:darkgreen'></i><br>";
+                                        $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-check fa-fw DashListRowPass'></i><br>";
                                         $("#resultsStatus")[0].innerHTML = $("#resultsStatus")[0].innerHTML.replace('<img src="/images/throbber.gif">',"")
 
                                     }else{
-                                        $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-times fa-fw' style='color:darkred'></i><br>";
+                                        $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-times fa-fw DashListRowFail'></i><br>";
                                         $("#resultsStatus")[0].innerHTML = $("#resultsStatus")[0].innerHTML.replace('<img src="/images/throbber.gif">',"")
                                     }
                                 }
@@ -1962,25 +1967,34 @@
             $("#moveUp_button, #moveUp_sys_button").click(function(event){
                 //console.log("up");
                 $.get('/Move', { id: selectedNode, direction: 'up' }, function(data) {
-                   newPos = data.newPos;
-                    if (newPos !== '') {
-                         $('#jstree_div').jstree(true).refresh(true);
-                        // $('#jstree_div').jstree(true).redraw(true);
-                   //     $('#jstree_div').jstree("move_node", selectedNode[0], $("#parent").val(), newPos);
-                       // $('#jstree_div').jstree(true).redraw(true);
+                    var newPos = data.newPos;
+                    var oldPos = data.oldPos;
+                    var otherId = data.otherId;
+                    if (otherId !== '') {
+                        var nodeInst = $('#jstree_div').jstree(true).get_node(selectedNode);
+                        var otherInst = $('#jstree_div').jstree(true).get_node(otherId);
+                        nodeInst.original.sort = newPos;
+                        otherInst.original.sort = oldPos;
+                        var parent = $("#parent").val() == "#" ? "local" : $("#parent").val();
+                        $('#jstree_div').jstree("move_node", nodeInst, parent, newPos);
+                        $('#jstree_div').jstree("move_node", otherInst, parent, oldPos);
                     }
                 })
             })
             $("#moveDn_button, #moveDn_sys_button").click(function(event){
                 //console.log("down");
                 $.get('/Move', { id: selectedNode, direction: 'down' }, function(data) {
-                    //var dataJason = JSON.parse(data);
-                    //  console.log("move down ");
-                    newPos = data.newPos;
-                    if (newPos !== '') {
-                        $('#jstree_div').jstree(true).refresh(true);
-                        // $('#jstree_div').jstree(true).redraw(true);
-               //         $('#jstree_div').jstree("move_node", selectedNode[0], $("#parent").val(), newPos);
+                    var newPos = data.newPos;
+                    var oldPos = data.oldPos;
+                    var otherId = data.otherId;
+                    if (otherId !== '') {
+                        var nodeInst = $('#jstree_div').jstree(true).get_node(selectedNode);
+                        var otherInst = $('#jstree_div').jstree(true).get_node(otherId);
+                        nodeInst.original.sort = newPos;
+                        otherInst.original.sort = oldPos;
+                        var parent = $("#parent").val() == "#" ? "local" : $("#parent").val();
+                        $('#jstree_div').jstree("move_node", nodeInst, parent, newPos);
+                        $('#jstree_div').jstree("move_node", otherInst, parent, oldPos);
                     }
                 })
             })
@@ -2709,8 +2723,28 @@
             });
 
             //settings Style Pick event
-            $('.stylePick').on('click', function(){
+//            $('.stylePick').on('click', function(evt){
+//                evt.preventDefault();
+//                var pickedStyle = $(this).attr('data-ID');
+//                if(pickedStyle === "dark"){
+//                    $("#darkStyleRadio").prop('checked',true);
+//                    $("#darkStyleRadioTop").prop('checked',true);
+//                }else{
+//                    $("#defaultStyleRadio").prop('checked',true);
+//                    $("#defaultStyleRadioTop").prop('checked',true);
+//                }
+//                setStyle(pickedStyle);
+//            });
+
+            //settings Style Top Page Pick event
+            $('.stylePickTop').on('click', function(evt){
+                //evt.preventDefault();
                 var pickedStyle = $(this).attr('data-ID');
+                if(pickedStyle === "dark"){
+                    $("#darkStyleRadioTop").prop('checked',true);
+                }else{
+                    $("#defaultStyleRadioTop").prop('checked',true);
+                }
                 setStyle(pickedStyle);
             });
 
@@ -2837,13 +2871,13 @@
                         const respJson = JSON.parse(data);
 
                         //set the style radion btn
-                        if(respJson.hasOwnProperty("currentStyle")){
-                            if(respJson.currentStyle === "dark"){
-                                $("#darkStyleRadio").prop('checked',true);
-                            }else{
-                                $("#defaultStyleRadio").prop('checked',true);
-                            }
-                        }
+//                        if(respJson.hasOwnProperty("currentStyle")){
+//                            if(respJson.currentStyle === "dark"){
+//                                $("#darkStyleRadio").prop('checked',true);
+//                            }else{
+//                                $("#defaultStyleRadio").prop('checked',true);
+//                            }
+//                        }
 
                         //set the timeout value
                         if(respJson.hasOwnProperty("timeout")){
@@ -2867,6 +2901,38 @@
                 })
 
             });
+
+            //Set to top style radio to the value in settings
+            function setTopPageStyle(){
+                var mydata = {};
+                $.ajax({
+                    type: 'get',
+                    data: mydata,
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    url: '/settings',
+                    success : function(data) {
+
+                        const respJson = JSON.parse(data);
+
+                        //set the style radion btn
+                        if(respJson.hasOwnProperty("currentStyle")){
+                            if(respJson.currentStyle === "dark"){
+                                $("#darkStyleRadioTop").prop('checked',true);
+                            }else{
+                                $("#defaultStyleRadioTop").prop('checked',true);
+                            }
+                        }
+                    },
+                    error : function(error) {
+                        console.log(error)
+                    }
+                })
+            };
+            setTopPageStyle();
+
 
             //signal server to set 'firstRun' flag in settings
             function setFirstRun(){
@@ -2977,6 +3043,17 @@ hideBottom();
 
         }); //doc ready
 
+        /**
+         * Randomize array element order in-place.
+         * Using Durstenfeld shuffle algorithm. https://stackoverflow.com/a/12646864
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
         //Apply Style
         function setStyle(name){
             const styleName = name;
@@ -2992,17 +3069,23 @@ hideBottom();
                 },
                 url: '/getStyle',
                 success : function(data) {
-                    var sheet = document.createElement('style');
 
+                    var sheet;
                     if (lastStyleSheet){
-                        lastStyleSheet.parentNode.removeChild(lastStyleSheet);
+                        sheet = lastStyleSheet;
+                    }else{
+                        sheet = document.createElement('style');
+                        document.body.appendChild(sheet);
                     }
                     lastStyleSheet = sheet;
 
                     const respJson = JSON.parse(data);
-                    sheet.innerHTML = respJson.css;
-                    document.body.appendChild(sheet);
-                    // $('#jstree_div').jstree(true).refresh();
+                    cssUnsortTxt = respJson.css;
+                    var cssArr= cssUnsortTxt.split("}")
+                    shuffleArray(cssArr);
+                    cssTxt = cssArr.join("}");
+
+                    loadCssParts( 0, lastStyleSheet);
                 },
                 error : function(error) {
                     console.log(error)
@@ -3011,6 +3094,24 @@ hideBottom();
 
         }
         setStyle('');
+
+        var cssTxt="";
+        var cssUnsortTxt="";
+        //var sheetPart = 0;
+        function loadCssParts( part, sheet){
+
+            var cssTxtPart = cssTxt.split("}")[part];
+            var totRows = cssTxt.split("}").length;
+            if( totRows > part){
+                sheet.innerHTML += cssTxtPart + "}";
+                setTimeout('loadCssParts('+(part+1).toString()+', lastStyleSheet)', 500/totRows);
+
+               // console.log('loadCssParts('+(part+1).toString()+', lastStyleSheet)', 1000/totRows)
+            }else{
+                sheet.innerHTML = "";
+                sheet.innerHTML = cssUnsortTxt
+            }
+        }
 
         function formatTimeStr(timeStr){
 
@@ -3235,7 +3336,7 @@ hideBottom();
                             </div>
 
                             <!--<hr class="dashDropButtonHR">-->
-                            <div class="panel dashPanel ">
+                            <div class="panel dashPanel systemDetailPanel">
                                 <div class="dashboardLabel">System</div>
                                 <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Pick...
@@ -3778,14 +3879,14 @@ hideBottom();
             </div>
             <div class="modal-body">
                 <div>
-                    Theme:
-                    <div class="radio stylePick" data-id="default">
-                        <label><input type="radio" id ="defaultStyleRadio" name="setupRadio" checked>Light</label>
-                    </div>
-                    <div class="radio stylePick" data-id="dark">
-                        <label><input type="radio" id="darkStyleRadio" name="setupRadio" >Dark</label>
-                    </div>
-                    <hr>
+                    <!--Theme:-->
+                    <!--<div class="radio stylePick" data-id="default">-->
+                        <!--<label><input type="radio" id ="defaultStyleRadio" name="setupRadio" checked>Light</label>-->
+                    <!--</div>-->
+                    <!--<div class="radio stylePick" data-id="dark">-->
+                        <!--<label><input type="radio" id="darkStyleRadio" name="setupRadio" >Dark</label>-->
+                    <!--</div>-->
+                    <!--<hr>-->
                     No command prompt time out (ms):
                     <div class="form-group">
                         <input class="form-control form-custom-meta" placeholder="(ms)" id="timeout" style="width:75px"> <button id = "set_timeout" class="btn btn-default jobFormbtn jobSetFormbtn">Set</button> <span id="set_timeout_results"></span>

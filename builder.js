@@ -240,6 +240,7 @@ router.get("/Jobs",function(req,res){
         rowdata.id = "local";
         rowdata.name = "local";
         rowdata.text = "Working";
+        rowdata.sort = 0;
         rowdata.type = "dashboard";
         rowdata.parent = '#';
         resJSON.push(rowdata);
@@ -332,7 +333,9 @@ router.get("/Jobs",function(req,res){
                     // delete rowdata.custTemplates;
                     rowdata.id = key;
                     rowdata.name = SystemsJSON[key].name;
-                    rowdata.text = SystemsJSON[key].name;
+                    rowdata.text = SystemsJSON[key].name ;
+                        //+ (SystemsJSON[key].sort > -1 ? " " + SystemsJSON[key].sort.toString() : "x");
+                    rowdata.sort = SystemsJSON[key].sort > -1 ? SystemsJSON[key].sort : 0;
 
                     //if type of component = 'system' then add type
                     if (SystemsJSON[key].comType === "system") {
@@ -366,7 +369,6 @@ router.get("/Jobs",function(req,res){
                     }else{
                         rowdata.parent = SystemsJSON[key].parent
                     }
-
 
                     return rowdata;
                 }
@@ -627,85 +629,54 @@ router.get("/move",function(req,res){
     //console.log("move...");
     var id = req.query.id;
     var direction = req.query.direction[0]; //either u or d
+    var oldPos = SystemsJSON[id].sort;
+    var otherId="";
 
     if(id === '' || direction === ''){
         res.end('');
     }
 
     var parent = SystemsJSON[id].parent;
-    // var sysAr = [];
 
-    var x =0;
     var beforeId = '';
-    var posId = ''
     var afterId = '';
-    var lastId ='';
-    // var pos = 0;
-    //find the position of the current component and the ids of the components before & after
+
     for (var key in SystemsJSON) {
         if (parent === SystemsJSON[key].parent) {
             //console.log("found: " , SystemsJSON[key].name,  SystemsJSON[key].sort, parent , SystemsJSON[key].parent);
-            if (afterId === '') {
-                if (beforeId !== '') {
-                    afterId = key;
-                }
-                if (key === id) {
-                    beforeId = lastId;
 
-                    posId = key;
-                }
-                lastId = key;
+            if (SystemsJSON[id].sort + 1 === SystemsJSON[key].sort ){
+                afterId = key
             }
-            SystemsJSON[key].sort = x;
-            x++;
+            if (SystemsJSON[id].sort - 1 === SystemsJSON[key].sort ){
+                beforeId = key
+            }
         }
     }
 
     //set new sort para for current and before if up
-    var newPos = SystemsJSON[posId].sort;
+    //var newPos = SystemsJSON[posId].sort;
     if(direction === 'u' && beforeId !== ''){
-        var tmp = SystemsJSON[posId].sort;
-        SystemsJSON[posId].sort = SystemsJSON[beforeId].sort;
-        SystemsJSON[beforeId].sort = tmp;
-        newPos = SystemsJSON[posId].sort;
+        var tmp = SystemsJSON[beforeId].sort;
+        SystemsJSON[beforeId].sort = SystemsJSON[id].sort;
+        SystemsJSON[id].sort = tmp;
+        otherId = beforeId;
     }
 
     //set new sort para for current and after if down
     if(direction === 'd' && afterId !== ''){
-        //console.log('direction:' + direction);
-        var tmp = SystemsJSON[posId].sort;
-        SystemsJSON[posId].sort = SystemsJSON[afterId].sort;
-        SystemsJSON[afterId].sort = tmp;
-        newPos = SystemsJSON[posId].sort;
+        var tmp = SystemsJSON[afterId].sort;
+        SystemsJSON[afterId].sort = SystemsJSON[id].sort;
+        SystemsJSON[id].sort = tmp;
+        otherId = afterId;
     }
-
-    //Create new json obj
-    var SystemsArr_sorted = [],i;
-    for(i in SystemsJSON){
-        if(SystemsJSON.hasOwnProperty(i)){
-            SystemsArr_sorted.push([i,SystemsJSON[i]]);
-        }
-    }
-
-    //sort new SystemsArr_sorted obj
-    SystemsArr_sorted.sort(function(a,b){
-        return a[1].sort > b[1].sort ? 1 : -1;
-    });
-
-    //Create new SystemsJson_sorted obj and load with SystemsArr_sorted
-    var SystemsJson_sorted = {};
-    for (var i=0; i < SystemsArr_sorted.length; i++){
-        SystemsJson_sorted[SystemsArr_sorted[i][0]] = SystemsArr_sorted[i][1];
-    }
-
-    //over write current SystemJSON
-    SystemsJSON = SystemsJson_sorted;
 
     //Save the resorted SystemJSON
     saveAllJSON(true);
 
+    var newPos = SystemsJSON[id].sort;
     res.writeHead(200, {"Content-Type": "application/json"});
-    res.end(JSON.stringify({newPos:newPos}));
+    res.end(JSON.stringify({newPos:newPos, oldPos:oldPos, otherId:otherId}));
 
 });
 
