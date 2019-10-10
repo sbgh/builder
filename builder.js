@@ -2780,7 +2780,7 @@ router.get("/getStyle",function(req,res){
 
 });
 
-//Service Rt: /ClosestRerunnableAn to return object containing the closest ansester that is rerunnable, Method: get, Requires: id = id of the component to search for ansester, Returns: id of closest rerunnable ansester and the SytemsJSON row of the same. format {id:ClosestRerunnableAnID, ClosestRerunnableAn:ClosestRerunnableAn}
+//Service Rt: /ClosestRerunnableAn to return object containing the closest ancestor that is rerunnable, Method: get, Requires: id = id of the component to search for ancestor, Returns: id of closest rerunnable ansester and the SytemsJSON row of the same. format {id:ClosestRerunnableAnID, ClosestRerunnableAn:ClosestRerunnableAn}
 //Note that this service requires improvments to return current component if it is rerunnable.
 router.get("/ClosestRerunnableAn",function(req,res){
     var id = req.query.id;

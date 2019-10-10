@@ -1272,14 +1272,14 @@
                 var sys = $("#sysToBeRun").val();
 
                 if($('#runChildrenCb').is(':checked')){
-                    var treeNode = $('#jstree_div').jstree(true).get_node(ids);
-                    var childs = treeNode.children_d;
-                    if (childs.length > 0 ){
-                        ids += ';' + childs.join(';');
-                    }
+                    var selectedNodes = $("#jstree_div").jstree(true).get_json(ids, { flat: true }); //returns parent and all children objs
+                        var selectedNodesArr = selectedNodes.map(a => a.id); //extract ids into arr
+                        if (selectedNodesArr.length > 0 ){
+                            ids = selectedNodesArr.join(';');
+                        }
                 }
 
-                $("#results_html").html('');
+                //$("#results_html").html('');
                 $("#results_codes").html('');
                 $("#resultsStatus")[0].innerHTML = '';
                 $("#results_html").addClass('result_fresh');
@@ -1468,6 +1468,8 @@
                             })
                             $('#results_html').animate({scrollTop: $('#results_html').get(0).scrollHeight}, 50);
                             $('#status-panel-body').animate({scrollTop: $('#status-panel-body').get(0).scrollHeight}, 50);
+
+                        //    setEndOfContenteditable($('#results_html').get(0))
                         };
 
                         return xhr;
@@ -2097,12 +2099,12 @@
             function getVariables(scope){
                 var mydata = {};
                 var scopeRadioVal = $('input[name="insertScope"]:checked').val();
-                var html = "<div class='varBody'><table style='width: 100%;' aria-describedby='dataTables-example_info' role='grid' class='table table-striped table-bordered table-hover dataTable no-footer dtr-inline var_Table' id='dataTables-example' width='100%'>";
+                var html = "<div class='varBody'><table style='width: 100%;' aria-describedby='insertVarTable_info' role='grid' class='table table-striped table-bordered table-hover dataTable no-footer dtr-inline var_Table' id='insertVarTable' width='100%'>";
                 html += "<thead>";
                 html += "<tr role='row'>" +
-                    "<th aria-label='Path: activate to sort column descending' aria-sort='ascending' style='width: 10%;' colspan='1' rowspan='1' aria-controls='dataTables-example' tabindex='0' class='sorting_asc'>Path</th>" +
-                    "<th aria-label='Variable: activate to sort column ascending' style='width: 30%;' colspan='1' rowspan='1' aria-controls='dataTables-example' tabindex='0' class='sorting'>Variable</th>" +
-                    "<th aria-label='Current Value: activate to sort column ascending' style='width: 60%;' colspan='1' rowspan='1' aria-controls='dataTables-example' tabindex='0' class='sorting'>Current Value</th>" +
+                    "<th aria-label='Path: activate to sort column descending' aria-sort='ascending' style='width: 10%;' colspan='1' rowspan='1' aria-controls='insertVarTable' tabindex='0' class=''>Path</th>" +
+                    "<th aria-label='Variable: activate to sort column ascending' style='width: 30%;' colspan='1' rowspan='1' aria-controls='insertVarTable' tabindex='0' class='sorting'>Variable</th>" +
+                    "<th aria-label='Current Value: activate to sort column ascending' style='width: 60%;' colspan='1' rowspan='1' aria-controls='insertVarTable' tabindex='0' class='sorting'>Current Value</th>" +
                     "</tr>";
                 html += "</thead>";
                 html += "<tbody>";
@@ -2164,7 +2166,7 @@
                                 if (ResultsJson.hasOwnProperty(key)) {
                                     if(ResultsJson[key].path !== last_path){
                                         html += "<tr role='row' class='gradeA odd' >";
-                                        html += "<td  class='sorting_1 var_Table_td ' colspan=3 >" + ResultsJson[key].path + '</td></tr>'
+                                        html += "<td  class='var_Table_td ' colspan=3 >" + ResultsJson[key].path + '</td></tr>'
                                     }
                                     var last_path = ResultsJson[key].path;
                                     var currentVal = ResultsJson[key].row.trim().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -2318,6 +2320,11 @@
 
             //Default set codes window to min
 //            min_codes_window();
+            $('#results_html').on('click', function(){
+               // setEndOfContenteditable($('#results_html').get(0))
+            })
+
+
             function min_codes_window(){
                 var container = $('#rowContainer');
                 setWindowHeight(container.height()- 30 , container);
@@ -3129,6 +3136,26 @@ hideBottom();
 
         }
 
+//        function setEndOfContenteditable(contentEditableElement) {
+//            var range,selection;
+//            if(document.createRange)//Firefox, Chrome, Opera, Safari, IE 9+
+//            {
+//                range = document.createRange();//Create a range (a range is a like the selection but invisible)
+//                range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
+//                range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+//                selection = window.getSelection();//get the selection object (allows you to change selection)
+//                selection.removeAllRanges();//remove any selections already made
+//                selection.addRange(range);//make the range you have just created the visible selection
+//            }
+//            else if(document.selection)//IE 8 and lower
+//            {
+//                range = document.body.createTextRange();//Create a range (a range is a like the selection but invisible)
+//                range.moveToElementText(contentEditableElement);//Select the entire contents of the element with the range
+//                range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+//                range.select();//Select the range (make it the visible selection
+//            }
+//        }
+
 //        $(document).on('click', '.BuildCode-Heading', function(e){
 //            var $this = $(this);
 //            if(!$this.hasClass('panel-collapsed')) {
@@ -3426,7 +3453,7 @@ hideBottom();
             <div id="leftLibCol" class="topLib-col-fixed-240" >
                 <div id="libTreePanel" class='panel panel-default cust-panel' style="float: left;"  >
                     <div class='panel-heading cust-panel-heading' style="white-space: nowrap;"><i class='fa  fa-book' id="LibDropDownPickIcon"></i> Library
-                        <a href="#" id="LibDropDownPick">[+]</a>
+                        <a href="#" id="LibDropDownPick"><i class="fa fa-plus fa-fw"></i></a>
                         <a href="#" id="treeCollapse">[<]</a>
                     </div>
 
@@ -3449,7 +3476,7 @@ hideBottom();
             <div id="leftCol" class="top-col-fixed-240" >
                 <div id="treePanel" class='panel panel-default cust-panel locTree-panel-body' style="float: left;"  >
                     <div class='panel-heading cust-panel-heading'>
-                        Systems <a class='newSys' href='#'>[+]</a> <a href="#" data-toggle="modal" data-target="#welcomeModal">  [<i class="fa fa-question"></i>]</a>
+                        Systems <a class='newSys' href='#'><i class="fa fa-plus fa-fw"></i></a> <a href="#" data-toggle="modal" data-target="#welcomeModal">  <i class="fa fa-question fa-fw"></i></a>
                         <i id="search-icon" class="fa fa-search  fa-fw search-icon"></i>
                         <div class="form-group search-group">
                             <input class="form-control form-custom searchInput" placeholder="" id="searchInput" >
@@ -3623,7 +3650,7 @@ hideBottom();
                                                         </div>
                                                         <div class="form-group">
                                                             <label class="build-label">Component Variables</label><i class="fa fa-fw"></i>
-                                                            <a href="#" id='varHelp' data-toggle="modal" data-target="#varHelpModal">[<i class="fa fa-question"></i>]</a>
+                                                            <a href="#" id='varHelp' data-toggle="modal" data-target="#varHelpModal"><i class="fa fa-question fa-fw"></i></a>
                                                             <textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="compVariables"></textarea>
                                                         </div>
                                                     </div>
@@ -3693,7 +3720,7 @@ hideBottom();
 
                                                                 <div class="form-group">
                                                                     <label class="build-label">Build Script</label><i class="fa fa-fw"></i>
-                                                                    <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal">[<i class="fa fa-question"></i>]</a>
+                                                                    <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal"><i class="fa fa-question fa-fw"></i></a>
                                                                     <a href="#" id='insertVariable' data-toggle="modal" data-target="#varModal">[Insert Variable]</a>
                                                                     <textarea class="form-control form-custom code" rows="4" id="script"></textarea>
                                                                 </div>
@@ -3705,7 +3732,7 @@ hideBottom();
                                                                 <div id="custTemplates">
                                                                 </div>
                                                                 <div id="newTemplateButton">
-                                                                    <label class="build-label">Template<a class='newCust' href='#'>[+]</a></label><br><br>
+                                                                    <label class="build-label">Template<a class='newCust' href='#'><i class="fa fa-plus fa-fw"></i></a></label><br><br>
                                                                 </div>
 
                                                             </div>
@@ -3725,7 +3752,7 @@ hideBottom();
                                                             <div class="card-body">
 
                                                                 <div class="form-group">
-                                                                    <label class="build-label">File Resources<a id='newFileButton' class='newFile' href='#'>[+]</a><a id='delFileButton' class='delFile' href='#'>[-]</a></label>
+                                                                    <label class="build-label">File Resources<a id='newFileButton' class='newFile' href='#'><i class="fa fa-plus fa-fw"></i></a><a id='delFileButton' class='delFile' href='#'><i class="fa fa-minus fa-fw"></i></a></label>
                                                                     <div id = 'fileList' class = 'fileList'></div>
                                                                     <div id = 'fileUpload'>
                                                                         <div class="progress">
@@ -3833,7 +3860,7 @@ hideBottom();
 
                     <div class='panel-body term-panel-body'>
                         <div id="terminal-container" >
-                            <div id="results_html" class='scroller'></div>
+                            <div id="results_html" contentEditable="true" class='scroller'></div>
                             <div id="results_codes" class='scroller'></div>
                             <!--<div id="console_connect" class='' contentEditable="true">jnkjn,kjn.kb.bhb,j</div>-->
                         </div>
@@ -4059,11 +4086,13 @@ hideBottom();
 
         <nav class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Insert Variable</h4>
+                <h4 class="modal-title"><i class="fa fa-link fa-fw"></i>
+                    Insert Variable
+                </h4>
             </div>
             <form class="form-inline">
-                <div class="form-group">
-                    <label style="padding-left: 15px;padding-top: 15px;padding-bottom: 0px;">From:</label>
+                <div class="form-group insertScopeGroup">
+                    <label style="padding-left: 15px;padding-top: 0px;padding-bottom: 0px;">From:</label>
                     <div class="radio">
                         <label>
                             <input name="insertScope" id="insertScope0" value="Component" checked="" type="radio">Component

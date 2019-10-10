@@ -32,8 +32,16 @@ body {
     border-color: #555555;
 }
 
+.var_Table {
+    color: #adadad;
+}
+
+.var_Table>tbody>tr:hover{
+    color: #fcfcfd;
+}
+
 a, a:hover {
-    color: #2196f3;
+    color: #79bdf3;
 }
 .form-control[readonly], fieldset[disabled] .form-control {
     transition: background-color 0.5s;
@@ -141,8 +149,8 @@ div.grippie {
 
 .jobFormbtn{
     transition: background-color 0.5s;
-    background-color: #2196f3;
-    color: #ffffff;
+    background-color: #79bdf3;
+    color: #292525;
 }
 
 .modal-content {
@@ -260,12 +268,13 @@ border: 1px solid #adadad;
 .jstree-default .jstree-wholerow-clicked {
     color: #ffffff;
     transition: background 0.5s;
-    background: #2196f3;
+    background: #3c3f41;
+    transition: border 0.5s;
+    border: 2px solid #bbbbbb;
 
 }
 .jstree-default .jstree-wholerow-hovered {
     color: #adadad;
-    transition: background-color 0.5s;
     background-color: #3c3f41;
 }
 
@@ -374,11 +383,11 @@ a.libListRow {
 
 input:checked + .slider {
     transition: background-color 0.5s;
-    background-color: #2196f3;
+    background-color: #79bdf3;
 }
 
 input:focus + .slider {
-    box-shadow: 0 0 1px #2196f3;
+    box-shadow: 0 0 1px #79bdf3;
 }
 .systemRow{
 
@@ -406,7 +415,7 @@ input:focus + .slider {
 }
 
 .screenShotLink > a, .screenShotLink > a:hover{
-    color: #2196f3;
+    color: #79bdf3;
 }
 
 .screenshot-panel-body{
@@ -447,18 +456,18 @@ input:focus + .slider {
 .builder_dash_btn{
     transition: background-color 0.5s;
     background-color: #3c3f41;
-    border-bottom: 2px solid #2196f3;
+    border-bottom: 2px solid #79bdf3;
 }
 .navbar-nav>builder_dash_btn>a:hover, .navbar-nav>.active{
     /*color: #cfcdcd;*/
-    border-bottom: 4px solid #2196f3;
+    border-bottom: 4px solid #79bdf3;
     transition: background-color 0.5s;
     background-color: #313335;
 
 }
 
 .dashSystemDropdownButton{
-    color:#2196f3;
+    color:#79bdf3;
 }
 
 .os-panel{
@@ -470,7 +479,7 @@ input:focus + .slider {
     transition: background-color 0.5s;
     background-color: rgb(60, 63, 65);
     border-bottom: 1px solid rgba(0,0,0,.125);
-    color: #2196f3;
+    color: #79bdf3;
 }
 
 .card-body{
@@ -513,7 +522,7 @@ input:focus + .slider {
 
 
 .dashTbody > tr.dashListRowClicked > td.dashTableNameItem{
-    border-color: #2196f3;
+    border-color: #79bdf3;
     color: white;
 }
 
@@ -523,14 +532,14 @@ input:focus + .slider {
 
 
 .dashTableBuildButton{
-    color: #2196f3;
+    color: #79bdf3;
 }
 .dashTableOpenButton{
-    color: #2196f3;
+    color: #79bdf3;
 }
 
 .stylePickTop{
-    color: #2196f3
+    color: #79bdf3
 }
 
 .resultsStatusSuccess{

@@ -280,6 +280,17 @@ padding-left: 0px;
    padding: 0px 12px;
 }
 
+
+
+.modal-dialog {
+   max-width: 70vw;
+}
+
+#setupModal > .modal-dialog{
+   width: 600px;
+}
+
+
 .modal-run-dialog {
    width: 400px;
 }
@@ -306,6 +317,10 @@ padding-left: 0px;
    white-space:nowrap;
    overflow: hidden;
 
+}
+
+.insertScopeGroup div.radio{
+   margin-left: 10px;
 }
 
 .var_Table>tbody>tr>td, .mytable>tbody>tr>th, .mytable>tfoot>tr>td, .mytable>tfoot>tr>th, .mytable>thead>tr>td, .mytable>thead>tr>th {
@@ -778,7 +793,7 @@ div.col-sm-2{
 }
 
 .status-panel-body{
-   max-height: 300px;
+   max-height: 284px;
    /*height: 300px;*/
    overflow-y: auto;
 }
@@ -805,7 +820,7 @@ div.col-sm-2{
 }
 
 .modal-del-dialog {
-   width: 30vw
+   width: 30vw;
 }
 
 .dashBoardTopRow{
