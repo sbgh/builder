@@ -7,14 +7,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.3/jstree.min.js"></script>
+    <script src="https://pagecdn.io/lib/ace/1.4.6/ace.js" integrity="sha256-CVkji/u32aj2TeC+D13f7scFSIfphw2pmu4LaKWMSY8=" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="/theme/startbootstrap-sb-admin-2-gh-pages/dist/css/sb-admin-2.min.css">
     <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
+    <!--Quill-->
+    <script src="//cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <link href="//cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
     <!-- theme  -->
     <link rel="stylesheet" href="/jstree/dist/themes/default/style.min.css" />
-    <!--<link rel="stylesheet" href="/theme/dark.css">-->
 
     <script src="/clientJs/custom.js"></script>
     <link rel="stylesheet" href="/clientCSS/custom.css" />
@@ -46,8 +50,8 @@
                         'url' : function (node) {
                                 var searchText = $("#searchInput").val();
                                 return node.id === '#' ?
-                                    'jobs?searchSt='+searchText :
-                                    'jobs';
+                                    'jobsTree?searchSt='+searchText :
+                                    'jobsTree';
                             },
                         'data' : function (node) {return { 'id' : node.id };}
                     },
@@ -281,19 +285,21 @@
 
             //geLibJobByID
             function getLibJobByID(NodeID, lib){
+                //const viewmode = "read"
                 clearJobFields();
                 $.get('/getLib', { id: NodeID, 'pickedLib':lib }, function(data) {
-                    //console.log("getJobByID: "+data[0].script);
-
+                    // testing vvvvvvvvvvvvvvvvvvv
                     var dispData = JSON.parse(JSON.stringify(data[0]) )  ;
                     delete dispData.script;
-                    delete dispData.custTemplates;
-                    delete dispData.template;
+                    //delete dispData.custTemplates;
+                    //delete dispData.template;
 
-                    $("#nodeData").val(JSON.stringify(dispData).split(',"').join(',\n"'));
-
+                    $("#nodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  );
+                    // testing ^^^^^^^^^^^^^^^^^^^
 
                     $("#id").val(data[0].id);
+                    $("#comType").val(data[0].comType);
+                    $("#idDisp").val(data[0].id);
                     $("#parent").val(data[0].parent);
                     $("#name").val(data[0].name);
 
@@ -328,6 +334,7 @@
                         $('#sysFunc').prop('checked', false);
                         $('#sysFuncVal').html('No');
                     }
+
                     if(data[0].runLocal === 1){
                         $('#runLoc').prop('checked', true);
                         $('#runLocVal').html('Yes');
@@ -336,15 +343,28 @@
                         $('#runLocVal').html('No');
                     }
 
+                    if(data[0].description.hasOwnProperty("ops")){
+                        description.setContents(data[0].description.ops)
+                    }else{
+                        description.setContents(
+                            [{ insert:  data[0].description },
+                                { insert: '\n' }]
+                        );
+                    };
 
-                    $("#description").val(data[0].description);
-                    $("#script").val(data[0].script);
+                    scriptEditor.session.setValue(data[0].script);
+
                     $("#compVariables").val(data[0].variables);
                     $("#version").text(data[0].ver);
-                    $("#template").val(data[0].template);
+                    $("#templateType").val(data[0].templateType);
                     $("#text").val(data[0].text);
                     $('#resourceFiles').val(data[0].resourceFiles);
                     $("#ft").val(data[0].ft);
+
+                    if(data[0].hasOwnProperty("hist")){
+                        $("#createdBy").val(data[0].hist[0].username);
+                        $("#createdDate").val(data[0].hist[0].ds)
+                    }
 
                     populateLibFileList( $('#resourceFiles').val());
 
@@ -365,31 +385,71 @@
                         }
                     });
 
-                    var x=2;
-                    var ctDiv = $('#custTemplates');
-                    var ctObj = data[0].custTemplates;
-                    var ctHTML = "";
-                    for (var key in ctObj) {
-                        if (ctObj.hasOwnProperty(key)) {
-                            var inHtml = "<div class='form-group'>";
-                            inHtml += " <label>Template "+x.toString()+"</label>";
-                            inHtml += " <textarea class='form-control code' rows='4' readonly='' id='template"+x.toString()+"'>";
-                            inHtml += "</textarea>";
-                            inHtml += "</div>";
-                            ctHTML +=inHtml;
-                            x++;
+                    //load templates
+                    var x=0;
+                    var tempObjArr = data[0].templates.tempArr;
+
+                    tempObjArr.forEach(function(tempObj){
+
+                        if(!currentTemplatesArr[x]){
+                            var inHtml = authorTemplateHTML(x);
+
+                            $('#custTemplates').append(inHtml);
+
+                            currentTemplatesArr.push(ace.edit("template"+x.toString()));
+
+                            currentTemplatesArr[currentTemplatesArr.length-1].session.setMode("ace/mode/text");
+                            document.getElementById("template"+x.toString()).style.fontSize='14px';
+
+                            currentTemplatesArr[currentTemplatesArr.length-1].renderer.$cursorLayer.element.style.display = "none"
+
+                            loadjobTempTypeDropdown(x)
+
+                            $("#templateWindowMax"+x.toString()).click( function(){
+                                var inx = parseInt($(this).attr('data-inx'), 10);
+                                setTempAceHeight(inx, "max")
+                            })
+                            $("#templateWindowMin"+x.toString()).click( function(){
+                                var inx = parseInt($(this).attr('data-inx'), 10);
+                                setTempAceHeight(inx, "min")
+                            })
+                        }else{
+                            $("#templateBlock" + x.toString()).show();
                         }
-                    }; //add all the custom Template fields
-                    $('#custTemplates').html(ctHTML);
-                    x=2;
-                    for (var key in ctObj) {
-                        if (ctObj.hasOwnProperty(key)) {
-                            $('#template'+x.toString()).val(ctObj[key]);
-                            x++;
-                        }
+
+                        currentTemplatesArr[x].session.setValue(tempObj.c);
+
+                        x++;
+                    });
+
+                    while (x < currentTemplatesArr.length ){
+                        $("#templateBlock" + x.toString()).hide();
+                        currentTemplatesArr[x].session.setValue("");
+                        x++;
                     }
-                    setTripleClickTextareaEvents();
-                    allowInsertTabTextarea();
+
+                    x=0;
+                    tempObjArr.forEach(function(tempObj){
+                        var tempType =  tempObj.t === "" ? "text" :  tempObj.t;
+                        currentTemplatesArr[x].session.setMode("ace/mode/" + tempType);
+                        $("#templateType" + x.toString()).val(tempType);
+                        $("#dropdownTemplateTypeButton"+x.toString())[0].innerHTML = tempType;
+                        x++;
+                    })
+
+                    setAceStyle(currentStyleName);
+                    $(".ace_editor").addClass("aceDisabled");
+
+                    for(var inx in currentTemplatesArr){
+                        currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "none";
+                        currentTemplatesArr[inx].setReadOnly(true);
+                    }
+
+//                    if(viewmode === "read"){
+//                        readModeJob();
+//                    }else if(viewmode === "edit"){
+                        readModeJob();
+//                    }
                 })
             }
 
@@ -458,7 +518,7 @@
             //Lib tree click
             $('#jslibtree_div').on("select_node.jstree", function (e, data) {
                 $("#rightCol").show();
-                activaTab('Component_Details');
+                //activaTab('Component_Details');
                 $('#componentTabs').hide();
                 $("#introCol").hide();
                 $("#screenShotCol").hide();
@@ -547,32 +607,27 @@
                     //deselect Lib tree
                     $('#jslibtree_div').jstree("deselect_all");
 
-             //       activaTab('Component_Details');
-
                     //console.log(data.selected);
                     if (selectedNode ==='local'){
-
-                       // loadDashboard();
-                       // $('#dashboard').show()
 
                         $("#sysScreen").hide();
                         $("#jobScreen").hide();
 
                     }else{
-      //                  $('#dashboard').hide();
                         if (data.instance.get_node(data.node.id).type === "job"
                             || data.instance.get_node(data.node.id).type === "disabled"
                             || data.instance.get_node(data.node.id).type === "needfull"
                             || data.instance.get_node(data.node.id).type === "rerunnable" ) {
 
-                            //query backend for a specific job and update fields
-                            getJobByID(selectedNode);
-                            readModeJob();
+                            //query backend for a specific job and update ui fields
+                            getJobByID(selectedNode, "read");
+                            $("#comType").val('Job');
+                           // readModeJob();
 
                             $("#sysScreen").hide();
                             $("#jobScreen").show();
                             $('#componentTabs').show();
-                            $("#comType").val('Job');
+
                             updateResultsList(selectedNode);
 
                             const targetNode =  $('#jstree_div').jstree(true).get_node(data.node.id);
@@ -584,11 +639,9 @@
                                 }else{
                                     hideBottom()
                                 }
-
                             }else{
                                 hideBottom()
                             }
-
                         }else{
                             $('#componentTabs').hide()
                             readModeSys();
@@ -600,7 +653,6 @@
                             hideBottom()
                         };
                     }
-
 
                     $("#results_html").html('');
                     $("#codes_btn").hide();
@@ -616,17 +668,9 @@
                         $(element).css('margin-right',0);
                     }
                 }
-
             });
 
             function loadDashboard(){
-//                $("#sysScreen").hide();
-//                $("#jobScreen").hide();
-//                $('#componentTabs').hide();
-  //             hideBottom();
- //               showBottom();
-                //
-                //$(".dashboardMenu").hide();
                 if(localStorage['lastSreenShot']) {
                     $('#screenShotImageDashboard')[0].src=localStorage['lastSreenShot']
                 }else{
@@ -636,12 +680,9 @@
                     $("#link")[0].innerHTML=localStorage['appLink']
                 };
 
-
-                loadDashSystemDropdown()
-
+                loadDashSystemDropdown();
 
                 if(localStorage['dashSystemDropItemClicked']){
-
                     var dashSystemDropItemClickedJson = JSON.parse(localStorage['dashSystemDropItemClicked']);
                     var urlString = "'/uploads/" + dashSystemDropItemClickedJson.id + "/icon.png'";
                     $("#dropdownMenuButton")[0].innerHTML = '<img id="dashSystemIcon" class="dashSystemIcon" src='+urlString+'></img>';
@@ -649,11 +690,9 @@
                     loadDashTable(dashSystemDropItemClickedJson.id);
                     loadDashSystemDetails(dashSystemDropItemClickedJson.id);
                 }
-
             }
 
             function loadDashSystemDropdown(){
-
                 var mydata = {};
                 $.ajax({
                     type: 'get',
@@ -706,31 +745,40 @@
                         console.log(error)
                     }
                 })
-
             }
 
             function loadDashSystemDetails(systemId){
-
                 $.get('/Sys', { id: systemId }, function(data) {
-
                     var sysJson = data[0] ;
-
-
                     var host = sysJson.variables.split("\n").filter(s => s.includes('host'))[0].split("=")[1];
                     host = host === "" ? "[Unspecified]" : host;
-                    var description = sysJson.description;
 
                     var dashSystemDetailsHtml = '<div class="dashboardLabel">Host</div>';
                     dashSystemDetailsHtml += '<p>' + host + '</p>';
-                    dashSystemDetailsHtml += '<p>' + description + '</p>';
+                    dashSystemDetailsHtml += '<div id="dashSystemDescription">' + description + '</div>';
 
                     $("#dashSystemDetails")[0].innerHTML = dashSystemDetailsHtml;
 
+                    var dashSystemDescription = new Quill('#dashSystemDescription', {
+                        theme: 'snow',
+                        modules: {
+                            "toolbar": false
+                        }
+                    });
+                    dashSystemDescription.enable(false);
+                    var description = sysJson.description;
+                    if(description.hasOwnProperty("ops")){
+                        dashSystemDescription.setContents(description.ops)
+                    }else{
+                        dashSystemDescription.setContents(
+                            [{ insert:  description },
+                                { insert: '\n' }]
+                        );
+                    };
                 });
-                
             }
 
-           function loadDashTable(systemId){
+            function loadDashTable(systemId){
                 var mydata = {systemId:systemId}
                 $.ajax({
                     type: 'get',
@@ -743,13 +791,17 @@
                     success : function(data) {
 
                         const promoted = JSON.parse(data);
-                        var pCompHtml = "";
+                        var pCompHtml;
+                        $("#dashTable").html("")
 
                         const dashListRowClicked = localStorage['dashListRowClicked'];
 
                         var clickedRowEnabled ="";
 
+                        currentPromotedDashDescriptionsArr = [];
+                        var x=0;
                         for (var row in promoted){
+                            pCompHtml = "";
 
                             rowJson = promoted[row];
 
@@ -782,18 +834,39 @@
                             var success = rowJson.hasOwnProperty("lastBuild") ? (rowJson.lastBuild.pass ? "<i class='fa fa-check fa-fw DashListRowPass'></i>":"<i class='fa fa-times fa-fw DashListRowFail'></i>") : "";
                             pCompHtml += "<td class='col-1 dashTableSuccessItem'>" + success + "</td>";
 
-                            pCompHtml += "<td class='col-8 dashTableDescriptionItem'>" + rowJson.description + "</td>";
+                            pCompHtml += "<td class='col-8 dashTableDescriptionItem'><div id = 'dashTableDescriptionItem"+x.toString()+"'></div></td>";
 
                             pCompHtml += "</tr>"
+
+                            $("#dashTable").append(pCompHtml);
 
                             if(dashListRowClicked === rowJson.id){
                                 clickedRowEnabled = rowJson.enabled;
                                 $("#dashSys").val(rowJson.systemId);
                             }
 
-                        }
+                            if(!currentPromotedDashDescriptionsArr[x]){
+                                currentPromotedDashDescriptionsArr.push(
+                                    new Quill('#dashTableDescriptionItem'+x.toString(), {
+                                        theme: 'snow',
+                                        modules: {
+                                            "toolbar": false
+                                        }
+                                    })
+                                );
+                                currentPromotedDashDescriptionsArr[x].enable(false);
+                            }
+                            if(rowJson.description.hasOwnProperty("ops")){
+                                currentPromotedDashDescriptionsArr[x].setContents(rowJson.description.ops)
+                            }else{
+                                currentPromotedDashDescriptionsArr[x].setContents(
+                                    [{ insert:  rowJson.description },
+                                        { insert: '\n' }]
+                                );
+                            };
 
-                        $("#dashTable")[0].innerHTML = pCompHtml;
+                            x++;
+                        }
 
                         selectDashTableRow(dashListRowClicked);
 
@@ -859,7 +932,7 @@
                             $("#componentsBtn").click();
                             $('#jstree_div').jstree("deselect_all");
                             $('#jstree_div').jstree('select_node',id);
-                            getJobByID(id);
+                            getJobByID(id, "");
                             $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
                         });
 
@@ -905,12 +978,11 @@
                         console.log(error)
                     }
                 })
-
             }
 
+            serverStats();
             setInterval(serverStats, 5000);
             function serverStats(){
-
                 var mydata = {};
                 $.ajax({
                     type: 'get',
@@ -965,23 +1037,17 @@
                 $("#sysFuncVal").html('');
                 $("#runLoc").html('');
                 $("#runLocVal").html('');
-                $("#description").val('');
-                $("#script").val('');
+              //  $("#description").val('');
                 $("#compVariables").val('');
                 $("#version").text('');
-                $("#template").val('');
                 $("#text").val('');
                 $('#resourceFiles').val('');
                 $("#ft").val('');
-
-                $('#custTemplates').html('');
                 $('#fileList').html('');
-
                 $('#createdDate').val('');
                 $('#createdBy').val('');
                 $("#idDisp").val('');
                 $("#price").val('')
-
             }
 
             $('#componentEnabled').change(function() {
@@ -1024,22 +1090,22 @@
             });
 
             //getJobByID - query backend and update fields
-            function getJobByID(NodeID){
+            function getJobByID(NodeID, viewmode){
                 clearJobFields();
                 $.get('/Jobs', { id: NodeID }, function(data) {
 
+                    // testing vvvvvvvvvvvvvvvvvvv
                    var dispData = JSON.parse(JSON.stringify(data[0]) )  ;
                     delete dispData.script;
-                    delete dispData.custTemplates;
-                    delete dispData.template;
+                    //delete dispData.custTemplates;
+                    //delete dispData.template;
 
-                    $("#nodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  ); // testing ---------------------
+                    $("#nodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  );
+                    // testing ^^^^^^^^^^^^^^^^^^^
 
-                    //console.log("getJobByID: "+data[0].script);
                     $("#id").val(data[0].id);
                     $("#comType").val(data[0].comType);
                     $("#idDisp").val(data[0].id);
-
                     $("#parent").val(data[0].parent);
                     $("#name").val(data[0].name);
 
@@ -1083,11 +1149,25 @@
                         $('#runLocVal').html('No');
                     }
 
-                    $("#description").val(data[0].description);
-                    $("#script").val(data[0].script);
+                    if(data[0].description.hasOwnProperty("ops")){
+                        description.setContents(data[0].description.ops)
+                    }else{
+                        description.setContents(
+                            [{ insert:  data[0].description },
+                                { insert: '\n' }]
+                        );
+                    };
+
+
+                    var curTxtVal = scriptEditor.getValue();
+                    var newTxtVal = data[0].script;
+                    if(curTxtVal !== newTxtVal){
+                        scriptEditor.session.setValue(data[0].script);
+                    }
+
                     $("#compVariables").val(data[0].variables);
                     $("#version").text(data[0].ver);
-                    $("#template").val(data[0].template);
+                    $("#templateType").val(data[0].templateType);
                     $("#text").val(data[0].text);
                     $('#resourceFiles').val(data[0].resourceFiles);
                     $("#ft").val(data[0].ft);
@@ -1116,65 +1196,105 @@
                         }
                     });
 
-                    var x=2;
-                    var ctDiv = $('#custTemplates');
-                    var ctObj = data[0].custTemplates;
-                    var ctHTML = "";
-                    for (var key in ctObj) {
-                        if (ctObj.hasOwnProperty(key)) {
-                            var inHtml = "<div class='form-group'>";
-                            inHtml += " <label class='build-label'>Template "+x.toString()+"</label>";
-                            inHtml += " <textarea class='form-control code' rows='4' readonly='' id='template"+x.toString()+"'>";
-                            inHtml += "</textarea>";
-                            inHtml += "</div>";
-                            ctHTML +=inHtml;
-                            x++;
+                    //load templates
+                    var x=0;
+                    var tempObjArr = data[0].templates.tempArr;
+
+                    tempObjArr.forEach(function(tempObj){
+
+                        if(!currentTemplatesArr[x]){
+                            var inHtml = authorTemplateHTML(x);
+
+                            $('#custTemplates').append(inHtml);
+
+                            currentTemplatesArr.push(ace.edit("template"+x.toString()));
+
+                            currentTemplatesArr[currentTemplatesArr.length-1].session.setMode("ace/mode/text");
+                            document.getElementById("template"+x.toString()).style.fontSize='14px';
+
+                            currentTemplatesArr[currentTemplatesArr.length-1].renderer.$cursorLayer.element.style.display = "none"
+
+                            loadjobTempTypeDropdown(x)
+
+                            $("#templateWindowMax"+x.toString()).click( function(){
+                                var inx = parseInt($(this).attr('data-inx'), 10);
+                                setTempAceHeight(inx, "max")
+                            })
+                            $("#templateWindowMin"+x.toString()).click( function(){
+                                var inx = parseInt($(this).attr('data-inx'), 10);
+                                setTempAceHeight(inx, "min")
+                            })
+                        }else{
+                            $("#templateBlock" + x.toString()).show();
                         }
-                    }; //add all the custom Template fields
-                    $('#custTemplates').html(ctHTML);
-                    x=2;
-                    for (var key in ctObj) {
-                        if (ctObj.hasOwnProperty(key)) {
-                            $('#template'+x.toString()).val(ctObj[key]);
-                            x++;
-                        }
+
+                        currentTemplatesArr[x].session.setValue(tempObj.c);
+
+                        x++;
+                    });
+
+                    while (x < currentTemplatesArr.length ){
+                        $("#templateBlock" + x.toString()).hide();
+                        currentTemplatesArr[x].session.setValue("");
+                        x++;
                     }
-                    setTripleClickTextareaEvents();
-                    allowInsertTabTextarea();
+
+                    x=0;
+                    tempObjArr.forEach(function(tempObj){
+                        var tempType =  tempObj.t === "" ? "text" :  tempObj.t;
+                        currentTemplatesArr[x].session.setMode("ace/mode/" + tempType);
+                        $("#templateType" + x.toString()).val(tempType);
+                        $("#dropdownTemplateTypeButton"+x.toString())[0].innerHTML = tempType;
+                        x++;
+                    })
+
+                    setAceStyle(currentStyleName);
+                    $(".ace_editor").addClass("aceDisabled");
+
+                    for(var inx in currentTemplatesArr){
+                        currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "none";
+                        currentTemplatesArr[inx].setReadOnly(true);
+                    }
+
+                    if(viewmode === "read"){
+                        readModeJob();
+                    }else if(viewmode === "edit"){
+                        editModeJob();
+                    }
                 })
             }
 
-            function allowInsertTabTextarea(){
-                //capture tab key on text area when not readonly
-                $(document).delegate('#jobForm textarea', 'keydown', function(e) {
-                    var keyCode = e.keyCode || e.which;
-
-                    if( !$(this).get(0).readOnly){
-                        if (keyCode === 9) {
-                            e.preventDefault();
-                            var start = $(this).get(0).selectionStart;
-                            var end = $(this).get(0).selectionEnd;
-
-                            // set textarea value to: text before caret + tab + text after caret
-                            $(this).val($(this).val().substring(0, start)
-                                + "\t"
-                              //  + "    "
-                                + $(this).val().substring(end));
-
-                            // put caret at right position again
-                            $(this).get(0).selectionStart =
-                                $(this).get(0).selectionEnd = start + 1;
-                        }
-                    }
-                });
-            }
+//            function allowInsertTabTextarea(){
+//                //capture tab key on text area when not readonly
+//                $(document).delegate('#jobForm textarea', 'keydown', function(e) {
+//                    var keyCode = e.keyCode || e.which;
+//
+//                    if( !$(this).get(0).readOnly){
+//                        if (keyCode === 9) {
+//                            e.preventDefault();
+//                            var start = $(this).get(0).selectionStart;
+//                            var end = $(this).get(0).selectionEnd;
+//
+//                            // set textarea value to: text before caret + tab + text after caret
+//                            $(this).val($(this).val().substring(0, start)
+//                                + "\t"
+//                              //  + "    "
+//                                + $(this).val().substring(end));
+//
+//                            // put caret at right position again
+//                            $(this).get(0).selectionStart =
+//                                $(this).get(0).selectionEnd = start + 1;
+//                        }
+//                    }
+//                });
+//            }
 
             function clearSysFields(){
                 $("#id").val('');
                 $("#parent").val('');
                 $("#sysName").val('');
                 $("#sysVersion").text('');
-                $("#sysDescription").val('');
+                //$("#sysDescription").val('');
                 $("#sysVariables").val('');
                 $("#text").val('');
             }
@@ -1188,18 +1308,28 @@
                     $("#rightCol").show();
                     $.get('/Sys', { id: NodeID }, function(data) {
 
+                        // testing -----------V----------
                         var dispData = JSON.parse(JSON.stringify(data[0]) )  ;
-                        $("#sysNodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  ); // testing ---------------------
+                        $("#sysNodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  );
+                        // testing ------------^---------
 
                         $("#id").val(data[0].id);
                         $("#comType").val(data[0].comType);
                         $("#parent").val(data[0].parent);
                         $("#sysName").val(data[0].name);
                         $("#sysVersion").text(data[0].ver);
-                        $("#sysDescription").val(data[0].description);
+
+                        if(data[0].description.hasOwnProperty("ops")){
+                            sysDescription.setContents(data[0].description.ops)
+                        }else{
+                            sysDescription.setContents(
+                                [{ insert:  data[0].description },
+                                    { insert: '\n' }]
+                            );
+                        };
+
                         $("#sysVariables").val(data[0].variables);
                         $("#text").val(data[0].text);
-
                         $("#iconURL").val('');
 
                         if (data[0].hasOwnProperty("icon")){
@@ -1217,22 +1347,37 @@
                         }
                     });
                 }
-
             }
 
             //getLibSysByID
             function getLibSysByID(NodeID, lib){
+
                 clearSysFields();
-                console.log( { id: NodeID, pickedLib:lib } );
                 $.get('/LibSys', { id: NodeID, pickedLib:lib }, function(data) {
+                    // testing -----------V----------
+                    var dispData = JSON.parse(JSON.stringify(data[0]) )  ;
+                    $("#sysNodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  );
+                    // testing ------------^---------
+
                     $("#id").val(data[0].id);
+                    $("#comType").val(data[0].comType);
                     $("#parent").val(data[0].parent);
                     $("#sysName").val(data[0].name);
                     $("#sysVersion").text(data[0].ver);
-                    $("#sysDescription").val(data[0].description);
+
+                    if(data[0].description.hasOwnProperty("ops")){
+                        sysDescription.setContents(data[0].description.ops)
+                    }else{
+                        sysDescription.setContents(
+                            [{ insert:  data[0].description },
+                                { insert: '\n' }]
+                        );
+                    };
+
+
+
                     $("#sysVariables").val(data[0].variables);
                     $("#text").val(data[0].text);
-
                     $("#iconURL").val('');
 
                     if (data[0].hasOwnProperty("icon")){
@@ -1254,7 +1399,6 @@
             //run
             var refreshFlag = false;
             $("#run_button").click(function(event){
-
                 var id = $("#id").val();
                 var sys = $('#ft').val().split('/')[1];
                 runJob(id, sys);
@@ -1268,18 +1412,16 @@
                     }
                 }
 
-
                 var sys = $("#sysToBeRun").val();
 
                 if($('#runChildrenCb').is(':checked')){
                     var selectedNodes = $("#jstree_div").jstree(true).get_json(ids, { flat: true }); //returns parent and all children objs
-                        var selectedNodesArr = selectedNodes.map(a => a.id); //extract ids into arr
-                        if (selectedNodesArr.length > 0 ){
-                            ids = selectedNodesArr.join(';');
-                        }
+                    var selectedNodesArr = selectedNodes.map(a => a.id); //extract ids into arr
+                    if (selectedNodesArr.length > 0 ){
+                        ids = selectedNodesArr.join(';');
+                    }
                 }
 
-                //$("#results_html").html('');
                 $("#results_codes").html('');
                 $("#resultsStatus")[0].innerHTML = '';
                 $("#results_html").addClass('result_fresh');
@@ -1289,8 +1431,6 @@
                 var formData = new FormData();
 
                 formData.append('ids', ids);
-
-                //console.log("ids: " + ids)
 
                 if($('#localStoreKeyCb').is(':checked')){
                     formData.append('storeLocal', 'yes');
@@ -1311,7 +1451,6 @@
                     formData.append('storeLocalAccess', 'no');
                     localStorage['access'] = '';
                     localStorage['accessName' ]='';
-
                 }
 
                 var files;
@@ -1340,7 +1479,6 @@
                 var localKey="";
                 var localAccess="";
 
-
                 $('.runningJob').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
                 $('.runningJobCompleteSuccess').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
                 $('.runningJobCompleteFail').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
@@ -1348,13 +1486,8 @@
                 //Disable tree
                 $('#jstree_div li').each( function() {
                     $("#jstree_div").jstree().disable_node(this.id);
-                })
-//                $("#Build_Results_tab").show();
-//                activaTab('Build_Results');
-//                $("#screenShotCol").show();
+                });
 
-                //  loadDashboard();
-                //$("#dashboard").show();
                 $("#status-panel-body").show();
 
                 $.ajax({
@@ -1378,15 +1511,9 @@
                             currentRespText = rText;
                             var rTextNew = ansi_up.ansi_to_html(rTextNew).replace(/(?:\r\n|\r|\n)/g, '<br>');
 
-                            //var famTree = $('#ft').val().split('/');
-                            //var sys = famTree[1];
-
                             var sys = $("#sysToBeRun").val();
 
-
                             rTextNew.split('<br>').forEach(function(row){
-
-                                //resultsStatus
 
                                 if(row.substr(0,17) === 'message:Building:'){
                                     $("#resultsStatus")[0].innerHTML += "<span>" + row.slice(17) + " <img src='/images/throbber.gif'></span>"
@@ -1499,11 +1626,6 @@
             function runJob(id, sys){
 
                 $('#runModal').modal('show');
-
-//                $('#runModal').on('shown.bs.modal', function () {
-//                //    $(document).delegate("#runConfirmButton", "click", function(event){
-//
-//                })
 
                 $("#idToBeRun").val(id);
                 $("#sysToBeRun").val(sys);
@@ -1649,7 +1771,9 @@
                 function enableElement(index, element) {
                     element.readOnly = false;
                 }
-//                $("#version").readOnly = true;
+
+                $(".templateTypeDropdownButton").attr("disabled" , false);
+
                 $("#createdBy")[0].readOnly = true;
                 $("#createdDate")[0].readOnly = true;
                 $("#idDisp")[0].readOnly = true;
@@ -1682,6 +1806,19 @@
                     populateFileList(data, true);
                 });
 
+                scriptEditor.renderer.$cursorLayer.element.style.display = "";
+                scriptEditor.setReadOnly(false);
+
+                description.enable(true);
+                $(".ql-toolbar").show()
+
+                for(var inx in currentTemplatesArr){
+                    currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "";
+                    currentTemplatesArr[inx].setReadOnly(false);
+                }
+
+                $(".ace_editor").removeClass("aceDisabled");
+
             }
             function readModeJob(){
                 inputFields = $("#jobForm").find("input");
@@ -1699,20 +1836,15 @@
                 function disableElement(index, element) {
                     element.readOnly = true;
                 }
+
                 $("#edit_button").show();
                 $("#save_button").hide();
                 $("#remove_button").show();
                 $("#new_button").show();
 
-                //Do not show run button for components in the Library
-//                const targetNode =  $('#jstree_div').jstree(true).get_node(NodeID);
-//                const rSystemId = targetNode.parents[targetNode.parents.length - 2];
-//                const rSystemNode =  $('#jstree_div').jstree(true).get_node( rSystemId);
-//                if(rSystemNode.text !== 'Library'){
-                    $("#run_button").show();
-//                }else{
-//                    $("#run_button").hide();
-//                }
+                $(".templateTypeDropdownButton").attr("disabled" , true);
+
+                $("#run_button").show();
 
                 $('#insertVariable').hide();
                 $("#newTemplateButton").hide();
@@ -1724,6 +1856,14 @@
                 if (checkBoxes.exists()){
                     checkBoxes.hide();
                 }
+
+                scriptEditor.renderer.$cursorLayer.element.style.display = "none";
+                scriptEditor.setReadOnly(true);
+
+                description.enable(false);
+                $(".ql-toolbar").hide()
+
+                setAceBuildCodeHeight();
             }
 
             function editModeSys(){
@@ -1741,8 +1881,12 @@
                 $("#new_sys_button").hide();
 
                 $('#iconPaste').show()
+
+                sysDescription.enable(true);
+                $(".ql-toolbar").show()
             }
-            function readModeSys(){
+
+            function readModeSys() {
                 inputFields = $("#sysForm").find("input");
                 inputFields.each(disableElement);
                 inputFields = $("#sysForm").find("textarea");
@@ -1751,13 +1895,16 @@
                 function disableElement(index, element) {
                     element.readOnly = true;
                 }
+
                 $("#edit_sys_button").show();
                 $("#save_sys_button").hide();
                 $("#remove_sys_button").show();
                 $("#clear_sys_button").show();
                 $("#new_sys_button").show();
+                $('#iconPaste').hide();
 
-                $('#iconPaste').hide()
+                sysDescription.enable(false);
+                $(".ql-toolbar").hide()
             }
 
             function readModeLibJob(){
@@ -1772,10 +1919,10 @@
                 $("#sysFuncSlider").hide();
                 $("#runLocSlider").hide();
 
-
                 function disableElement(index, element) {
                     element.readOnly = true;
                 }
+
                 $("#edit_button").hide();
                 $("#save_button").hide();
                 $("#remove_button").show();
@@ -1783,8 +1930,6 @@
                 $("#run_button").hide();
                 $("#new_button").hide();
                 $("#run_button").hide();
-
-
                 $('#insertVariable').hide();
                 $("#newTemplateButton").hide();
                 $("#newFileButton").hide();
@@ -1796,6 +1941,7 @@
                     checkBoxes.hide();
                 }
             }
+
             function readModeLibSys(){
                 inputFields = $("#sysForm").find("input");
                 inputFields.each(disableElement);
@@ -1810,7 +1956,6 @@
                 $("#remove_sys_button").show();
                 $("#clear_sys_button").hide();
                 $("#new_sys_button").hide();
-
                 $('#iconPaste').hide()
             }
 
@@ -1829,40 +1974,43 @@
             $('#iconPaste').hide();
             $("#codes_btn").hide();
 
-            //extend jq - exists function
             $.fn.exists = function () {
                 return this.length !== 0;
             }
 
             //expand & collapse textareas on comp/job form if triple-clicked
-            function setTripleClickTextareaEvents(){
-                var throttle = false;
-                $('#jobForm textarea').click( function (evt) {
-                    if (!throttle && evt.detail === 3) {
-                        if(this.rows < 15 ){
-                            $(this).css({ 'height' : ''});
-                            this.rows = 20;
-                        }else{
-                            $(this).css({ 'height' : ''});
-                            this.rows = 4;
-                        }
-                        throttle = true;
-                        setTimeout(function () {
-                            throttle = false;
-                        }, 1000);
-                    }
-                });
-            }
+//            function setTripleClickTextareaEvents(){
+//                var throttle = false;
+//                $('#jobForm textarea').click( function (evt) {
+//                    if (!throttle && evt.detail === 3) {
+//                        if(this.rows < 15 ){
+//                            $(this).css({ 'height' : ''});
+//                            this.rows = 20;
+//                        }else{
+//                            $(this).css({ 'height' : ''});
+//                            this.rows = 4;
+//                        }
+//                        throttle = true;
+//                        setTimeout(function () {
+//                            throttle = false;
+//                        }, 1000);
+//                    }
+//                });
+//            }
 
             //save Job
             $("#save_button").click(function(event){
                 //console.log("submitting");
                 var mydata = {};
-                mydata.id = $("#id").val();
+                var id = $("#id").val();
+                mydata.id = id;
                 mydata.parent = $("#parent").val();
                 mydata.name = $("#name").val();
                 mydata.comType = $("#comType").val();
-                mydata.description = $("#description").val();
+//                mydata.description = $("#description").val();
+
+                var delta = description.getContents();
+                mydata.description = delta;
 
                 if($('#componentEnabled').is(':checked')) {
                     mydata.enabled = 1;
@@ -1892,18 +2040,23 @@
 
 
                 mydata.compVariables = $("#compVariables").val();
-                mydata.script = $("#script").val();
-                mydata.template = $("#template").val();
+                mydata.script = scriptEditor.getValue();
 
-                var custTemplates = {};
-                var x=2;
-                while($('#template'+ x.toString()).length > 0 && x<100){
-                    if($('#template'+ x.toString()).val().trim() !== ""){
-                        custTemplates[$('#template'+ x.toString())[0].id] = $('#template'+ x.toString()).val();
+                var templatesArr = [];
+
+                //load custom templates
+                var x=0;
+                currentTemplatesArr.forEach(function(row){
+                    var aceVal = currentTemplatesArr[x].getValue().trim()+"\n";
+                    if(aceVal !== "" ){
+                        var thisIndexStr = (x).toString();
+
+                        templatesArr.push({c:aceVal, t:$("#templateType" + thisIndexStr).val()});
                     }
                     x++;
-                }
-                mydata.custTemplates = custTemplates;
+                })
+
+                mydata.templates = {tempArr:templatesArr};
 
                 mydata.text = $("#text").val();
                 mydata.resourceFiles = $('#resourceFiles').val();
@@ -1918,7 +2071,6 @@
                     url: '/save',
                     id: mydata.id,
                     success : function(result) {
-                        readModeJob(this.id);
                         var resultJSON = JSON.parse(result);
                         $("#id").val(resultJSON.id);
                         $("#text").val(resultJSON.text);
@@ -1939,7 +2091,10 @@
                 mydata.parent = $("#parent").val();
                 mydata.name = $("#sysName").val();
                 mydata.comType = $("#comType").val();
-                mydata.description = $("#sysDescription").val();
+
+                var delta = sysDescription.getContents();
+                mydata.description = delta;
+
                 mydata.variables = $("#sysVariables").val();
                 mydata.text = $("#text").val();
                 mydata.iconURL = $("#iconURL").val();
@@ -1983,6 +2138,8 @@
                     }
                 })
             })
+
+
             $("#moveDn_button, #moveDn_sys_button").click(function(event){
                 //console.log("down");
                 $.get('/Move', { id: selectedNode, direction: 'down' }, function(data) {
@@ -2046,45 +2203,47 @@
                 });
 
                 $('#varModal').modal('toggle');
-                insertAtCaret('script', pasteText);
+                //insertAtCaret('script', pasteText);
+                scriptEditor.insert(pasteText);
 
             });
-            function insertAtCaret(areaId, text) {//http://stackoverflow.com/questions/1064089/inserting-a-text-where-cursor-is-using-javascript-jquery
-                var txtarea = document.getElementById(areaId);
-                if (!txtarea) { return; }
 
-                var scrollPos = txtarea.scrollTop;
-                var strPos = 0;
-                var br = ((txtarea.selectionStart || txtarea.selectionStart === '0') ?
-                    "ff" : (document.selection ? "ie" : false ) );
-                if (br === "ie") {
-                    txtarea.focus();
-                    var range = document.selection.createRange();
-                    range.moveStart ('character', -txtarea.value.length);
-                    strPos = range.text.length;
-                } else if (br === "ff") {
-                    strPos = txtarea.selectionStart;
-                }
-
-                var front = (txtarea.value).substring(0, strPos);
-                var back = (txtarea.value).substring(strPos, txtarea.value.length);
-                txtarea.value = front + text + back;
-                strPos = strPos + text.length;
-                if (br === "ie") {
-                    txtarea.focus();
-                    var ieRange = document.selection.createRange();
-                    ieRange.moveStart ('character', -txtarea.value.length);
-                    ieRange.moveStart ('character', strPos);
-                    ieRange.moveEnd ('character', 0);
-                    ieRange.select();
-                } else if (br === "ff") {
-                    txtarea.selectionStart = strPos;
-                    txtarea.selectionEnd = strPos;
-                    txtarea.focus();
-                }
-
-                txtarea.scrollTop = scrollPos;
-            };
+//            function insertAtCaret(areaId, text) {//http://stackoverflow.com/questions/1064089/inserting-a-text-where-cursor-is-using-javascript-jquery
+//                var txtarea = document.getElementById(areaId);
+//                if (!txtarea) { return; }
+//
+//                var scrollPos = txtarea.scrollTop;
+//                var strPos = 0;
+//                var br = ((txtarea.selectionStart || txtarea.selectionStart === '0') ?
+//                    "ff" : (document.selection ? "ie" : false ) );
+//                if (br === "ie") {
+//                    txtarea.focus();
+//                    var range = document.selection.createRange();
+//                    range.moveStart ('character', -txtarea.value.length);
+//                    strPos = range.text.length;
+//                } else if (br === "ff") {
+//                    strPos = txtarea.selectionStart;
+//                }
+//
+//                var front = (txtarea.value).substring(0, strPos);
+//                var back = (txtarea.value).substring(strPos, txtarea.value.length);
+//                txtarea.value = front + text + back;
+//                strPos = strPos + text.length;
+//                if (br === "ie") {
+//                    txtarea.focus();
+//                    var ieRange = document.selection.createRange();
+//                    ieRange.moveStart ('character', -txtarea.value.length);
+//                    ieRange.moveStart ('character', strPos);
+//                    ieRange.moveEnd ('character', 0);
+//                    ieRange.select();
+//                } else if (br === "ff") {
+//                    txtarea.selectionStart = strPos;
+//                    txtarea.selectionEnd = strPos;
+//                    txtarea.focus();
+//                }
+//
+//                txtarea.scrollTop = scrollPos;
+//            };
 
             $('#varModal').on('shown.bs.modal', function() {
                 getVariables("Parent");
@@ -2221,11 +2380,11 @@
 
                     $('.resultsListRow').on('click', function(){
                         var id = $(this).attr('data-ID');
-                        //console.log(id);
                         $("#results_html").html('');
                         $("#results_codes").html('');
                         $('#messageSpan').html('');
                         $("#codes_btn").show();
+
                         $.get('/getResults', { id: id }, function(data) {
                             var results = JSON.parse(data);
                             //var htmlrows="";
@@ -2256,13 +2415,10 @@
                                     $("#results_codes").append("<br/>")
                                 }
                             });
-                            $("#results_codes").html( $("#results_codes").html() +'<br/><br/><br/>');
 
+                            $("#results_codes").html( $("#results_codes").html() +'<br/><br/><br/>');
                             $("#results_html").addClass('result_history');
                             $("#results_html").removeClass('result_fresh');
-//                            $('#terminal-container').animate({
-//                                    scrollTop: $('#terminal-container').get(0).scrollHeight}, 200);
-
                         });
                     });
                 });
@@ -2299,24 +2455,56 @@
 
             //new custom template
             $('.newCust').on('click', function(){
-     //           var ctHTML = $('#custTemplates').html();
-                var x=2;
-                var currentVals = [];
-                while($('#template'+ x.toString()).length > 0 && x<100){
-                    currentVals.push($('#template'+ x.toString()).val())
-                    x++;
-                }
+                var x=currentTemplatesArr.length;
+
                 if (x > 99){
                     alert("error: too many templates");
                 }else{
-                    var inHtml = "<div class='form-group'>";
-                    inHtml += " <label class='build-label'>Template "+x.toString()+"</label>";
-                    inHtml += " <textarea class='form-control code' rows='4' id='template"+x.toString()+"'></textarea>";
-                    inHtml += "</div>";
-       //             ctHTML +=inHtml;
+                    var inHtml = authorTemplateHTML(x);
+
                     $('#custTemplates').append(inHtml);
+
+                    $("#templateWindowMax"+x.toString()).click( function(){
+                        var inx = parseInt($(this).attr('data-inx'), 10);
+                        setTempAceHeight(inx, "max")
+                    })
+                    $("#templateWindowMin"+x.toString()).click( function(){
+                        var inx = parseInt($(this).attr('data-inx'), 10);
+                        setTempAceHeight(inx, "min")
+                    })
+
+                    var newEditor = ace.edit("template"+x.toString());
+
+                    //newEditor.setTheme("ace/theme/clouds");
+                    newEditor.session.setMode("ace/mode/javascript");
+                    document.getElementById("template"+x.toString()).style.fontSize='14px';
+
+                    currentTemplatesArr.push(newEditor);
+                    loadjobTempTypeDropdown(x)
+                    setAceStyle(currentStyleName);
                 }
             });
+
+            function authorTemplateHTML(x){
+                var inHtml = "<div class='form-group' id='templateBlock"+x.toString()+"'>";
+                inHtml += "     <div>";
+                inHtml += "         <label class='build-label'>Template "+ (x > 0 ? (x + 1).toString() : "") +"</label>";
+                inHtml += "         <input type='hidden' id='templateType"+x.toString()+"'>"
+                inHtml += "         <button class='dropdown-toggle templateTypeDropdownButton' type='button' id='dropdownTemplateTypeButton"+x.toString()+"' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>"
+                inHtml += "Pick..."
+                inHtml += "         </button>"
+                inHtml += "     <span class='templateWindowSizeButtons'>" +
+                    "<a href='#' id='templateWindowMin"+x.toString() + "' data-inx='"+x.toString()+"'><i class=' fa fa-window-minimize fa-fw'></i></a>" +
+                    "<a href='#' id='templateWindowMax"+x.toString() + "' data-inx='"+x.toString()+"'><i class=' fa fa-window-maximize fa-fw'></i></a>" +
+                    "</span>";
+                inHtml += "     <div id='dropdownTemplateTypeMenu"+x.toString()+"' class='dropdown-menu dropdownTemplateTypeMenu' aria-labelledby='dropdownTemplateTypeButton"+x.toString()+"'></div>"
+                inHtml += "     </div>";
+                inHtml += "     <div class='card templateCard' id='templateCard"+ x.toString() +"'>"
+                inHtml += "         <div id='template"+x.toString()+"' class='jobCodeEditor'></div>"
+                inHtml += "     </div>"
+                inHtml += "</div>";
+                return(inHtml);
+            }
 
             //Default set codes window to min
 //            min_codes_window();
@@ -2325,16 +2513,20 @@
             })
 
 
-            function min_codes_window(){
-                var container = $('#rowContainer');
-                setWindowHeight(container.height()- 30 , container);
-                currentHeight = container.height()- 30
-                currentRatio = currentHeight / container.height();
-            }
+
+//            function min_codes_window(){
+//                var container = $('#rowContainer');
+//                setWindowHeight(container.height()- 30 , container);
+//                currentHeight = container.height()- 30
+//                currentRatio = currentHeight / container.height();
+//            }
 
             //min codes window
             $('.codes_btn_min').on('click', function(){
-                min_codes_window()
+                var container = $('#rowContainer');
+                setWindowHeight(container.height()- 25 , container);
+                currentHeight = container.height()- 25
+                currentRatio = currentHeight / container.height();
             });
 
             //max codes window
@@ -2372,10 +2564,8 @@
             //Define the current selected tree for several functions
             var selectedTree = "working"; //default 'working' (aka local aka dashboard) tree
 
-
             //Create new component or system
             function createNode(mydata) {
-
                 $.ajax({
                     type: 'POST',
                     data: JSON.stringify(mydata),
@@ -2411,17 +2601,12 @@
             }
 
             var ansi_up = new AnsiUp;
-
             var isResizingHeight = false;
             var isResizingWidth = false;
             var isResizingLibWidth = false;
             var treeWidth = 240;
             var libTreeWidth = 240;
-
             var container = $('#rowContainer');
-
-//            currentRatio = 1;
-
             var currentHeight = container.height()- 30   //container.height() * .75; //default height
             currentHeight += currentHeight < 10 ? 10 - currentHeight : 0;
             currentRatio = currentHeight / container.height();
@@ -2444,15 +2629,12 @@
                 });
 
                 $(window).on('resize', function(){
-                    //var win = $(this);
-
                     var container = $('#rowContainer');
                     if(bottomHiddenFlag === true){
                         setWindowHeight(container.height() , container);
                     }else{
                         setWindowHeight(container.height() * currentRatio , container);
                     }
-
                     setFormColWidth();
                 });
 
@@ -2568,7 +2750,6 @@
                 $("#rightCol").css('width',$(window).width() - (treeWidth + libTreeWidth) -5 );
             }
 
-
             //Resource file management
             function populateFileList(data, editMode){
                 var fileNamesHtmlHeader = "<div><table style='width: 50%;'  role='grid' class='table table-striped table-bordered table-hover dataTable no-footer dtr-inline var_Table' id='dataTables-fileList' width='50%'><tbody>";
@@ -2614,8 +2795,6 @@
                         fileNamesHtml += fileNamesHtmlEmpty;
                     }
                     $('#fileList').html(fileNamesHtmlHeader + fileNamesHtml + fileNamesHtmlFooter);
-
-
                 } catch (e) {
                     $('#fileList').html(fileNamesHtmlHeader + fileNamesHtmlEmpty + fileNamesHtmlFooter);
                 }
@@ -2635,7 +2814,6 @@
                     filesString +=  $(this).val() + ';';
                 });
                 var mydata = {id:id, files:filesString};
-
                 $.ajax({
                     type: 'get',
                     data: mydata,
@@ -2729,51 +2907,12 @@
                 }
             });
 
-            //settings Style Pick event
-//            $('.stylePick').on('click', function(evt){
-//                evt.preventDefault();
-//                var pickedStyle = $(this).attr('data-ID');
-//                if(pickedStyle === "dark"){
-//                    $("#darkStyleRadio").prop('checked',true);
-//                    $("#darkStyleRadioTop").prop('checked',true);
-//                }else{
-//                    $("#defaultStyleRadio").prop('checked',true);
-//                    $("#defaultStyleRadioTop").prop('checked',true);
-//                }
-//                setStyle(pickedStyle);
-//            });
-
             //settings Style Top Page Pick event
             $('.stylePickTop').on('click', function(evt){
                 //evt.preventDefault();
                 var pickedStyle = $(this).attr('data-ID');
-                if(pickedStyle === "dark"){
-                    $("#darkStyleRadioTop").prop('checked',true);
-                }else{
-                    $("#defaultStyleRadioTop").prop('checked',true);
-                }
                 setStyle(pickedStyle);
             });
-
-//            //close BuildCode box
-//            $('.code-panel-body').slideUp();
-//            $('.BuildCode-Heading').addClass('panel-collapsed');
-//            $('.BuildCode-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-//
-//            //close TestCode box
-//            $('.test-panel-body').slideUp();
-//            $('.BuildTest-Heading').addClass('panel-collapsed');
-//            $('.BuildTest-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-//
-//            //close Meta box
-//            $('.meta-panel-body').slideUp();
-//            $('.BuildMeta-Heading').addClass('panel-collapsed');
-//            $('.BuildMeta-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-//
-//            //close Resources box
-//            $('.res-panel-body').slideUp();
-//            $('.BuildRes-Heading').addClass('panel-collapsed');
-//            $('.BuildRes-Heading').find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
 
             //settings - set time out button event
             $('#set_timeout').on('click', function(){
@@ -2784,7 +2923,6 @@
             function setTimeout(timeout){
                 var mydata = {};
                 mydata.timeout = timeout;
-
                 $.ajax({
                     type: 'post',
                     data: JSON.stringify(mydata),
@@ -2811,7 +2949,6 @@
             function setnoClientTimeout(noClientTimeout){
                 var mydata = {};
                 mydata.noClientTimeout = noClientTimeout;
-
                 $.ajax({
                     type: 'post',
                     data: JSON.stringify(mydata),
@@ -2842,7 +2979,6 @@
             function setUsername(username){
                 var mydata = {};
                 mydata.username = username
-
                 $.ajax({
                     type: 'post',
                     data: JSON.stringify(mydata),
@@ -2859,7 +2995,6 @@
                         console.log(error)
                     }
                 });
-
             }
 
             //Settings - populate fields on modal open
@@ -2876,15 +3011,6 @@
                     success : function(data) {
 
                         const respJson = JSON.parse(data);
-
-                        //set the style radion btn
-//                        if(respJson.hasOwnProperty("currentStyle")){
-//                            if(respJson.currentStyle === "dark"){
-//                                $("#darkStyleRadio").prop('checked',true);
-//                            }else{
-//                                $("#defaultStyleRadio").prop('checked',true);
-//                            }
-//                        }
 
                         //set the timeout value
                         if(respJson.hasOwnProperty("timeout")){
@@ -2931,6 +3057,8 @@
                             }else{
                                 $("#defaultStyleRadioTop").prop('checked',true);
                             }
+                            currentStyleName = respJson.currentStyle;
+                            setAceStyle(currentStyleName)
                         }
                     },
                     error : function(error) {
@@ -2939,7 +3067,6 @@
                 })
             };
             setTopPageStyle();
-
 
             //signal server to set 'firstRun' flag in settings
             function setFirstRun(){
@@ -2991,21 +3118,14 @@
                     }
                 })
             };
-            function firstRunTasks(result){
 
+            function firstRunTasks(result){
                 $("#sysScreen").hide();
                 $("#jobScreen").hide();
                 $('#componentTabs').hide();
-        //        $('#dashboard').hide();
-                //$('#jstree_div' + " li[id=" + "local" + "] a")[0].click();
-
             };
+
             openWelcome();
-
-            function activaTab(tab){
-                $('.nav-tabs a[href="#' + tab + '"]').tab('show');
-            };
-
 
             $("#search-icon").on("click",function(){
                 $('#jstree_div').jstree(true).refresh(true);
@@ -3016,7 +3136,6 @@
                     $('#jstree_div').jstree(true).refresh(true);
                 }
             });
-
 
             $("#dashBtn").addClass("active");
             $("#componentsRow").hide();
@@ -3029,7 +3148,7 @@
                 $("#dashRow").show();
                 $("#dashBtn").addClass("active");
                 $("#componentsBtn").removeClass("active");
-hideBottom();
+                hideBottom();
             });
             $("#componentsBtn").on("click",function(){
                 $("#componentsRow").show();
@@ -3037,18 +3156,165 @@ hideBottom();
                 $("#dashBtn").removeClass("active");
                 $("#componentsBtn").addClass("active");
                 showBottom();
-            });
+                $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
+            });//
             var statusPanel = $("#resultsStatus")[0].innerHTML;
-            if(statusPanel === ""){$("#status-panel-body").hide()}
+            if(statusPanel === ""){$("#status-panel-body").hide()};
+
+            function loadjobTempTypeDropdown(templateNumber){
+                var mydata = {};
+                $.ajax({
+                    type: 'get',
+                    data: mydata,
+                    templateNumber:templateNumber,
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    url: '/getTempTypes',
+                    success : function(data) {
+                        var indexNumStr = this.templateNumber.toString();
+
+                        const types = JSON.parse(data).types;
+                       // var pCompHtml = "";
+                        var dropDownListHtml = "";
+
+                        var y = 0;
+                        for (var aType in types) {
+                                var thisType = types[aType];
+                                dropDownListHtml += "<div><a id='templateTypeDropdownItem"+indexNumStr+y.toString() + "'  class='dropdown-item templateTypeDropdownItem' href='#' data-type='"+ thisType +"' data-index='"+ indexNumStr +"'>" + thisType +" </a></div>"
+                        }
+                        $("#dropdownTemplateTypeMenu"+indexNumStr)[0].innerHTML = dropDownListHtml;
+
+                        $(".templateTypeDropdownItem").on('click', function(){
+                            var atype = $(this).attr('data-type');
+                            var templateNumber = $(this).attr('data-index');
+
+                            $("#dropdownTemplateTypeButton"+indexNumStr)[0].innerHTML = atype;
+                            $("#templateType"+indexNumStr).val(atype);
+                            currentTemplatesArr[parseInt(templateNumber, 10)].session.setMode("ace/mode/" + atype);
+                        });
+
+                    },
+                    error : function(error) {
+                        console.log(error)
+                    }
+                })
+            }
+
+            //glabal array to hold all ace.edit templates
+            var currentTemplatesArr = [];
+
+            //enable Ace editor Build Script
+            var scriptEditor = ace.edit("script");
+            scriptEditor.setTheme("ace/theme/clouds");
+            scriptEditor.session.setMode("ace/mode/sh");
+            document.getElementById('script').style.fontSize='14px';
+
+            function setAceBuildCodeHeight(){
+                let newHeight;
+
+                newHeight = scriptEditor.getSession().getScreenLength() * scriptEditor.renderer.lineHeight + 17; //+ (scriptEditor.renderer.scrollBar.getWidth() * 2);
+                newHeight = newHeight < 80 ? 80 : newHeight;
+                newHeight = newHeight > 1200 ? 1200 : newHeight;
+                $(".codeCard").height(newHeight);
+                scriptEditor.resize();
+
+            }
+
+            function setTempAceHeight(tempNum, level){
+                if(level == "max"){
+                    newHeight = currentTemplatesArr[tempNum].getSession().getScreenLength() * currentTemplatesArr[tempNum].renderer.lineHeight + currentTemplatesArr[tempNum].renderer.scrollBar.getWidth();
+                    newHeight = newHeight < 40 ? 40 : newHeight;
+                    newHeight = newHeight > 800 ? 800 : newHeight;
+                }else{
+                    newHeight = 40;
+                }
+
+                $("#templateCard"+ tempNum.toString()).height(newHeight);
+                currentTemplatesArr[tempNum].resize();
+            }
+
+            var currentStyleName = ""
+            function setAceStyle(styleName){
+                if(styleName === "dark"){
+                    //$("#darkStyleRadioTop").prop('checked',true);
+                    scriptEditor.setTheme("ace/theme/twilight");
+                    //templateEditor.setTheme("ace/theme/twilight");
+                    for(var inx in currentTemplatesArr){
+                        currentTemplatesArr[inx].setTheme("ace/theme/twilight");
+                    }
+                }else{
+                    //$("#defaultStyleRadioTop").prop('checked',true);
+                    scriptEditor.setTheme("ace/theme/clouds");
+                    //templateEditor.setTheme("ace/theme/clouds");
+                    for(var inx in currentTemplatesArr){
+                        currentTemplatesArr[inx].setTheme("ace/theme/clouds");
+                    }
+                }
+            }
+
+            //Apply Style
+            function setStyle(name){
+                const styleName = name;
+
+                currentStyleName = styleName;
+                setAceStyle(styleName);
+
+                var mydata = {styleName:styleName};
+
+                $.ajax({
+                    type: 'get',
+                    data: mydata,
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    url: '/getStyle',
+                    success : function(data) {
+
+                        var sheet;
+                        if (lastStyleSheet){
+                            sheet = lastStyleSheet;
+                        }else{
+                            sheet = document.createElement('style');
+                            document.body.appendChild(sheet);
+                        }
+                        lastStyleSheet = sheet;
+
+                        const respJson = JSON.parse(data);
+                        cssUnsortTxt = respJson.css;
+                        var cssArr= cssUnsortTxt.split("}")
+                        shuffleArray(cssArr);
+                        cssTxt = cssArr.join("}");
+
+                        loadCssParts( 0, lastStyleSheet);
+                    },
+                    error : function(error) {
+                        console.log(error)
+                    }
+                })
+
+            }
+            setStyle('');
+
+            $('.jobCard').on('shown.bs.collapse', function () {
+                setAceBuildCodeHeight();
+            })
 
 
-            // $("#Build_Results_tab").hide();
-//            $('.nav').on('show.bs.tab', function (e) {
-//                $('.nav .active').removeClass('active');
-//            })
+            //glabal array to hold all dashboard promoted description quill instances
+            var currentPromotedDashDescriptionsArr = [];
+
+            var sysDescription = new Quill('#sysDescription', {
+                theme: 'snow'
+            });
+            var description = new Quill('#description', {
+                theme: 'snow'
+            });
 
 
-        }); //doc ready
+        }); //-------------------------------------------   doc ready -------------------------------------------
 
         /**
          * Randomize array element order in-place.
@@ -3061,47 +3327,6 @@ hideBottom();
             }
         }
 
-        //Apply Style
-        function setStyle(name){
-            const styleName = name;
-
-            var mydata = {styleName:styleName};
-
-            $.ajax({
-                type: 'get',
-                data: mydata,
-                dataType : "text",
-                headers: {
-                    "content-type": "application/json"
-                },
-                url: '/getStyle',
-                success : function(data) {
-
-                    var sheet;
-                    if (lastStyleSheet){
-                        sheet = lastStyleSheet;
-                    }else{
-                        sheet = document.createElement('style');
-                        document.body.appendChild(sheet);
-                    }
-                    lastStyleSheet = sheet;
-
-                    const respJson = JSON.parse(data);
-                    cssUnsortTxt = respJson.css;
-                    var cssArr= cssUnsortTxt.split("}")
-                    shuffleArray(cssArr);
-                    cssTxt = cssArr.join("}");
-
-                    loadCssParts( 0, lastStyleSheet);
-                },
-                error : function(error) {
-                    console.log(error)
-                }
-            })
-
-        }
-        setStyle('');
-
         var cssTxt="";
         var cssUnsortTxt="";
         //var sheetPart = 0;
@@ -3112,8 +3337,6 @@ hideBottom();
             if( totRows > part){
                 sheet.innerHTML += cssTxtPart + "}";
                 setTimeout('loadCssParts('+(part+1).toString()+', lastStyleSheet)', 500/totRows);
-
-               // console.log('loadCssParts('+(part+1).toString()+', lastStyleSheet)', 1000/totRows)
             }else{
                 sheet.innerHTML = "";
                 sheet.innerHTML = cssUnsortTxt
@@ -3121,7 +3344,6 @@ hideBottom();
         }
 
         function formatTimeStr(timeStr){
-
             var timeStrAr = timeStr.split("-");
             if (timeStrAr.length != 6 ){
                 return "";
@@ -3132,8 +3354,6 @@ hideBottom();
                     return(newStr);
                 }
             }
-
-
         }
 
 //        function setEndOfContenteditable(contentEditableElement) {
@@ -3208,10 +3428,6 @@ hideBottom();
 //            }
 //        })
 
-
-
-
-
     </script>
 
     <!-- paste icom image -->
@@ -3276,34 +3492,39 @@ hideBottom();
 
 
         $("html").pasteImageReader(function(results) {
-            var dataURL, filename;
-            filename = results.filename;
-            dataURL = results.dataURL;
+            var focused = $(':focus')[0];
+            if (focused.id === "pasteIcon" ){
+                var dataURL, filename;
+                filename = results.filename;
+                dataURL = results.dataURL;
 
 
-            var canvas = document.createElement("canvas");
-            var ctx = canvas.getContext("2d");
+                var canvas = document.createElement("canvas");
+                var ctx = canvas.getContext("2d");
 
-            canvas.width = 21; // target width
-            canvas.height = 21; // target height
+                canvas.width = 21; // target width
+                canvas.height = 21; // target height
 
-            var image = new Image();
+                var image = new Image();
 
-            image.onload = function(e) {
-                ctx.drawImage(image,
-                    0, 0, image.width, image.height,
-                    0, 0, canvas.width, canvas.height
-                );
-                // create a new base64 encoding
-                var resampledImage = new Image();
-                var newdataURL = canvas.toDataURL();
-                resampledImage.src = newdataURL;
-                $('#iconURL').val(newdataURL);
-                var rs = document.getElementById("resampled");
-                rs.innerHTML = '';
-                rs.appendChild(resampledImage);
-            };
-            image.src = dataURL;
+                image.onload = function(e) {
+                    ctx.drawImage(image,
+                        0, 0, image.width, image.height,
+                        0, 0, canvas.width, canvas.height
+                    );
+                    // create a new base64 encoding
+                    var resampledImage = new Image();
+                    var newdataURL = canvas.toDataURL();
+                    resampledImage.src = newdataURL;
+                    $('#iconURL').val(newdataURL);
+                    var rs = document.getElementById("resampled");
+                    rs.innerHTML = '';
+                    rs.appendChild(resampledImage);
+                };
+                image.src = dataURL;
+            }
+
+
         });
 
     </script>
@@ -3475,11 +3696,13 @@ hideBottom();
 
             <div id="leftCol" class="top-col-fixed-240" >
                 <div id="treePanel" class='panel panel-default cust-panel locTree-panel-body' style="float: left;"  >
-                    <div class='panel-heading cust-panel-heading'>
-                        Systems <a class='newSys' href='#'><i class="fa fa-plus fa-fw"></i></a> <a href="#" data-toggle="modal" data-target="#welcomeModal">  <i class="fa fa-question fa-fw"></i></a>
-                        <i id="search-icon" class="fa fa-search  fa-fw search-icon"></i>
-                        <div class="form-group search-group">
-                            <input class="form-control form-custom searchInput" placeholder="" id="searchInput" >
+                    <div class='panel-heading treePanelHeading '>
+                        <div class="cust-panel-heading">
+                            Systems <a class='newSys' href='#'><i class="fa fa-plus fa-fw"></i></a> <a href="#" data-toggle="modal" data-target="#welcomeModal">  <i class="fa fa-question fa-fw"></i></a>
+                            <i id="search-icon" class="fa fa-search  fa-fw search-icon"></i>
+                            <div class="form-group search-group">
+                                <input class="form-control form-custom searchInput" placeholder="" id="searchInput" >
+                            </div>
                         </div>
                     </div>
 
@@ -3540,7 +3763,10 @@ hideBottom();
                                                 <div class="col-lg-12" style="padding: 0px">
                                                     <div class="form-group">
                                                         <label>System Description</label>
-                                                        <textarea rows="4" class="form-control form-custom" placeholder="Enter description of this system" id="sysDescription"></textarea>
+                                                        <!--<textarea rows="4" class="form-control form-custom" placeholder="Enter description of this system" id="sysDescription"></textarea>-->
+
+                                                        <div id="sysDescription" class=""></div>
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -3559,7 +3785,7 @@ hideBottom();
                                                     <div id="sysIcon"></div>
                                                     <div id="iconPaste">
                                                         <p>Paste image onto this form</p><div id="resampled"></div>
-                                                        <input type="hidden" id="iconURL">
+                                                        <input type="hidden" id="iconURL"><span><input type="text" id="pasteIcon"></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -3646,7 +3872,8 @@ hideBottom();
                                                     <div class="col-lg-12" style="padding: 0px">
                                                         <div class="form-group">
                                                             <label class="build-label">Description</label>
-                                                            <textarea rows="4" class="form-control form-custom" placeholder="Enter description of this component" id="description"></textarea>
+                                                            <!--<textarea rows="4" class="form-control form-custom" placeholder="Enter description of this component" id="description"></textarea>-->
+                                                            <div id="description" class=""></div>
                                                         </div>
                                                         <div class="form-group">
                                                             <label class="build-label">Component Variables</label><i class="fa fa-fw"></i>
@@ -3722,13 +3949,14 @@ hideBottom();
                                                                     <label class="build-label">Build Script</label><i class="fa fa-fw"></i>
                                                                     <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal"><i class="fa fa-question fa-fw"></i></a>
                                                                     <a href="#" id='insertVariable' data-toggle="modal" data-target="#varModal">[Insert Variable]</a>
-                                                                    <textarea class="form-control form-custom code" rows="4" id="script"></textarea>
+                                                                    <!--<textarea class="form-control form-custom code" rows="4" id="script"></textarea>-->
+
+                                                                    <div class="card codeCard">
+                                                                        <div id="script" class="jobCodeEditor"></div>
+                                                                    </div>
+
                                                                 </div>
 
-                                                                <div class="form-group">
-                                                                    <label class="build-label">Template</label>
-                                                                    <textarea class="form-control form-custom code" rows="4" id="template"></textarea>
-                                                                </div>
                                                                 <div id="custTemplates">
                                                                 </div>
                                                                 <div id="newTemplateButton">
@@ -3851,16 +4079,16 @@ hideBottom();
                     <div class='panel-heading cust-panel-heading'><i class='fa  fa-tv  fa-fw'></i>Console<i class='fa  fa-fw'></i><span id="messageSpan"></span>
 
                         <i class='fa fa-fw navbar-right'></i>
-                        <i id="codes_btn_max" class='codes_btn_max fa fa-window-maximize fa-fw navbar-right'></i>
-                        <i id="codes_btn_min" class='codes_btn_min fa fa-window-minimize fa-fw navbar-right'></i>
-                        <i id="codes_btn" class='codes_btn fa  fa-hashtag fa-fw navbar-right'></i>
+                        <a href="#"><i id="codes_btn_max" class='codes_btn_max fa fa-window-maximize fa-fw navbar-right'></i></a>
+                        <a href="#"><i id="codes_btn_min" class='codes_btn_min fa fa-window-minimize fa-fw navbar-right'></i></a>
+                        <a href="#"><i id="codes_btn" class='codes_btn fa  fa-hashtag fa-fw navbar-right'></i></a>
                         <i class='fa fa-fw navbar-right'></i>
 
                     </div>
 
                     <div class='panel-body term-panel-body'>
                         <div id="terminal-container" >
-                            <div id="results_html" contentEditable="true" class='scroller'></div>
+                            <div id="results_html" contentEditable="false" class='scroller'></div>
                             <div id="results_codes" class='scroller'></div>
                             <!--<div id="console_connect" class='' contentEditable="true">jnkjn,kjn.kb.bhb,j</div>-->
                         </div>

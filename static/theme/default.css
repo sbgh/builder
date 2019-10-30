@@ -4,10 +4,17 @@
     color: #555555;
 }
 
+.rightCol {
+     transition: background-color 1s;
+     background-color: #dcdcdc;
+ }
+
+
+
 .navbar-default {
     transition: background-color 1s;
      transition: background-color 1s;: #ffffff;;
-    border-color: #f0f0f0;
+    border-color: #f8f8f8;
 }
 
 body {
@@ -38,6 +45,24 @@ a {
     transition: background-color 1s;
     background-color: #d4d4d4;
 }
+
+#sysDescription, #description{
+    transition: background-color 0.5s;
+    background-color: #f9f9f9;
+    border: 1px solid #555555;
+}
+
+.ql-picker-label, .ql-stroke{
+    color: #367ae0;
+    stroke:  #367ae0 !important;
+}
+
+#sysDescription.ql-disabled, #description.ql-disabled{
+    /*color: #adadad;*/
+    transition: background-color 0.5s;
+    background-color: #ececec;
+}
+
 .table-striped > tbody > tr:nth-child(2n+1) {
 
     transition: background-color 1s;
@@ -421,3 +446,14 @@ a.libListRow {
 .DashListRowFail{
     color: #901514;
 }
+
+.ace_editor{
+    transition: color 0.5s;
+    color: #000000;
+}
+
+.aceDisabled {
+    transition: background-color 0.5s;
+    background-color: #ececec;
+}
+

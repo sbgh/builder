@@ -218,24 +218,29 @@ router.get("/builder",function(req,res){
     res.render("builder", {username: sess.username});
 });
 
-//Service Rt: /jobs [components], Method: get, Requires: id = component ID or # [all], Returns:  SystemsJSON[id] or new responce json array of all components filtered by req.query.searchSt
-router.get("/Jobs",function(req,res){
+//Service Rt: /jobsTree [components], Method: get, Requires: id = component ID or # [all], Returns: array of one(#) or all components filtered by req.query.searchSt tailored for jsTree api
+router.get("/JobsTree",function(req,res){
     //console.log("url: " + req.url);
     var id = req.query.id;
     var searchSt = req.query.searchSt;
     //console.log("jobs:" + id+":");
     res.writeHead(200, {"Content-Type": "application/json"});
-    var resJSON = [];
+    var respTxt = ""
     if (id !== '#'){
         //id is not '#' and is assumed to be a valid SystemsJSON[id]
-        var rowdata = JSON.parse(JSON.stringify(SystemsJSON[id]) );
+        //var rowdata = JSON.parse(JSON.stringify(SystemsJSON[id]) );
+
+        //atempting to update single jstree node via refresh_node ...
+        //currently not used by ui
 
         //console.log('gv:' + SystemsJSON[id].variables);
-        rowdata.id = id;
-        resJSON.push(rowdata);
+        //rowdata.id = id;
+        //resJSON.push(getTreeFormattedRowData(id,""));
+        respTxt = JSON.stringify([getTreeFormattedRowData(id,"")])
     }else {
         //id is '#' so return entire tree
         //Create parent row and place entire tree under it
+        var resJSON = [];
         var rowdata = {};
         rowdata.id = "local";
         rowdata.name = "local";
@@ -248,6 +253,8 @@ router.get("/Jobs",function(req,res){
         //Loop through all SystemJSON and filter if search term is present.
         for (var key in SystemsJSON) {
             if (SystemsJSON.hasOwnProperty(key)) {
+
+
 
                 //filter by search string
                 if (searchSt.length === 0) { //If no search then simply add row
@@ -288,120 +295,162 @@ router.get("/Jobs",function(req,res){
                     }
                 }
 
-                //function isFoundIn: Return flag to indicate if a given component has search term, Requires: key = component ID | searSt = serch term string, Returns: true if found false if not
-                function isFoundIn(key, searchSt) {
-                    //search in  name, Description, variables, script, template
-                    //Note: not included custom templates in prototype
-                    var filter = false;
-                    if (SystemsJSON[key].name.includes(searchSt)) {
-                        filter = true
-                    }
-                    if (SystemsJSON[key].description.includes(searchSt)) {
-                        filter = true
-                    }
-                    if (SystemsJSON[key].hasOwnProperty("variables")) {
-                        if (SystemsJSON[key].variables.includes(searchSt)) {
-                            filter = true
-                        }
-                    }
-                    if (SystemsJSON[key].hasOwnProperty("script")) {
-                        if (SystemsJSON[key].script.includes(searchSt)) {
-                            filter = true
-                        }
-                    }
-                    if (SystemsJSON[key].hasOwnProperty("template")) {
-                        if (SystemsJSON[key].template.includes(searchSt)) {
-                            filter = true
-                        }
-                    }
-                    return filter
-                }
+                //for mass updates
+                if(SystemsJSON[key].comType === "job"){
 
-                //function getTreeFormattedRowData: Formats the return row json to include li_attr, a_attr for jstree styling, Requires: key = component ID | searchResultsClassToAdd = string name of class to add to indicate search hit, Returns: row data obj
-                function getTreeFormattedRowData(key, searchResultsClassToAdd) {
 
-                    //rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]));
-                    let rowdata = {};
-                    //fast obj clone - https://stackoverflow.com/questions/5055746/cloning-an-object-in-node-js
-                    // for(var keys = Object.keys(SystemsJSON[key]), l = keys.length; l; --l)
-                    // {
-                    //     rowdata[ keys[l-1] ] = SystemsJSON[key][ keys[l-1] ];
+                    // if(SystemsJSON[key].hasOwnProperty("custTemplates")){
+                    //     delete SystemsJSON[key].custTemplates
                     // }
-                    //
-                    // delete rowdata.script;
-                    // delete rowdata.template;
-                    // delete rowdata.custTemplates;
-                    rowdata.id = key;
-                    rowdata.name = SystemsJSON[key].name;
-                    rowdata.text = SystemsJSON[key].name ;
-                        //+ (SystemsJSON[key].sort > -1 ? " " + SystemsJSON[key].sort.toString() : "x");
-                    rowdata.sort = SystemsJSON[key].sort > -1 ? SystemsJSON[key].sort : 0;
-
-                    //if type of component = 'system' then add type
-                    if (SystemsJSON[key].comType === "system") {
-                        rowdata.type = "system"
-                    } else { //if non-system add type as 'job'
-                        rowdata.type = "job";
-                        if (SystemsJSON[key].hasOwnProperty("enabled")) {
-                            rowdata.enabled = SystemsJSON[key].enabled;
-
-                            if (rowdata.enabled === 0) { //If enabled set type that is used in jstree type plugin
-                                rowdata.type = "disabled";
-                            } else if (!SystemsJSON[key].hasOwnProperty("lastBuild")) {
-                                rowdata.type = "needfull"
-                            } else if (SystemsJSON[key].rerunnable === 1) {
-                                rowdata.type = "rerunnable"
-                            }
-                        }
-                    }
-
-                    rowdata.comType = SystemsJSON[key].comType;
-
-                    rowdata = setRowDataClasses(rowdata, searchResultsClassToAdd);
-
-                    if (SystemsJSON[key].icon) {
-                        rowdata.icon = "/uploads/" + key + "/" + "icon.png"
-                    }
-
-                    var pt = SystemsJSON[key].parent;
-                    if (pt === "#") {
-                        rowdata.parent = "local"
-                    }else{
-                        rowdata.parent = SystemsJSON[key].parent
-                    }
-
-                    return rowdata;
+                    // if(SystemsJSON[key].hasOwnProperty("template")){
+                    //     delete SystemsJSON[key].template
+                    // }
                 }
 
 
-                function setRowDataClasses(rowdata, searchResultsClassToAdd){
-                    //Set searchModClass to a class name to set color of jstree row
-                    var searchModClass = searchResultsClassToAdd;
+            }
+        }
+       // for mass updates
+       //  saveAllJSON(true);
 
-                    if (rowdata.comType === "job") {
-                        if (SystemsJSON[rowdata.id].hasOwnProperty("lastBuild")) {
-                            if (SystemsJSON[rowdata.id].lastBuild.pass === 1) {
-                                rowdata.li_attr = {"class": "runningJobCompleteSuccess " + searchModClass};
-                                rowdata.a_attr = {"class": "runningJobCompleteSuccess " + searchModClass}
-                            } else if (SystemsJSON[rowdata.id].lastBuild.pass === 0) {
-                                rowdata.li_attr = {"class": "runningJobCompleteFail " + searchModClass};
-                                rowdata.a_attr = {"class": "runningJobCompleteFail " + searchModClass}
-                            }
-                        } else {
-                            rowdata.li_attr = {"class": "newJobRow"};
-                            rowdata.a_attr = {"class": searchModClass}
-                        }
+        respTxt = JSON.stringify(resJSON)
+    }
 
-                    } else {
-                        rowdata.li_attr = {"class": "newJobRow"};
-                        rowdata.a_attr = {"class": searchModClass}
+    //function isFoundIn: Return flag to indicate if a given component has search term, Requires: key = component ID | searSt = serch term string, Returns: true if found false if not
+    function isFoundIn(key, searchSt) {
+        //search in  name, Description, variables, script, template
+        //Note: not included custom templates in prototype
+        var filter = false;
+        if (SystemsJSON[key].name.includes(searchSt)) {
+            filter = true
+        }
+        if (SystemsJSON[key].description.hasOwnProperty("ops")){
+            SystemsJSON[key].description.ops.forEach(function(row){
+                if(row.hasOwnProperty("insert")){
+                    if(row.insert.includes(searchSt)) {
+                        filter = true
                     }
-                    return rowdata;
+                }
+            })
+        }else{
+            if(SystemsJSON[key].description.includes(searchSt)) {
+                filter = true
+            }
+        }
+
+
+        if (SystemsJSON[key].hasOwnProperty("variables")) {
+            if (SystemsJSON[key].variables.includes(searchSt)) {
+                filter = true
+            }
+        }
+        if (SystemsJSON[key].hasOwnProperty("script")) {
+            if (SystemsJSON[key].script.includes(searchSt)) {
+                filter = true
+            }
+        }
+        if (SystemsJSON[key].hasOwnProperty("templates")) {
+            SystemsJSON[key].templates.tempArr.forEach(function(row){
+                // console.log(JSON.stringify(row));
+                if(row.hasOwnProperty("c")){
+                    if (row.c.includes(searchSt)) {
+                        filter = true
+                    }
+                }
+            })
+
+        }
+        return filter
+    }
+
+    //function getTreeFormattedRowData: Formats the return row json to include li_attr, a_attr for jstree styling, Requires: key = component ID | searchResultsClassToAdd = string name of class to add to indicate search hit, Returns: row data obj
+    function getTreeFormattedRowData(key, searchResultsClassToAdd) {
+
+        let rowdata = {};
+        rowdata.id = key;
+        rowdata.name = SystemsJSON[key].name;
+        rowdata.text = SystemsJSON[key].name ;
+        //+ (SystemsJSON[key].sort > -1 ? " " + SystemsJSON[key].sort.toString() : "x");
+        rowdata.sort = SystemsJSON[key].sort > -1 ? SystemsJSON[key].sort : 0;
+
+        //if type of component = 'system' then add type
+        if (SystemsJSON[key].comType === "system") {
+            rowdata.type = "system"
+        } else { //if non-system add type as 'job'
+            rowdata.type = "job";
+            if (SystemsJSON[key].hasOwnProperty("enabled")) {
+                rowdata.enabled = SystemsJSON[key].enabled;
+
+                if (rowdata.enabled === 0) { //If enabled set type that is used in jstree type plugin
+                    rowdata.type = "disabled";
+                } else if (!SystemsJSON[key].hasOwnProperty("lastBuild")) {
+                    rowdata.type = "needfull"
+                } else if (SystemsJSON[key].rerunnable === 1) {
+                    rowdata.type = "rerunnable"
                 }
             }
         }
+
+        rowdata.comType = SystemsJSON[key].comType;
+
+        rowdata = setRowDataClasses(rowdata, searchResultsClassToAdd);
+
+        if (SystemsJSON[key].icon) {
+            rowdata.icon = "/uploads/" + key + "/" + "icon.png"
+        }
+
+        var pt = SystemsJSON[key].parent;
+        if (pt === "#") {
+            rowdata.parent = "local"
+        }else{
+            rowdata.parent = SystemsJSON[key].parent
+        }
+
+        return rowdata;
     }
+
+
+    function setRowDataClasses(rowdata, searchResultsClassToAdd){
+        //Set searchModClass to a class name to set color of jstree row
+        var searchModClass = searchResultsClassToAdd;
+
+        if (rowdata.comType === "job") {
+            if (SystemsJSON[rowdata.id].hasOwnProperty("lastBuild")) {
+                if (SystemsJSON[rowdata.id].lastBuild.pass === 1) {
+                    rowdata.li_attr = {"class": "runningJobCompleteSuccess " + searchModClass};
+                    rowdata.a_attr = {"class": "runningJobCompleteSuccess " + searchModClass}
+                } else if (SystemsJSON[rowdata.id].lastBuild.pass === 0) {
+                    rowdata.li_attr = {"class": "runningJobCompleteFail " + searchModClass};
+                    rowdata.a_attr = {"class": "runningJobCompleteFail " + searchModClass}
+                }
+            } else {
+                rowdata.li_attr = {"class": "newJobRow"};
+                rowdata.a_attr = {"class": searchModClass}
+            }
+
+        } else {
+            rowdata.li_attr = {"class": "newJobRow"};
+            rowdata.a_attr = {"class": searchModClass}
+        }
+        return rowdata;
+    }
+
     //return new formated json
+    res.end(respTxt);
+});
+
+//Service Rt: /jobs [components], Method: get, Requires: id = component ID or # [all], Returns:  raw SystemJSON object for ajax queries
+router.get("/Jobs",function(req,res){
+    var id = req.query.id;
+    var searchSt = req.query.searchSt;
+    res.writeHead(200, {"Content-Type": "application/json"});
+    var resJSON = [];
+    if (id !== '#'){
+        var rowdata = JSON.parse(JSON.stringify(SystemsJSON[id]) );
+
+        rowdata.id = id;
+        resJSON.push(rowdata);
+    }
     res.end(JSON.stringify(resJSON));
 });
 
@@ -469,7 +518,7 @@ router.get("/getLib",function(req,res) {
 
 });
 
-//Service Rt: /Sys, Method: get, Requires: id = id of the system component, Returns:  system json if exists
+//Service Rt: /Sys, Method: get, Requires: id = id of the system component, Returns:  single system obj if exists
 router.get("/Sys",function(req,res){
     var id = req.query.id;
     res.writeHead(200, {"Content-Type": "application/json"});
@@ -799,7 +848,7 @@ router.post("/save",function(req,res){
             id = generateUUID();
 
             //Build new OBJ
-            foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1, enabled:1, promoted:0, rerunnable:0, systemFunction:0,  runLocal:0, comType: 'job', description: req.body.description, script:req.body.script, variables:req.body.compVariables, template:req.body.template, text:req.body.name, resourceFiles:[], sort:x, hist:hist};
+            foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1, enabled:1, promoted:0, rerunnable:0, systemFunction:0,  runLocal:0, comType: 'job', description: req.body.description, script:req.body.script, variables:req.body.compVariables, templates:{tempArr:{"c":req.body.template, "t":req.body.templateType}} , text:req.body.name, resourceFiles:[], sort:x, hist:hist};
 
             //Add row to SysemJSON
             SystemsJSON[id] = foundRow;
@@ -825,16 +874,19 @@ router.post("/save",function(req,res){
         newData.description = req.body.description;
         newData.variables = req.body.compVariables;
         newData.script = req.body.script;
-        newData.template = req.body.template;
+
+        // newData.template = {"code":req.body.template, "type":req.body.templateType};
+        newData.templates = req.body.templates
+
         newData.text = req.body.name;
-        newData.custTemplates = req.body.custTemplates;
+        //newData.custTemplates = req.body.custTemplates;
 
         //Proto has some incorrect data in resourceFiles. this is temp work around.
-        if(req.body.resourceFiles === "[object Object]"){   ////bugged data
-            newData.resourceFiles = "[]";
-        }else{
-            newData.resourceFiles = req.body.resourceFiles;
-        }
+        // if(req.body.resourceFiles === "[object Object]"){   ////bugged data
+        //     newData.resourceFiles = "[]";
+        // }else{
+        //     newData.resourceFiles = req.body.resourceFiles;
+        // }
 
         //Move sort value over
         newData.sort = SystemsJSON[id].sort;
@@ -1049,8 +1101,9 @@ router.post("/copy",function(req,res){
                     NewRow.runLocal=fromNode.runLocal;
                     NewRow.script=fromNode.script;
                     NewRow.variables=fromNode.variables;
-                    NewRow.template=fromNode.template;
-                    NewRow.custTemplates=fromNode.custTemplates;
+                    //NewRow.template=fromNode.template;
+                    NewRow.templates=fromNode.templates;
+                    //NewRow.custTemplates=fromNode.custTemplates;
                     NewRow.resourceFiles=fromNode.resourceFiles;
                     NewRow.icon=fromNode.icon;
                 }
@@ -1171,8 +1224,10 @@ router.post("/copy",function(req,res){
                     NewRow.systemFunction=fromNode.systemFunction;
                     NewRow.runLocal=fromNode.runLocal;
                     NewRow.script=fromNode.script;
-                    NewRow.template=fromNode.template;
-                    NewRow.custTemplates=fromNode.custTemplates;
+                    // NewRow.template=fromNode.template;
+                    NewRow.templates=fromNode.templates;
+
+                    // NewRow.custTemplates=fromNode.custTemplates;
                     NewRow.resourceFiles=fromNode.resourceFiles;
                     NewRow.icon=fromNode.icon;
                 // }else{
@@ -1315,8 +1370,9 @@ router.post("/copyToLib",function(req,res){
             const nodeType = fromNode.comType;
             if (nodeType === 'job' ){
                 NewRow.script=fromNode.script;
-                NewRow.template=fromNode.template;
-                NewRow.custTemplates=fromNode.custTemplates;
+                // NewRow.template=fromNode.template;
+                NewRow.templates=fromNode.templates;
+                // NewRow.custTemplates=fromNode.custTemplates;
                 NewRow.resourceFiles=fromNode.resourceFiles;
                 NewRow.rerunnable=fromNode.rerunnable;
                 NewRow.promoted=fromNode.promoted;
@@ -2126,13 +2182,17 @@ router.post("/run",function(req,res){
                                 } else if
                                 (currentCommand.substr(0, 13) === "saveTemplate:") {
 
-                                    var template = job.template;
-                                    var pathFileName = currentCommand.substr(currentCommand.indexOf(":") + 1);
+                                    var template = "";
+                                    var pathFileName = "";
+
                                     var tempNum = parseInt(currentCommand.split(':')[1], 10);
                                     if (tempNum > 1 && tempNum < 100) {
-                                        template = job.custTemplates['template' + tempNum.toString()];
+                                        template = job.templates.tempArr[tempNum - 1].c;
                                         pathFileName = currentCommand.substr(currentCommand.indexOf(":") + 1);
                                         pathFileName = pathFileName.substr(pathFileName.indexOf(":") + 1);
+                                    }else{
+                                        template = job.templates.tempArr[0].c;
+                                        pathFileName = currentCommand.substr(currentCommand.indexOf(":") + 1);
                                     }
 
                                     var pathFileNameAr = pathFileName.split('/');
@@ -2963,6 +3023,7 @@ router.get("/getPromoted",function(req,res){
     res.end(JSON.stringify(resJSON));
 });
 
+//Service Rt: /getPromoted to return a sorted array of SystemJSON rows where promoted === 1 and systemId === id of system to include. Rows where its system does not have a hostip defined will be excluded unless it has runlocal set. , Method: get, Requires: none, Returns: array of working SystemJSON systems plus added properties (id, systemName, systemId)
 function fixSystemsJSONSort(){
     for (var key in SystemsJSON) {
         if (SystemsJSON.hasOwnProperty(key)) {
@@ -2997,6 +3058,14 @@ router.get("/setEnable",function(req,res){
         saveAllJSON(false)
     }
     res.end(JSON.stringify({enabled:SystemsJSON[id].enabled}));
+});
+
+router.get("/getTempTypes",function(req,res){
+
+    let resJSON = {types: ["javascript", "sh", "text", "css", "ejs", "html", "json"]}
+
+
+    res.end(JSON.stringify(resJSON));
 });
 
 //Service Rt: /getCPUStats to return an array of CPU stats of the current server , Method: get, Requires: none, Returns: array of stats in the format {last10:[val], last50:[val], last100:[val], freeMem:[val]}
@@ -3117,7 +3186,6 @@ app.use("*",function(req,res){
     console.log('404 '+ req.baseUrl)
 });
 
-//ca: fs.readFileSync('./ssl/ca.crt'),
 var secureServer = https.createServer({
     key: fs.readFileSync('./ssl/server.key'),
     cert: fs.readFileSync('./ssl/server.crt'),

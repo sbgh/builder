@@ -4,6 +4,11 @@
     color: #3c3f41;
 }
 
+.rightCol {
+    transition: background-color 1s;
+    background-color: #3c3f41;
+}
+
 .navbar-default {
     transition: background-color 0.5s;
     background-color: #3c3f41;;
@@ -28,7 +33,7 @@ body {
 .panel-default>.panel-heading {
     color: #adadad;
     transition: background-color 0.5s;
-    background-color: #313335;
+    background-color: #3c3f41;;
     border-color: #555555;
 }
 
@@ -43,14 +48,30 @@ body {
 a, a:hover {
     color: #79bdf3;
 }
-.form-control[readonly], fieldset[disabled] .form-control {
+
+#sysDescription, #description{
+    color: #f8f8f8;
     transition: background-color 0.5s;
-    background-color: #3c3e3f;
+    background-color: #000000;
+    border-color: #555555;
 }
-.form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
+
+/*#sysDescription:focus, #description:focus{*/
+    /*transition: background-color 0.5s;*/
+    /*background-color: #323232;*/
+/*}*/
+
+.ql-picker-label, .ql-stroke{
+    color: #79bdf3;
+    stroke:  #79bdf3 !important;
+}
+
+#sysDescription.ql-disabled, #description.ql-disabled{
+    color: #adadad;
     transition: background-color 0.5s;
-    background-color: #383630;
+    background-color: #3c3f41;
 }
+
 .table-striped > tbody > tr:nth-child(2n+1) {
     transition: background-color 0.5s;
     background-color: #555555;
@@ -132,14 +153,28 @@ div.grippie {
     border-top: 1px solid #666;
 }
 
-.form-control {
-    color: #383630;
+
+.jobFormbtn{
     transition: background-color 0.5s;
-    background-color: #bbbbbb;
+    background-color: #79bdf3;
+    color: #292525;
+}
+
+.form-control {
+    color: #f8f8f8;
+    transition: background-color 0.5s;
+    background-color: #000000;
     border-color: #555555;
 }
 
-.form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
+.form-control:focus,
+.form-control:focus{
+    color: #f8f8f8;
+    transition: background-color 0.5s;
+    background-color: #000000 !important;
+}
+
+.form-control[disabled], .form-control[readonly], .form-control[disabled], .form-control[readonly] {
     cursor: not-allowed;
     transition: background-color 0.5s;
     background-color: #3c3f41;
@@ -147,11 +182,13 @@ div.grippie {
     opacity: 1;
 }
 
-.jobFormbtn{
+.form-control[disabled]:focus, .form-control[readonly]:focus {
     transition: background-color 0.5s;
-    background-color: #79bdf3;
-    color: #292525;
+    background-color: #3c3f41 !important;
+    color: #adadad;
 }
+
+
 
 .modal-content {
     color: #bbbbbb;
@@ -551,4 +588,30 @@ input:focus + .slider {
 }
 .DashListRowFail{
     color: #ff1917;
+}
+
+.ace_marker-layer .ace_active-line {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.templateTypeDropdownButton{
+    color:#79bdf3;
+}
+
+.templateTypeDropdownItem {
+    transition: background-color 0.5s;
+    background-color: rgb(60, 63, 65);
+    border-bottom: 1px solid rgba(0,0,0,.125);
+    color: #fcfcef;
+}
+
+.ace_editor{
+    transition: color 0.5s;
+    color: #F8F8F8;
+}
+
+.aceDisabled {
+    transition: color 0.5s;
+    transition: background-color 0.5s;
+    background-color: #323232;
 }
