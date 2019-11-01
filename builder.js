@@ -879,14 +879,8 @@ router.post("/save",function(req,res){
         newData.templates = req.body.templates
 
         newData.text = req.body.name;
-        //newData.custTemplates = req.body.custTemplates;
 
-        //Proto has some incorrect data in resourceFiles. this is temp work around.
-        // if(req.body.resourceFiles === "[object Object]"){   ////bugged data
-        //     newData.resourceFiles = "[]";
-        // }else{
-        //     newData.resourceFiles = req.body.resourceFiles;
-        // }
+        newData.resourceFiles = req.body.resourceFiles;
 
         //Move sort value over
         newData.sort = SystemsJSON[id].sort;

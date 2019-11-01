@@ -1001,12 +1001,13 @@
                     },
                     url: '/getCPUStats',
                     success : function(data) {
-
                         const statsJson = JSON.parse(data);
-                        $("#osCPUValue")[0].innerHTML = statsJson.last10.toString()+"%"
-                        $("#osFMValue")[0].innerHTML = (statsJson.freeMem/1024/1024/1024).toFixed(2).toString()+" GB"
-
-
+                        if(statsJson.hasOwnProperty("last10")){
+                            if(statsJson.last10 != null){
+                                $("#osCPUValue")[0].innerHTML = statsJson.last10.toString()+"%"
+                                $("#osFMValue")[0].innerHTML = (statsJson.freeMem/1024/1024/1024).toFixed(2).toString()+" GB"
+                            }
+                        }
                     },
                     error : function(error) {
                         console.log(error)
@@ -1189,7 +1190,11 @@
                         $("#createdDate").val(data[0].hist[0].ds)
                     }
 
-                    populateFileList( $('#resourceFiles').val(), false);
+                    ;populateFileList( $('#resourceFiles').val(), false);
+                    $.get('/fileList', { id: $('#id').val() }, function(data) {
+                        $('#resourceFiles').val(data);
+                        populateFileList(data, false);
+                    });
 
                     var timestamp = new Date().getTime();
                     $.get('/uploads/' +  $("#id").val() + "/screenshot.png?" + timestamp, '', function(data) {
