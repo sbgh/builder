@@ -848,7 +848,7 @@ router.post("/save",function(req,res){
             id = generateUUID();
 
             //Build new OBJ
-            foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1, enabled:1, promoted:0, rerunnable:0, systemFunction:0,  runLocal:0, comType: 'job', description: req.body.description, script:req.body.script, variables:req.body.compVariables, templates:{tempArr:{"c":req.body.template, "t":req.body.templateType}} , text:req.body.name, resourceFiles:[], sort:x, hist:hist};
+            foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1, enabled:1, promoted:0, rerunnable:0, systemFunction:0,  runLocal:0, comType: 'job', description: req.body.description, script:req.body.script, variables:req.body.compVariables, templates:{tempArr:[{"c":"", "t":""}]} , text:req.body.name, resourceFiles:[], sort:x, hist:hist};
 
             //Add row to SysemJSON
             SystemsJSON[id] = foundRow;

@@ -1121,3 +1121,20 @@ th.col-1, td.col-1{
 .dashTableDescriptionItem > .ql-container{
    border: 0px solid;
 }
+
+.dashTableDescriptionItem .ql-editor {
+   padding: 0px;
+}
+
+.dashListRowNotClicked .ql-editor {
+
+   transition: max-height .5s;
+   max-height: 37px;
+   overflow:hidden
+}
+.dashListRowClicked .ql-editor {
+
+   transition: max-height .5s;
+   max-height: 130px;
+   overflow:auto
+}
