@@ -1,6 +1,6 @@
 {
   "name": "ezStack.Systems-Builder",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "scripts": {
     "start": "./restartServer.sh",
     "stop": "forever stop builder.js",
