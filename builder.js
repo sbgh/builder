@@ -2003,47 +2003,24 @@ router.post("/run",function(req,res){
                         saveAllJSON(false);
 
                         //function to update system variables if job = system job. Used to set host etc.
-                        //eg var:systemVar:host=1.2.3.4 will add/change host variable in the system
+                        //eg var:systemVar:host=1.2.3.4 will add/change host variable in the system to a value of 1.2.3.4
                         function copySystemVarToSystem(id){
 
                             if(typeof SystemsJSON[id] !== "undefined") {
 
                                 var resultsSystem = SystemsJSON[id].ft.split('/')[1];
-
-                                //grab system vars
-                                var varListAr = SystemsJSON[resultsSystem].variables.split('\n');
-                                var systemVars = {};
-                                varListAr.forEach(function (pair) {
-                                    if (pair !== "" && pair.split("=").length > 1) {
-                                        var kName = pair.split('=')[0];
-                                        var kVal = pair.split('=')[1];
-                                        systemVars[kName] = kVal
-                                    }
-                                });
-
-                                if(latestVarCache[id]){
-                                    //loop through each var in this job
-                                    //if one is systemVar get the value
-                                    //split value with '=' and add to systemVars array
-                                    for(varName in latestVarCache[id]){
-                                        if(varName === "systemVar"){
-                                            var newVar = latestVarCache[id][varName];
-                                            if(newVar.split("=").length > 0 ){
-                                                systemVars[newVar.split("=")[0]] = newVar.split("=")[1]
+                                if(SystemsJSON[resultsSystem].variables){
+                                    if(latestVarCache[id]){
+                                        //loop through each var in this job
+                                        //if one is systemVar get the value and add/update in in system
+                                        for(varName in latestVarCache[id]){
+                                            if(varName === "systemVar"){
+                                                var newVar = latestVarCache[id][varName];
+                                                SystemsJSON[resultsSystem].variables[newVar.split("=")[0]] = {value:newVar.split("=")[1], private: false, type: "Text"}
                                             }
                                         }
+                                        saveAllJSON(false)
                                     }
-
-                                    //place all vars back into the system and saveAllJSON(no backup)
-
-                                    var newVariables = "";
-                                    for (var property in systemVars) {
-                                        if (systemVars.hasOwnProperty(property)) {
-                                            newVariables += property + "=" + systemVars[property] + "\n";
-                                        }
-                                    }
-                                    SystemsJSON[resultsSystem].variables = newVariables;
-                                    saveAllJSON(false)
                                 }
                             }
                         }
