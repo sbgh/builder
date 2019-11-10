@@ -1,4 +1,10 @@
 /*-------------------DARK---------------------------*/
+body {
+    transition: transform 0.3s;
+    transform: scaleX(1.0);
+
+
+}
 
 .navbar-default .navbar-nav>li>a {
     color: #3c3f41;
@@ -16,9 +22,11 @@
 }
 
 body {
+    transition: color 1s;
     color: #bbbbbb;
     transition: background-color 0.5s;
     background-color: #3c3f41;
+    scrollbar-color: #3b3b3b #2f2f2f;
 }
 
 .panel {
@@ -113,24 +121,24 @@ a.list-group-item {
     color: #bbbbbb;
 }
 
-::-webkit-scrollbar {
-    width: 14px;
-}
+/*::-webkit-scrollbar {*/
+    /*width: 14px;*/
+/*}*/
 
-::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-    border-radius: 10px;
-}
+/*::-webkit-scrollbar-track {*/
+    /*-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);*/
+    /*border-radius: 10px;*/
+/*}*/
 
-::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    -webkit-box-shadow: inset 0 0 6px #999;
-}
+/*::-webkit-scrollbar-thumb {*/
+    /*border-radius: 10px;*/
+    /*-webkit-box-shadow: inset 0 0 6px #999;*/
+/*}*/
 
 
-::-webkit-scrollbar-corner {
-    background: transparent !important;
-}
+/*::-webkit-scrollbar-corner {*/
+    /*background: transparent !important;*/
+/*}*/
 
 div.grippie {
     border-color:#DDDDDD;
@@ -609,9 +617,37 @@ input:focus + .slider {
     transition: color 0.5s;
     color: #F8F8F8;
 }
+.ace_text-input:focus{
+    transition: color 0.5s;
+    color: #2a2a2a;
+}
 
 .aceDisabled {
     transition: color 0.5s;
     transition: background-color 0.5s;
     background-color: #323232;
+}
+
+.varTable > thead > tr > th {
+    color: #F8F8F8;
+}
+
+.varRow > td {
+    color: #adadad;
+}
+
+.newCompVarTypeButton{
+    color: #adadad;
+}
+
+.compVarDelButton{
+    color:#ff1917;
+}
+
+.ql-active{
+    filter: brightness(150%);
+}
+
+.compVarEditValButton, .compVarEditButton, .ql-snow a {
+    color: #79bdf3;
 }

@@ -296,17 +296,25 @@ router.get("/JobsTree",function(req,res){
                 }
 
                 //for mass updates
-                if(SystemsJSON[key].comType === "job"){
 
-
-                    // if(SystemsJSON[key].hasOwnProperty("custTemplates")){
-                    //     delete SystemsJSON[key].custTemplates
-                    // }
-                    // if(SystemsJSON[key].hasOwnProperty("template")){
-                    //     delete SystemsJSON[key].template
-                    // }
-                }
-
+                // var newArr = {};
+                // if(SystemsJSON[key].hasOwnProperty("variables")){
+                //     SystemsJSON[key].variables.split("\n").forEach(function (vari) {
+                //         if(vari.includes("=")){
+                //             var vIndex = vari.split("=")[0];
+                //             var varNewVal = vari.split(/=(.+)/)[1];
+                //
+                //             if(varNewVal){
+                //                 newArr[vIndex.trim()] = {"value": varNewVal.trim(),"type":"", "private":false};
+                //             }else{
+                //                 newArr[vIndex.trim()] = {"value": "","type":"", "private":false};
+                //                 console.log(vari)
+                //             }
+                //         }
+                //     });
+                //
+                //     SystemsJSON[key].variables = newArr;
+                // }
 
             }
         }
@@ -340,8 +348,14 @@ router.get("/JobsTree",function(req,res){
 
 
         if (SystemsJSON[key].hasOwnProperty("variables")) {
-            if (SystemsJSON[key].variables.includes(searchSt)) {
-                filter = true
+
+            for(var ind in SystemsJSON[key].variables){
+                if (ind.includes(searchSt)) {
+                    filter = true
+                }
+                if (SystemsJSON[key].variables[ind].value.includes(searchSt)) {
+                    filter = true
+                }
             }
         }
         if (SystemsJSON[key].hasOwnProperty("script")) {
@@ -408,7 +422,6 @@ router.get("/JobsTree",function(req,res){
 
         return rowdata;
     }
-
 
     function setRowDataClasses(rowdata, searchResultsClassToAdd){
         //Set searchModClass to a class name to set color of jstree row
@@ -848,9 +861,20 @@ router.post("/save",function(req,res){
             id = generateUUID();
 
             //Build new OBJ
-            foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1, enabled:1, promoted:0, rerunnable:0, systemFunction:0,  runLocal:0, comType: 'job', description: req.body.description, script:req.body.script, variables:req.body.compVariables, templates:{tempArr:[{"c":"", "t":""}]} , text:req.body.name, resourceFiles:[], sort:x, hist:hist};
+            foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1, enabled:1, promoted:0, rerunnable:0, systemFunction:0,  runLocal:0, comType: 'job', description: req.body.description, script:"", variables:{}, templates:{tempArr:[{"c":"", "t":""}]} , text:req.body.name, resourceFiles:[], sort:x};
+            //append history json
+            var ds = new Date().toISOString();
+            var currentHist = [];
+            currentHist.push({username:config.username, ds: ds, created: pid});
+            foundRow.hist=currentHist;
 
-            //Add row to SysemJSON
+            //append history json
+            var ds = new Date().toISOString();
+            var currentHist = [];
+            currentHist.push({username:config.username, ds: ds, created: pid});
+            foundRow.hist=currentHist;
+
+            //Add row to SystemJSON
             SystemsJSON[id] = foundRow;
 
             //If not new
@@ -886,9 +910,9 @@ router.post("/save",function(req,res){
         newData.sort = SystemsJSON[id].sort;
 
         //add history json to SystemsJSON if not there
-        if(!SystemsJSON[id].hasOwnProperty("hist")){
-            SystemsJSON[id].hist = [];
-        }
+        // if(!SystemsJSON[id].hasOwnProperty("hist")){
+        //     SystemsJSON[id].hist = [];
+        // }
 
         //append history json
         var ds = new Date().toISOString();
@@ -929,9 +953,15 @@ router.post("/save",function(req,res){
             var hist=[{username:config.username, ds: ds, fromId: ''}];
 
             //Build new component obj
-            foundRow = {parent:pid, ft:pid, name:req.body.name, ver:1, comType: "system", description: req.body.description, text:req.body.name, variables:req.body.variables, sort:x, hist:hist};
+            foundRow = {parent:pid, ft:pid, name:req.body.name, ver:1, comType: "system", description: req.body.description, text:req.body.name, variables:{}, sort:x};
 
-            //Replace old w/ new
+            //append history json
+            var ds = new Date().toISOString();
+            var currentHist = [];
+            currentHist.push({username:config.username, ds: ds, created: pid});
+            foundRow.hist=currentHist;
+
+            //Add new system to SystemsJSON
             SystemsJSON[id] = foundRow;
 
             //Not new component
@@ -939,12 +969,12 @@ router.post("/save",function(req,res){
             var newData = {};
             newData.parent = SystemsJSON[id].parent;
             //newData.ft = SystemsJSON[id].ft;
-            newData.ft = "#"
+            newData.ft = "#";
             newData.comType =  "system";
             newData.description = req.body.description;
             newData.text = req.body.name;
             newData.name = req.body.name;
-            newData.variables = req.body.variables;
+            newData.variables = req.body.sysVariables;
             newData.sort = SystemsJSON[id].sort;
             newData.icon = SystemsJSON[id].icon;
 
@@ -1425,16 +1455,13 @@ function getSystemVarVal(jobId, vari){
     if (SystemsJSON.hasOwnProperty(jobId)){
         var ft = SystemsJSON[jobId].ft;
         var sysId = ft.split('/')[1];
-        var varListAr = SystemsJSON[sysId].variables.split('\n');
-        //console.log(varListAr);
-        var returnVal = '';
-        varListAr.forEach(function(pair){
-            const vName = pair.split('=')[0];
-            if (vName === vari){
-                returnVal = pair.split('=')[1];
-            }
-        });
-        return(returnVal)
+        var varListAr = SystemsJSON[sysId].variables;
+
+        if(varListAr){
+            return(varListAr[vari] ? varListAr[vari].value : "");
+        }else{
+            return "";
+        }
     }else{
         return('');
     }
@@ -1771,7 +1798,7 @@ router.post("/run",function(req,res){
     latestResultsFileList = getLatestResultsFileList(); //cache the list of results files to make var lookups quicker
 
 
-    //function to parse all results files in latestResultsFileList and cache all resuts variables (var:key:val)
+    //function to parse all results files in latestResultsFileList and cache all results variables (var:key:val)
     function cacheVarVals(latestResultsFileList, systemId){
 
         //getSystemVarVal(jobId, vari)
@@ -1819,16 +1846,19 @@ router.post("/run",function(req,res){
         });
 
         //cache system vars
-        var varListAr = SystemsJSON[systemId].variables.split('\n');
+        var varListAr = SystemsJSON[systemId].variables;
         if(typeof latestVarCache[systemId] === 'undefined'){
             latestVarCache[systemId] = {};
         }
-        varListAr.forEach(function(pair){
-            var kName = pair.split('=')[0];
-            var kVal = pair.split('=')[1];
+        for(var thisVar in varListAr){
+            var kName = thisVar;
+            var kVal = varListAr[thisVar].value;
             latestVarCache[systemId][kName] = kVal
-            //console.log("found: id:" + systemId + " varName:" + kName + "=" + JSON.stringify(latestVarCache[systemId][kName]))
-        });
+        }
+        // varListAr.forEach(function(pair){
+        //
+        //     //console.log("found: id:" + systemId + " varName:" + kName + "=" + JSON.stringify(latestVarCache[systemId][kName]))
+        // });
     }
 
     //disply results of cacheVarVals in log
@@ -1924,10 +1954,10 @@ router.post("/run",function(req,res){
                     if (err) throw err;
 
                     //close event to update ui, save log
-                    stream.on('close', function (code, signal) {
+
+                    stream.on('close', function (code, signal){
                         var dsString = new Date().toISOString(); //date stamp
 
-                        //
                         clearTimeout(lastTimeout);
 
                         //message ui
@@ -1948,10 +1978,8 @@ router.post("/run",function(req,res){
                             fileName = jobId + '_' + fds + '_f.json';
                         }
 
-                        //save SystemsJSON no backup
-                        saveAllJSON(false);
 
-                        //save results file
+                        //save results file and cache vars to lookup - latestVarCache[Id][varName]
                         fs.writeFile(resultsPath + fileName, JSON.stringify(resultsArray), function (err) {
                             if (err) {
                                 console.log('There has been an error saving your json.\n'+err.message);
@@ -1961,67 +1989,64 @@ router.post("/run",function(req,res){
                                 }
                                 cacheVarVals([fileName],job.ft.split('/')[1]);
 
-                                if(SystemsJSON[jobId].systemFunction === 1){ //A job set as a system function will copy its vars to the system. Can be used to set host of system.
-                                    copyVarsToSystem(jobId, fileName)
+                                //If this is a special 'system' job then update the system variables
+                                if(SystemsJSON[jobId].systemFunction === 1){
+                                    copySystemVarToSystem(jobId)
                                 }
+
+                                //save SystemsJSON no backup
 
                                 conn.end();
                             }
 
                         });
+                        saveAllJSON(false);
 
+                        //function to update system variables if job = system job. Used to set host etc.
+                        //eg var:systemVar:host=1.2.3.4 will add/change host variable in the system
+                        function copySystemVarToSystem(id){
 
-                        //function to copy all variables from the current job to its system. Used to set host etc.
-                        function copyVarsToSystem(id, fileName){
-                            if(typeof SystemsJSON[id] !== "undefined"){
+                            if(typeof SystemsJSON[id] !== "undefined") {
 
                                 var resultsSystem = SystemsJSON[id].ft.split('/')[1];
 
                                 //grab system vars
                                 var varListAr = SystemsJSON[resultsSystem].variables.split('\n');
                                 var systemVars = {};
-                                varListAr.forEach(function(pair){
-                                    if (pair !== "" && pair.split("=").length > 1){
+                                varListAr.forEach(function (pair) {
+                                    if (pair !== "" && pair.split("=").length > 1) {
                                         var kName = pair.split('=')[0];
                                         var kVal = pair.split('=')[1];
                                         systemVars[kName] = kVal
                                     }
                                 });
 
-                                 try {
-                                     var results = JSON.parse(fs.readFileSync(resultsPath + fileName));
-                                 } catch (e) {
-                                     console.log("copyVarsToSystem:" + resultsPath + file + " not valid results JSON");
-                                     return('');
-                                 };
-
-                                 var trimmedResults = '';
-                                 results.forEach(function (row) {
-                                     if (row.hasOwnProperty('results')) {
-                                         if (row.results.substr(0, 4) === 'var:') {
-                                             var varName = row.results.split(':')[1];
-                                             trimmedResults = row.results.substr(('var:' + varName + ':').length).replace("\n","");
-                                             systemVars[varName] = trimmedResults
-                                         }
-                                     }
-                                     if (row.hasOwnProperty('x') && row.x !== '') {
-                                         var varName = row.x;
-                                         trimmedResults = row.results;
-                                         systemVars[varName] = trimmedResults
-                                     }
-                                 });
-
-                                 var newVariables = "";
-                                for (var property in systemVars) {
-                                    if (systemVars.hasOwnProperty(property)) {
-                                        newVariables += property + "=" + systemVars[property] + "\n";
+                                if(latestVarCache[id]){
+                                    //loop through each var in this job
+                                    //if one is systemVar get the value
+                                    //split value with '=' and add to systemVars array
+                                    for(varName in latestVarCache[id]){
+                                        if(varName === "systemVar"){
+                                            var newVar = latestVarCache[id][varName];
+                                            if(newVar.split("=").length > 0 ){
+                                                systemVars[newVar.split("=")[0]] = newVar.split("=")[1]
+                                            }
+                                        }
                                     }
+
+                                    //place all vars back into the system and saveAllJSON(no backup)
+
+                                    var newVariables = "";
+                                    for (var property in systemVars) {
+                                        if (systemVars.hasOwnProperty(property)) {
+                                            newVariables += property + "=" + systemVars[property] + "\n";
+                                        }
+                                    }
+                                    SystemsJSON[resultsSystem].variables = newVariables;
+                                    saveAllJSON(false)
                                 }
-                                SystemsJSON[resultsSystem].variables = newVariables;
-                                saveAllJSON(false)
                             }
                         }
-
                     });
 
                     //event when data is returned on ssh session
@@ -2036,7 +2061,7 @@ router.post("/run",function(req,res){
 
                         //var tempVal = respBufferAccu.toString();
 
-                        //if the responce contains the current prompt string send next command and process directives
+                        //if the response contains the current prompt string send next command and process directives
                         if( respBufferAccu.toString().split('\n').slice(-1)[0]  === prompt){
                             //console.log(respBufferAccu.toString().split('\n').slice(-1)[0] + '===' + prompt);
 
@@ -2075,7 +2100,7 @@ router.post("/run",function(req,res){
                             }
                         };
 
-                        //Function to create responce obj to add to results file
+                        //Function to create response obj to add to results file
                         function writeResponse(newData) {
 
                             var ds = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-');
@@ -2225,7 +2250,7 @@ router.post("/run",function(req,res){
                                                                 aSyncInProgress--;
                                                                 //console.log('saveTemplate:Sent - ' + aFileName);
                                                                 sftp.end();
-
+                                                                //console.log("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName);
                                                                 //Execute sudo chown to change file ownership to the user as defined in the system
                         conn.exec("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName, function(err, stream) {
                                     if (err) throw err;
@@ -2371,7 +2396,7 @@ router.post("/run",function(req,res){
                             }while(isDirective === true);
                          }
 
-                         //function to replace the embedded var refrences with values. Returns new formatted commandStr
+                         //function to replace the embedded var references with values. Returns new formatted commandStr
                         function replaceVar(commandStr, job) {// find and replace inserted command vars eg. <%p.mVar4%>
 
                             const items = commandStr.split(new RegExp('<%', 'g'));
@@ -2382,12 +2407,10 @@ router.post("/run",function(req,res){
                                     var targetVarName = item.substr(2);
                                     var pid = job.parent;
                                     var repStr = "<%c." + targetVarName + "%>";
-                                    job.variables.split('\n').forEach(function (v) {
-                                        if (v.split('=')[0] === targetVarName){
-                                            var val = v.substr(v.indexOf('=')+1);
-                                            commandStr = commandStr.replace(repStr, val)
-                                        }
-                                    })
+                                    if(job.variables[targetVarName]){
+                                        var val = job.variables[targetVarName].value;
+                                        commandStr = commandStr.replace(repStr, val)
+                                    }
                                 }; //look in job for vars
 
                                 if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 'p.') {
@@ -2460,7 +2483,7 @@ router.post("/run",function(req,res){
 
                                 }; //look in same system for vars
 
-                                //function to return number of ancesters the current running job has in common with the found var job. Requires: jobFT and foundFT job ID strings seperated by "/".
+                                //function to return number of ancestors the current running job has in common with the found var job. Requires: jobFT and foundFT job ID strings separated by "/".
                                 function calcRelativeScore(jobFT, foundFT){//how many gr/parents does the current running job have in common with the found var job..
                                     const jobFTArr = jobFT.split('/');
                                     const foundFTArr = foundFT.split('/');
@@ -2532,7 +2555,7 @@ router.post("/run",function(req,res){
                     stream.write('stty cols 200' + '\n' + "PS1='[SysStack]'" + '\n'); //set prompt
                     lastTimeout = setTimeout(conTimeout, timeOut);
                 });
-            });
+             });
 
             //Try to connect to the host
             try {

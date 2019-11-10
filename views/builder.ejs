@@ -8,6 +8,7 @@
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.3/jstree.min.js"></script>
     <script src="https://pagecdn.io/lib/ace/1.4.6/ace.js" integrity="sha256-CVkji/u32aj2TeC+D13f7scFSIfphw2pmu4LaKWMSY8=" crossorigin="anonymous"></script>
+    <script src='/tinymce/js/tinymce/tinymce.min.js' referrerpolicy="origin"></script>
 
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="/theme/startbootstrap-sb-admin-2-gh-pages/dist/css/sb-admin-2.min.css">
@@ -630,7 +631,6 @@
                             //query backend for a specific job and update ui fields
                             getJobByID(selectedNode, "read");
                             $("#comType").val('Job');
-                           // readModeJob();
 
                             $("#sysScreen").hide();
                             $("#jobScreen").show();
@@ -642,6 +642,7 @@
                             const rSystemId = targetNode.parents[targetNode.parents.length - 2];
                             const rSystemNode =  $('#jstree_div').jstree(true).get_node( rSystemId);
                             if(rSystemNode.text !== 'Library'){
+
                                 if($("#componentsBtn").hasClass('active')){
                                     showBottom()
                                 }else{
@@ -650,6 +651,7 @@
                             }else{
                                 hideBottom()
                             }
+
                         }else{
                             $('#componentTabs').hide()
                             readModeSys();
@@ -758,8 +760,13 @@
             function loadDashSystemDetails(systemId){
                 $.get('/Sys', { id: systemId }, function(data) {
                     var sysJson = data[0] ;
-                    var host = sysJson.variables.split("\n").filter(s => s.includes('host'))[0].split("=")[1];
-                    host = host === "" ? "[Unspecified]" : host;
+                    if(sysJson.variables && sysJson.variables.host){
+                        var host = sysJson.variables['host'].value;
+                        host = host ?  host : "[Unspecified]";
+                    }else{
+                        host = "[Unspecified]";
+                    }
+
 
                     var dashSystemDetailsHtml = '<div class="dashboardLabel">Host</div>';
                     dashSystemDetailsHtml += '<p>' + host + '</p>';
@@ -940,8 +947,8 @@
                             $("#componentsBtn").click();
                             $('#jstree_div').jstree("deselect_all");
                             $('#jstree_div').jstree('select_node',id);
-                            getJobByID(id, "");
-                            $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
+                       //     getJobByID(id, "");
+                       //     $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
                         });
 
                         $('.dashTableEnableButton').on('click', function(){
@@ -1015,7 +1022,7 @@
                 })
             }
 
-            var bottomHiddenFlag = true;
+            //var bottomHiddenFlag = true;
             function hideBottom(){
                 $("#bottomRow").hide(function(){
                     var container = $('#rowContainer');
@@ -1030,7 +1037,7 @@
                     setWindowHeight(currentHeight, container);
                 });
             }
-            hideBottom();
+            //hideBottom();
 
             function clearJobFields(){
                 $("#id").val('');
@@ -1046,12 +1053,13 @@
                 $("#sysFuncVal").html('');
                 $("#runLoc").html('');
                 $("#runLocVal").html('');
-              //  $("#description").val('');
-                description.setContents("");
+
+          //      description.setContents("");
 
 //                templates
 
-                $("#compVariables").val('');
+                $("#compVariables").html('');
+
                 $("#version").text('');
                 $("#text").val('');
                 $('#resourceFiles').val('');
@@ -1102,7 +1110,203 @@
                 }
             });
 
+            //function to create a block of var input html for new vars and edits. prvide indev str eg "0" or "1" ...
+            function createVarEditHtml(currentRowCntStr){
+                var newHtml = '<tr id="new_row'+currentRowCntStr+'" class="d-flex varRow newVarRow">'
+
+                //new var name input
+                newHtml += '<td class="col-2"><input id="newCompVarName'+currentRowCntStr+'" class="form-control newCompVarName" type="text"></td>'
+
+                //New privacy switch
+                newHtml += '<td class="col-2"><div class="newCompVarPrivateButtonRow">';
+                newHtml += '<label class="switch" ><input id="newCompVarPrivateInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class="success newCompVarPrivateButton"><span class="slider round"></span></label>';
+                newHtml += '<span id="newCompVarPrivateDisp'+currentRowCntStr+'" class="newCompVarPrivateDisp"></span>';
+                newHtml += '</div></td>';
+
+                //New var type pick
+                newHtml += '<td class="col-2 center">'
+                newHtml += '<button class="dropdown-toggle newCompVarTypeButton" type="button" id="newCompVarTypeButton'+currentRowCntStr+'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Text</button>';
+                newHtml += '<div id="newCompVarTypeDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="newCompVarTypeButton'+currentRowCntStr+'" x-placement="bottom-start" >';
+
+                newHtml +=  '<div><a class="dropdown-item newCompVarTypeDropdownItem" data-target="newCompVarTypeButton'+currentRowCntStr+'" data-type="Text" href="#">Text</a></div>' +
+                    '<div><a class="dropdown-item newCompVarTypeDropdownItem" data-target="newCompVarTypeButton'+currentRowCntStr+'" data-type="WYSIWYG" href="#" >WYSIWYG</a></div>' ;
+                newHtml +=  '</div></td>'
+
+                //New component variable value
+                newHtml += '<td class="col-6"><div class="compVarEditValRow"><a href="#"><i class="fa fa-pencil fa-fw compVarEditValButton" data-idn="'+currentRowCntStr+'" style=""></i></a><input id="newCompVarValue'+currentRowCntStr+'" class="form-control newCompVarValue" type="text"></div></td>';
+                newHtml += '</tr>'
+
+                return newHtml;
+            }
+            $('.newCompVarBtn').on('click', function(){
+
+                var currentRowCntStr = Object.keys(currentCompVarArr).length.toString();
+
+                var newHtml =  createVarEditHtml(currentRowCntStr);
+
+                var varName  = "newVar_"+currentRowCntStr
+                $("#compVariables").append(newHtml);
+
+
+                currentCompVarArr[varName] = {private:false, type:"", value:"", changed: currentRowCntStr};
+                $("#newCompVarPrivateDisp"+currentRowCntStr).html( 'No');
+                insertVarEditEvents()
+
+            })
+            function insertVarEditEvents(){
+
+                $(".newCompVarTypeDropdownItem").on('click', function(){
+                    var type = $(this).attr('data-type');
+                    var target = $(this).attr('data-target');
+
+                    $("#"+target).html(type);
+                });
+
+                $('.newCompVarPrivateButton').on('click', function(){
+                    var id = $("#id").val();
+                    const checked =  this.checked;
+                    var inx = $(this).attr('data-inx');
+
+                    $("#newCompVarPrivateDisp"+inx).html(checked ? 'Yes' : 'No');
+                })
+
+                $(".compVarEditValButton").on('click', function(){
+                    var idn = $(this).attr('data-idn');
+
+                    var varName = "";
+                    for(var x in currentCompVarArr){
+                        if (currentCompVarArr[x].idn == idn)(
+                            varName = x
+                        )
+                    }
+
+                    $('#varEditModal').modal('show');
+
+                    // Sets the HTML contents of the activeEditor editor
+                    tinymce.activeEditor.setContent($("#newCompVarValue"+idn).val());
+
+                    $("#varEditModalCutrrentIdn").val(idn);
+
+                });
+
+                $('#varEditModal').on('hidden.bs.modal', function() {
+                    var idn = $("#varEditModalCutrrentIdn").val();
+                    $("#newCompVarValue"+idn).val( tinymce.activeEditor.getContent() )
+
+                });
+            }
+
+
+            function createSysVarEditHtml(currentRowCntStr){
+                var newHtml = '<tr id="new_row'+currentRowCntStr+'" class="d-flex varRow newVarRow">'
+
+                //new var name input
+                newHtml += '<td class="col-2"><input id="newSysVarName'+currentRowCntStr+'" class="form-control newSysVarName" type="text"></td>'
+
+                //New privacy switch
+                newHtml += '<td class="col-2"><div class="newSysVarPrivateButtonRow">';
+                newHtml += '<label class="switch" ><input id="newSysVarPrivateInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class="success newSysVarPrivateButton"><span class="slider round"></span></label>';
+                newHtml += '<span id="newSysVarPrivateDisp'+currentRowCntStr+'" class="newSysVarPrivateDisp"></span>';
+                newHtml += '</div></td>';
+
+                //New var type pick
+//                newHtml += '<td class="col-2 center">'
+//                newHtml += '<button class="dropdown-toggle newSysVarTypeButton" type="button" id="newSysVarTypeButton'+currentRowCntStr+'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Text</button>';
+//                newHtml += '<div id="newSysVarTypeDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="newSysVarTypeButton'+currentRowCntStr+'" x-placement="bottom-start" >';
+
+//                newHtml +=  '<div><a class="dropdown-item newSysVarTypeDropdownItem" data-target="newSysVarTypeButton'+currentRowCntStr+'" data-type="Text" href="#">Text</a></div>' +
+//                    '<div><a class="dropdown-item newSysVarTypeDropdownItem" data-target="newSysVarTypeButton'+currentRowCntStr+'" data-type="WYSIWYG" href="#" >WYSIWYG</a></div>' ;
+//                newHtml +=  '</div></td>'
+
+                //New system variable value
+                newHtml += '<td class="col-6"><div class="sysVarEditValRow"><a href="#">' +
+//                    '<i class="fa fa-pencil fa-fw sysVarEditValButton" data-idn="'+currentRowCntStr+'" style=""></i></a>' +
+                    '<input id="newSysVarValue'+currentRowCntStr+'" class="form-control newSysVarValue" type="text"></div></td>';
+                newHtml += '</tr>'
+
+                return newHtml;
+            }
+            $('.newSysVarBtn').on('click', function(){
+
+                var currentRowCntStr = Object.keys(currentCompVarArr).length.toString();
+
+                var newHtml =  createSysVarEditHtml(currentRowCntStr);
+
+                var varName  = "newVar_"+currentRowCntStr
+                $("#sysVariables").append(newHtml);
+
+
+                currentSysVarArr[varName] = {private:false, type:"", value:"", changed: currentRowCntStr};
+                $("#newSysVarPrivateDisp"+currentRowCntStr).html( 'No');
+                insertSysVarEditEvents()
+
+            })
+            function insertSysVarEditEvents(){
+
+//                $(".newSysVarTypeDropdownItem").on('click', function(){
+//                    var type = $(this).attr('data-type');
+//                    var target = $(this).attr('data-target');
+//
+//                    $("#"+target).html(type);
+//                });
+
+                $('.newSysVarPrivateButton').on('click', function(){
+                    var id = $("#id").val();
+                    const checked =  this.checked;
+                    var inx = $(this).attr('data-inx');
+
+                    $("#newSysVarPrivateDisp"+inx).html(checked ? 'Yes' : 'No');
+                })
+
+//                $(".sysVarEditValButton").on('click', function(){
+//                    var idn = $(this).attr('data-idn');
+//
+//                    var varName = "";
+//                    for(var x in currentSysVarArr){
+//                        if (currentSysVarArr[x].idn == idn)(
+//                            varName = x
+//                        )
+//                    }
+//
+//                    $('#varEditModal').modal('show');
+//
+//                    // Sets the HTML contents of the activeEditor editor
+//                    tinymce.activeEditor.setContent($("#newCompVarValue"+idn).val());
+//
+//                    $("#varEditModalCutrrentIdn").val(idn);
+//
+//                });
+
+//                $('#varEditModal').on('hidden.bs.modal', function() {
+//                    var idn = $("#varEditModalCutrrentIdn").val();
+//                    $("#newCompVarValue"+idn).val( tinymce.activeEditor.getContent() )
+//
+//                });
+            }
+
+//            tinymce.init
+
+            tinymce.init({
+                selector: "#varValEditor",
+                plugins: [
+                    "advlist autolink lists link image charmap print preview anchor",
+                    "searchreplace visualblocks code fullscreen",
+                    "insertdatetime media table contextmenu paste"
+                ],
+                toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
+                protect: [
+                    /\<\/?(if|endif)\>/g, // Protect <if> & </endif>
+                    /\<!\[if !mso\]\>/g, // Protect <![if !mso]>
+                    /\<!\[if !vml\]\>/g, // Protect <![if !vml]>
+                    /\<!\[endif\]\>/g, // Protect <![endif]>
+                    /\<xsl\:[^>]+\>/g, // Protect <xsl:...>
+                    // /<\?php.*?\?>/g // Protect php code
+                    /<\?php[\s\S]*?\?>/g // Protect php code
+                ]
+            });
+
             //getJobByID - query backend and update fields
+            var currentCompVarArr = {};
             function getJobByID(NodeID, viewmode){
                 clearJobFields();
                 $.get('/Jobs', { id: NodeID }, function(data) {
@@ -1178,7 +1382,81 @@
                         scriptEditor.session.setValue(data[0].script);
                     }
 
-                    $("#compVariables").val(data[0].variables);
+                    //load var table
+                    var pCompHtml = "";
+                    var x = 0;
+                    //get variables obj and add an index number to each member
+                    currentCompVarArr = data[0].variables;
+                    for(var varName in currentCompVarArr){
+                        currentCompVarArr[varName].idn = x.toString();
+                        x++
+                    }
+
+                    for(var varName in data[0].variables){
+                        //new row
+                        var idn = currentCompVarArr[varName].idn
+                        pCompHtml = "<tr id='varRow_" + idn +"'" +  " class='d-flex varRow'>";
+
+                        //add name col
+                        pCompHtml += "<td class='col-2 varNameTd'>" +
+                            "<i class='fa fa-pencil fa-fw compVarEditButton' data-idn='" + idn +"'></i>" +
+                            "<span id = 'varNameTd" + idn + "'></span>" +
+                            "<i class='fa fa-times fa-fw compVarDelButton' data-idn='" + idn +"'></i>" +
+                            "</td>";
+
+                        //add private col
+                        pCompHtml += "<td class='col-2 center'>" + (data[0].variables[varName].private ? "Yes":"No") + "</td>";
+
+                        //add type col
+                        var typeTxt = data[0].variables[varName].type;
+                        pCompHtml += "<td class='col-2 center'>" + (typeTxt === "" ? "Text" : typeTxt) + "</td>";
+
+                        //add value col
+                        pCompHtml += "<td class='col-6 varValTd'>" +
+                            "<span id = 'varValTd" + idn + "'></span>" +
+                            "</td>";
+
+                        pCompHtml += "</tr>";
+
+                        $("#compVariables").append(pCompHtml);
+                        $("#varNameTd" + idn).text(varName);
+                        $("#varValTd" + idn).text(data[0].variables[varName].value);
+                    }
+
+
+                    $(".compVarDelButton").on('click', function(){
+                        var idn = $(this).attr('data-idn');
+                        for(varName in currentCompVarArr){
+                            if (currentCompVarArr[varName].idn == idn){
+                                delete currentCompVarArr[varName];break
+                            }
+                        }
+
+                        $("#varRow_"+idn).remove();
+                    });
+
+                    $(".compVarEditButton").on('click', function(){
+                        var idn = $(this).attr('data-idn');
+                        var newHtml = createVarEditHtml(idn);
+
+                        $("#varRow_"+idn).html(newHtml);
+                        insertVarEditEvents();
+                        var varName = "";
+                        for(var x in currentCompVarArr){
+                            if (currentCompVarArr[x].idn == idn)(
+                                varName = x
+                            )
+                        }
+
+                        $("#newCompVarName" + idn).val(varName);
+                        $("#newCompVarPrivateInput" + idn)[0].checked = currentCompVarArr[varName].private;
+                        $("#newCompVarTypeButton" + idn).val(currentCompVarArr[varName].type);
+                        $("#newCompVarValue" + idn).val(currentCompVarArr[varName].value);
+                        $("#newCompVarPrivateDisp"+idn).html(currentCompVarArr[varName].private ? 'Yes' : 'No');
+
+                        currentCompVarArr[varName].changed = idn;
+                    });
+
                     $("#version").text(data[0].ver);
                     $("#templateType").val(data[0].templateType);
                     $("#text").val(data[0].text);
@@ -1190,7 +1468,7 @@
                         $("#createdDate").val(data[0].hist[0].ds)
                     }
 
-                    ;populateFileList( $('#resourceFiles').val(), false);
+                    populateFileList( $('#resourceFiles').val(), false);
                     $.get('/fileList', { id: $('#id').val() }, function(data) {
                         $('#resourceFiles').val(data);
                         populateFileList(data, false);
@@ -1219,6 +1497,7 @@
 
                     tempObjArr.forEach(function(tempObj){
 
+                        //if ther is onenot an instance to reuse create a new
                         if(!currentTemplatesArr[x]){
                             var inHtml = authorTemplateHTML(x);
 
@@ -1242,20 +1521,24 @@
                                 setTempAceHeight(inx, "min")
                             })
                         }else{
+                            //unhide the old template code to reuse it
                             $("#templateBlock" + x.toString()).show();
                         }
 
                         currentTemplatesArr[x].session.setValue(tempObj.c);
-
+                        currentTemplatesArr[x].isValid = true;
                         x++;
                     });
 
+                    //mark the rest if the ace instances as invalid, hide the block and clear the values so they can be recycled
                     while (x < currentTemplatesArr.length ){
                         $("#templateBlock" + x.toString()).hide();
                         currentTemplatesArr[x].session.setValue("");
+                        currentTemplatesArr[x].isValid = false;
                         x++;
                     }
 
+                    //inset the contents of the instances and populate type dropdowns
                     x=0;
                     tempObjArr.forEach(function(tempObj){
                         var tempType =  tempObj.t === "" ? "text" :  tempObj.t;
@@ -1265,14 +1548,17 @@
                         x++;
                     })
 
+                    //set the style if eack instance
                     setAceStyle(currentStyleName);
                     $(".ace_editor").addClass("aceDisabled");
 
+                    //hide the cursor for each instance
                     for(var inx in currentTemplatesArr){
                         currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "none";
                         currentTemplatesArr[inx].setReadOnly(true);
                     }
 
+                    //format screen for either read mode or write
                     if(viewmode === "read"){
                         readModeJob();
                     }else if(viewmode === "edit"){
@@ -1286,12 +1572,13 @@
                 $("#parent").val('');
                 $("#sysName").val('');
                 $("#sysVersion").text('');
-                //$("#sysDescription").val('');
                 sysDescription.setContents("");
-                $("#sysVariables").val('');
+                $("#sysVariables").html('');
+
                 $("#text").val('');
             }
 
+            var currentSysVarArr = {};
             //getSysByID
             function getSysByID(NodeID){
                 clearSysFields();
@@ -1321,7 +1608,89 @@
                             );
                         };
 
-                        $("#sysVariables").val(data[0].variables);
+                        //load var table
+                        var pSysHtml = "";
+                        var x = 0;
+                        //get variables obj and add an index number to each member
+                        if(data[0].variables){
+                            currentSysVarArr = data[0].variables;
+                        }else{
+                            currentSysVarArr = {};
+                        }
+                        for(var varName in currentSysVarArr){
+                            currentSysVarArr[varName].idn = x.toString();
+                            x++
+                        }
+
+                        for(var varName in currentSysVarArr){
+                            //new row
+                            var idn = currentSysVarArr[varName].idn
+                            pSysHtml = "<tr id='varSysRow_" + idn +"'" +  " class='d-flex varRow'>";
+
+                            //add name col
+                            pSysHtml += "<td class='col-2 varSysNameTd'>" +
+                                "<i class='fa fa-pencil fa-fw sysVarEditButton' data-idn='" + idn +"'></i>" +
+                                "<span id = 'varSysNameTd" + idn + "'></span>" +
+                                "<i class='fa fa-times fa-fw sysVarDelButton' data-idn='" + idn +"'></i>" +
+                                "</td>";
+
+                            //add private col
+                            pSysHtml += "<td class='col-2 center'>" + (data[0].variables[varName].private ? "Yes":"No") + "</td>";
+
+                            //add type col
+//                            var typeTxt = data[0].variables[varName].type;
+//                            pSysHtml += "<td class='col-2 center'>" + (typeTxt === "" ? "Text" : typeTxt) + "</td>";
+
+                            //add value col
+                            pSysHtml += "<td class='col-6 varValTd'>" +
+                                "<span id = 'varSysValTd" + idn + "'></span>" +
+                                "</td>";
+
+                            pSysHtml += "</tr>";
+
+                            $("#sysVariables").append(pSysHtml);
+                            $("#varSysNameTd" + idn).text(varName);
+                            $("#varSysValTd" + idn).text(data[0].variables[varName].value);
+                        }
+
+                        $(".newSysVarBtn").hide();
+                        $(".sysVarDelButton").hide();
+                        $(".sysVarEditButton").hide();
+                        insertSysVarEditEvents();
+
+                        $(".sysVarDelButton").on('click', function(){
+                            var idn = $(this).attr('data-idn');
+                            for(varName in currentSysVarArr){
+                                if (currentSysVarArr[varName].idn == idn){
+                                    delete currentSysVarArr[varName];break
+                                }
+                            }
+
+                            $("#varSysRow_"+idn).remove();
+                        });
+
+                        $(".sysVarEditButton").on('click', function(){
+                            var idn = $(this).attr('data-idn');
+                            var newHtml = createSysVarEditHtml(idn);
+
+                            $("#varSysRow_"+idn).html(newHtml);
+                            insertSysVarEditEvents();
+                            var varName = "";
+                            for(var x in currentSysVarArr){
+                                if (currentSysVarArr[x].idn == idn)(
+                                    varName = x
+                                )
+                            }
+
+                            $("#newSysVarName" + idn).val(varName);
+                            $("#newSysVarPrivateInput" + idn)[0].checked = currentSysVarArr[varName].private;
+//                            $("#newSysVarTypeButton" + idn).val(currentSysVarArr[varName].type);
+                            $("#newSysVarValue" + idn).val(currentSysVarArr[varName].value);
+                            $("#newSysVarPrivateDisp"+idn).html(currentSysVarArr[varName].private ? 'Yes' : 'No');
+
+                            currentSysVarArr[varName].changed = idn;
+                        });
+
                         $("#text").val(data[0].text);
                         $("#iconURL").val('');
 
@@ -1363,7 +1732,7 @@
                         );
                     };
 
-                    $("#sysVariables").val(data[0].variables);
+                  //  $("#sysVariables").val(data[0].variables);
                     $("#text").val(data[0].text);
                     $("#iconURL").val('');
 
@@ -1473,13 +1842,9 @@
 
                 //Save tree state
                 var prestate =  $("#jstree_div").jstree(true).get_state();
-           //     localStorage["myTree"] = prestate;
-//                $("#jstree_div").jstree(true).save_state();
 
                 $("#status-panel-body").show();
 
-//                var lastBuildIDRunning = "";
-//                var lastLevel = 0;
                 $.ajax({
                     url: '/run',
                     processData: false,
@@ -1602,13 +1967,9 @@
                     updateResultsList(selectedNode);
                     loadDashboard();
 
-//                    $("#jstree_div").jstree("close_all",function(){
-//                    $("#jstree_div").jstree("open_node", selectedNode);
                     $("#jstree_div").jstree("close_node", selectedNode);
                     $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
                         $('#jstree_div').jstree(true).refresh(true);
-//                    });
-
 
                     //Enable tree
 //                    $('#jstree_div li').each( function() {
@@ -1679,6 +2040,7 @@
             $("#remove_button, #remove_sys_button").click(function(event){
                 $('#delModal').modal('show');
             });
+
             $("#delConfirmButton").on("click",function() {
 
                 clearJobFields();
@@ -1813,7 +2175,7 @@
                 scriptEditor.setReadOnly(false);
 
                 description.enable(true);
-                $(".ql-toolbar").show()
+                $(".ql-toolbar").show(0.3)
 
                 for(var inx in currentTemplatesArr){
                     currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "";
@@ -1821,6 +2183,12 @@
                 }
 
                 $(".ace_editor").removeClass("aceDisabled");
+
+                $(".newCompVarBtn").show();
+                $(".compVarDelButton").show();
+                $(".compVarEditButton").show();
+                $(".compVarEditValButton").hide()
+
 
             }
             function readModeJob(){
@@ -1864,9 +2232,16 @@
                 scriptEditor.setReadOnly(true);
 
                 description.enable(false);
-                $(".ql-toolbar").hide()
+                $(".ql-toolbar").hide(0.3)
 
                 setAceBuildCodeHeight();
+
+                $(".newCompVarBtn").hide();
+                $(".compVarDelButton").hide();
+                $(".compVarEditButton").hide();
+                $(".compVarEditValButton").hide()
+
+
             }
 
             function editModeSys(){
@@ -1883,10 +2258,16 @@
                 $("#clear_sys_button").hide();
                 $("#new_sys_button").hide();
 
+                $(".newSysVarBtn").show();
+
                 $('#iconPaste').show()
 
                 sysDescription.enable(true);
                 $(".ql-toolbar").show()
+
+                $(".newSysVarBtn").show();
+                $(".sysVarDelButton").show()
+                $(".sysVarEditButton").show()
             }
 
             function readModeSys() {
@@ -1908,6 +2289,11 @@
 
                 sysDescription.enable(false);
                 $(".ql-toolbar").hide()
+
+                $(".newSysVarBtn").hide();
+                $(".sysVarDelButton").hide()
+                $(".sysVarEditButton").hide()
+//                $(".sysVarEditValButton").hide()
             }
 
             function readModeLibJob(){
@@ -2009,7 +2395,6 @@
                 mydata.parent = $("#parent").val();
                 mydata.name = $("#name").val();
                 mydata.comType = $("#comType").val();
-//                mydata.description = $("#description").val();
 
                 var delta = description.getContents();
                 mydata.description = delta;
@@ -2040,17 +2425,39 @@
                     mydata.runLocal = 0;
                 }
 
+                //find changed/new variables and add them to currentCompVarArr;
+                for(var idn in currentCompVarArr){
 
-                mydata.compVariables = $("#compVariables").val();
+                    if(currentCompVarArr[idn].changed){
+                        var currentRowCntStr = currentCompVarArr[idn].changed;
+                        delete currentCompVarArr[idn].changed;
+
+                        if($("#newCompVarName"+currentRowCntStr).val().trim() !== "" ){
+                            delete currentCompVarArr[idn];
+                            var newVarsObj = {};
+                            newVarsObj["private"] = $("#newCompVarPrivateInput"+currentRowCntStr)[0].checked ? true : false;
+                            newVarsObj["type"] = $("#newCompVarTypeButton"+currentRowCntStr).text();
+                            newVarsObj["value"] = $("#newCompVarValue"+currentRowCntStr).val();
+
+                            currentCompVarArr[$("#newCompVarName"+currentRowCntStr).val()]  = newVarsObj;
+                        }else{
+                            delete currentCompVarArr[idn];
+                        }
+                    }
+                }
+
+                //push compVariables
+                mydata.compVariables = currentCompVarArr;
+
+                //push script
                 mydata.script = scriptEditor.getValue();
 
+                //push custom templates
                 var templatesArr = [];
-
-                //load custom templates
                 var x=0;
                 currentTemplatesArr.forEach(function(row){
                     var aceVal = currentTemplatesArr[x].getValue().trim()+"\n";
-                    if(aceVal !== "" ){
+                    if(aceVal !== "\n" ){
                         var thisIndexStr = (x).toString();
 
                         templatesArr.push({c:aceVal, t:$("#templateType" + thisIndexStr).val()});
@@ -2097,7 +2504,31 @@
                 var delta = sysDescription.getContents();
                 mydata.description = delta;
 
-                mydata.variables = $("#sysVariables").val();
+                //mydata.variables = $("#sysVariables").val();
+                //find changed/new variables and add them to currentSysVarArr;
+                for(var idn in currentSysVarArr){
+
+                    if(currentSysVarArr[idn].changed){
+                        var currentRowCntStr = currentSysVarArr[idn].changed;
+                        delete currentSysVarArr[idn].changed;
+
+                        if($("#newSysVarName"+currentRowCntStr).val().trim() !== "" ){
+                            delete currentSysVarArr[idn];
+                            var newVarsObj = {};
+                            newVarsObj["private"] = $("#newSysVarPrivateInput"+currentRowCntStr)[0].checked ? true : false;
+                            newVarsObj["type"] = "";
+                            newVarsObj["value"] = $("#newSysVarValue"+currentRowCntStr).val();
+
+                            currentSysVarArr[$("#newSysVarName"+currentRowCntStr).val()]  = newVarsObj;
+                        }else{
+                            delete currentSysVarArr[idn];
+                        }
+                    }
+                }
+
+                //push sysVariables
+                mydata.sysVariables = currentSysVarArr;
+
                 mydata.text = $("#text").val();
                 mydata.iconURL = $("#iconURL").val();
 
@@ -2140,7 +2571,6 @@
                     }
                 })
             })
-
 
             $("#moveDn_button, #moveDn_sys_button").click(function(event){
                 //console.log("down");
@@ -2269,24 +2699,23 @@
                     "</tr>";
                 html += "</thead>";
                 html += "<tbody>";
+               // $("#insertVarBody").html(html) ;
 
                 if(scopeRadioVal === "Component" ){
-                    var compVarsArr = $("#compVariables").val().split('\n');
-
-                    compVarsArr.forEach(function(thisVar) {
-                        //html += "<tr role='row' class='gradeA odd' >";
-
-                        var pair = thisVar.split('=');
-                        var currentVal = thisVar.substr(thisVar.indexOf('=')+1);
+                   // var compVarsArr = [];
+                    for(var cVar in currentCompVarArr){
+                    //    compVarsArr.push(currentCompVarArr[cVar])
+                        var currentVal = currentCompVarArr[cVar].value;
                         html += "<tr role='row' class='gradeA odd'><td width = '10%'>"
-                        html +="<input value='c."  + pair[0] + "' type='checkbox' class='varCheckbox pull-right'>";
-                        html +="</td><td class='var_Table_td' width = '30%'>" + pair[0] + '</td>' + "<td class='var_Table_td' width = '60%'>" + currentVal  + '</td>'
+                        html +="<input value='c."  + cVar + "' type='checkbox' class='varCheckbox pull-right'>";
+                        html +="</td><td class='var_Table_td' width = '30%'>" + cVar + '</td>' + "<td class='var_Table_td' width = '60%'>" + currentVal  + '</td>'
                         html += "</tr>";
-                        $("#insertVarBody").html(html) ;
-                    })
+                       // $("#insertVarBody").append(html)
+
+                    }
 
                     html += "</tbody></table></div>"
-                    $("#insertVarBody").html(html) ;
+                    $("#insertVarBody").html(html)
 
                 }else{
                     $.ajax({
@@ -2457,33 +2886,46 @@
 
             //new custom template
             $('.newCust').on('click', function(){
-                var x=currentTemplatesArr.length;
 
-                if (x > 99){
+                var nextValidIndex = 0;
+
+                //reuse the first ace instance where isValid not equ true
+                while(currentTemplatesArr[nextValidIndex]){
+                    if( ! currentTemplatesArr[nextValidIndex].isValid){
+                        break;
+                    }
+                    nextValidIndex++;
+                }
+                if (nextValidIndex > 99){
                     alert("error: too many templates");
                 }else{
-                    var inHtml = authorTemplateHTML(x);
 
-                    $('#custTemplates').append(inHtml);
+                    if(!currentTemplatesArr[nextValidIndex]){
+                        var inHtml = authorTemplateHTML(nextValidIndex);
 
-                    $("#templateWindowMax"+x.toString()).click( function(){
-                        var inx = parseInt($(this).attr('data-inx'), 10);
-                        setTempAceHeight(inx, "max")
-                    })
-                    $("#templateWindowMin"+x.toString()).click( function(){
-                        var inx = parseInt($(this).attr('data-inx'), 10);
-                        setTempAceHeight(inx, "min")
-                    })
+                        $('#custTemplates').append(inHtml);
 
-                    var newEditor = ace.edit("template"+x.toString());
+                        currentTemplatesArr.push(ace.edit("template"+nextValidIndex.toString()));
 
-                    //newEditor.setTheme("ace/theme/clouds");
-                    newEditor.session.setMode("ace/mode/javascript");
-                    document.getElementById("template"+x.toString()).style.fontSize='14px';
+                        currentTemplatesArr[currentTemplatesArr.length-1].session.setMode("ace/mode/text");
+                        document.getElementById("template"+nextValidIndex.toString()).style.fontSize='14px';
 
-                    currentTemplatesArr.push(newEditor);
-                    loadjobTempTypeDropdown(x)
-                    setAceStyle(currentStyleName);
+                        loadjobTempTypeDropdown(nextValidIndex);
+                        setAceStyle(currentStyleName);
+
+                        $("#templateWindowMax"+nextValidIndex.toString()).click( function(){
+                            var inx = parseInt($(this).attr('data-inx'), 10);
+                            setTempAceHeight(inx, "max")
+                        })
+                        $("#templateWindowMin"+nextValidIndex.toString()).click( function(){
+                            var inx = parseInt($(this).attr('data-inx'), 10);
+                            setTempAceHeight(inx, "min")
+                        })
+                    }else{
+                        $("#templateBlock" + nextValidIndex.toString()).show();
+                    }
+
+
                 }
             });
 
@@ -2587,13 +3029,9 @@
                         $('#jstree_div').jstree('create_node', resultJSON.parent, node, 'last', function(){
 
                             var newNode = $("#jstree_div").jstree(true).get_node(resultJSON.id);
-                           // $("#jstree_div").jstree(true).select_node(newNode);
-
-                            //$('#jstree_div').jstree(true).redraw(true);
 
                             $('#jstree_div' + " li[id=" + resultJSON.id + "] a").click();
                             $('#jstree_div').jstree(true).refresh(true);
-                            //$('#jstree_div').jstree('select_node', resultJSON.id);
                         });
                     },
                     error : function(error) {
@@ -2649,7 +3087,7 @@
                         currentHeight = e.clientY;
                         currentHeight += currentHeight < 10 ? 10 - currentHeight : 0
                         currentRatio = currentHeight / container.height();
-                        setWindowHeight(topHeight, container);
+                        setWindowHeight(topHeight-5, container);
                     }
 
                     if(isResizingLibWidth){
@@ -3142,24 +3580,43 @@
             $("#dashBtn").addClass("active");
             $("#componentsRow").hide();
             loadDashboard();
-            hideBottom();
+            //hideBottom();
 
+            //Main menu selections
             $("#dashBtn").on("click",function(){
+                localStorage["topMenuViewSelected"] = "Dashboard"
                 loadDashboard();
-                $("#componentsRow").hide();
-                $("#dashRow").show();
-                $("#dashBtn").addClass("active");
-                $("#componentsBtn").removeClass("active");
-                hideBottom();
+                $("#componentsRow").hide(200);
+                $("#dashRow").show(200, function(){
+                    $("#dashBtn").addClass("active");
+                    $("#componentsBtn").removeClass("active");
+                    hideBottom();
+                    bottomHiddenFlag=true;
+
+                });
             });
+
             $("#componentsBtn").on("click",function(){
-                $("#componentsRow").show();
-                $("#dashRow").hide();
-                $("#dashBtn").removeClass("active");
-                $("#componentsBtn").addClass("active");
-                showBottom();
-                $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
-            });//
+                localStorage["topMenuViewSelected"] = "Components"
+                $("#componentsRow").show(200);
+                $("#dashRow").hide(200, function(){
+                    $("#dashBtn").removeClass("active");
+                    $("#componentsBtn").addClass("active");
+                    showBottom();
+                    bottomHiddenFlag=false;
+                    $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
+                });
+            });
+
+            if(localStorage["topMenuViewSelected"]){
+                if(localStorage["topMenuViewSelected"] === "Components"){
+                    $("#componentsBtn").click();
+                }else{
+                    $("#dashBtn").click();
+                }
+
+            }
+
             var statusPanel = $("#resultsStatus")[0].innerHTML;
             if(statusPanel === ""){$("#status-panel-body").hide()};
 
@@ -3247,9 +3704,7 @@
                         currentTemplatesArr[inx].setTheme("ace/theme/twilight");
                     }
                 }else{
-                    //$("#defaultStyleRadioTop").prop('checked',true);
                     scriptEditor.setTheme("ace/theme/clouds");
-                    //templateEditor.setTheme("ace/theme/clouds");
                     for(var inx in currentTemplatesArr){
                         currentTemplatesArr[inx].setTheme("ace/theme/clouds");
                     }
@@ -3314,6 +3769,60 @@
             var description = new Quill('#description', {
                 theme: 'snow'
             });
+
+            //Allow arrow key navigation on trees in focus
+            document.onkeydown = function(e) {
+                var activeElement = document.activeElement;
+                //if current focus is a tree
+                if(activeElement.id.includes("_anchor")){
+
+                    //find which tree is focused
+                    var currentTree;
+                    while (activeElement) {
+                        if(  activeElement.id == "jstree_div"){
+                            currentTree = $('#jstree_div');
+                            break
+                        }
+                        if(  activeElement.id == "jslibtree_div"){
+                            currentTree = $('#jslibtree_div');
+                            break
+                        }
+                        activeElement = activeElement.parentNode;
+                    }
+                    //down selects next node, up selects previous, right opens node, left closes it.
+                    switch (e.keyCode) {
+                        case 37:
+                            //alert('left');
+                            currentTree.jstree('close_node',$("#id").val());
+                            currentTree.jstree(true).get_node($("#id").val(), true).children('.jstree-anchor').focus();
+                            break;
+                        case 38:
+                            //alert('up');
+                            var targetNode =  currentTree.jstree(true).get_prev_dom($("#id").val());
+                            if(targetNode.length > 0){
+                                currentTree.jstree(true).get_node(targetNode, true).children('.jstree-anchor').focus();
+                                currentTree.jstree("deselect_all");
+                                currentTree.jstree('select_node',targetNode);
+                            }
+                            break;
+                        case 39:
+                            // alert('right');
+                            currentTree.jstree('open_node',$("#id").val());
+                            currentTree.jstree(true).get_node($("#id").val(), true).children('.jstree-anchor').focus();
+                            break;
+                        case 40:
+                            //alert('down');
+                            var targetNode =  currentTree.jstree(true).get_next_dom($("#id").val());
+                            if(targetNode.length > 0){
+                                currentTree.jstree("deselect_all");
+                                currentTree.jstree('select_node',targetNode);
+                                currentTree.jstree(true).get_node(targetNode, true).children('.jstree-anchor').focus();
+                                break;
+                            }
+                    }
+                }
+            };
+
 
 
         }); //-------------------------------------------   doc ready -------------------------------------------
@@ -3695,6 +4204,8 @@
                 <div id = "libTreePanelHandle" class = "treePanelHandle"></div>
             </div>
 
+            <!--username kept showing up in search input so https://stackoverflow.com/questions/17781077/autocomplete-off-is-not-working-on-firefox/29852908#29852908-->
+            <input type="password" hidden />
 
             <div id="leftCol" class="top-col-fixed-240" >
                 <div id="treePanel" class='panel panel-default cust-panel locTree-panel-body' style="float: left;"  >
@@ -3715,20 +4226,9 @@
                 <div id = "treePanelHandle" class = "treePanelHandle"></div>
             </div>
 
-            <!--   <div id="iFrameDiv" class="col-lg-12 top-col-offset-240"  style="text-align: center">
-                   <iframe sandbox="allow-scripts allow-popups allow-forms"
-                           src="https://mynode:8445/builder"
-                           style="border: 1;"></iframe>
-               </div>  -->
-
             <div id="rightCol" class="col-lg-12 top-col-offset-240 rightCol" >
-                <!--<ul class="nav nav-tabs " role="tablist" >-->
-                    <!--<li class="nav-item">-->
-                        <!--<a class="nav-link active" href="#Component_Details" role="tab" data-toggle="tab">-->
-                            <icon class="fa fa-th-large"></icon> Component Details
-                        <!--</a>-->
-                    <!--</li>-->
-                <!--</ul>-->
+
+                <icon class="fa fa-th-large"></icon> Component Details
 
                 <div class="tab-content">
                     <div role="tabpanel"  class="tab-pane fade show active" id="Component_Details">
@@ -3777,7 +4277,18 @@
                                                 <div class="col-lg-12" style="padding: 0px">
                                                 <div class="form-group">
                                                     <label>System Variables</label>
-                                                    <textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="sysVariables"></textarea>
+                                                    <a class="newSysVarBtn" href="#" style=""><i class="fa fa-plus fa-fw"></i></a>
+                                                    <table class="table varTable">
+                                                        <thead>
+                                                        <tr class="d-flex">
+                                                            <th class="col-2 dashboardLabel">Name</th>
+                                                            <th class="col-2 dashboardLabel center">Private</th>
+                                                            <!--<th class="col-2 dashboardLabel center">Type</th>-->
+                                                            <th class="col-6 dashboardLabel">Value</th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody id="sysVariables" class="varTbody"></tbody>
+                                                    </table>
                                                 </div>
                                                 </div>
                                             </div>
@@ -3786,8 +4297,10 @@
                                                     <label>Icon</label>
                                                     <div id="sysIcon"></div>
                                                     <div id="iconPaste">
-                                                        <p>Paste image onto this form</p><div id="resampled"></div>
-                                                        <input type="hidden" id="iconURL"><span><input type="text" id="pasteIcon"></span>
+                                                        <!--<p>Paste icon image: </p>-->
+                                                        <span><input type="text" id="pasteIcon" class="form-control" value="Paste icon image here"></span>
+                                                        <div id="resampled"></div>
+                                                        <input type="hidden" id="iconURL">
                                                     </div>
                                                 </div>
                                             </div>
@@ -3826,7 +4339,7 @@
                                         <div class="row">
                                             <div id="topLeftForm" class="col-lg-6 topLeftForm">
                                                 <div class="row" id="firstRow" >
-                                                    <div class="col-lg-4 " style="padding: 0px">
+                                                    <div class="col-lg-4 jobCompNameCol">
                                                         <div class="form-group">
                                                             <label class="build-label">Component Name</label>
                                                             <input class="form-control form-custom" placeholder="Enter name" id="name">
@@ -3878,9 +4391,20 @@
                                                             <div id="description" class=""></div>
                                                         </div>
                                                         <div class="form-group">
-                                                            <label class="build-label">Component Variables</label><i class="fa fa-fw"></i>
+                                                            <label class="build-label">Component Variables</label><a class="newCompVarBtn" href="#"><i class="fa fa-plus fa-fw"></i></a>
                                                             <a href="#" id='varHelp' data-toggle="modal" data-target="#varHelpModal"><i class="fa fa-question fa-fw"></i></a>
-                                                            <textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="compVariables"></textarea>
+                                                            <!--<textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="compVariables"></textarea>-->
+                                                            <table class="table varTable">
+                                                                <thead>
+                                                                <tr class="d-flex">
+                                                                    <th class="col-2 varLabel">Name</th>
+                                                                    <th class="col-2 varLabel center">Private</th>
+                                                                    <th class="col-2 varLabel center">Type</th>
+                                                                    <th class="col-6 varLabel">Value</th>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody id="compVariables" class="varTbody"></tbody>
+                                                            </table>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -4197,7 +4721,7 @@
                     </div>
                     <div class="form-group">
                         <!--<label style="padding-left: 40px">-->
-                        <span class="model-label"><input name="localStoreKeyCb" id="localStoreKeyCb" value="yes" type="checkbox"/>Store key in browser?</label></span>
+                        <span class="model-label"><input name="localStoreKeyCb" id="localStoreKeyCb" value="yes" type="checkbox"/>Store key in browser?</span>
                         <!--</label>-->
                     </div>
 
@@ -4205,12 +4729,12 @@
                         <!--<label style="padding-left: 40px">-->
                         <span class="model-label">AWS Access code File (.csv):</span>
                         <!--</label>-->
-                        <div><span id = 'accessList' class = 'keyList'></span><label style="padding-left: 10px"><a id='newAccessButton' class='newKey' href='#'>[select]</a></label></div>
+                        <div><span id = 'accessList' class = 'keyList'></span><div style="padding-left: 10px"><a id='newAccessButton' class='newKey' href='#'>[select]</a></div>
                         <input id="upload-access" type="file" name="key" multiple="single">
                     </div>
                     <div class="form-group">
                         <!--<label >-->
-                        <span class="model-label"><input name="localStoreAccessCb" id="localStoreAccessCb" value="yes" type="checkbox"/>Store access code in browser?</label></span>
+                        <span class="model-label"><input name="localStoreAccessCb" id="localStoreAccessCb" value="yes" type="checkbox"/>Store access code in browser?</span>
                         <!--</label>-->
                     </div>
                 </form>
@@ -4363,7 +4887,7 @@
             <div class="modal-header">
                 <h1 class="modal-title">Build Script</h1>
             </div>
-            <div id='buildHelpBody' class="modal-body" style="overflow-y: auto;height: 80vh;">
+            <div id='buildHelpBody' class="modal-body buildHelpBody">
                 <p>The build script is created and maintained by a developer and is the set of build instructions that are sent to the system server once an SSH connection is made. Builder assumes the initial CLI is bash.</p>
                 <p>One line is sent to the server at a time and the response is recorded until the prompt is detected or a timeout is exceeded. The remote system's prompt is set to a default value when the session starts. The prompt can be set by the developer to accommodate other CLIs.</p>
 
@@ -4420,9 +4944,9 @@
                 </ul>
 
                 <h3 class="modal-title">Variables</h3>
-                <p>Information resulting from the execution of a build script can be used by other components by defining variables.
+                <p>Information can be shared by components in the same system by defining variables. When a component is build it can define name-value pairs that other components can use.
                     If any line in the results of a build script (what the remote system has returned) begins with 'var:', the line is interpreted by builder as a variable.
-                    This variable and its value are readable by scripts that execute in the future.
+                    The value of this variable can be inserted into build scripts that execute in the future. When editing a component click the [Insert Variable] button to browse the list of previously defined variables. Select scope and choose variable then insert by clicking 'insert'.
                     <br/><br/>
                     The examples below are specific to a Linux CLI. <br/><br/>
                     Eg 1: echo var:myVar:1<br/>
@@ -4431,15 +4955,18 @@
                     This will instruct the remote Linux host to return 'var:nowDate:Fri Jan 26 15:45:21 EST 2018' or what ever the current date is.
                     The variable 'nowDate' will be defined for the component and its value will be the date string.
                     <br/><br/>
-                    Using variables that have been previously defined in script, is accomplished by inserting a variable reference. A variable reference has the following syntax:<br/>
+                    Using variables that have been previously defined in the same system is accomplished by inserting a variable reference (tag). A variable reference has the following syntax:<br/>
                     &lt;%scope.variable-name%&gt;<br>
-                    Builder will search for the variable name defined is all results that fit within the scope.<br/><br/>
+                    Builder will search for the variable name defined in all results that fit within the scope and replace the tag before line is sent to the server.<br/>
                     The scope can be as follows:<br/>
                     c - the current component (defined in Component Variables not as a var:)<br/>
                     p - the parent component<br/>
                     a - all direct ancestor components (parent, gr-parent, g-gr-parent, etc)<br/>
-                    s - all components in the current system.<br/>
-                    If the variable name is not found in the specified scope a fatal error is raised and the SSH session is aborted.
+                    s - all components in the current system plus any system variable defined in the same system<br/><br/>
+                    For example when builder process detects &lt;%p.staticDirectory%&gt; in a script it will cause builder to replace it with the value of the 'staticDirectory' variable in the parent component.<br/><br/>
+                    Note: <br/>
+                    - A variable named 'systemVar' is a special variable in a component that is flagged as a system function. If a variable named 'systemVar' is detected when builder is processing a script line, the value will be inserted into the variables section in the corresponding system.<br/>
+                    - If the variable name is not found in the specified scope an error is raised and the SSH session is aborted.
 
                 </p>
             </div>
@@ -4483,6 +5010,22 @@
                 <br/>
                 <p>
 
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
+            </div>
+        </nav>
+    </div>
+
+</div>
+<div id="varEditModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-VarEdit">
+
+        <nav class="modal-content varEditModal-modal-content">
+            <div id='welcomeBody' class="modal-body varEditModal-modal-body">
+                <input id="varEditModalCutrrentIdn" type="hidden">
+                <br/>
+                <textarea id="varValEditor" name="content"></textarea>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>

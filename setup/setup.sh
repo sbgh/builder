@@ -55,6 +55,10 @@ echo 'Creating library folders and files'
 mkdir ./backup;
 
 echo
+echo 'Installing TinyMCE 5.1.1'
+unzip -o ./static/tinymce_5.1.1.zip -d ./static
+
+echo
 echo 'Creating SSL'
 mkdir ./ssl;
 openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" -keyout ./ssl/server.key -out ./ssl/server.crt;

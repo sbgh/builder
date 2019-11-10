@@ -1,4 +1,9 @@
 /*-------------------DEFAULT---------------------------*/
+body {
+    transition: transform 0.3s;
+    transform: scaleX(1.0);
+
+}
 
 .navbar-default .navbar-nav>li>a {
     color: #555555;
@@ -9,16 +14,15 @@
      background-color: #dcdcdc;
  }
 
-
+body {
+    transition: color 1s;
+    color: #383630;
+}
 
 .navbar-default {
     transition: background-color 1s;
      transition: background-color 1s;: #ffffff;;
     border-color: #f8f8f8;
-}
-
-body {
-    color: #383630;
 }
 
 .panel-default {
@@ -106,23 +110,23 @@ a.list-group-item {
     color: #bbbbbb;
 }
 
-::-webkit-scrollbar {
-    width: 14px;
-}
+/*::-webkit-scrollbar {*/
+    /*width: 14px;*/
+/*}*/
 
-::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-    border-radius: 10px;
-}
+/*::-webkit-scrollbar-track {*/
+    /*-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);*/
+    /*border-radius: 10px;*/
+/*}*/
 
-::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    -webkit-box-shadow: inset 0 0 6px #646464;
-}
+/*::-webkit-scrollbar-thumb {*/
+    /*border-radius: 10px;*/
+    /*-webkit-box-shadow: inset 0 0 6px #646464;*/
+/*}*/
 
-::-webkit-scrollbar-corner {
-    background: transparent !important;
-}
+/*::-webkit-scrollbar-corner {*/
+    /*background: transparent !important;*/
+/*}*/
 
 div.grippie {
     border-color:#DDDDDD;
@@ -163,7 +167,7 @@ div.grippie {
 .jobFormbtn{
     transition: background-color 1s;
     background-color: #d4d4d4;
-    color: #3c3e3f;
+    color: #367ae0;
 }
 
 
@@ -323,6 +327,15 @@ a.libListRow {
     color: #3c3e3f;
 }
 
+input:checked + .slider {
+    transition: background-color 0.5s;
+    background-color: #367ae0;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #367ae0;
+}
+
 .systemRow{
 
 }
@@ -455,5 +468,17 @@ a.libListRow {
 .aceDisabled {
     transition: background-color 0.5s;
     background-color: #ececec;
+}
+
+.compVarDelButton{
+    color:#901514;
+}
+
+.ql-active{
+    filter: brightness(50%);
+}
+
+.compVarEditValButton, .compVarEditButton, .ql-snow a {
+    color: #367ae0;
 }
 
