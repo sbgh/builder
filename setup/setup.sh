@@ -56,7 +56,7 @@ mkdir ./backup;
 
 echo
 echo 'Installing TinyMCE 5.1.1'
-unzip -o ./static/tinymce_5.1.1.zip -d ./static
+unzip -oq ./static/tinymce_5.1.1.zip -d ./static
 
 echo
 echo 'Creating SSL'
