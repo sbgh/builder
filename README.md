@@ -29,7 +29,7 @@ These dependencies include Node.js, NPM, headless Chrome, unzip and several Node
 
 From the ec2-user home directory execute:
 ```
-curl -L EZStack.Systems/builderSetup.sh > builderSetup.sh
+curl -L https://raw.githubusercontent.com/sbgh/builder/master/setup/builderSetup.sh > builderSetup.sh
 chmod 700 builderSetup.sh
 ./builderSetup.sh
 ```
@@ -39,10 +39,5 @@ Access the /builder application via https://your.ip.address.or.hostname:8443/bui
 You will encounter an error 'ERR_CERT_AUTHORITY_INVALID' because the https Certificate Authority (CA) is not valid (self-signed). Select advanced and proceed (add exception).
 You can start or restart the server by executing `./builder/restartServer.sh` from the ec2-user home directory.
 At the login prompt, the username is Admin and the password is the one you chose during installation. 
-
-
-
-
-
 
 
