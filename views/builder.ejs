@@ -34,6 +34,7 @@
         var pickedLib = '#';
         var lastStyleSheet;
         var bottomHiddenFlag = true;
+        var bottomMinimizedFlag = true;
         $(document).ready(function() {
 
 
@@ -456,11 +457,8 @@
                         currentTemplatesArr[inx].setReadOnly(true);
                     }
 
-//                    if(viewmode === "read"){
-//                        readModeJob();
-//                    }else if(viewmode === "edit"){
-                        readModeJob();
-//                    }
+
+                    readModeJob();
                 })
             }
 
@@ -536,6 +534,8 @@
 
                 selectedNode = data.selected[0];
                 selectedTree = 'lib'
+                hideBottom();
+                bottomHiddenFlag = true;
 
                 if (selectedNode ==='lib'){
                     $("#sysScreen").hide();
@@ -554,7 +554,7 @@
                         $("#sysScreen").hide();
                         $("#jobScreen").show();
                         $("#comType").val('Job');
-                        hideBottom()
+
                     }
                     else if (data.instance.get_node(data.node.id).type === "system") {
                         readModeLibSys();
@@ -563,11 +563,9 @@
                         $("#jobScreen").hide();
                         $("#comType").val('system');
                         getLibSysByID(selectedNode, pickedLib);
-                        hideBottom()
                     }
                     else { //Type = Lib
                         $('#jstree_div').jstree("deselect_all");
-                        hideBottom()
                     }
                 }
                 $("#results_html").html('');
@@ -623,6 +621,8 @@
 
                         $("#sysScreen").hide();
                         $("#jobScreen").hide();
+                        hideBottom();
+                        bottomHiddenFlag = true;
 
                     }else{
                         if (data.instance.get_node(data.node.id).type === "job"
@@ -636,6 +636,8 @@
 
                             $("#sysScreen").hide();
                             $("#jobScreen").show();
+                            showBottom();
+                            bottomHiddenFlag = false;
                             $('#componentTabs').show();
 
                             updateResultsList(selectedNode);
@@ -656,13 +658,14 @@
 
                         }else{
                             $('#componentTabs').hide()
-                            readModeSys();
                             $("#sysScreen").show();
                             $("#jobScreen").hide();
+                            hideBottom();
+                            bottomHiddenFlag = true;
                             $("#comType").val('system');
+                            readModeSys();
                             getSysByID(selectedNode);
                             updateResultsList(selectedNode);
-                            hideBottom()
                         };
                     }
 
@@ -683,11 +686,11 @@
             });
 
             function loadDashboard(){
-                if(localStorage['lastSreenShot']) {
-                    $('#screenShotImageDashboard')[0].src=localStorage['lastSreenShot']
-                }else{
-                    $("#screenShotImageDashboard").hide();
-                };
+//                if(localStorage['lastSreenShot']) {
+//                    $('#screenShotImageDashboard')[0].src=localStorage['lastSreenShot']
+//                }else{
+//                    $("#screenShotImageDashboard").hide();
+//                };
                 if(localStorage['appLink']) {
                     $("#link")[0].innerHTML=localStorage['appLink']
                 };
@@ -1028,15 +1031,15 @@
             function hideBottom(){
                 $("#bottomRow").hide(function(){
                     var container = $('#rowContainer');
-                    bottomHiddenFlag = true;
-                    setWindowHeight(container.height(), container);
+                    //bottomHiddenFlag = true;
+                    setWindowHeight(container.height(), container, true);
                 });
             }
             function showBottom(){
                 $("#bottomRow").show(function(){
                     var container = $('#rowContainer');
-                    bottomHiddenFlag = false;
-                    setWindowHeight(currentHeight, container);
+                    //bottomHiddenFlag = false;
+                    setWindowHeight(currentHeight, container, true);
                 });
             }
             //hideBottom();
@@ -1845,7 +1848,7 @@
                 //Save tree state
                 var prestate =  $("#jstree_div").jstree(true).get_state();
 
-                $("#status-panel-body").show();
+           //     $("#status-panel-body").show();
 
                 $.ajax({
                     url: '/run',
@@ -1873,19 +1876,19 @@
                             rTextNew.split('<br>').forEach(function(row){
 
                                 if(row.substr(0,17) === 'message:Building:'){
-                                    $("#resultsStatus")[0].innerHTML += "<span>" + row.slice(17) + " <img src='/images/throbber.gif'></span>"
+                                    $("#resultsStatus").html( "<div>" + row.slice(17) + " <img src='/images/throbber.gif'></div>");
                                 }else if(row.substr(0,28) === 'status:All scripts completed'){
-                                    $("#resultsStatus")[0].innerHTML += "<b>All scripts completed</b>";
+                                    $("#resultsStatus").html( "<b>All scripts completed</b>");
                                 }else if(row.substr(0,22) === 'status:Scripts Aborted'){
-                                    $("#resultsStatus")[0].innerHTML += "Scripts aborted"
+                                    $("#resultsStatus").append( "Scripts aborted");
                                 }else if(row.substr(0,26) === 'message:CompletionSuccess:'){
                                     if(row.slice(26) === 'true'){
-                                        $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-check fa-fw DashListRowPass'></i><br>";
-                                        $("#resultsStatus")[0].innerHTML = $("#resultsStatus")[0].innerHTML.replace('<img src="/images/throbber.gif">',"")
+//                                        $("#resultsStatus").append( "<i class='fa  fa-check fa-fw DashListRowPass'></i>");
+                                        $("#resultsStatus").html(  $("#resultsStatus").html().replace('<img src="/images/throbber.gif">',"<i class='fa  fa-check fa-fw DashListRowPass'></i>"));
 
                                     }else{
-                                        $("#resultsStatus")[0].innerHTML += "<i class='fa  fa-times fa-fw DashListRowFail'></i><br>";
-                                        $("#resultsStatus")[0].innerHTML = $("#resultsStatus")[0].innerHTML.replace('<img src="/images/throbber.gif">',"")
+//                                        $("#resultsStatus").append( "<i class='fa  fa-times fa-fw DashListRowFail'></i>");
+                                        $("#resultsStatus").html(  $("#resultsStatus").html().replace('<img src="/images/throbber.gif">',"<i class='fa  fa-times fa-fw DashListRowFail'></i>"));
                                     }
                                 }
 
@@ -1899,6 +1902,7 @@
                                     var appLink = "Link: <a href='" + row.slice(12)+"' target='_new'>" + row.slice(12) + "</a>"
                                     $("#link")[0].innerHTML = appLink;
                                     localStorage['appLink'] = appLink;
+                                    //startStream();
                                 }
                                 else if(row.substr(0,16) === 'message:BuildID:'){
                                     buildIDRunning = row.substring(
@@ -1936,22 +1940,22 @@
                                //     $('#jstree_div').jstree(true).refresh(true);
                                 }
                                 else if(row.substr(0,12) === 'message:img:'){
-                                    var timestamp = new Date().getTime();
-                                    var imageLink = "/uploads/" + row.replace('message:img:','') + '?' +timestamp;
-                                    $('#screenShotImageDashboard')[0].src=imageLink  ;
-                                    $('#screenShotImage')[0].src=imageLink  ;
+//                                    var timestamp = new Date().getTime();
+//                                    var imageLink = "/uploads/" + row.replace('message:img:','') + '?' +timestamp;
+//                                    $('#screenShotImageDashboard')[0].src=imageLink  ;
+//                                    $('#screenShotImage')[0].src=imageLink  ;
 
-                                    localStorage['lastSreenShot'] = imageLink;
-                                    $("#screenShotImageDashboard").show();
-                                    $("#screenShotImage").show();
+//                                    localStorage['lastSreenShot'] = imageLink;
+//                                    $("#screenShotImageDashboard").show();
+//                                    $("#screenShotImage").show();
                                 }
                                 else{
-                                    if(localKey !== '' && sys.length !== 0){
+                                    if(localKey !== '' && sys.length !== 0 && !localStorage['key_' + sys]  ){
                                         if($('#localStoreKeyCb').is(':checked')) {
                                             localStorage['key_' + sys] = localKey
                                         }
                                     }
-                                    if(localAccess !== ''){
+                                    if(localAccess !== ''  && !localStorage['access'] ){
                                         if($('#localStoreAccessCb').is(':checked')) {
                                             localStorage['access'] = localAccess
                                         }
@@ -1960,7 +1964,7 @@
                                 }
                             })
                             $('#results_html').animate({scrollTop: $('#results_html').get(0).scrollHeight}, 50);
-                            $('#status-panel-body').animate({scrollTop: $('#status-panel-body').get(0).scrollHeight}, 50);
+                       //     $('#status-panel-body').animate({scrollTop: $('#status-panel-body').get(0).scrollHeight}, 50);
                         };
 
                         return xhr;
@@ -1971,7 +1975,7 @@
 
                     $("#jstree_div").jstree("close_node", selectedNode);
                     $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
-                        $('#jstree_div').jstree(true).refresh(true);
+                    $('#jstree_div').jstree(true).refresh(true);
 
                     //Enable tree
 //                    $('#jstree_div li').each( function() {
@@ -2153,6 +2157,7 @@
 
                 $("#edit_button").hide();
                 $("#save_button").show();
+                $("#cancelSave_button").show();
                 $("#remove_button").hide();
                 $("#new_button").hide();
                 $("#run_button").hide();
@@ -2212,6 +2217,7 @@
 
                 $("#edit_button").show();
                 $("#save_button").hide();
+                $("#cancelSave_button").hide();
                 $("#remove_button").show();
                 $("#new_button").show();
 
@@ -2316,6 +2322,7 @@
 
                 $("#edit_button").hide();
                 $("#save_button").hide();
+                $("#cancelSave_button").hide();
                 $("#remove_button").show();
                 $("#new_button").hide();
                 $("#run_button").hide();
@@ -2352,6 +2359,7 @@
 
             $("#edit_button").disabled = true;
             $("#save_button").disabled = true;
+            $("#cancelSave_button").disabled = true;
             $("#remove_button").disabled = true;
             $("#new_button").disabled = true;
             $("#run_button").disabled = true;
@@ -2387,6 +2395,11 @@
 //                    }
 //                });
 //            }
+
+            //cancel save job
+            $("#cancelSave_button").click(function(event){
+                $('#jstree_div').jstree(true).refresh(true);
+            });
 
             //save Job
             $("#save_button").click(function(event){
@@ -2543,7 +2556,7 @@
                     },
                     url: '/save',
                     success : function(result) {
-                        readModeSys();
+                        //readModeSys();
                         var resultJSON = JSON.parse(result);
                         $("#id").val(resultJSON.id);
                         $("#text").val(resultJSON.text);
@@ -2970,15 +2983,17 @@
             //min codes window
             $('.codes_btn_min').on('click', function(){
                 var container = $('#rowContainer');
-                setWindowHeight(container.height()- 25 , container);
-                currentHeight = container.height()- 25
+                bottomMinimizedFlag = true;
+                setWindowHeight(container.height()- 33 , container, true);
+                currentHeight = container.height()- 33
                 currentRatio = currentHeight / container.height();
             });
 
             //max codes window
             $('.codes_btn_max').on('click', function(){
                 var container = $('#rowContainer');
-                setWindowHeight(container.height()/2 , container);
+                bottomMinimizedFlag = false;
+                setWindowHeight(container.height()/2 , container, true);
                 currentHeight = container.height() / 2
                 currentRatio = currentHeight / container.height();
             });
@@ -3072,10 +3087,10 @@
 
                 $(window).on('resize', function(){
                     var container = $('#rowContainer');
-                    if(bottomHiddenFlag === true){
-                        setWindowHeight(container.height() , container);
+                    if(bottomHiddenFlag){
+                        setWindowHeight(container.height() , container, false);
                     }else{
-                        setWindowHeight(container.height() * currentRatio , container);
+                        setWindowHeight(container.height() * currentRatio , container, false);
                     }
                     setFormColWidth();
                 });
@@ -3089,7 +3104,8 @@
                         currentHeight = e.clientY;
                         currentHeight += currentHeight < 10 ? 10 - currentHeight : 0
                         currentRatio = currentHeight / container.height();
-                        setWindowHeight(topHeight-5, container);
+                        bottomMinimizedFlag = false;
+                        setWindowHeight(topHeight-5, container, false);
                     }
 
                     if(isResizingLibWidth){
@@ -3101,7 +3117,7 @@
                     if(isResizingWidth){
                         e.preventDefault();
                         var leftWidth = e.clientX;
-                        setWindowWidth(leftWidth - libTreeWidth - 2, container);
+                        setWindowWidth(leftWidth - libTreeWidth - 2, container, false);
                     }
 
 
@@ -3112,50 +3128,57 @@
                 });
             });
 
-            function setWindowHeight(topHeight, container){
-                if (topHeight > (container.height() - 33)){
-                    topHeight = container.height() - 33
+            //Calling this function will set the hight of each element in
+            function setWindowHeight(topHeight, container, AnimateIt){
+                var heightAniDuration = 0 ;
+                if(AnimateIt){heightAniDuration = 300}
+
+                var topRowHeight = $("#dashBoardTopRow").height();
+                $("tbody.dashTbody").height(container.height() - topRowHeight - 100);
+                //$("#dashboard").animate({height: (topHeight - 33)},heightAniDuration);
+                $("#dashboard").animate({height: (topHeight + 20)},heightAniDuration);
+
+                if(bottomMinimizedFlag == true){
+                    topHeight = currentHeight = container.height()- 33
                 }
 
-                 if (topHeight < (container.height() * .2)){
-                     topHeight = container.height() * .2
-                 }
-
                  if(!bottomHiddenFlag){
-                     $("#jstree_div").height(topHeight - (28 + 30));
-                     $("#jslibtree_div").height(topHeight - (28 + 29));
+                     if (topHeight > (container.height() - 33) && isResizingHeight){
+                         topHeight = container.height() - 33;
+                         bottomMinimizedFlag = true;
+                     }
 
-                     $("#treePanelHandle").height(topHeight - 28);
-                     $("#libTreePanelHandle").height(topHeight - 28);
+                     if (topHeight < (container.height() * .2)){
+                         topHeight = container.height() * .2
+                     }
 
-                     $("#job-form-panel").height(topHeight - (56 + 33 + 24));
-                     $("#sys-form-panel").height(topHeight - (56 + 33 + 24));
-                     $("#dashboard").height(topHeight - 33);
-                     $("#leftResultsCol").height(topHeight - (15 + 33 + 38));
-                     $("#build-results-row").height(topHeight - (15 + 33 + 21));
+                     //would be nice to include jquery-ui libs...
+                    $("#jstree_div").animate({height: (topHeight - (28 + 30))},heightAniDuration);
+                    $("#jslibtree_div").animate({height: (topHeight - (28 + 29))},heightAniDuration);
+
+                    $("#treePanelHandle").animate({height: (topHeight - 28)},heightAniDuration);
+                    $("#libTreePanelHandle").animate({height: (topHeight - 28)},heightAniDuration);
+
+                    $("#job-form-panel").animate({height: (topHeight - (56 + 3 + 24))},heightAniDuration);
+                    $("#sys-form-panel").animate({height: (topHeight - (56 + 40 + 24))},heightAniDuration);
+                    $("#leftResultsCol").animate({height: (topHeight - (15 + 33 + 38))},heightAniDuration);
+                    $("#build-results-row").animate({height: (topHeight - (15 + 33 + 21))},heightAniDuration);
 
 
-                     $('#results_html').height(container.height() - topHeight - (34 + 15));
-                     $('#results_codes').height(container.height() - topHeight - (34 + 15));
-                     $('#results-group').height(container.height() - topHeight - (34 + 15));
-
-                     //$(#'dashListCol').
+                    $('#results_html').animate({height: container.height() - topHeight - (34 + 15)},heightAniDuration);
+                    $('#results_codes').animate({height: container.height() - topHeight - (34 + 15)},heightAniDuration);
+                    $('#results-group').animate({height: container.height() - topHeight - (34 + 15)},heightAniDuration);
                  }else{
-                     $("#jstree_div").height(topHeight -11);
-                     $("#jslibtree_div").height(topHeight -10 );
 
-                     $("#treePanelHandle").height(topHeight +10 );
-                     $("#libTreePanelHandle").height(topHeight +10);
+                    $("#jstree_div").height(topHeight -26);
+                    $("#jslibtree_div").height(topHeight -26 );
 
-                     $("#rightCol").height(topHeight - 24);
-                     $("#dashboard").height(topHeight);
-                     var topRowHeight = $("#dashBoardTopRow").height();
-                     $("tbody.dashTbody").height(container.height() - topRowHeight - 115)
-                     $("#job-form-panel").height(topHeight -80 );
-                     $("#sys-form-panel").height(topHeight -80 );
+                    $("#treePanelHandle").height(topHeight +30 );
+                    $("#libTreePanelHandle").height(topHeight +30);
 
+                    $("#job-form-panel").height(topHeight -84 );
+                    $("#sys-form-panel").height(topHeight -84 );
                  }
-
             }
 
             function setLibWindowWidth(leftWidth, container){
@@ -3477,7 +3500,7 @@
 
             });
 
-            //Set to top style radio to the value in settings
+            //Set value of top style radio to the value in settings
             function setTopPageStyle(){
                 var mydata = {};
                 $.ajax({
@@ -3510,31 +3533,10 @@
             };
             setTopPageStyle();
 
-            //signal server to set 'firstRun' flag in settings
-            function setFirstRun(){
-                var mydata = {};
-                mydata.firstRun = true;
+            //Check first run and run firstRunTasks() if required
+            function checkFirstRun(){
 
-                $.ajax({
-                    type: 'post',
-                    data: JSON.stringify(mydata),
-                    dataType : "text",
-                    headers: {
-                        "content-type": "application/json",
-                    },
-                    url: '/firstRun',
-                    success : function(result) {
-                        console.log(result);
-                        firstRunTasks(result);
-                    },
-                    error : function(error) {
-                       console.log(error)
-                    }
-                });
-            }
-
-            //Open Welcome modal if first run
-            function openWelcome(){
+                //query server for first run setting
                 var mydata = {};
                 $.ajax({
                     type: 'get',
@@ -3551,25 +3553,55 @@
                         if (respJson.firstRun === 1){
 
                         }else{
-                            $("#welcomeModal").modal();
-                            setFirstRun();
+                            firstRunTasks(data)
                         }
                     },
                     error : function(error) {
                         console.log(error)
                     }
-                })
-            };
+                });
 
-            function firstRunTasks(result){
-                $("#sysScreen").hide();
-                $("#jobScreen").hide();
-                $('#componentTabs').hide();
-                $("#componentsBtn").click();
-                $("#dashBtn").click();
-            };
+                function firstRunTasks(result){
+                    $("#welcomeModal").modal();
+                    setFirstRun();
+//                $("#sysScreen").hide();
+//                $("#jobScreen").hide();
+//                $('#componentTabs').hide();
+//                $("#componentsBtn").click();
 
-            openWelcome();
+                }
+
+                //Things to do after welcome modal
+                function afterWelcomeModal(){
+                    $("#dashBtn").click();
+                }
+                //Tell server to set firstRun flag
+                function setFirstRun(){  //signal server to set 'firstRun' flag in settings
+                    $.ajax({
+                        type: 'post',
+                        data: "",
+                        dataType : "text",
+                        headers: {
+                            "content-type": "application/json",
+                        },
+                        url: '/firstRun',
+                        success : function(result) {
+//                            console.log(result);
+                        },
+                        error : function(error) {
+                            comsole.log("Error: in setFirstRun() - Cannot signal server to set 'firstRun' flag in settings")
+                            console.log(error)
+                        }
+                    });
+                }
+
+                //Welcome modal close event will run afterWelcomeModal()
+                $('#welcomeModal').on('hidden.bs.modal', function() {
+                    afterWelcomeModal();
+                });
+
+            };
+            checkFirstRun()
 
             $("#search-icon").on("click",function(){
                 $('#jstree_div').jstree(true).refresh(true);
@@ -3595,7 +3627,7 @@
                     $("#dashBtn").addClass("active");
                     $("#componentsBtn").removeClass("active");
                     hideBottom();
-                    bottomHiddenFlag=true;
+                    //bottomHiddenFlag=true;
 
                 });
             });
@@ -3606,8 +3638,8 @@
                 $("#dashRow").hide(200, function(){
                     $("#dashBtn").removeClass("active");
                     $("#componentsBtn").addClass("active");
-                    showBottom();
-                    bottomHiddenFlag=false;
+                    if(!bottomHiddenFlag){showBottom()};
+//                    bottomHiddenFlag=false;
                     $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
                 });
             });
@@ -3621,8 +3653,8 @@
 
             }
 
-            var statusPanel = $("#resultsStatus")[0].innerHTML;
-            if(statusPanel === ""){$("#status-panel-body").hide()};
+           // var statusPanel = $("#resultsStatus")[0].innerHTML;
+           // if(statusPanel === ""){$("#status-panel-body").hide()};
 
             function loadjobTempTypeDropdown(templateNumber){
                 var mydata = {};
@@ -3653,8 +3685,8 @@
                             var atype = $(this).attr('data-type');
                             var templateNumber = $(this).attr('data-index');
 
-                            $("#dropdownTemplateTypeButton"+indexNumStr)[0].innerHTML = atype;
-                            $("#templateType"+indexNumStr).val(atype);
+                            $("#dropdownTemplateTypeButton"+templateNumber)[0].innerHTML = atype;
+                            $("#templateType"+templateNumber).val(atype);
                             currentTemplatesArr[parseInt(templateNumber, 10)].session.setMode("ace/mode/" + atype);
                         });
 
@@ -3828,6 +3860,77 @@
             };
 
 
+            var webStreamCanvas = document.getElementById("videoCanvas");
+            var webStreamCtx = webStreamCanvas.getContext("2d");
+
+            webStreamCanvas.width = 1280; // target width
+            webStreamCanvas.height = 720; // target height
+
+            var webStreamCanvasImageContainer = new Image();
+
+            webStreamCanvasImageContainer.onload = function(e) {
+                webStreamCtx.drawImage(webStreamCanvasImageContainer,
+                    0, 0, webStreamCanvasImageContainer.width, webStreamCanvasImageContainer.height,
+                    0, 0, webStreamCanvas.width, webStreamCanvas.height
+                );
+            };
+
+            function startStream(){
+               // console.log("starting stream: "  );
+                $.ajax({
+                    url: '/video',
+                    processData: false,
+                    contentType: false,
+                    type: 'GET',
+                    data: "",
+                    xhr: function () {
+
+                        var xhr = $.ajaxSettings.xhr();
+
+                        var currentRespText = '';
+
+                        var buffer = ""
+                        xhr.onprogress = function e() {
+                            var rText = xhr.responseText
+
+                            var imgData = rText.substr(currentRespText.length)
+                            currentRespText = rText;
+
+                            x = imgData.split('<-->').length;
+
+                            buffer += imgData;
+                            var x = 0;
+                            while (buffer.split("<-->").length > 1){
+
+                                var imgBlock = buffer.split("<-->")[0];
+                                var remainderBlocks = buffer.split("<-->");
+                                remainderBlocks.shift();
+                                buffer = remainderBlocks.join("<-->");
+
+                                if(imgBlock.charAt(0) == "{" && imgBlock.charAt((imgBlock.length)-1) == "}" ){
+
+                                   // console.log("processing block: " + imgBlock.length.toString());
+
+                                    imgObj = JSON.parse(imgBlock);
+                                    console.log("setting image#: " + imgObj.frameCount.toString());
+
+                                    if(imgObj.hasOwnProperty("data")){
+                                        webStreamCanvasImageContainer.src = 'data:image/jpeg;base64,' + imgObj.data;
+                                    }
+                                }
+                            }
+                        };
+                        return xhr;
+                    }
+                }).done(function (e) {
+               //     console.log("startStream Done -> restart");
+                    startStream();
+                }).fail(function (e) {
+
+                    console.log("startStream Fail"  );
+                });
+            };
+            startStream()
 
         }); //-------------------------------------------   doc ready -------------------------------------------
 
@@ -4068,71 +4171,79 @@
                 <!--<input name="dashSysName" id="dashSysName" type="hidden" />-->
 
                 <div class='panel-body dashboardPanelBody'>
-                    <div class="row ">
+                    <!--<div class="row ">-->
 
-                        <div class="col-sm-2" >
+                        <!--<div class="col-sm-2" >-->
 
-                        </div>
-                        <div class="col-sm-2" >
+                        <!--</div>-->
+                        <!--<div class="col-sm-2" >-->
 
-                        </div>
+                        <!--</div>-->
 
-                    </div>
+                    <!--</div>-->
 
                     <div id = "dashBoardTopRow" class="row dashBoardTopRow">
                         <div class="col-md-6" >
 
-                            <div class='panel dashPanel os-panel'>
-                                <!--<div class='panel-heading dashboardPanelHeading os-panel-heading'>CPU Load</div>-->
-                                <div class='panel-body dashPanelBody os-panel-body'>
-                                    <div class="dashboardLabel" >cpu load</div>
-                                    <div class="osValue" id="osCPUValue" >%</div>
+                            <div class="row">
+                                <div class="col-sm-2 os-panel-column" >
+                                    <div class='panel dashPanel os-panel'>
+                                        <div class='panel-body dashPanelBody os-panel-body'>
+                                            <div class="dashboardLabel" >cpu load</div>
+                                            <div class="osValue" id="osCPUValue" >%</div>
+                                        </div>
+                                    </div>
+
                                 </div>
-                            </div>
-                            <div class='panel dashPanel os-panel'>
-                                <!--<div class='panel-heading dashboardPanelHeading os-panel-heading'>Free Mem</div>-->
-
-                                <div class='panel-body dashPanelBody os-panel-body'>
-                                    <div class="dashboardLabel" >free mem</div>
-                                    <div class="osValue" id="osFMValue" >GB</div>
+                                <div class="col-sm-2 os-panel-column" >
+                                    <div class='panel dashPanel os-panel'>
+                                        <div class='panel-body dashPanelBody os-panel-body'>
+                                            <div class="dashboardLabel" >free mem</div>
+                                            <div class="osValue" id="osFMValue" >GB</div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <!--<hr class="dashDropButtonHR">-->
-                            <div class="panel dashPanel systemDetailPanel">
-                                <div class="dashboardLabel">System</div>
-                                <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Pick...
-                                </button>
-                                <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
-                                    <div><a class="dropdown-item" href="#">Action</a></div>
+                                <div class="col-md-8" >
+                                    <div class='panel dashPanel currentBuildStatusPanel'>
+                                        <div class='panel-body dashPanelBody status-panel-body'>
+                                            <div class="dashboardLabel" >status</div>
+                                            <div class="resultsStatus" id="resultsStatus"></div>
+                                        </div>
+                                    </div>
                                 </div>
-
-                                <div id="dashSystemDetails" class="dashSystemDetails"></div>
-
 
                             </div>
 
+                            <div class="row">
+                                <div class="panel dashPanel systemDetailPanel">
+                                    <div class="dashboardLabel">System</div>
+                                    <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Pick...
+                                    </button>
+                                    <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
+                                        <div><a class="dropdown-item" href="#">Action</a></div>
+                                    </div>
+
+                                    <div id="dashSystemDetails" class="dashSystemDetails"></div>
+                                </div>
+                            </div>
 
                         </div>
-                        <div class="col-md-4" >
+                        <div class="col-md-6" >
                             <div class='panel'>
                                 <!--<div class='panel-heading dashboardPanelHeading '>Last Screenshot</div>-->
                                 <div class='panel-body dashPanelBody screenshot-panel-body' >
-                                    <img id="screenShotImageDashboard" class="screenShotImageDashboard">
+                                    <canvas id="videoCanvas"></canvas>
+                                    <!--<video-->
+                                            <!--title="Video"-->
+                                            <!--style="background-color: rgb(0, 0, 0); position: absolute; width: 640px; height: 360px;"-->
+                                            <!--src="/video"-->
+                                            <!--autoplay="true"-->
+                                            <!--muted="muted"></video>-->
+                                    <!--<img id="screenShotImageDashboard" class="screenShotImageDashboard">-->
                                     <div id="link" class="screenShotLink"></div>
                                 </div>
                             </div>
-
-                        </div>
-                        <div class="col-md-2" >
-                            <div class='panel dashPanel currentBuildStatusPanel'>
-                                <!--<div class='panel-heading dashboardPanelHeading '>Current Build Status</div>-->
-                                <div class='panel-body dashPanelBody status-panel-body' id="status-panel-body">
-                                    <div class="resultsStatus" id="resultsStatus"></div>
-                                </div>
-                            </div>
-
                         </div>
                     </div>
 
@@ -4330,6 +4441,7 @@
                                 <button id = "run_button" class="btn btn-default jobFormbtn"><i class="fa fa-play fa-fw"></i>Build</button>
                                 <button id = "edit_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
                                 <button id = "save_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
+                                <button id = "cancelSave_button" class="btn btn-default jobFormbtn"><i class="fa fa-times-circle fa-fw"></i>Cancel</button>
                                 <button id = "moveUp_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-up fa-fw"></i>Move Up</button>
                                 <button id = "moveDn_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-down fa-fw"></i>Move Down</button>
                                 <button id = "new_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Child</button>

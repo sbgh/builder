@@ -455,8 +455,8 @@ input:focus + .slider {
 }
 .dashPanelBody{
     /*opacity: 1;*/
-    transition: background-color 0.5s;
-    background-color: rgb(70, 72, 74);
+    /*transition: background-color 0.5s;*/
+    /*background-color: rgb(70, 72, 74);*/
 }
 
 .screenShotLink > a, .screenShotLink > a:hover{
@@ -464,8 +464,8 @@ input:focus + .slider {
 }
 
 .screenshot-panel-body{
-    transition: background-color 0.5s;
-    background-color: rgba(70, 72, 74, 0);
+    /*transition: background-color 0.5s;*/
+    /*background-color: rgba(70, 72, 74, 0);*/
 }
 
 

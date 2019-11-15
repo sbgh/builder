@@ -27,8 +27,9 @@ const viewPath = __dirname + '/views/';
 const resultsPath = __dirname + '/results/';
 const filesPath = __dirname + '/uploads/';
 const libsPath = __dirname + '/library/';
-const stylesPath = __dirname + '/static/theme/';
 const treeStylesPath = __dirname + '/static/jstree/dist/themes/';
+const staticPath = __dirname + '/static/';
+const stylesPath = __dirname + '/static/theme/';
 
 //Load configs into global config obj
 const cf = fs.readFileSync('config.json');
@@ -65,13 +66,13 @@ global.chrome='';
 (async function () {
     async function launchChrome() {
         return await chromeLauncher.launch({
-            chromeFlags: ["--disable-gpu", "--headless", "--enable-logging", "--no-sandbox"]
+            chromeFlags: ["--disable-gpu", "--headless",  "--no-sandbox"] //"--enable-logging", , '--window-size=800,600', --force-device-scale-factor=1.5
         });
     }
     chrome = await launchChrome();
     console.log('Chrome debugging port running on ' + chrome.port);
 
-    const viewport = [1600,1200];
+    const viewport = [1280,720];
 
     protocol = await CDP({
         port: chrome.port
@@ -84,7 +85,7 @@ global.chrome='';
     var device = {
         width: viewport[0],
         height: viewport[1],
-        deviceScaleFactor: 1,
+        deviceScaleFactor: 1.0,
         mobile: false,
         fitWindow: true
     };
@@ -96,7 +97,25 @@ global.chrome='';
     await Page.navigate({url: 'http://google.com'});
     await Page.loadEventFired();
 
+
+    Page.screencastFrame(image => {
+
+        frameCount++;
+        const {data, metadata, sessionId} = image;
+        image.frameCount = frameCount;
+        currentFrame = image;
+
+        console.log('saved frame ' + frameCount.toString());
+
+        // lastShot = setTimeout(ackFrame, 1000);
+        // lastFrameId = sessionId;
+        // function ackFrame(){
+            Page.screencastFrameAck({sessionId: sessionId});
+        // }
+    });
+
 })();
+// var lastFrameId = "";
 
 //Define user table global
 var userTable = fs.readFileSync("./identity/identity.json");
@@ -127,6 +146,8 @@ router.use(function (req,res,next) {
 
     next();
 });
+
+
 
 var lastnoClientTimeout;
 var noClientTimeout = config.hasOwnProperty("noClientTimeout") ? config.noClientTimeout : "15";
@@ -192,7 +213,62 @@ router.post("/login",function(req,res) {
 
 });
 
-//-------------------All routes below require authentication-----------------------------------------------------
+router.get('/video', function(req, res) {
+
+    startDate = new Date();
+    totalStartDate = new Date();
+    frameCount = 0;
+    console.log("/video started");
+
+    res.writeHead(200, {
+        'Connection': 'keep-alive',
+        // 'Content-Type': 'text/event-stream; charset=utf-8',
+        'Transfer-Encoding': 'chunked',
+        'Content-Type': 'image/png;base64',
+        'Content-Transfer-Encoding': 'BASE64'
+    });
+
+    Page.startScreencast({
+        format: 'png',
+        everyNthFrame: 10
+    });
+
+    const myInt = setInterval(sendBlock,1500);
+    var sendCount = 0;
+    function sendBlock(){
+        var endDate = new Date();
+        var totalSeconds = (endDate - totalStartDate) / 1000;
+        sendCount++;
+
+        if(sendCount > 30){
+            clearInterval(myInt);
+            //console.log('stopping ' + frameCount.toString());
+            Page.stopScreencast();
+            frameCount = 0;
+            res.end();
+            totalStartDate = new Date();
+            console.log('stopped ' + totalSeconds.toString() + " seconds" );
+        }else{
+            //only send if frame has changed
+            if(currentFrame.data !== lastFrame.data){
+                res.write(JSON.stringify(currentFrame)+'<-->');
+                lastFrame = currentFrame;
+                console.log('sent: ' + frameCount.toString());
+            }else{
+                console.log('skip: ' + frameCount.toString());
+            }
+        }
+    }
+
+});
+
+
+var lastFrame = {};
+var currentFrame = {};
+var startDate = new Date();
+var totalStartDate = new Date();
+var frameCount = 0;
+// -------------------All routes below require authentication-----------------------------------------------------
 
 //Service Rt: /* [All], Method: get, Requires: none, Returns:  if auth then next() else redirect(rd)
 router.get("/*",function(req,res,next) {
@@ -2324,31 +2400,25 @@ router.post("/run",function(req,res){
                                     var url = currentCommand.replace('snap:','').trim();
                                     //console.log('url: ' + url);
                                     aSyncInProgress++;
+                                    message('url:' + url);
+                              //      flushMessQueue();
                                     (async function () {
+
+                                        console.log("Page.navigate: " + url)
 
                                         await Page.navigate({url: url});
                                         await Page.loadEventFired();
 
-                                        setTimeout(async function() {
-                                            message('snap:creating snapshot');
-                                            flushMessQueue();
-                                            const ss = await Page.captureScreenshot({format: 'png', fromSurface: true});
-                                            if (!fs.existsSync(filesPath + jobId)) {
-                                                fs.mkdirSync(filesPath + jobId)
-                                            }
-                                            fs.writeFileSync(filesPath + jobId + '/' + 'screenshot.png', ss.data, 'base64');
+                                        console.log("Page.loadEventFired: " + url)
 
-                                            message("img:"+jobId + '/' + 'screenshot.png');
+                                       // message('snap:created: ' + "screenshot.png");
 
-                                            aSyncInProgress--;
-                                            //console.log('saveTemplate:Sent - screenshot.png' );
-                                            message('snap:created: ' + "screenshot.png");
-                                            message('url:' + url);
-                                            if(deferredExit == true && aSyncInProgress == 0){
+                                        aSyncInProgress--;
+                                        if(deferredExit == true && aSyncInProgress == 0){
                                                 stream.write("exit" + '\n');
                                                 sshSuccess = true
                                             }
-                                        }, 1000);
+
                                     })();
                                     isDirective = true;
 
@@ -2931,12 +3001,8 @@ router.get("/settings",function(req,res){
     res.end(JSON.stringify(respObj));
 });
 
-//Service Rt: /firstRun to set firstrun flag in config, Method: post, Requires: firstRun, Returns: confirmation string or error string
-//Note that this service requires improvments. The reqJSON.firstRun property should not be required.
+//Service Rt: /firstRun to set firstrun flag in config, Method: post, Requires: nothing, Returns: confirmation string or error string
 router.post("/firstRun",function(req,res){
-
-    var reqJSON = req.body;
-    var firstRun = reqJSON.firstRun;
 
     if( !saveSettings("firstRun", 1) ){
         res.write("firstRun set")
@@ -2969,7 +3035,7 @@ router.get("/getPromotedSystems",function(req,res){
 
 //Service Rt: /getPromoted to return a sorted array of SystemJSON rows where promoted === 1 and systemId === id of system to include. Rows where its system does not have a hostip defined will be excluded unless it has runlocal set. , Method: get, Requires: none, Returns: array of working SystemJSON systems plus added properties (id, systemName, systemId)
 router.get("/getPromoted",function(req,res){
-    fixSystemsJSONSort();
+    //fixSystemsJSONSort();  //no longer required?
 
     var systemId = req.query.systemId;
     var rowdata={};
@@ -3017,27 +3083,27 @@ router.get("/getPromoted",function(req,res){
     res.end(JSON.stringify(resJSON));
 });
 
-//Service Rt: /getPromoted to return a sorted array of SystemJSON rows where promoted === 1 and systemId === id of system to include. Rows where its system does not have a hostip defined will be excluded unless it has runlocal set. , Method: get, Requires: none, Returns: array of working SystemJSON systems plus added properties (id, systemName, systemId)
-function fixSystemsJSONSort(){
-    for (var key in SystemsJSON) {
-        if (SystemsJSON.hasOwnProperty(key)) {
 
-            if(!SystemsJSON[key].hasOwnProperty("sort")){
-                var allSibs = [];
-                for (var skey in SystemsJSON) {
-                    if(SystemsJSON[key].parent === SystemsJSON[skey].parent){
-                        allSibs.push(skey)
-                    }
-                }
-                let x=0;
-                allSibs.forEach(function(sib){
-                    SystemsJSON[sib].sort = x;
-                    x++
-                })
-            }
-        }
-    }
-}
+// function fixSystemsJSONSort(){
+//     for (var key in SystemsJSON) {
+//         if (SystemsJSON.hasOwnProperty(key)) {
+//
+//             if(!SystemsJSON[key].hasOwnProperty("sort")){
+//                 var allSibs = [];
+//                 for (var skey in SystemsJSON) {
+//                     if(SystemsJSON[key].parent === SystemsJSON[skey].parent){
+//                         allSibs.push(skey)
+//                     }
+//                 }
+//                 let x=0;
+//                 allSibs.forEach(function(sib){
+//                     SystemsJSON[sib].sort = x;
+//                     x++
+//                 })
+//             }
+//         }
+//     }
+// }
 
 router.get("/setEnable",function(req,res){
     const id = req.query.id;

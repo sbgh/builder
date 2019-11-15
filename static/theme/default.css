@@ -346,8 +346,8 @@ input:focus + .slider {
 }
 
 .dashPanelBody{
-    transition: background-color 1s;
-    background-color: rgba(255, 255, 255,255);
+    /*transition: background-color 1s;*/
+    /*background-color: rgba(255, 255, 255,255);*/
 }
 
 .screenShotLink > a, .screenShotLink > a:hover{
@@ -355,13 +355,19 @@ input:focus + .slider {
 }
 
 .screenshot-panel-body{
-    transition: background-color 1s;
-    background-color: rgba(70, 72, 74, 0);
+    /*transition: background-color 1s;*/
+    /*background-color: rgba(70, 72, 74, 0);*/
 }
 
-.screenShotImageDashboard{
+/*.screenShotImageDashboard{*/
+    /*box-shadow: 3px 5px 18px 1px rgba(51, 51, 51, 0.88);*/
+/*}*/
+
+
+#videoCanvas{
     box-shadow: 3px 5px 18px 1px rgba(51, 51, 51, 0.88);
 }
+
 
 .navbar-default .navbar-nav > li > a {
     color: #49494b;
