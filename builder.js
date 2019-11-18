@@ -59,14 +59,15 @@ const SystemsJSONContents = fs.readFileSync('SystemsJSON.json');
 global.SystemsJSON = JSON.parse(SystemsJSONContents);
 
 global.Page = '';
+global.pageInput = '';
 global.protocol='';
 global.chrome='';
-
+const viewport = [1280,720];
 //Launch headless Chrome async
 (async function () {
     async function launchChrome() {
         return await chromeLauncher.launch({
-            chromeFlags: ["--disable-gpu", "--headless",  "--no-sandbox"] //"--enable-logging", , '--window-size=800,600', --force-device-scale-factor=1.5
+            chromeFlags: ["--disable-gpu", "--headless",  "--no-sandbox"] //"--enable-logging",, "--enable-low-end-device-mode" , '--window-size=800,600', --force-device-scale-factor=1.5
         });
     }
     chrome = await launchChrome();
@@ -79,6 +80,7 @@ global.chrome='';
     });
 
     Page = protocol.Page;
+    PageInput = protocol.Input; 
     const {DOM, Emulation, Runtime} = protocol;
     await Promise.all([Page.enable(), Runtime.enable(), DOM.enable()]);
 
@@ -93,6 +95,7 @@ global.chrome='';
     // set viewport and visible size
     await Emulation.setDeviceMetricsOverride(device);
     await Emulation.setVisibleSize({width: viewport[0], height:viewport[1]});
+    //await Emulation.setCPUThrottlingRate({rate:10});
 
     await Page.navigate({url: 'http://google.com'});
     await Page.loadEventFired();
@@ -105,7 +108,7 @@ global.chrome='';
         image.frameCount = frameCount;
         currentFrame = image;
 
-        console.log('saved frame ' + frameCount.toString());
+        // console.log('saved frame ' + frameCount.toString());
 
         // lastShot = setTimeout(ackFrame, 1000);
         // lastFrameId = sessionId;
@@ -229,33 +232,34 @@ router.get('/video', function(req, res) {
     });
 
     Page.startScreencast({
-        format: 'png',
+        format: 'jpeg',
+        quality: 50,
         everyNthFrame: 10
     });
 
-    const myInt = setInterval(sendBlock,1500);
+    const myInt = setInterval(sendBlock,500);
     var sendCount = 0;
     function sendBlock(){
         var endDate = new Date();
         var totalSeconds = (endDate - totalStartDate) / 1000;
         sendCount++;
 
-        if(sendCount > 30){
+        if(sendCount > 60){
             clearInterval(myInt);
             //console.log('stopping ' + frameCount.toString());
             Page.stopScreencast();
             frameCount = 0;
             res.end();
             totalStartDate = new Date();
-            console.log('stopped ' + totalSeconds.toString() + " seconds" );
+            // console.log('stopped ' + totalSeconds.toString() + " seconds" );
         }else{
             //only send if frame has changed
             if(currentFrame.data !== lastFrame.data){
                 res.write(JSON.stringify(currentFrame)+'<-->');
                 lastFrame = currentFrame;
-                console.log('sent: ' + frameCount.toString());
+                // console.log('sent: ' + frameCount.toString());
             }else{
-                console.log('skip: ' + frameCount.toString());
+                // console.log('skip: ' + frameCount.toString());
             }
         }
     }
@@ -268,6 +272,54 @@ var currentFrame = {};
 var startDate = new Date();
 var totalStartDate = new Date();
 var frameCount = 0;
+
+//Service Rt: /navigate to set chromium page navigation url, Method: get, Requires: url = target url, Returns:  nothing
+router.get("/navigate",function(req,res){
+    var url = req.query.url;
+
+    (async function () {
+
+        await Page.navigate({url: url});
+        await Page.loadEventFired();
+
+    })();
+
+    res.end();
+});
+
+//Service Rt: /VideoClick to signal chromium page of a ouse click, Method: get, Requires: x , y, Returns:  nothing
+var xClick = 0;
+var yClick = 0;
+router.get("/VideoClick",function(req,res){
+    xClick = req.query.x;
+    yClick = req.query.y;
+
+    if(xClick && yClick){
+        (async function () {
+            var type="mousePressed"; //Allowed values: mousePressed, mouseReleased, mouseMoved.
+            var modifiers=0; //Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
+            var button="left"; //Mouse button default: "none"). Allowed values: none, left, middle, right.
+            var clickCount = 1; //Single clicks
+
+            //convert reletive positions to absolute
+            var x = parseInt(parseFloat(xClick) * viewport[0]);
+            var y = parseInt(parseFloat(yClick) * viewport[1]);
+
+            //mouse down
+            await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
+
+            //mouse up
+            type="mouseReleased";
+            await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
+
+        })();
+    }
+
+
+
+    res.end();
+});
+
 // -------------------All routes below require authentication-----------------------------------------------------
 
 //Service Rt: /* [All], Method: get, Requires: none, Returns:  if auth then next() else redirect(rd)
@@ -726,7 +778,6 @@ router.post("/clear",function(req,res){
 
         });
 
-        // delete SystemsJSON[key].lastBuild
         if(SystemsJSON.hasOwnProperty(id)) {
             if(SystemsJSON[id].comType === "system"){
                 for (var key in SystemsJSON) {
@@ -1609,7 +1660,7 @@ router.post("/run",function(req,res){
 
     var job;
     var jobIndex;
-    var ids;
+    var ids; //list of component ids send from client seperated by ;
     var storeLocal;
     var runKey="";
     var newKey=false;
@@ -2003,6 +2054,7 @@ router.post("/run",function(req,res){
                 } else {
                     //console.log("all scripts completed")
                     if (sshSuccess) {
+
                         message("All scripts completed\n");
                         flushMessQueue();
                         res.end("status:All scripts completed\n");  //This line triggers ui to complete style format
@@ -2023,7 +2075,9 @@ router.post("/run",function(req,res){
                 var deferredExit = false; //flag to indicate async processes exist
                 var respBufferAccu = new Buffer([]); //responce buffer
 
-                resultsArray = []; //global array to hold resuktes key vals init
+                resultsArray = []; // array to hold resuktes key vals init
+
+                SystemsJSON[jobId].lastBuild = {}; //Obj to hold last build time stamp, pass/fall, url
 
                 //spawn a command shell
                 conn.shell(function (err, stream) {
@@ -2044,13 +2098,14 @@ router.post("/run",function(req,res){
                         //format date string
                         var fds = dsString.replace(/_/g, '-').replace(/T/, '-').replace(/:/g, '-').replace(/\..+/, '');
                         var fileName = "";
+                        SystemsJSON[jobId].lastBuild.ct = fds;
 
                         //update SystemsJSON component with pass or fail and build results file name
                         if (sshSuccess === true) {
-                            SystemsJSON[jobId].lastBuild = {ct:fds,pass:1};
+                            SystemsJSON[jobId].lastBuild.pass = 1;
                             fileName =  jobId + '_' + fds + '_p.json';
                         } else {
-                            SystemsJSON[jobId].lastBuild = {ct:fds,pass:0};
+                            SystemsJSON[jobId].lastBuild.pass = 0;
                             fileName = jobId + '_' + fds + '_f.json';
                         }
 
@@ -2401,10 +2456,13 @@ router.post("/run",function(req,res){
                                     //console.log('url: ' + url);
                                     aSyncInProgress++;
                                     message('url:' + url);
-                              //      flushMessQueue();
+
+                                    SystemsJSON[ids[0]].lastBuild.url=url;
+
                                     (async function () {
 
                                         console.log("Page.navigate: " + url)
+
 
                                         await Page.navigate({url: url});
                                         await Page.loadEventFired();

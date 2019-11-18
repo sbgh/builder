@@ -384,14 +384,14 @@
                     $.get("/library/" + pickedLib + '/uploads/' +  $("#id").val() + "/screenshot.png?" + timestamp, '', function(data) {
 
                         if (data === ''){
-                            $('#screenShotImageHolder').hide();
-                            $('#screenShotImage')[0].src='';
+                        //    $('#screenShotImageHolder').hide();
+                        //    $('#screenShotImage')[0].src='';
                             $("#firstRow").css('width:50%;');
                             $("#topLeftForm").attr('class', 'col-lg-12');
 
                         }else{
-                            $('#screenShotImageHolder').show();
-                            $('#screenShotImage')[0].src= "/library/" + pickedLib + '/uploads/' +  $("#id").val() + '/screenshot.png?' + timestamp;
+                        //    $('#screenShotImageHolder').show();
+                        //    $('#screenShotImage')[0].src= "/library/" + pickedLib + '/uploads/' +  $("#id").val() + '/screenshot.png?' + timestamp;
                             $("#firstRow").css('width:100%;');
                             $("#topLeftForm").attr('class', 'col-lg-6');
                         }
@@ -915,6 +915,17 @@
 
                             $('.dashListRowNotClicked').on('click', function(){
                                 var id = $(this).attr('data-Id');
+
+                                $.get('/Jobs', { id: id }, function(data) {
+                                    if(data[0].lastBuild){
+                                        if(data[0].lastBuild.url){
+                                            $.get('/navigate', {url:data[0].lastBuild.url}, function(data) {
+
+                                            });
+                                        }
+                                    }
+                                });
+
                                 var sys = $(this).attr('data-runSys');
                                 var sysName = $(this).attr('data-runSysName');
 
@@ -928,19 +939,31 @@
 
                         }
 
-                        $('.dashListRowNotClicked').on('click', function(){
-                            var id = $(this).attr('data-Id');
-                            var sys = $(this).attr('data-runSys');
-                            var sysName = $(this).attr('data-runSysName');
-
-                            $("#dashId").val(id);
-                            $("#dashSys").val(sys);
-
-                            //loadDashDetails(id, sys, sysName);
-                            selectDashTableRow(id)
-
-                            localStorage['dashListRowClicked'] = id;
-                        });
+//                        $('.dashListRowNotClicked').on('click', function(){
+//                            var id = $(this).attr('data-Id');
+//
+//                            $.get('/Jobs', { id: id }, function(data) {
+//                                if(data[0].lastBuild){
+//                                    if(data[0].lastBuild.url){
+//                                        $.get('/navigate', {url:data[0].lastBuild.url}, function(data) {
+//
+//                                        });
+//                                    }
+//                                }
+//                            });
+//
+//                            var sys = $(this).attr('data-runSys');
+//                            var sysName = $(this).attr('data-runSysName');
+//
+//                            $("#dashId").val(id);
+//                            $("#dashSys").val(sys);
+//
+//                            //loadDashDetails(id, sys, sysName);
+//                            selectDashTableRow(id)
+//
+//                            localStorage['dashListRowClicked'] = id;
+//
+//                        });
 
                         $('.dashTableBuildButton').on('click', function(){
                             var id = $("#dashId").val();
@@ -1483,18 +1506,29 @@
                     $.get('/uploads/' +  $("#id").val() + "/screenshot.png?" + timestamp, '', function(data) {
 
                         if (data === ''){
-                            $('#screenShotImageHolder').hide();
-                            $('#screenShotImage')[0].src='';
+                        //    $('#screenShotImageHolder').hide();
+                        //    $('#screenShotImage')[0].src='';
                             $("#firstRow").css('width:50%;');
                             $("#topLeftForm").attr('class', 'col-lg-12');
 
                         }else{
-                            $('#screenShotImageHolder').show();
-                            $('#screenShotImage')[0].src='/uploads/' +  $("#id").val() + '/screenshot.png?' + timestamp;
+                        //    $('#screenShotImageHolder').show();
+                        //    $('#screenShotImage')[0].src='/uploads/' +  $("#id").val() + '/screenshot.png?' + timestamp;
                             $("#firstRow").css('width:100%;');
                             $("#topLeftForm").attr('class', 'col-lg-6');
                         }
                     });
+
+
+                    //Navigate to lastbuild.url if exists
+                    if(data[0].lastBuild){
+                        if(data[0].lastBuild.url){
+                            $.get('/navigate', {url:data[0].lastBuild.url}, function(data) {
+
+                            });
+                        }
+                    }
+
 
                     //load templates
                     var x=0;
@@ -3627,7 +3661,9 @@
                     $("#dashBtn").addClass("active");
                     $("#componentsBtn").removeClass("active");
                     hideBottom();
-                    //bottomHiddenFlag=true;
+
+                    //move video screen to dash
+                    $("#videoScreen").detach().appendTo('#screenshot-panel-body');
 
                 });
             });
@@ -3640,6 +3676,10 @@
                     $("#componentsBtn").addClass("active");
                     if(!bottomHiddenFlag){showBottom()};
 //                    bottomHiddenFlag=false;
+
+                    //move video screen to components ui
+                    $("#videoScreen").detach().appendTo('#screenShotImageHolder');
+
                     $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
                 });
             });
@@ -3875,6 +3915,7 @@
                 );
             };
 
+            //call ajax /video and process the returned chunncked json video frames
             function startStream(){
                // console.log("starting stream: "  );
                 $.ajax({
@@ -3931,6 +3972,60 @@
                 });
             };
             startStream()
+
+
+            //Video mouse click events
+            var videoClickIsDown = false;
+            var xVideo1, yVideo1, xVideo2, yVideo2;
+
+
+            function setCanvasMouseClicksEvents(){
+                $("#videoCanvas").on('mousedown', function(e){
+                    if (videoClickIsDown === false) {
+
+                        videoClickIsDown = true;
+
+                        var pos = getMousePos(webStreamCanvas, e);
+                        xVideo1 = pos.x;
+                        yVideo1 = pos.y;
+                    }
+                });
+
+                $(window).on('mouseup', function(e){
+
+                    if (videoClickIsDown === true) {
+
+                        var pos = getMousePos(webStreamCanvas, e);
+                        xVideo2 = pos.x;
+                        yVideo2 = pos.y;
+                        var width = pos.width;
+                        var height = pos.height;
+
+                        videoClickIsDown = false;
+
+                        //signal server of mouse click x,y as ratios of width & hight
+                        sendVideoMouseClick(xVideo2/width ,yVideo2/height);
+                        //consol.log(xVideo1 + ',' + yVideo1 + ',' +xVideo2 + ',' +yVideo2);
+                    }
+                });
+
+                function getMousePos(canvas, evt) {
+                    var rect = canvas.getBoundingClientRect();
+                    return {
+                        x: evt.clientX - rect.left,
+                        y: evt.clientY - rect.top,
+                        width: rect.right - rect.left,
+                        height: rect.bottom - rect.top
+                    };
+                }
+
+            }
+            setCanvasMouseClicksEvents();
+
+            function sendVideoMouseClick(x ,y){
+                $.get("/VideoClick",{x:x, y:y})
+            }
+
 
         }); //-------------------------------------------   doc ready -------------------------------------------
 
@@ -4230,18 +4325,13 @@
 
                         </div>
                         <div class="col-md-6" >
-                            <div class='panel'>
+                            <div id="dashVideoPanal" class='panel'>
                                 <!--<div class='panel-heading dashboardPanelHeading '>Last Screenshot</div>-->
-                                <div class='panel-body dashPanelBody screenshot-panel-body' >
-                                    <canvas id="videoCanvas"></canvas>
-                                    <!--<video-->
-                                            <!--title="Video"-->
-                                            <!--style="background-color: rgb(0, 0, 0); position: absolute; width: 640px; height: 360px;"-->
-                                            <!--src="/video"-->
-                                            <!--autoplay="true"-->
-                                            <!--muted="muted"></video>-->
-                                    <!--<img id="screenShotImageDashboard" class="screenShotImageDashboard">-->
-                                    <div id="link" class="screenShotLink"></div>
+                                <div id='screenshot-panel-body' class='panel-body dashPanelBody screenshot-panel-body' >
+                                    <div id="videoScreen">
+                                        <canvas id="videoCanvas"></canvas>
+                                        <div id="link" class="screenShotLink"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -4526,7 +4616,7 @@
                                                 </div>
                                             </div>
                                             <div id="screenShotImageHolder" class="col-lg-6 screenShotImageHolder">
-                                                <img id="screenShotImage">
+                                                <!--<img id="screenShotImage">-->
                                             </div>
 
                                         </div>
@@ -4845,7 +4935,7 @@
                         <!--<label style="padding-left: 40px">-->
                         <span class="model-label">AWS Access code File (.csv):</span>
                         <!--</label>-->
-                        <div><span id = 'accessList' class = 'keyList'></span><div style="padding-left: 10px"><a id='newAccessButton' class='newKey' href='#'>[select]</a></div>
+                        <div><span id = 'accessList' class = 'keyList'></span><div style="padding-left: 10px"><a id='newAccessButton' class='newKey' href='#'>[select]</a></div></div>
                         <input id="upload-access" type="file" name="key" multiple="single">
                     </div>
                     <div class="form-group">
