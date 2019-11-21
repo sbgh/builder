@@ -691,9 +691,9 @@
 //                }else{
 //                    $("#screenShotImageDashboard").hide();
 //                };
-                if(localStorage['appLink']) {
-                    $("#link")[0].innerHTML=localStorage['appLink']
-                };
+//                if(localStorage['appLink']) {
+//                    $("#screenShotLink")[0].innerHTML=localStorage['appLink']
+//                };
 
                 loadDashSystemDropdown();
 
@@ -917,11 +917,11 @@
                                 var id = $(this).attr('data-Id');
 
                                 $.get('/Jobs', { id: id }, function(data) {
+                                    //Navigate to lastbuild.url if exists
                                     if(data[0].lastBuild){
                                         if(data[0].lastBuild.url){
-                                            $.get('/navigate', {url:data[0].lastBuild.url}, function(data) {
-
-                                            });
+                                            var url= data[0].lastBuild.url;
+                                            navigate(url);
                                         }
                                     }
                                 });
@@ -1502,30 +1502,30 @@
                         populateFileList(data, false);
                     });
 
-                    var timestamp = new Date().getTime();
-                    $.get('/uploads/' +  $("#id").val() + "/screenshot.png?" + timestamp, '', function(data) {
 
-                        if (data === ''){
-                        //    $('#screenShotImageHolder').hide();
-                        //    $('#screenShotImage')[0].src='';
-                            $("#firstRow").css('width:50%;');
-                            $("#topLeftForm").attr('class', 'col-lg-12');
-
-                        }else{
-                        //    $('#screenShotImageHolder').show();
-                        //    $('#screenShotImage')[0].src='/uploads/' +  $("#id").val() + '/screenshot.png?' + timestamp;
-                            $("#firstRow").css('width:100%;');
-                            $("#topLeftForm").attr('class', 'col-lg-6');
-                        }
-                    });
+//                    var timestamp = new Date().getTime();
+//                    $.get('/uploads/' +  $("#id").val() + "/screenshot.png?" + timestamp, '', function(data) {
+//
+//                        if (data === ''){
+//                        //    $('#screenShotImageHolder').hide();
+//                        //    $('#screenShotImage')[0].src='';
+//                            $("#firstRow").css('width:50%;');
+//                            $("#topLeftForm").attr('class', 'col-lg-12');
+//
+//                        }else{
+//                        //    $('#screenShotImageHolder').show();
+//                        //    $('#screenShotImage')[0].src='/uploads/' +  $("#id").val() + '/screenshot.png?' + timestamp;
+//                            $("#firstRow").css('width:100%;');
+//                            $("#topLeftForm").attr('class', 'col-lg-6');
+//                        }
+//                    });
 
 
                     //Navigate to lastbuild.url if exists
                     if(data[0].lastBuild){
                         if(data[0].lastBuild.url){
-                            $.get('/navigate', {url:data[0].lastBuild.url}, function(data) {
-
-                            });
+                            var url= data[0].lastBuild.url;
+                            navigate(url);
                         }
                     }
 
@@ -1933,9 +1933,13 @@
                                     localAccess += row.substr(7) + '\n';
                                 }
                                 else if(row.substr(0,12) === 'message:url:'){
-                                    var appLink = "Link: <a href='" + row.slice(12)+"' target='_new'>" + row.slice(12) + "</a>"
-                                    $("#link")[0].innerHTML = appLink;
-                                    localStorage['appLink'] = appLink;
+                                    updateScreenShotLink(row.slice(12))
+
+//                                    var appLink = "Link: <a href='" + row.slice(12)+"' target='_new'>" + row.slice(12) + "</a>"
+//                                    $("#screenShotLink")[0].innerHTML = appLink;
+
+
+                                    //localStorage['appLink'] = appLink;
                                     //startStream();
                                 }
                                 else if(row.substr(0,16) === 'message:BuildID:'){
@@ -1950,7 +1954,6 @@
                                         }
                                         buildIDRunningPrev = buildIDRunning;
 
-//                                        level = $("#jstree_div").jstree().get_node(buildIDRunning).parents.length;
                                         $("#jstree_div").jstree("open_node", buildIDRunning);
                                         $('#jstree_div').jstree(true).get_node(buildIDRunning, true).children('.jstree-anchor').focus();
 //
@@ -1960,6 +1963,7 @@
 //
 //                                        lastBuildIDRunning = buildIDRunning;
 //                                        lastLevel = level;
+
                                     }
                                 }
                                 else if(row.substr(0,28) === 'status:All scripts completed'){
@@ -3953,7 +3957,7 @@
                                    // console.log("processing block: " + imgBlock.length.toString());
 
                                     imgObj = JSON.parse(imgBlock);
-                                    console.log("setting image#: " + imgObj.frameCount.toString());
+                                    //console.log("setting image#: " + imgObj.frameCount.toString());
 
                                     if(imgObj.hasOwnProperty("data")){
                                         webStreamCanvasImageContainer.src = 'data:image/jpeg;base64,' + imgObj.data;
@@ -3974,12 +3978,47 @@
             startStream()
 
 
+            function navigate(url){
+
+                updateScreenShotLink(url);
+                localStorage['appLink'] = url;
+                $.get('/navigate', {url:url}, function(data) {});
+            }
+
+            function updateScreenShotLink(url){
+                var appLink = "<a href='" + url +"' target='_new'><i class='fa  fa-external-link fa-fw'></i>" + url + "</a>"
+                $("#screenShotLink").html(appLink);
+            }
+
+            if(localStorage['appLink']){
+                updateScreenShotLink(localStorage['appLink'])
+            }
+
             //Video mouse click events
             var videoClickIsDown = false;
             var xVideo1, yVideo1, xVideo2, yVideo2;
 
 
-            function setCanvasMouseClicksEvents(){
+            var currentVideoScroll = 0;
+            //var lastVideoScroll;
+
+            function setCanvasUIEvents(){
+                document.body.addEventListener('wheel', function(e){
+                    if(e.target.id == "videoCanvas"){
+
+                    currentVideoScroll += e.deltaY;
+                    e.preventDefault();
+
+                }}, {passive: false}) //https://github.com/inuyaksa/jquery.nicescroll/issues/799#issuecomment-522275951
+
+
+                $("#videoCanvas").on('dblclick', function(e){
+
+                    $('#videoModal').modal('show');
+                    $("#videoScreen").detach().appendTo('#videoBody');
+
+                });
+
                 $("#videoCanvas").on('mousedown', function(e){
                     if (videoClickIsDown === false) {
 
@@ -4004,7 +4043,7 @@
                         videoClickIsDown = false;
 
                         //signal server of mouse click x,y as ratios of width & hight
-                        sendVideoMouseClick(xVideo2/width ,yVideo2/height);
+                        sendVideoMouseClick(xVideo2/width ,yVideo2/height, e.ctrlKey);
                         //consol.log(xVideo1 + ',' + yVideo1 + ',' +xVideo2 + ',' +yVideo2);
                     }
                 });
@@ -4020,10 +4059,27 @@
                 }
 
             }
-            setCanvasMouseClicksEvents();
+            setCanvasUIEvents();
 
-            function sendVideoMouseClick(x ,y){
-                $.get("/VideoClick",{x:x, y:y})
+            setInterval(sendScroll,200);
+            function sendScroll(){
+                if(currentVideoScroll !== 0){
+
+                    $.get("/VideoScroll",{delta:currentVideoScroll})
+                    currentVideoScroll = 0;
+                }
+            }
+
+            $('#videoModal').on('hidden.bs.modal', function() {
+                if($("#componentsBtn").hasClass('active')){
+                    $("#videoScreen").detach().appendTo('#screenShotImageHolder');
+                }else{
+                    $("#videoScreen").detach().appendTo('#screenshot-panel-body');
+                }
+            });
+
+            function sendVideoMouseClick(x ,y, ctrlKey){
+                $.get("/VideoClick",{x:x, y:y, ctrlKey:ctrlKey})
             }
 
 
@@ -4329,8 +4385,14 @@
                                 <!--<div class='panel-heading dashboardPanelHeading '>Last Screenshot</div>-->
                                 <div id='screenshot-panel-body' class='panel-body dashPanelBody screenshot-panel-body' >
                                     <div id="videoScreen">
-                                        <canvas id="videoCanvas"></canvas>
-                                        <div id="link" class="screenShotLink"></div>
+                                        <!--<div>-->
+                                            <!--<a href="#"><i id="videoCanvas_btn_max" class='codes_btn_max fa fa-window-maximize fa-fw navbar-right'></i></a>-->
+                                            <!--<a href="#"><i id="videoCanvas_btn_min" class='codes_btn_min fa fa-window-minimize fa-fw navbar-right'></i></a>-->
+                                        <!--</div>-->
+                                        <!--<div>-->
+                                            <canvas id="videoCanvas"></canvas>
+                                        <!--</div>-->
+                                        <div id="screenShotLink" class="screenShotLink"></div>
                                     </div>
                                 </div>
                             </div>
@@ -4543,7 +4605,7 @@
                                 <div class="panel-body job-form-panel" id="job-form-panel">
                                     <form id="jobForm">
                                         <div class="row">
-                                            <div id="topLeftForm" class="col-lg-6 topLeftForm">
+                                            <div id="topLeftForm" class="col-lg-8 topLeftForm">
                                                 <div class="row" id="firstRow" >
                                                     <div class="col-lg-4 jobCompNameCol">
                                                         <div class="form-group">
@@ -4615,10 +4677,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div id="screenShotImageHolder" class="col-lg-6 screenShotImageHolder">
-                                                <!--<img id="screenShotImage">-->
-                                            </div>
-
+                                            <div id="screenShotImageHolder" class="col-lg-4 screenShotImageHolder"></div>
                                         </div>
                                         <div class="row">
 
@@ -5240,9 +5299,19 @@
     </div>
 
 </div>
-<script>
+<div id="videoModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-VarEdit">
+
+        <nav class="modal-content videoModal-modal-content">
+            <div id='videoBody' class="modal-body videoModal-modal-body">
 
 
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
+            </div>
+        </nav>
+    </div>
 
-</script>
+</div>
 </html>

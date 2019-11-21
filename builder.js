@@ -58,12 +58,14 @@ const homedir = require('os').homedir();
 const SystemsJSONContents = fs.readFileSync('SystemsJSON.json');
 global.SystemsJSON = JSON.parse(SystemsJSONContents);
 
+//headless chrome
 global.Page = '';
 global.pageInput = '';
 global.protocol='';
 global.chrome='';
+global.Overlay='';
 const viewport = [1280,720];
-//Launch headless Chrome async
+//Launch headless Chrome
 (async function () {
     async function launchChrome() {
         return await chromeLauncher.launch({
@@ -80,9 +82,34 @@ const viewport = [1280,720];
     });
 
     Page = protocol.Page;
-    PageInput = protocol.Input; 
+    PageInput = protocol.Input;
+    Overlay = protocol.Overlay;
     const {DOM, Emulation, Runtime} = protocol;
     await Promise.all([Page.enable(), Runtime.enable(), DOM.enable()]);
+
+    var HighlightConfig = {
+        showInfo:true,
+        showStyles:true,
+        showRulers:true,
+        showExtensionLines:true,
+        contentColor:{r:128, g:168, b:219, a:.5 },
+        paddingColor:{r:255, g:255, b:255, a:.5 },
+        borderColor:{r:0, g:0, b:0, a:1 },
+        marginColor:{r:128, g:128, b:128, a:.5 },
+        eventTargetColor:{r:128, g:168, b:219, a:1 },
+        shapeColor:{r:128, g:168, b:219, a:1 },
+        shapeMarginColor:{r:128, g:168, b:219, a:1 },
+        cssGridColor:{r:128, g:168, b:219, a:1 }
+    }
+
+    await Overlay.enable();
+    Overlay.inspectNodeRequested(backendNodeId => {
+        const id = backendNodeId
+    })
+    //await Overlay.setShowFPSCounter({show:true});
+    await Overlay.setInspectMode({"mode":"searchForNode", "highlightConfig":HighlightConfig});
+
+
 
     var device = {
         width: viewport[0],
@@ -100,7 +127,8 @@ const viewport = [1280,720];
     await Page.navigate({url: 'http://google.com'});
     await Page.loadEventFired();
 
-
+    //await Overlay.setShowFPSCounter({ show: true });
+    // debugger;
     Page.screencastFrame(image => {
 
         frameCount++;
@@ -116,6 +144,7 @@ const viewport = [1280,720];
             Page.screencastFrameAck({sessionId: sessionId});
         // }
     });
+
 
 })();
 // var lastFrameId = "";
@@ -221,7 +250,7 @@ router.get('/video', function(req, res) {
     startDate = new Date();
     totalStartDate = new Date();
     frameCount = 0;
-    console.log("/video started");
+    //console.log("/video started");
 
     res.writeHead(200, {
         'Connection': 'keep-alive',
@@ -234,17 +263,19 @@ router.get('/video', function(req, res) {
     Page.startScreencast({
         format: 'jpeg',
         quality: 50,
-        everyNthFrame: 10
+        everyNthFrame: 5
     });
 
-    const myInt = setInterval(sendBlock,500);
+    var frameRate = 8;
+    const myInt = setInterval(sendBlock, 1000/frameRate);
     var sendCount = 0;
     function sendBlock(){
         var endDate = new Date();
         var totalSeconds = (endDate - totalStartDate) / 1000;
         sendCount++;
 
-        if(sendCount > 60){
+        //After 30s recycle the vid stream
+        if(sendCount > (30 * frameRate)){
             clearInterval(myInt);
             //console.log('stopping ' + frameCount.toString());
             Page.stopScreencast();
@@ -294,32 +325,74 @@ router.get("/VideoClick",function(req,res){
     xClick = req.query.x;
     yClick = req.query.y;
 
+    ctrlKey = req.query.ctrlKey;
+
     if(xClick && yClick){
-        (async function () {
-            var type="mousePressed"; //Allowed values: mousePressed, mouseReleased, mouseMoved.
-            var modifiers=0; //Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
-            var button="left"; //Mouse button default: "none"). Allowed values: none, left, middle, right.
-            var clickCount = 1; //Single clicks
+        if(ctrlKey == "false"){
+            (async function () {
+                var type=""; //Allowed values: mousePressed, mouseReleased, mouseMoved, mouseWheel
+                var modifiers=0; //Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
+                var button="left"; //Mouse button default: "none"). Allowed values: none, left, middle, right.
+                var clickCount = 1; //Single clicks
 
-            //convert reletive positions to absolute
-            var x = parseInt(parseFloat(xClick) * viewport[0]);
-            var y = parseInt(parseFloat(yClick) * viewport[1]);
+                //convert relative positions to absolute
+                var x = parseInt(parseFloat(xClick) * viewport[0]);
+                var y = parseInt(parseFloat(yClick) * viewport[1]);
 
-            //mouse down
-            await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
+                //mouse down
+                type="mouseMoved";
+                await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
+            })();
+        }else{
+            (async function () {
+                var type="mousePressed"; //Allowed values: mousePressed, mouseReleased, mouseMoved, mouseWheel
+                var modifiers=0; //Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
+                var button="left"; //Mouse button default: "none"). Allowed values: none, left, middle, right.
+                var clickCount = 1; //Single clicks
 
-            //mouse up
-            type="mouseReleased";
-            await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
+                //convert relative positions to absolute
+                var x = parseInt(parseFloat(xClick) * viewport[0]);
+                var y = parseInt(parseFloat(yClick) * viewport[1]);
 
-        })();
+                //mouse Pressed
+                await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
+
+                //mouse up
+                type="mouseReleased";
+                await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
+            })();
+        }
+
     }
-
-
 
     res.end();
 });
 
+router.get("/VideoScroll",function(req,res){
+    delta = req.query.delta;
+
+    if(delta){
+        (async function () {
+            var type="mouseWheel"; //Allowed values: mousePressed, mouseReleased, mouseMoved, mouseWheel
+            var modifiers=0; //Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
+            var button="none"; //Mouse button default: "none"). Allowed values: none, left, middle, right.
+            var clickCount = 0; //Single clicks
+            var x=100, y=100;
+
+            //convert relative positions to absolute
+            var deltaX = 0;
+            var deltaY = parseInt(delta);
+
+            //mouse wheel moved!
+            //await PageInput.dispatchMouseEvent({ type,,, button, modifiers, , delta });
+            console.log("scrolled: " + deltaY.toString())
+            await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount, deltaX, deltaY });
+
+        })();
+    }
+
+    res.end();
+});
 // -------------------All routes below require authentication-----------------------------------------------------
 
 //Service Rt: /* [All], Method: get, Requires: none, Returns:  if auth then next() else redirect(rd)
@@ -2463,19 +2536,69 @@ router.post("/run",function(req,res){
 
                                         console.log("Page.navigate: " + url)
 
+                                        await Page.navigate({url: url});
+                                        await Page.loadEventFired();
+
+                                        console.log("Page.loadEventFired: " + url)
+
+                                        // message('snap:created: ' + "screenshot.png");
+
+                                        aSyncInProgress--;
+                                        console.log(aSyncInProgress.toString())
+                                        if(deferredExit == true && aSyncInProgress == 0){
+                                            stream.write("exit" + '\n');
+                                            sshSuccess = true
+                                        }
+
+                                    })();
+                                    isDirective = true;
+
+                                } else if
+                                (currentCommand.substr(0, 9) === "navigate:") {
+
+                                    var url = currentCommand.replace('navigate:','').trim();
+                                    //console.log('url: ' + url);
+                                    aSyncInProgress++;
+                                    message('url:' + url);
+
+                                    SystemsJSON[ids[0]].lastBuild.url=url;
+
+                                    (async function () {
+
+                                        console.log("Page.navigate: " + url)
+
 
                                         await Page.navigate({url: url});
                                         await Page.loadEventFired();
 
                                         console.log("Page.loadEventFired: " + url)
 
-                                       // message('snap:created: ' + "screenshot.png");
+                                        // message('snap:created: ' + "screenshot.png");
 
                                         aSyncInProgress--;
                                         if(deferredExit == true && aSyncInProgress == 0){
-                                                stream.write("exit" + '\n');
-                                                sshSuccess = true
-                                            }
+                                            stream.write("exit" + '\n');
+                                            sshSuccess = true
+                                        }
+
+                                    })();
+                                    isDirective = true;
+
+                                } else if
+                                (currentCommand.substr(0, 11) === "reloadPage:") {
+
+                                    aSyncInProgress++;
+
+                                    (async function () {
+
+                                        console.log("Page.reload ")
+
+                                        await Page.reload();
+                                        aSyncInProgress--;
+                                        if(deferredExit == true && aSyncInProgress == 0){
+                                            stream.write("exit" + '\n');
+                                            sshSuccess = true
+                                        }
 
                                     })();
                                     isDirective = true;
