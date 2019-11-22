@@ -64,6 +64,7 @@ global.pageInput = '';
 global.protocol='';
 global.chrome='';
 global.Overlay='';
+global.DOM='';
 const viewport = [1280,720];
 //Launch headless Chrome
 (async function () {
@@ -84,7 +85,8 @@ const viewport = [1280,720];
     Page = protocol.Page;
     PageInput = protocol.Input;
     Overlay = protocol.Overlay;
-    const {DOM, Emulation, Runtime} = protocol;
+    DOM = protocol.DOM;
+    const {Emulation, Runtime} = protocol;
     await Promise.all([Page.enable(), Runtime.enable(), DOM.enable()]);
 
     var HighlightConfig = {
@@ -104,13 +106,19 @@ const viewport = [1280,720];
 
     await Overlay.enable();
     Overlay.inspectNodeRequested(backendNodeId => {
-        const id = backendNodeId
+
+        (async function (backendNodeId) {
+
+            const id = backendNodeId.backendNodeId;
+
+        })(backendNodeId)
+
     })
+
     //await Overlay.setShowFPSCounter({show:true});
     await Overlay.setInspectMode({"mode":"searchForNode", "highlightConfig":HighlightConfig});
 
-
-
+    // set viewport and visible size
     var device = {
         width: viewport[0],
         height: viewport[1],
@@ -118,8 +126,6 @@ const viewport = [1280,720];
         mobile: false,
         fitWindow: true
     };
-
-    // set viewport and visible size
     await Emulation.setDeviceMetricsOverride(device);
     await Emulation.setVisibleSize({width: viewport[0], height:viewport[1]});
     //await Emulation.setCPUThrottlingRate({rate:10});
@@ -318,51 +324,93 @@ router.get("/navigate",function(req,res){
     res.end();
 });
 
-//Service Rt: /VideoClick to signal chromium page of a ouse click, Method: get, Requires: x , y, Returns:  nothing
-var xClick = 0;
-var yClick = 0;
+//Service Rt: /VideoClick to send  chromium page a mouse click, Method: get, Requires: x & y reletive position, Returns:  nothing
 router.get("/VideoClick",function(req,res){
-    xClick = req.query.x;
-    yClick = req.query.y;
+    var xClick = req.query.x;
+    var yClick = req.query.y;
 
-    ctrlKey = req.query.ctrlKey;
+    var ctrlKey = req.query.ctrlKey; //not used
 
     if(xClick && yClick){
-        if(ctrlKey == "false"){
-            (async function () {
-                var type=""; //Allowed values: mousePressed, mouseReleased, mouseMoved, mouseWheel
-                var modifiers=0; //Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
-                var button="left"; //Mouse button default: "none"). Allowed values: none, left, middle, right.
-                var clickCount = 1; //Single clicks
+        (async function (res) {
+            var type="mousePressed"; //Allowed values: mousePressed, mouseReleased, mouseMoved, mouseWheel
+            var modifiers=0; //Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
+            var button="left"; //Mouse button default: "none"). Allowed values: none, left, middle, right.
+            var clickCount = 1; //Single clicks
 
-                //convert relative positions to absolute
-                var x = parseInt(parseFloat(xClick) * viewport[0]);
-                var y = parseInt(parseFloat(yClick) * viewport[1]);
+            //convert relative positions to absolute
+            var x = parseInt(parseFloat(xClick) * viewport[0]);
+            var y = parseInt(parseFloat(yClick) * viewport[1]);
 
-                //mouse down
-                type="mouseMoved";
-                await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
-            })();
-        }else{
-            (async function () {
-                var type="mousePressed"; //Allowed values: mousePressed, mouseReleased, mouseMoved, mouseWheel
-                var modifiers=0; //Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
-                var button="left"; //Mouse button default: "none"). Allowed values: none, left, middle, right.
-                var clickCount = 1; //Single clicks
+            //mouse Pressed
+            await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
 
-                //convert relative positions to absolute
-                var x = parseInt(parseFloat(xClick) * viewport[0]);
-                var y = parseInt(parseFloat(yClick) * viewport[1]);
+            //mouse up
+            type="mouseReleased";
+            await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
 
-                //mouse Pressed
-                await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
+            var id = currentBackendNodeId
 
-                //mouse up
-                type="mouseReleased";
-                await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
-            })();
-        }
+            //get html & attributes of currentBackendNodeId and put in response
+            const data = await DOM.resolveNode({backendNodeId: id});
+            //object: {type: "object", subtype: "node", className: "HTMLParagraphElement", description: "p", objectId: "{"injectedScriptId":3,"id":1}"}
+            const RemoteObjectId = data.object.objectId;
 
+            const outerHtmlObj = await DOM.getOuterHTML({backendNodeId: id});
+            var outerHtml = ""
+            if(outerHtmlObj.outerHTML){
+                outerHtml = outerHtmlObj.outerHTML
+            }
+
+            const docu = await DOM.getDocument({depth:1});
+
+            const node = await DOM.requestNode({objectId:RemoteObjectId});
+            var nodeId = node.nodeId;
+
+            const attributes = await DOM.getAttributes({nodeId: nodeId})
+
+            const RetObj = {outerHtml:outerHtml, attributes:attributes.attributes}
+            res.end(JSON.stringify(RetObj));
+
+        })(res);
+    }else{
+        const RetObj = {outerHtml:"", attributes:""};
+        res.end(JSON.stringify(RetObj));
+    }
+});
+
+//Service Rt: /VideoMove to send chromium page a mouse position, Method: get, Requires: x & y reletive position, Returns:  nothing
+var currentBackendNodeId
+router.get("/mouseMove",function(req,res){
+    var xHover = req.query.x;
+    var yHover = req.query.y;
+
+    if(xHover && yHover){
+
+        (async function (xHover, yHover) {
+            var type="mouseMoved";
+            var modifiers=0; //Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
+            var button="none"; //Mouse button default: "none"). Allowed values: none, left, middle, right.
+            var clickCount = 0; //Single clicks
+
+            //convert relative positions to absolute
+            var x = parseInt(parseFloat(xHover) * viewport[0]);
+            var y = parseInt(parseFloat(yHover) * viewport[1]);
+
+            lastHoverX = x;
+            lastHoverY = y;
+
+            await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
+
+            const metrics = await Page.getLayoutMetrics();
+            const offsetY = metrics.visualViewport.pageY
+
+
+             var loc = await DOM.getNodeForLocation({x:x,y:y + offsetY});
+            // console.log(x,y);
+            currentBackendNodeId = loc.backendNodeId
+
+        })(xHover, yHover);
     }
 
     res.end();
@@ -385,7 +433,7 @@ router.get("/VideoScroll",function(req,res){
 
             //mouse wheel moved!
             //await PageInput.dispatchMouseEvent({ type,,, button, modifiers, , delta });
-            console.log("scrolled: " + deltaY.toString())
+            //console.log("scrolled: " + deltaY.toString())
             await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount, deltaX, deltaY });
 
         })();

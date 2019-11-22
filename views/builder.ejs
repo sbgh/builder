@@ -3996,6 +3996,8 @@
 
             //Video mouse click events
             var videoClickIsDown = false;
+            var videoHoverX = 0, videoHoverY = 0;
+            var lastVideoHoverX = 0, lastVideoHoverY = 0;
             var xVideo1, yVideo1, xVideo2, yVideo2;
 
 
@@ -4010,6 +4012,8 @@
                     e.preventDefault();
 
                 }}, {passive: false}) //https://github.com/inuyaksa/jquery.nicescroll/issues/799#issuecomment-522275951
+
+                $("#videoCanvas").mousemove( videoHover);
 
 
                 $("#videoCanvas").on('dblclick', function(e){
@@ -4048,18 +4052,36 @@
                     }
                 });
 
-                function getMousePos(canvas, evt) {
-                    var rect = canvas.getBoundingClientRect();
-                    return {
-                        x: evt.clientX - rect.left,
-                        y: evt.clientY - rect.top,
-                        width: rect.right - rect.left,
-                        height: rect.bottom - rect.top
-                    };
-                }
-
             }
             setCanvasUIEvents();
+
+
+            function getMousePos(canvas, evt) {
+                var rect = canvas.getBoundingClientRect();
+                return {
+                    x: evt.clientX - rect.left,
+                    y: evt.clientY - rect.top,
+                    width: rect.right - rect.left,
+                    height: rect.bottom - rect.top
+                };
+            }
+
+            function videoHover(e){
+                var pos = getMousePos(webStreamCanvas, e);
+                videoHoverX = pos.x/pos.width;
+                videoHoverY = pos.y/pos.height;
+            }
+
+            setInterval(sendMouse,200);
+            function sendMouse(){
+                if(videoHoverX !== lastVideoHoverX || videoHoverY !== lastVideoHoverY){
+                    $.get("/mouseMove",{x:videoHoverX, y:videoHoverY})
+                    lastVideoHoverX = videoHoverX
+                    lastVideoHoverY = videoHoverY
+                }
+            }
+
+
 
             setInterval(sendScroll,200);
             function sendScroll(){
@@ -4079,8 +4101,38 @@
             });
 
             function sendVideoMouseClick(x ,y, ctrlKey){
-                $.get("/VideoClick",{x:x, y:y, ctrlKey:ctrlKey})
+                $.get("/VideoClick",{x:x, y:y, ctrlKey:ctrlKey},function(resp){
+
+                    var respObj = JSON.parse(resp);
+                    if(respObj){
+                        var inspectAttributes = respObj.attributes;
+                        var inspectHtml = respObj.outerHtml;
+
+                        var arrHtml = "";
+                        for(var i = 0; i < inspectAttributes.length; i+=2) {
+                            arrHtml += '<div class="inspectAttrib">' + inspectAttributes[i] + ' = ' + inspectAttributes[i + 1] + '</div>';
+                        }
+
+                        if(arrHtml){
+                            $("#AttributesLabel").show();
+                            $("#inspectAttributes").html(arrHtml);
+                        }else{
+                            $("#AttributesLabel").hide();
+                            $("#inspectAttributes").html("");
+                        }
+                        if(inspectHtml){
+                            $("#HtmlLabel").show();
+                            $("#inspectHtml").text(inspectHtml)
+                        }else{
+                            $("#HtmlLabel").hide();
+                            $("#inspectHtml").text("")
+                        }
+                    }
+                })
             }
+            $("#HtmlLabel").hide();
+            $("#AttributesLabel").hide();
+
 
 
         }); //-------------------------------------------   doc ready -------------------------------------------
@@ -4385,14 +4437,19 @@
                                 <!--<div class='panel-heading dashboardPanelHeading '>Last Screenshot</div>-->
                                 <div id='screenshot-panel-body' class='panel-body dashPanelBody screenshot-panel-body' >
                                     <div id="videoScreen">
-                                        <!--<div>-->
-                                            <!--<a href="#"><i id="videoCanvas_btn_max" class='codes_btn_max fa fa-window-maximize fa-fw navbar-right'></i></a>-->
-                                            <!--<a href="#"><i id="videoCanvas_btn_min" class='codes_btn_min fa fa-window-minimize fa-fw navbar-right'></i></a>-->
-                                        <!--</div>-->
-                                        <!--<div>-->
-                                            <canvas id="videoCanvas"></canvas>
-                                        <!--</div>-->
-                                        <div id="screenShotLink" class="screenShotLink"></div>
+                                        <div class="row">
+                                            <div class="col dashVideoCol">
+                                                <canvas id="videoCanvas"></canvas>
+                                                <div id="screenShotLink" class="screenShotLink"></div>
+                                            </div>
+                                            <div class="col ">
+                                                <div id="AttributesLabel" class="build-label">Attributes</div>
+                                                <div id="inspectAttributes"></div>
+                                                <div id="HtmlLabel" class="build-label">HTML</div>
+                                                <div id="inspectHtml"></div>
+                                            </div>
+
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -4401,18 +4458,6 @@
 
                     <div class="row justify-content-center dashBoardBottomRow">
                         <div id="dashListCol" class="col-md-12 dashListCol">
-                            <!--<div class="dropdown">-->
-                                <!--<span class="dashSystemLabel">System: </span><button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
-                                    <!--Pick...-->
-                                <!--</button>-->
-                                <!--<div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">-->
-                                    <!--<div><a class="dropdown-item" href="#">Action</a></div>-->
-                                <!--</div>-->
-                            <!--</div>-->
-                            <!--<hr class="dashDropButtonHR">-->
-                            <!--<div class="tableFixHead">-->
-
-                            <!--</div>-->
                             <table class="table dashTable">
                                 <thead>
                                 <tr class="d-flex">
@@ -4428,21 +4473,9 @@
                         </div>
                     </div>
 
-
-
                     <div id="dashboardList" class="row launchPadBody ">
 
-
-
-
                     </div>
-                    <!--<div class="panel launchPadPanel">-->
-                    <!--<div class='panel-heading dashboardPanelHeading launchPadHeading'>Launch Pad</div>-->
-
-                    <!--<div class="row dashBoardList">-->
-                    <!--<div id="dashboardList" class="panel-body launchPadBody "></div>-->
-                    <!--</div>-->
-                    <!--</div>-->
                 </div>
             </div>
         </div>
@@ -4605,7 +4638,7 @@
                                 <div class="panel-body job-form-panel" id="job-form-panel">
                                     <form id="jobForm">
                                         <div class="row">
-                                            <div id="topLeftForm" class="col-lg-8 topLeftForm">
+                                            <div id="topLeftForm" class="col-lg-6 topLeftForm">
                                                 <div class="row" id="firstRow" >
                                                     <div class="col-lg-4 jobCompNameCol">
                                                         <div class="form-group">
@@ -4677,7 +4710,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div id="screenShotImageHolder" class="col-lg-4 screenShotImageHolder"></div>
+                                            <div id="screenShotImageHolder" class="col-lg-6 screenShotImageHolder"></div>
                                         </div>
                                         <div class="row">
 
