@@ -651,3 +651,7 @@ input:focus + .slider {
 .compVarEditValButton, .compVarEditButton, .ql-snow a {
     color: #79bdf3;
 }
+
+.idInspectLabel{
+    color: #F8F8F8;
+}

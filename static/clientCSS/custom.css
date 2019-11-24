@@ -439,7 +439,7 @@ padding-left: 0px;
 
 .screenShotImageHolder{
    text-align: center;
-   padding-bottom: 20px;
+   padding-bottom: 40px;
    min-width: 410px;
 }
 
@@ -1221,6 +1221,7 @@ tbody.varTbody{
 
 .varRow{
    cursor: pointer;
+   white-space: nowrap;
 }
 
 .varTable > thead > tr > th {
@@ -1298,4 +1299,24 @@ tbody.varTbody{
 .inspectAttrib{
    width:100%;
    white-space: nowrap;
+}
+
+.inspectLink{
+   padding-right:40px;
+}
+
+.inspectLink.active{
+   font-weight: 800;
+}
+
+.inspectMaximize{
+   padding-right:40px;
+}
+
+#idInspectLabel{
+   padding-bottom:40px;
+}
+
+.idInspectLabel{
+   font-weight: 600;
 }

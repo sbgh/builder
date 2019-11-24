@@ -975,8 +975,6 @@
                             $("#componentsBtn").click();
                             $('#jstree_div').jstree("deselect_all");
                             $('#jstree_div').jstree('select_node',id);
-                       //     getJobByID(id, "");
-                       //     $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
                         });
 
                         $('.dashTableEnableButton').on('click', function(){
@@ -1143,10 +1141,10 @@
                 var newHtml = '<tr id="new_row'+currentRowCntStr+'" class="d-flex varRow newVarRow">'
 
                 //new var name input
-                newHtml += '<td class="col-2"><input id="newCompVarName'+currentRowCntStr+'" class="form-control newCompVarName" type="text"></td>'
+                newHtml += '<td class="col-3"><input id="newCompVarName'+currentRowCntStr+'" class="form-control newCompVarName" type="text"></td>'
 
                 //New privacy switch
-                newHtml += '<td class="col-2"><div class="newCompVarPrivateButtonRow">';
+                newHtml += '<td class="col-1"><div class="newCompVarPrivateButtonRow">';
                 newHtml += '<label class="switch" ><input id="newCompVarPrivateInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class="success newCompVarPrivateButton"><span class="slider round"></span></label>';
                 newHtml += '<span id="newCompVarPrivateDisp'+currentRowCntStr+'" class="newCompVarPrivateDisp"></span>';
                 newHtml += '</div></td>';
@@ -1426,14 +1424,14 @@
                         pCompHtml = "<tr id='varRow_" + idn +"'" +  " class='d-flex varRow'>";
 
                         //add name col
-                        pCompHtml += "<td class='col-2 varNameTd'>" +
+                        pCompHtml += "<td class='col-3 varNameTd'>" +
                             "<i class='fa fa-pencil fa-fw compVarEditButton' data-idn='" + idn +"'></i>" +
                             "<span id = 'varNameTd" + idn + "'></span>" +
                             "<i class='fa fa-times fa-fw compVarDelButton' data-idn='" + idn +"'></i>" +
                             "</td>";
 
                         //add private col
-                        pCompHtml += "<td class='col-2 center'>" + (data[0].variables[varName].private ? "Yes":"No") + "</td>";
+                        pCompHtml += "<td class='col-1 center'>" + (data[0].variables[varName].private ? "Yes":"No") + "</td>";
 
                         //add type col
                         var typeTxt = data[0].variables[varName].type;
@@ -1448,7 +1446,11 @@
 
                         $("#compVariables").append(pCompHtml);
                         $("#varNameTd" + idn).text(varName);
-                        $("#varValTd" + idn).text(data[0].variables[varName].value);
+                        var valText = data[0].variables[varName].value;
+                        if(valText.length >40){
+                            valText = valText.substring(0, 37)+"..."
+                        }
+                        $("#varValTd" + idn).text(valText);
                     }
 
 
@@ -1667,14 +1669,14 @@
                             pSysHtml = "<tr id='varSysRow_" + idn +"'" +  " class='d-flex varRow'>";
 
                             //add name col
-                            pSysHtml += "<td class='col-2 varSysNameTd'>" +
+                            pSysHtml += "<td class='col-3 varSysNameTd'>" +
                                 "<i class='fa fa-pencil fa-fw sysVarEditButton' data-idn='" + idn +"'></i>" +
                                 "<span id = 'varSysNameTd" + idn + "'></span>" +
                                 "<i class='fa fa-times fa-fw sysVarDelButton' data-idn='" + idn +"'></i>" +
                                 "</td>";
 
                             //add private col
-                            pSysHtml += "<td class='col-2 center'>" + (data[0].variables[varName].private ? "Yes":"No") + "</td>";
+                            pSysHtml += "<td class='col-1 center'>" + (data[0].variables[varName].private ? "Yes":"No") + "</td>";
 
                             //add type col
 //                            var typeTxt = data[0].variables[varName].type;
@@ -3979,15 +3981,26 @@
 
 
             function navigate(url){
-
                 updateScreenShotLink(url);
                 localStorage['appLink'] = url;
                 $.get('/navigate', {url:url}, function(data) {});
             }
 
             function updateScreenShotLink(url){
-                var appLink = "<a href='" + url +"' target='_new'><i class='fa  fa-external-link fa-fw'></i>" + url + "</a>"
-                $("#screenShotLink").html(appLink);
+                var inspectLink = "<a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw inspectLink'></i></a>"
+                var urlText = url.length > 50 ? url.subString(0, 47)+'...' : url
+                var appLink = "<a href='" + url +"' target='_new'><i class='fa  fa-external-link fa-fw '></i>" + urlText + "</a>"
+                var maxLink = "<a id='inspectMaximizeLink' href='#'><i class='fa fa-window-maximize fa-fw inspectMaximize'></i></a>"
+                $("#screenShotLink").html(inspectLink + maxLink + appLink);
+
+                $("#inspectLink").on('click', function(e){
+                    $(".inspectLink").addClass('active');
+                    $.get("/inspect")
+                })
+                $("#inspectMaximizeLink").on('click', function(e){
+                    $('#videoModal').modal('show');
+                    $("#videoScreen").detach().appendTo('#videoBody');
+                });
             }
 
             if(localStorage['appLink']){
@@ -4005,7 +4018,8 @@
             //var lastVideoScroll;
 
             function setCanvasUIEvents(){
-                document.body.addEventListener('wheel', function(e){
+
+               document.body.addEventListener('wheel', function(e){
                     if(e.target.id == "videoCanvas"){
 
                     currentVideoScroll += e.deltaY;
@@ -4016,12 +4030,7 @@
                 $("#videoCanvas").mousemove( videoHover);
 
 
-                $("#videoCanvas").on('dblclick', function(e){
 
-                    $('#videoModal').modal('show');
-                    $("#videoScreen").detach().appendTo('#videoBody');
-
-                });
 
                 $("#videoCanvas").on('mousedown', function(e){
                     if (videoClickIsDown === false) {
@@ -4049,12 +4058,13 @@
                         //signal server of mouse click x,y as ratios of width & hight
                         sendVideoMouseClick(xVideo2/width ,yVideo2/height, e.ctrlKey);
                         //consol.log(xVideo1 + ',' + yVideo1 + ',' +xVideo2 + ',' +yVideo2);
+
+                        $(".inspectLink").removeClass('active');
                     }
                 });
 
             }
             setCanvasUIEvents();
-
 
             function getMousePos(canvas, evt) {
                 var rect = canvas.getBoundingClientRect();
@@ -4081,8 +4091,6 @@
                 }
             }
 
-
-
             setInterval(sendScroll,200);
             function sendScroll(){
                 if(currentVideoScroll !== 0){
@@ -4104,29 +4112,40 @@
                 $.get("/VideoClick",{x:x, y:y, ctrlKey:ctrlKey},function(resp){
 
                     var respObj = JSON.parse(resp);
+                    var matchLinksHtml = "";
                     if(respObj){
                         var inspectAttributes = respObj.attributes;
                         var inspectHtml = respObj.outerHtml;
-
-                        var arrHtml = "";
-                        for(var i = 0; i < inspectAttributes.length; i+=2) {
-                            arrHtml += '<div class="inspectAttrib">' + inspectAttributes[i] + ' = ' + inspectAttributes[i + 1] + '</div>';
+                        var matchingComponents = respObj.matchingComponents;
+                        var idHtml = "";
+                        for(var x=0;x<inspectAttributes.length;x += 2){
+                            if(inspectAttributes[x] == "id"){
+                                idHtml += '<div id="idInspectLabel"><span class="idInspectLabel">id = </span>' + inspectAttributes[x + 1] + '</div>';
+                            }
                         }
 
-                        if(arrHtml){
-                            $("#AttributesLabel").show();
-                            $("#inspectAttributes").html(arrHtml);
-                        }else{
-                            $("#AttributesLabel").hide();
-                            $("#inspectAttributes").html("");
+                        matchLinksHtml += idHtml;
+                        if(matchingComponents.length > 0){
+                            matchLinksHtml += '<div id="componentLinksLable" class="build-label">Component Links</div>';
+                            for(var c in matchingComponents){
+                                var title = $("#jstree_div").jstree().get_node(matchingComponents[c]).text;
+                                matchLinksHtml += '<div id="matchLink_' + matchingComponents[c] + '" class="matchLink"><a href="#">' + title + '</div>';
+                            }
                         }
-                        if(inspectHtml){
-                            $("#HtmlLabel").show();
-                            $("#inspectHtml").text(inspectHtml)
-                        }else{
-                            $("#HtmlLabel").hide();
-                            $("#inspectHtml").text("")
-                        }
+
+                        $("#componentLinks").html(matchLinksHtml);
+
+                        $(".matchLink").on("click",function(e) {
+                            var id = $(this).attr('id');
+                            id = id.replace("matchLink_", "");
+                            $('#videoModal').modal('hide');
+                            if( ! $("#componentsBtn").hasClass('active')){
+                                $("#componentsBtn").click();
+                            }
+                            $('#jstree_div').jstree("deselect_all");
+                            $('#jstree_div').jstree('select_node', id);
+                            $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
+                        });
                     }
                 })
             }
@@ -4438,15 +4457,17 @@
                                 <div id='screenshot-panel-body' class='panel-body dashPanelBody screenshot-panel-body' >
                                     <div id="videoScreen">
                                         <div class="row">
-                                            <div class="col dashVideoCol">
+                                            <div class="col-md-8 dashVideoCol">
                                                 <canvas id="videoCanvas"></canvas>
                                                 <div id="screenShotLink" class="screenShotLink"></div>
                                             </div>
-                                            <div class="col ">
-                                                <div id="AttributesLabel" class="build-label">Attributes</div>
-                                                <div id="inspectAttributes"></div>
-                                                <div id="HtmlLabel" class="build-label">HTML</div>
-                                                <div id="inspectHtml"></div>
+                                            <div class="col-md-4 ">
+
+                                                <div id="componentLinks"></div>
+                                                <!--<div id="AttributesLabel" class="build-label">Attributes</div>-->
+                                                <!--<div id="inspectAttributes"></div>-->
+                                                <!--<div id="HtmlLabel" class="build-label">HTML</div>-->
+                                                <!--<div id="inspectHtml"></div>-->
                                             </div>
 
                                         </div>
@@ -4698,8 +4719,8 @@
                                                             <table class="table varTable">
                                                                 <thead>
                                                                 <tr class="d-flex">
-                                                                    <th class="col-2 varLabel">Name</th>
-                                                                    <th class="col-2 varLabel center">Private</th>
+                                                                    <th class="col-3 varLabel">Name</th>
+                                                                    <th class="col-1 varLabel center">Private</th>
                                                                     <th class="col-2 varLabel center">Type</th>
                                                                     <th class="col-6 varLabel">Value</th>
                                                                 </tr>

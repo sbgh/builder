@@ -89,34 +89,18 @@ const viewport = [1280,720];
     const {Emulation, Runtime} = protocol;
     await Promise.all([Page.enable(), Runtime.enable(), DOM.enable()]);
 
-    var HighlightConfig = {
-        showInfo:true,
-        showStyles:true,
-        showRulers:true,
-        showExtensionLines:true,
-        contentColor:{r:128, g:168, b:219, a:.5 },
-        paddingColor:{r:255, g:255, b:255, a:.5 },
-        borderColor:{r:0, g:0, b:0, a:1 },
-        marginColor:{r:128, g:128, b:128, a:.5 },
-        eventTargetColor:{r:128, g:168, b:219, a:1 },
-        shapeColor:{r:128, g:168, b:219, a:1 },
-        shapeMarginColor:{r:128, g:168, b:219, a:1 },
-        cssGridColor:{r:128, g:168, b:219, a:1 }
-    }
-
     await Overlay.enable();
+
+    //Event when inspected element is clicked after Overlay.setInspectMode is turned on.
     Overlay.inspectNodeRequested(backendNodeId => {
-
         (async function (backendNodeId) {
+            //A backend ID is returned but we are not using it currently.
+            //const id = backendNodeId.backendNodeId;
 
-            const id = backendNodeId.backendNodeId;
-
+            await Overlay.setInspectMode({"mode":"none", "highlightConfig":HighlightConfig});
         })(backendNodeId)
-
     })
 
-    //await Overlay.setShowFPSCounter({show:true});
-    await Overlay.setInspectMode({"mode":"searchForNode", "highlightConfig":HighlightConfig});
 
     // set viewport and visible size
     var device = {
@@ -303,6 +287,30 @@ router.get('/video', function(req, res) {
 
 });
 
+var HighlightConfig = {
+    showInfo:false,
+    showStyles:true,
+    showRulers:true,
+    showExtensionLines:true,
+    contentColor:{r:128, g:168, b:219, a:.5 },
+    paddingColor:{r:255, g:255, b:255, a:.5 },
+    borderColor:{r:0, g:0, b:0, a:1 },
+    marginColor:{r:128, g:128, b:128, a:.5 },
+    eventTargetColor:{r:128, g:168, b:219, a:1 },
+    shapeColor:{r:128, g:168, b:219, a:1 },
+    shapeMarginColor:{r:128, g:168, b:219, a:1 },
+    cssGridColor:{r:128, g:168, b:219, a:1 }
+}
+
+router.get("/inspect",function(req,res){
+    //Turn on inspection mode
+    (async function () {
+        await Overlay.setInspectMode({"mode":"searchForNode", "highlightConfig":HighlightConfig});
+        //console.log("inspection mode");
+    })();
+
+    res.end();
+});
 
 var lastFrame = {};
 var currentFrame = {};
@@ -360,16 +368,20 @@ router.get("/VideoClick",function(req,res){
             var outerHtml = ""
             if(outerHtmlObj.outerHTML){
                 outerHtml = outerHtmlObj.outerHTML
-            }
+            };
 
             const docu = await DOM.getDocument({depth:1});
 
             const node = await DOM.requestNode({objectId:RemoteObjectId});
             var nodeId = node.nodeId;
 
-            const attributes = await DOM.getAttributes({nodeId: nodeId})
+            const attributesObj = await DOM.getAttributes({nodeId: nodeId});
 
-            const RetObj = {outerHtml:outerHtml, attributes:attributes.attributes}
+            const matchingComponents = searchComponentProperties(attributesObj.attributes);
+
+            //console.log(matchingComponents);
+
+            const RetObj = {outerHtml:outerHtml, attributes:attributesObj.attributes, matchingComponents:matchingComponents};
             res.end(JSON.stringify(RetObj));
 
         })(res);
@@ -378,6 +390,36 @@ router.get("/VideoClick",function(req,res){
         res.end(JSON.stringify(RetObj));
     }
 });
+
+
+function searchComponentProperties(AttributesArray){
+
+    var foundArr = [];
+    for(var key in SystemsJSON){
+        if(SystemsJSON[key].comType === "job"){
+            if(SystemsJSON[key].hasOwnProperty("variables")){
+                for(var i = 0; i < AttributesArray.length; i+=2) {
+                    if(AttributesArray[i] == "id" && SystemsJSON[key].variables.hasOwnProperty(AttributesArray[i])){
+
+                        var attribToMatch =  AttributesArray[i+1];
+                        var systemVarValue = SystemsJSON[key].variables[AttributesArray[i]].value;
+
+                        // if( systemVarValue == "runStartButton"){
+                        //      a= 1
+                        // }
+                        if(attribToMatch.substring(0, systemVarValue.length) === systemVarValue){
+                            foundArr.push(key)
+                        }
+                    }
+                }
+            }else{
+               // console.log(SystemsJSON[key].name)
+            }
+
+        }
+    }
+    return(foundArr)
+}
 
 //Service Rt: /VideoMove to send chromium page a mouse position, Method: get, Requires: x & y reletive position, Returns:  nothing
 var currentBackendNodeId
@@ -942,7 +984,7 @@ router.get("/move",function(req,res){
     var oldPos = SystemsJSON[id].sort;
     var otherId="";
 
-    if(id === '' || direction === ''){
+    if(!id || !direction){
         res.end('');
     }
 
@@ -951,16 +993,34 @@ router.get("/move",function(req,res){
     var beforeId = '';
     var afterId = '';
 
+    //get all siblings
+    var siblings = []
     for (var key in SystemsJSON) {
-        if (parent === SystemsJSON[key].parent) {
-            //console.log("found: " , SystemsJSON[key].name,  SystemsJSON[key].sort, parent , SystemsJSON[key].parent);
+        if(SystemsJSON.hasOwnProperty(key)){
+            if (parent === SystemsJSON[key].parent) {
+                //console.log("found: " , SystemsJSON[key].name,  SystemsJSON[key].sort, parent , SystemsJSON[key].parent);
+                siblings.push(key);
+            }
+        }
+    }
 
-            if (SystemsJSON[id].sort + 1 === SystemsJSON[key].sort ){
-                afterId = key
-            }
-            if (SystemsJSON[id].sort - 1 === SystemsJSON[key].sort ){
-                beforeId = key
-            }
+    //sort
+    siblings.sort((a, b) => (SystemsJSON[a].sort > SystemsJSON[b].sort) ? 1 : -1)
+
+    //re-apply sort # because there could be dups or gaps
+    var x = 0;
+    for (var key in siblings) {
+        SystemsJSON[siblings[key]].sort = x
+        x++
+    }
+
+    //find the before and after ids
+    for (var key in siblings) {
+        if (SystemsJSON[id].sort + 1 === SystemsJSON[siblings[key]].sort ){
+            afterId = siblings[key]
+        }
+        if (SystemsJSON[id].sort - 1 === SystemsJSON[siblings[key]].sort ){
+            beforeId = siblings[key]
         }
     }
 

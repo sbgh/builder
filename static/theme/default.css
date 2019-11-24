@@ -488,3 +488,7 @@ input:focus + .slider {
     color: #367ae0;
 }
 
+.idInspectLabel{
+    color: #000000;
+}
+
