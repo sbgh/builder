@@ -58,7 +58,7 @@ const homedir = require('os').homedir();
 const SystemsJSONContents = fs.readFileSync('SystemsJSON.json');
 global.SystemsJSON = JSON.parse(SystemsJSONContents);
 
-//headless chrome
+//-----------headless chrome-------------
 global.Page = '';
 global.pageInput = '';
 global.protocol='';
@@ -87,9 +87,7 @@ const viewport = [1280,720];
     Overlay = protocol.Overlay;
     DOM = protocol.DOM;
     const {Emulation, Runtime} = protocol;
-    await Promise.all([Page.enable(), Runtime.enable(), DOM.enable()]);
-
-    await Overlay.enable();
+    await Promise.all([Page.enable(), Runtime.enable(), DOM.enable(), Overlay.enable()]);
 
     //Event when inspected element is clicked after Overlay.setInspectMode is turned on.
     Overlay.inspectNodeRequested(backendNodeId => {
@@ -101,7 +99,6 @@ const viewport = [1280,720];
         })(backendNodeId)
     })
 
-
     // set viewport and visible size
     var device = {
         width: viewport[0],
@@ -112,11 +109,16 @@ const viewport = [1280,720];
     };
     await Emulation.setDeviceMetricsOverride(device);
     await Emulation.setVisibleSize({width: viewport[0], height:viewport[1]});
-    //await Emulation.setCPUThrottlingRate({rate:10});
 
-    await Page.navigate({url: 'http://google.com'});
-    await Page.loadEventFired();
+    //await Page.navigate({url: 'http://google.com'});
+    //await Page.loadEventFired();
 
+    //start screen cast
+    Page.startScreencast({
+        format: 'jpeg',
+        quality: 50,
+        everyNthFrame: 5
+    });
     //await Overlay.setShowFPSCounter({ show: true });
     // debugger;
     Page.screencastFrame(image => {
@@ -126,7 +128,7 @@ const viewport = [1280,720];
         image.frameCount = frameCount;
         currentFrame = image;
 
-        // console.log('saved frame ' + frameCount.toString());
+        //console.log('saved frame ' + frameCount.toString());
 
         // lastShot = setTimeout(ackFrame, 1000);
         // lastFrameId = sessionId;
@@ -137,7 +139,6 @@ const viewport = [1280,720];
 
 
 })();
-// var lastFrameId = "";
 
 //Define user table global
 var userTable = fs.readFileSync("./identity/identity.json");
@@ -168,8 +169,6 @@ router.use(function (req,res,next) {
 
     next();
 });
-
-
 
 var lastnoClientTimeout;
 var noClientTimeout = config.hasOwnProperty("noClientTimeout") ? config.noClientTimeout : "15";
@@ -235,15 +234,25 @@ router.post("/login",function(req,res) {
 
 });
 
+var clientDisconnectFlag = false;
 router.get('/video', function(req, res) {
+
+    clientDisconnectFlag = false;
+    req.on("close", function(){
+        console.log("The client disconnected!");
+        clientDisconnectFlag = true;
+        //res.end();
+    });
 
     startDate = new Date();
     totalStartDate = new Date();
     frameCount = 0;
+    lastFrame = {};
+
     //console.log("/video started");
 
     res.writeHead(200, {
-        'Connection': 'keep-alive',
+        // 'Connection': 'keep-alive',
         // 'Content-Type': 'text/event-stream; charset=utf-8',
         'Transfer-Encoding': 'chunked',
         'Content-Type': 'image/png;base64',
@@ -265,22 +274,24 @@ router.get('/video', function(req, res) {
         sendCount++;
 
         //After 30s recycle the vid stream
-        if(sendCount > (30 * frameRate)){
+        if(sendCount > (30 * frameRate) || clientDisconnectFlag){
             clearInterval(myInt);
+
             //console.log('stopping ' + frameCount.toString());
-            Page.stopScreencast();
+
+            //Page.stopScreencast();
             frameCount = 0;
             res.end();
             totalStartDate = new Date();
-            // console.log('stopped ' + totalSeconds.toString() + " seconds" );
+            //console.log('stopped ' + totalSeconds.toString() + " seconds" );
         }else{
             //only send if frame has changed
             if(currentFrame.data !== lastFrame.data){
                 res.write(JSON.stringify(currentFrame)+'<-->');
                 lastFrame = currentFrame;
-                // console.log('sent: ' + frameCount.toString());
+                //console.log('sent: ' + frameCount.toString());
             }else{
-                // console.log('skip: ' + frameCount.toString());
+                //console.log('skip: ' + frameCount.toString());
             }
         }
     }
@@ -327,8 +338,9 @@ router.get("/navigate",function(req,res){
         await Page.navigate({url: url});
         await Page.loadEventFired();
 
-    })();
+        //console.log("navigate: " + url)
 
+    })();
     res.end();
 });
 
@@ -390,7 +402,6 @@ router.get("/VideoClick",function(req,res){
         res.end(JSON.stringify(RetObj));
     }
 });
-
 
 function searchComponentProperties(AttributesArray){
 

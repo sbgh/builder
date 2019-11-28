@@ -295,173 +295,6 @@
 
             });
 
-            //geLibJobByID
-            function getLibJobByID(NodeID, lib){
-                //const viewmode = "read"
-                clearJobFields();
-                $.get('/getLib', { id: NodeID, 'pickedLib':lib }, function(data) {
-                    // testing vvvvvvvvvvvvvvvvvvv
-                    var dispData = JSON.parse(JSON.stringify(data[0]) )  ;
-                    delete dispData.script;
-                    //delete dispData.custTemplates;
-                    //delete dispData.template;
-
-                    $("#nodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  );
-                    // testing ^^^^^^^^^^^^^^^^^^^
-
-                    $("#id").val(data[0].id);
-                    $("#comType").val(data[0].comType);
-                    $("#idDisp").val(data[0].id);
-                    $("#parent").val(data[0].parent);
-                    $("#name").val(data[0].name);
-
-                    if(data[0].enabled === 1){
-                        $('#componentEnabled').prop('checked', true);
-                        $('#componentEnabledVal').html('Yes');
-                    }else{
-                        $('#componentEnabled').prop('checked', false);
-                        $('#componentEnabledVal').html('No');
-                    }
-
-                    if(data[0].promoted === 1){
-                        $('#promoted').prop('checked', true);
-                        $('#promotedVal').html('Yes');
-                    }else{
-                        $('#promoted').prop('checked', false);
-                        $('#promotedVal').html('No');
-                    }
-
-                    if(data[0].rerunnable === 1){
-                        $('#rerunnable').prop('checked', true);
-                        $('#rerunnableVal').html('Yes');
-                    }else{
-                        $('#rerunnable').prop('checked', false);
-                        $('#rerunnableVal').html('No');
-                    }
-
-                    if(data[0].systemFunction === 1){
-                        $('#sysFunc').prop('checked', true);
-                        $('#sysFuncVal').html('Yes');
-                    }else{
-                        $('#sysFunc').prop('checked', false);
-                        $('#sysFuncVal').html('No');
-                    }
-
-                    if(data[0].runLocal === 1){
-                        $('#runLoc').prop('checked', true);
-                        $('#runLocVal').html('Yes');
-                    }else{
-                        $('#runLoc').prop('checked', false);
-                        $('#runLocVal').html('No');
-                    }
-
-                    if(data[0].description.hasOwnProperty("ops")){
-                        description.setContents(data[0].description.ops)
-                    }else{
-                        description.setContents(
-                            [{ insert:  data[0].description },
-                                { insert: '\n' }]
-                        );
-                    };
-
-                    scriptEditor.session.setValue(data[0].script);
-
-                    $("#compVariables").val(data[0].variables);
-                    $("#version").text(data[0].ver);
-                    $("#templateType").val(data[0].templateType);
-                    $("#text").val(data[0].text);
-                    $('#resourceFiles').val(data[0].resourceFiles);
-                    $("#ft").val(data[0].ft);
-
-                    if(data[0].hasOwnProperty("hist")){
-                        $("#createdBy").val(data[0].hist[0].username);
-                        $("#createdDate").val(data[0].hist[0].ds)
-                    }
-
-                    populateLibFileList( $('#resourceFiles').val());
-
-                    var timestamp = new Date().getTime();
-                    $.get("/library/" + pickedLib + '/uploads/' +  $("#id").val() + "/screenshot.png?" + timestamp, '', function(data) {
-
-                        if (data === ''){
-                        //    $('#screenShotImageHolder').hide();
-                        //    $('#screenShotImage')[0].src='';
-                            $("#firstRow").css('width:50%;');
-                            $("#topLeftForm").attr('class', 'col-lg-12');
-
-                        }else{
-                        //    $('#screenShotImageHolder').show();
-                        //    $('#screenShotImage')[0].src= "/library/" + pickedLib + '/uploads/' +  $("#id").val() + '/screenshot.png?' + timestamp;
-                            $("#firstRow").css('width:100%;');
-                            $("#topLeftForm").attr('class', 'col-lg-6');
-                        }
-                    });
-
-                    //load templates
-                    var x=0;
-                    var tempObjArr = data[0].templates.tempArr;
-
-                    tempObjArr.forEach(function(tempObj){
-
-                        if(!currentTemplatesArr[x]){
-                            var inHtml = authorTemplateHTML(x);
-
-                            $('#custTemplates').append(inHtml);
-
-                            currentTemplatesArr.push(ace.edit("template"+x.toString()));
-
-                            currentTemplatesArr[currentTemplatesArr.length-1].session.setMode("ace/mode/text");
-                            document.getElementById("template"+x.toString()).style.fontSize='14px';
-
-                            currentTemplatesArr[currentTemplatesArr.length-1].renderer.$cursorLayer.element.style.display = "none"
-
-                            loadjobTempTypeDropdown(x)
-
-                            $("#templateWindowMax"+x.toString()).click( function(){
-                                var inx = parseInt($(this).attr('data-inx'), 10);
-                                setTempAceHeight(inx, "max")
-                            })
-                            $("#templateWindowMin"+x.toString()).click( function(){
-                                var inx = parseInt($(this).attr('data-inx'), 10);
-                                setTempAceHeight(inx, "min")
-                            })
-                        }else{
-                            $("#templateBlock" + x.toString()).show();
-                        }
-
-                        currentTemplatesArr[x].session.setValue(tempObj.c);
-
-                        x++;
-                    });
-
-                    while (x < currentTemplatesArr.length ){
-                        $("#templateBlock" + x.toString()).hide();
-                        currentTemplatesArr[x].session.setValue("");
-                        x++;
-                    }
-
-                    x=0;
-                    tempObjArr.forEach(function(tempObj){
-                        var tempType =  tempObj.t === "" ? "text" :  tempObj.t;
-                        currentTemplatesArr[x].session.setMode("ace/mode/" + tempType);
-                        $("#templateType" + x.toString()).val(tempType);
-                        $("#dropdownTemplateTypeButton"+x.toString())[0].innerHTML = tempType;
-                        x++;
-                    })
-
-                    setAceStyle(currentStyleName);
-                    $(".ace_editor").addClass("aceDisabled");
-
-                    for(var inx in currentTemplatesArr){
-                        currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "none";
-                        currentTemplatesArr[inx].setReadOnly(true);
-                    }
-
-
-                    readModeJob();
-                })
-            }
-
             //Library pick
             $("#LibDropDownPick").on('click', function(){
                 libDropDown();
@@ -1048,7 +881,6 @@
                 })
             }
 
-
             function hideBottom(){
                 $("#bottomRow").hide(function(){
                     var container = $('#rowContainer');
@@ -1310,8 +1142,6 @@
 //                });
             }
 
-//            tinymce.init
-
             tinymce.init({
                 selector: "#varValEditor",
                 plugins: [
@@ -1418,41 +1248,8 @@
                         x++
                     }
 
-                    for(var varName in data[0].variables){
-                        //new row
-                        var idn = currentCompVarArr[varName].idn
-                        pCompHtml = "<tr id='varRow_" + idn +"'" +  " class='d-flex varRow'>";
-
-                        //add name col
-                        pCompHtml += "<td class='col-3 varNameTd'>" +
-                            "<i class='fa fa-pencil fa-fw compVarEditButton' data-idn='" + idn +"'></i>" +
-                            "<span id = 'varNameTd" + idn + "'></span>" +
-                            "<i class='fa fa-times fa-fw compVarDelButton' data-idn='" + idn +"'></i>" +
-                            "</td>";
-
-                        //add private col
-                        pCompHtml += "<td class='col-1 center'>" + (data[0].variables[varName].private ? "Yes":"No") + "</td>";
-
-                        //add type col
-                        var typeTxt = data[0].variables[varName].type;
-                        pCompHtml += "<td class='col-2 center'>" + (typeTxt === "" ? "Text" : typeTxt) + "</td>";
-
-                        //add value col
-                        pCompHtml += "<td class='col-6 varValTd'>" +
-                            "<span id = 'varValTd" + idn + "'></span>" +
-                            "</td>";
-
-                        pCompHtml += "</tr>";
-
-                        $("#compVariables").append(pCompHtml);
-                        $("#varNameTd" + idn).text(varName);
-                        var valText = data[0].variables[varName].value;
-                        if(valText.length >40){
-                            valText = valText.substring(0, 37)+"..."
-                        }
-                        $("#varValTd" + idn).text(valText);
-                    }
-
+                    //load table and show edit tools in edit mode
+                    loadVarTable(data[0].variables, true);
 
                     $(".compVarDelButton").on('click', function(){
                         var idn = $(this).attr('data-idn');
@@ -1503,25 +1300,6 @@
                         $('#resourceFiles').val(data);
                         populateFileList(data, false);
                     });
-
-
-//                    var timestamp = new Date().getTime();
-//                    $.get('/uploads/' +  $("#id").val() + "/screenshot.png?" + timestamp, '', function(data) {
-//
-//                        if (data === ''){
-//                        //    $('#screenShotImageHolder').hide();
-//                        //    $('#screenShotImage')[0].src='';
-//                            $("#firstRow").css('width:50%;');
-//                            $("#topLeftForm").attr('class', 'col-lg-12');
-//
-//                        }else{
-//                        //    $('#screenShotImageHolder').show();
-//                        //    $('#screenShotImage')[0].src='/uploads/' +  $("#id").val() + '/screenshot.png?' + timestamp;
-//                            $("#firstRow").css('width:100%;');
-//                            $("#topLeftForm").attr('class', 'col-lg-6');
-//                        }
-//                    });
-
 
                     //Navigate to lastbuild.url if exists
                     if(data[0].lastBuild){
@@ -1608,19 +1386,172 @@
                 })
             }
 
-            function clearSysFields(){
-                $("#id").val('');
-                $("#parent").val('');
-                $("#sysName").val('');
-                $("#sysVersion").text('');
-                sysDescription.setContents("");
-                $("#sysVariables").html('');
+            //geLibJobByID
+            function getLibJobByID(NodeID, lib){
+                //const viewmode = "read"
+                clearJobFields();
+                $.get('/getLib', { id: NodeID, 'pickedLib':lib }, function(data) {
+                    // testing vvvvvvvvvvvvvvvvvvv
+                    var dispData = JSON.parse(JSON.stringify(data[0]) )  ;
+                    delete dispData.script;
+                    //delete dispData.custTemplates;
+                    //delete dispData.template;
 
-                $("#text").val('');
+                    $("#nodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  );
+                    // testing ^^^^^^^^^^^^^^^^^^^
+
+                    $("#id").val(data[0].id);
+                    $("#comType").val(data[0].comType);
+                    $("#idDisp").val(data[0].id);
+                    $("#parent").val(data[0].parent);
+                    $("#name").val(data[0].name);
+
+                    if(data[0].enabled === 1){
+                        $('#componentEnabled').prop('checked', true);
+                        $('#componentEnabledVal').html('Yes');
+                    }else{
+                        $('#componentEnabled').prop('checked', false);
+                        $('#componentEnabledVal').html('No');
+                    }
+
+                    if(data[0].promoted === 1){
+                        $('#promoted').prop('checked', true);
+                        $('#promotedVal').html('Yes');
+                    }else{
+                        $('#promoted').prop('checked', false);
+                        $('#promotedVal').html('No');
+                    }
+
+                    if(data[0].rerunnable === 1){
+                        $('#rerunnable').prop('checked', true);
+                        $('#rerunnableVal').html('Yes');
+                    }else{
+                        $('#rerunnable').prop('checked', false);
+                        $('#rerunnableVal').html('No');
+                    }
+
+                    if(data[0].systemFunction === 1){
+                        $('#sysFunc').prop('checked', true);
+                        $('#sysFuncVal').html('Yes');
+                    }else{
+                        $('#sysFunc').prop('checked', false);
+                        $('#sysFuncVal').html('No');
+                    }
+
+                    if(data[0].runLocal === 1){
+                        $('#runLoc').prop('checked', true);
+                        $('#runLocVal').html('Yes');
+                    }else{
+                        $('#runLoc').prop('checked', false);
+                        $('#runLocVal').html('No');
+                    }
+
+                    if(data[0].description.hasOwnProperty("ops")){
+                        description.setContents(data[0].description.ops)
+                    }else{
+                        description.setContents(
+                            [{ insert:  data[0].description },
+                                { insert: '\n' }]
+                        );
+                    };
+
+                    scriptEditor.session.setValue(data[0].script);
+                    setAceBuildCodeHeight();
+
+                    //load var table
+                    var pCompHtml = "";
+                    var x = 0;
+                    //get variables obj and add an index number to each member
+                    currentCompVarArr = data[0].variables;
+                    for(var varName in currentCompVarArr){
+                        currentCompVarArr[varName].idn = x.toString();
+                        x++
+                    }
+
+                    //load table and hide edit tools
+                    loadVarTable(data[0].variables, false);
+
+                    $("#compVariables").val(data[0].variables);
+                    $("#version").text(data[0].ver);
+                    $("#templateType").val(data[0].templateType);
+                    $("#text").val(data[0].text);
+                    $('#resourceFiles').val(data[0].resourceFiles);
+                    $("#ft").val(data[0].ft);
+
+                    if(data[0].hasOwnProperty("hist")){
+                        $("#createdBy").val(data[0].hist[0].username);
+                        $("#createdDate").val(data[0].hist[0].ds)
+                    }
+
+                    populateLibFileList( $('#resourceFiles').val());
+
+                    //load templates
+                    var x=0;
+                    var tempObjArr = data[0].templates.tempArr;
+
+                    tempObjArr.forEach(function(tempObj){
+
+                        if(!currentTemplatesArr[x]){
+                            var inHtml = authorTemplateHTML(x);
+
+                            $('#custTemplates').append(inHtml);
+
+                            currentTemplatesArr.push(ace.edit("template"+x.toString()));
+
+                            currentTemplatesArr[currentTemplatesArr.length-1].session.setMode("ace/mode/text");
+                            document.getElementById("template"+x.toString()).style.fontSize='14px';
+
+                            currentTemplatesArr[currentTemplatesArr.length-1].renderer.$cursorLayer.element.style.display = "none"
+
+                            loadjobTempTypeDropdown(x)
+
+                            $("#templateWindowMax"+x.toString()).click( function(){
+                                var inx = parseInt($(this).attr('data-inx'), 10);
+                                setTempAceHeight(inx, "max")
+                            })
+                            $("#templateWindowMin"+x.toString()).click( function(){
+                                var inx = parseInt($(this).attr('data-inx'), 10);
+                                setTempAceHeight(inx, "min")
+                            })
+                        }else{
+                            $("#templateBlock" + x.toString()).show();
+                        }
+
+                        currentTemplatesArr[x].session.setValue(tempObj.c);
+
+                        x++;
+                    });
+
+                    while (x < currentTemplatesArr.length ){
+                        $("#templateBlock" + x.toString()).hide();
+                        currentTemplatesArr[x].session.setValue("");
+                        x++;
+                    }
+
+                    x=0;
+                    tempObjArr.forEach(function(tempObj){
+                        var tempType =  tempObj.t === "" ? "text" :  tempObj.t;
+                        currentTemplatesArr[x].session.setMode("ace/mode/" + tempType);
+                        $("#templateType" + x.toString()).val(tempType);
+                        $("#dropdownTemplateTypeButton"+x.toString())[0].innerHTML = tempType;
+                        x++;
+                    })
+
+                    setAceStyle(currentStyleName);
+                    $(".ace_editor").addClass("aceDisabled");
+
+                    for(var inx in currentTemplatesArr){
+                        currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "none";
+                        currentTemplatesArr[inx].setReadOnly(true);
+                    }
+
+
+                    // readModeJob();
+                })
             }
 
-            var currentSysVarArr = {};
             //getSysByID
+            var currentSysVarArr = {};
             function getSysByID(NodeID){
                 clearSysFields();
                 if(NodeID === 'local'){
@@ -1787,6 +1718,55 @@
                         $("#sysIcon").html("")
                     }
                 });
+            }
+
+            function loadVarTable(variables, showTools){
+                for(var varName in variables){
+                    //new row
+                    var idn = currentCompVarArr[varName].idn
+                    pCompHtml = "<tr id='varRow_" + idn +"'" +  " class='d-flex varRow'>";
+
+                    //add name col
+                    pCompHtml += "<td class='col-3 varNameTd'>";
+                    pCompHtml += showTools ? "<i class='fa fa-pencil fa-fw compVarEditButton' data-idn='" + idn +"'></i>" : "";
+                    pCompHtml += "<span id = 'varNameTd" + idn + "'></span>";
+                    pCompHtml += showTools ?"<i class='fa fa-times fa-fw compVarDelButton' data-idn='" + idn +"'></i>" : "";
+                    pCompHtml += "</td>";
+
+                    //add private col
+                    pCompHtml += "<td class='col-1 center'>" + (variables[varName].private ? "Yes":"No") + "</td>";
+
+                    //add type col
+                    var typeTxt = variables[varName].type;
+                    pCompHtml += "<td class='col-2 center'>" + (typeTxt === "" ? "Text" : typeTxt) + "</td>";
+
+                    //add value col
+                    pCompHtml += "<td class='col-6 varValTd'>" +
+                        "<span id = 'varValTd" + idn + "'></span>" +
+                        "</td>";
+
+                    pCompHtml += "</tr>";
+
+                    $("#compVariables").append(pCompHtml);
+                    $("#varNameTd" + idn).text(varName);
+                    var valText = variables[varName].value;
+                    if(valText.length >40){
+                        valText = valText.substring(0, 37)+"..."
+                    }
+                    $("#varValTd" + idn).text(valText);
+                }
+            }
+
+            //clear all fields in a system
+            function clearSysFields(){
+                $("#id").val('');
+                $("#parent").val('');
+                $("#sysName").val('');
+                $("#sysVersion").text('');
+                sysDescription.setContents("");
+                $("#sysVariables").html('');
+
+                $("#text").val('');
             }
 
             //run
@@ -2207,6 +2187,7 @@
                 $("#delFileButton").show();
                 $("#moveUp_button").hide();
                 $("#moveDn_button").hide();
+                $("#screenShotImageHolder").show();
 
                 var checkBoxes = $(".varCheckboxFileList")
                 if (checkBoxes.exists()){
@@ -2278,17 +2259,17 @@
 
                 scriptEditor.renderer.$cursorLayer.element.style.display = "none";
                 scriptEditor.setReadOnly(true);
+                setAceBuildCodeHeight();
 
                 description.enable(false);
                 $(".ql-toolbar").hide(0.3)
 
-                setAceBuildCodeHeight();
 
                 $(".newCompVarBtn").hide();
                 $(".compVarDelButton").hide();
                 $(".compVarEditButton").hide();
                 $(".compVarEditValButton").hide()
-
+                $("#screenShotImageHolder").show();
 
             }
 
@@ -2363,7 +2344,7 @@
                 $("#edit_button").hide();
                 $("#save_button").hide();
                 $("#cancelSave_button").hide();
-                $("#remove_button").show();
+                $("#remove_button").hide();
                 $("#new_button").hide();
                 $("#run_button").hide();
                 $("#new_button").hide();
@@ -2374,6 +2355,9 @@
                 $("#delFileButton").hide();
                 $("#moveUp_button").hide();
                 $("#moveDn_button").hide();
+                $("#screenShotImageHolder").hide();
+                screenShotImageHolder
+                
                 var checkBoxes = $(".varCheckboxFileList")
                 if (checkBoxes.exists()){
                     checkBoxes.hide();
@@ -3615,7 +3599,7 @@
                 function afterWelcomeModal(){
                     $("#dashBtn").click();
                 }
-                //Tell server to set firstRun flag
+                //Tell server to set firstRun flag for admin user settings
                 function setFirstRun(){  //signal server to set 'firstRun' flag in settings
                     $.ajax({
                         type: 'post',
@@ -3970,7 +3954,7 @@
                         return xhr;
                     }
                 }).done(function (e) {
-               //     console.log("startStream Done -> restart");
+                    //console.log("startStream Done -> restart");
                     startStream();
                 }).fail(function (e) {
 
@@ -4004,7 +3988,7 @@
             }
 
             if(localStorage['appLink']){
-                updateScreenShotLink(localStorage['appLink'])
+                navigate(localStorage['appLink'])
             }
 
             //Video mouse click events
@@ -4151,7 +4135,6 @@
             }
             $("#HtmlLabel").hide();
             $("#AttributesLabel").hide();
-
 
 
         }); //-------------------------------------------   doc ready -------------------------------------------
