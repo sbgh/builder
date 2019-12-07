@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>/builder</title>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!--<script src="//https://ajax.googleapis.com/ajax/libs/d3js/5.12.0/d3.min.js"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.3/jstree.min.js"></script>
@@ -698,9 +699,10 @@
                                 $("#dashSys").val(rowJson.systemId);
                             }
 
-                            if(!currentPromotedDashDescriptionsArr[x]){
+                            if (currentPromotedDashDescriptionsArr[x]) {
+                            } else {
                                 currentPromotedDashDescriptionsArr.push(
-                                    new Quill('#dashTableDescriptionItem'+x.toString(), {
+                                    new Quill('#dashTableDescriptionItem' + x.toString(), {
                                         theme: 'snow',
                                         modules: {
                                             "toolbar": false
@@ -771,32 +773,6 @@
                             });
 
                         }
-
-//                        $('.dashListRowNotClicked').on('click', function(){
-//                            var id = $(this).attr('data-Id');
-//
-//                            $.get('/Jobs', { id: id }, function(data) {
-//                                if(data[0].lastBuild){
-//                                    if(data[0].lastBuild.url){
-//                                        $.get('/navigate', {url:data[0].lastBuild.url}, function(data) {
-//
-//                                        });
-//                                    }
-//                                }
-//                            });
-//
-//                            var sys = $(this).attr('data-runSys');
-//                            var sysName = $(this).attr('data-runSysName');
-//
-//                            $("#dashId").val(id);
-//                            $("#dashSys").val(sys);
-//
-//                            //loadDashDetails(id, sys, sysName);
-//                            selectDashTableRow(id)
-//
-//                            localStorage['dashListRowClicked'] = id;
-//
-//                        });
 
                         $('.dashTableBuildButton').on('click', function(){
                             var id = $("#dashId").val();
@@ -918,7 +894,7 @@
 
                 $("#compVariables").html('');
 
-                $("#version").text('');
+                //$("#version").text('');
                 $("#text").val('');
                 $('#resourceFiles').val('');
                 $("#ft").val('');
@@ -1101,13 +1077,6 @@
             })
             function insertSysVarEditEvents(){
 
-//                $(".newSysVarTypeDropdownItem").on('click', function(){
-//                    var type = $(this).attr('data-type');
-//                    var target = $(this).attr('data-target');
-//
-//                    $("#"+target).html(type);
-//                });
-
                 $('.newSysVarPrivateButton').on('click', function(){
                     var id = $("#id").val();
                     const checked =  this.checked;
@@ -1115,31 +1084,6 @@
 
                     $("#newSysVarPrivateDisp"+inx).html(checked ? 'Yes' : 'No');
                 })
-
-//                $(".sysVarEditValButton").on('click', function(){
-//                    var idn = $(this).attr('data-idn');
-//
-//                    var varName = "";
-//                    for(var x in currentSysVarArr){
-//                        if (currentSysVarArr[x].idn == idn)(
-//                            varName = x
-//                        )
-//                    }
-//
-//                    $('#varEditModal').modal('show');
-//
-//                    // Sets the HTML contents of the activeEditor editor
-//                    tinymce.activeEditor.setContent($("#newCompVarValue"+idn).val());
-//
-//                    $("#varEditModalCutrrentIdn").val(idn);
-//
-//                });
-
-//                $('#varEditModal').on('hidden.bs.modal', function() {
-//                    var idn = $("#varEditModalCutrrentIdn").val();
-//                    $("#newCompVarValue"+idn).val( tinymce.activeEditor.getContent() )
-//
-//                });
             }
 
             tinymce.init({
@@ -1185,9 +1129,11 @@
                     if(data[0].enabled === 1){
                         $('#componentEnabled').prop('checked', true);
                         $('#componentEnabledVal').html('Yes');
+                        $("#run_button")[0].disabled = false;
                     }else{
                         $('#componentEnabled').prop('checked', false);
                         $('#componentEnabledVal').html('No');
+                        $("#run_button")[0].disabled = true;
                     }
 
                     if(data[0].promoted === 1){
@@ -1284,7 +1230,7 @@
                         currentCompVarArr[varName].changed = idn;
                     });
 
-                    $("#version").text(data[0].ver);
+                    //$("#version").text(data[0].ver);
                     $("#templateType").val(data[0].templateType);
                     $("#text").val(data[0].text);
                     $('#resourceFiles').val(data[0].resourceFiles);
@@ -1472,7 +1418,7 @@
                     loadVarTable(data[0].variables, false);
 
                     $("#compVariables").val(data[0].variables);
-                    $("#version").text(data[0].ver);
+                    //$("#version").text(data[0].ver);
                     $("#templateType").val(data[0].templateType);
                     $("#text").val(data[0].text);
                     $('#resourceFiles').val(data[0].resourceFiles);
@@ -1569,7 +1515,7 @@
                         $("#comType").val(data[0].comType);
                         $("#parent").val(data[0].parent);
                         $("#sysName").val(data[0].name);
-                        $("#sysVersion").text(data[0].ver);
+                        //$("#sysVersion").text(data[0].ver);
 
                         if(data[0].description.hasOwnProperty("ops")){
                             sysDescription.setContents(data[0].description.ops)
@@ -1693,7 +1639,7 @@
                     $("#comType").val(data[0].comType);
                     $("#parent").val(data[0].parent);
                     $("#sysName").val(data[0].name);
-                    $("#sysVersion").text(data[0].ver);
+                    //$("#sysVersion").text(data[0].ver);
 
                     if(data[0].description.hasOwnProperty("ops")){
                         sysDescription.setContents(data[0].description.ops)
@@ -1762,14 +1708,14 @@
                 $("#id").val('');
                 $("#parent").val('');
                 $("#sysName").val('');
-                $("#sysVersion").text('');
+                //$("#sysVersion").text('');
                 sysDescription.setContents("");
                 $("#sysVariables").html('');
 
                 $("#text").val('');
             }
 
-            //run
+            //run 
             var refreshFlag = false;
             $("#run_button").click(function(event){
                 var id = $("#id").val();
@@ -1856,15 +1802,7 @@
                 $('.runningJobCompleteSuccess').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
                 $('.runningJobCompleteFail').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
 
-                //Disable tree
-//                $('#jstree_div li').each( function() {
-//                    $("#jstree_div").jstree().disable_node(this.id);
-//                });
-
-                //Save tree state
-                var prestate =  $("#jstree_div").jstree(true).get_state();
-
-           //     $("#status-panel-body").show();
+                var closedNodeList = [];
 
                 $.ajax({
                     url: '/run',
@@ -1917,12 +1855,6 @@
                                 else if(row.substr(0,12) === 'message:url:'){
                                     updateScreenShotLink(row.slice(12))
 
-//                                    var appLink = "Link: <a href='" + row.slice(12)+"' target='_new'>" + row.slice(12) + "</a>"
-//                                    $("#screenShotLink")[0].innerHTML = appLink;
-
-
-                                    //localStorage['appLink'] = appLink;
-                                    //startStream();
                                 }
                                 else if(row.substr(0,16) === 'message:BuildID:'){
                                     buildIDRunning = row.substring(
@@ -1936,16 +1868,14 @@
                                         }
                                         buildIDRunningPrev = buildIDRunning;
 
-                                        $("#jstree_div").jstree("open_node", buildIDRunning);
-                                        $('#jstree_div').jstree(true).get_node(buildIDRunning, true).children('.jstree-anchor').focus();
-//
-//                                        if(lastLevel > level || lastLevel == level ){
-//                                            $("#jstree_div").jstree("close_node", lastBuildIDRunning);
-//                                        }
-//
-//                                        lastBuildIDRunning = buildIDRunning;
-//                                        lastLevel = level;
+                                        //save a list of all closed nodes that were opened
+                                        if($('#jstree_div li#'+buildIDRunning+'.jstree-open').length !== 1){
+                                            closedNodeList.push(buildIDRunning)
+                                        }
 
+                                        var runningNode =  $('#jstree_div').jstree(true).get_node(buildIDRunning, true);
+                                        $("#jstree_div").jstree("open_node", buildIDRunning);
+                                        runningNode.children('.jstree-anchor').focus();
                                     }
                                 }
                                 else if(row.substr(0,28) === 'status:All scripts completed'){
@@ -1984,7 +1914,6 @@
                                 }
                             })
                             $('#results_html').animate({scrollTop: $('#results_html').get(0).scrollHeight}, 50);
-                       //     $('#status-panel-body').animate({scrollTop: $('#status-panel-body').get(0).scrollHeight}, 50);
                         };
 
                         return xhr;
@@ -1993,7 +1922,11 @@
                     updateResultsList(selectedNode);
                     loadDashboard();
 
-                    $("#jstree_div").jstree("close_node", selectedNode);
+                    //close all nodes that were opened
+                    for(var x in closedNodeList){
+                        $("#jstree_div").jstree("close_node", closedNodeList[x]);
+                    }
+
                     $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
                     $('#jstree_div').jstree(true).refresh(true);
 
@@ -2013,53 +1946,86 @@
                 $('#runModal').modal('toggle');
             });
 
+            //launch run modal and populate values
+            $('#runClosestAn').on('change', function(){
+                if(this.checked) {
+                    //call checkRerunnable to get rerunnable ancestor and update ui accordingly
+                    checkRerunnable($("#idToBeRun").val(),  $("#sysToBeRun").val())
+                }else{
+                    //enable run button hide warning
+                    $("#runConfirmButton").removeAttr("disabled");
+//                    $('#runClosestAnGroup').hide();
+                    $("#closestAnWarning").text(" ")
+                }
+            });
+
+            function checkRerunnable(id, sys){
+                $.get('/ClosestRerunnableAn', { id: id, sys: sys }, function(data) {
+
+                    //data is expected to be json;
+                    //{id : the id str of the ancestor that if found or '', ClosestRerunnableAn : An object containing the found ancestor}
+                    const dataObj = JSON.parse(data);
+
+                    //Place id in ClosestRerunnableAn input
+                    //Hide or show warning/disable confirmation button if id is blank or comp is not enabled
+                    $("#ClosestRerunnableAn").val(dataObj.id );
+                    if (dataObj.id !== "" && dataObj.ClosestRerunnableAn.enabled){
+                        $("#runConfirmButton").removeAttr("disabled");
+//                        $('#runClosestAnGroup').hide();
+                        $("#closestAnWarning").text(" ")
+                    }else{
+//                        $('#runClosestAnGroup').show();
+                        if(!dataObj.ClosestRerunnableAn.enabled){
+                            $("#runConfirmButton").attr("disabled","true");
+                            $("#closestAnWarning").text("Warning: Component "+dataObj.ClosestRerunnableAn.name+" is disabled.")
+                        }
+                        if(dataObj.id === ""){
+                            $("#runConfirmButton").attr("disabled","true");
+                            $("#closestAnWarning").text("Warning: None of the ansestors are rerunnable.")
+                        }
+                    }
+
+                })
+            }
             function runJob(id, sys){
 
                 $('#runModal').modal('show');
 
+                var storedKey ='';
+                var storedKeyName = '';
+
+                if (sys.length !== 0){
+                    storedKey = localStorage['key_' + sys];
+                    storedKeyName = localStorage['keyName_' + sys];
+                    if(storedKey !== '' && typeof storedKey !== 'undefined'){
+                        $('#localStoreKeyCb').prop('checked', true);
+                        $('#keyList').html(storedKeyName) ;
+                    }else{
+                        $('#localStoreKeyCb').prop('checked', false);
+                        $('#keyList').html('') ;
+                    }
+                }
+
+                var storedAccess ='';
+                var storedAccessName = '';
+
+                if (sys.length !== 0){
+                    storedAccess = localStorage['access'];
+                    storedAccessName = localStorage['accessName'];
+                    if(storedAccess !== '' && typeof storedAccess !== 'undefined'){
+                        $('#localStoreAccessCb').prop('checked', true);
+                        $('#accessList').html(storedAccessName) ;
+                    }else{
+                        $('#localStoreAccessCb').prop('checked', false);
+                        $('#accessList').html('') ;
+                    }
+                }
+
                 $("#idToBeRun").val(id);
                 $("#sysToBeRun").val(sys);
 
-                $.get('/ClosestRerunnableAn', { id: id }, function(data) {
+                checkRerunnable(id);
 
-                    const dataObj = JSON.parse(data);
-                    $("#ClosestRerunnableAn").val(dataObj.id );
-                    if (dataObj.id === ""){
-                        $('#runClosestAnGroup').hide()
-                    }else{
-                        $('#runClosestAnGroup').show()
-                    }
-
-                    var storedKey ='';
-                    var storedKeyName = '';
-
-                    if (sys.length !== 0){
-                        storedKey = localStorage['key_' + sys];
-                        storedKeyName = localStorage['keyName_' + sys];
-                        if(storedKey !== '' && typeof storedKey !== 'undefined'){
-                            $('#localStoreKeyCb').prop('checked', true);
-                            $('#keyList').html(storedKeyName) ;
-                        }else{
-                            $('#localStoreKeyCb').prop('checked', false);
-                            $('#keyList').html('') ;
-                        }
-                    }
-
-                    var storedAccess ='';
-                    var storedAccessName = '';
-
-                    if (sys.length !== 0){
-                        storedAccess = localStorage['access'];
-                        storedAccessName = localStorage['accessName'];
-                        if(storedAccess !== '' && typeof storedAccess !== 'undefined'){
-                            $('#localStoreAccessCb').prop('checked', true);
-                            $('#accessList').html(storedAccessName) ;
-                        }else{
-                            $('#localStoreAccessCb').prop('checked', false);
-                            $('#accessList').html('') ;
-                        }
-                    }
-                })
             }
 
             //remove
@@ -3597,7 +3563,7 @@
 
                 //Things to do after welcome modal
                 function afterWelcomeModal(){
-                    $("#dashBtn").click();
+//                    $("#dashBtn").click();
                 }
                 //Tell server to set firstRun flag for admin user settings
                 function setFirstRun(){  //signal server to set 'firstRun' flag in settings
@@ -4391,27 +4357,27 @@
                         <div class="col-md-6" >
 
                             <div class="row">
-                                <div class="col-sm-2 os-panel-column" >
+                                <div class="os-panel-column firstCol" >
                                     <div class='panel dashPanel os-panel'>
                                         <div class='panel-body dashPanelBody os-panel-body'>
-                                            <div class="dashboardLabel" >cpu load</div>
+                                            <div class="dashboardLabel" >CPU Load</div>
                                             <div class="osValue" id="osCPUValue" >%</div>
                                         </div>
                                     </div>
 
                                 </div>
-                                <div class="col-sm-2 os-panel-column" >
+                                <div class="os-panel-column" >
                                     <div class='panel dashPanel os-panel'>
                                         <div class='panel-body dashPanelBody os-panel-body'>
-                                            <div class="dashboardLabel" >free mem</div>
+                                            <div class="dashboardLabel" >Free Mem</div>
                                             <div class="osValue" id="osFMValue" >GB</div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-8" >
+                                <div class="col lastCol" >
                                     <div class='panel dashPanel currentBuildStatusPanel'>
                                         <div class='panel-body dashPanelBody status-panel-body'>
-                                            <div class="dashboardLabel" >status</div>
+                                            <div class="dashboardLabel" >Status</div>
                                             <div class="resultsStatus" id="resultsStatus"></div>
                                         </div>
                                     </div>
@@ -4440,26 +4406,19 @@
                                 <div id='screenshot-panel-body' class='panel-body dashPanelBody screenshot-panel-body' >
                                     <div id="videoScreen">
                                         <div class="row">
-                                            <div class="col-md-8 dashVideoCol">
+                                            <div class="col dashVideoCol">
                                                 <canvas id="videoCanvas"></canvas>
                                                 <div id="screenShotLink" class="screenShotLink"></div>
-                                            </div>
-                                            <div class="col-md-4 ">
-
                                                 <div id="componentLinks"></div>
-                                                <!--<div id="AttributesLabel" class="build-label">Attributes</div>-->
-                                                <!--<div id="inspectAttributes"></div>-->
-                                                <!--<div id="HtmlLabel" class="build-label">HTML</div>-->
-                                                <!--<div id="inspectHtml"></div>-->
                                             </div>
-
+                                            <div class="">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                     <div class="row justify-content-center dashBoardBottomRow">
                         <div id="dashListCol" class="col-md-12 dashListCol">
                             <table class="table dashTable">
@@ -4553,22 +4512,22 @@
                                             <div class="row">
                                                 <div class="col-lg-3 nomarg">
                                                     <div class="form-group">
-                                                        <label>System Name</label>
+                                                        <label class="build-label">System Name</label>
                                                         <input class="form-control form-custom" placeholder="Enter system name" id="sysName">
                                                     </div>
                                                 </div>
-                                                <div class="col-lg-1 ">
-                                                    <div class="form-group">
-                                                        <label>Version</label>
-                                                        <div id="sysVersion" class="statusBox"></div>
-                                                    </div>
-                                                </div>
+                                                <!--<div class="col-lg-1 ">-->
+                                                    <!--<div class="form-group">-->
+                                                        <!--<label>Version</label>-->
+                                                        <!--<div id="sysVersion" class="statusBox"></div>-->
+                                                    <!--</div>-->
+                                                <!--</div>-->
                                                 <div class="col-lg-8 "></div>
                                             </div>
                                             <div class="row">
                                                 <div class="col-lg-12" style="padding: 0px">
                                                     <div class="form-group">
-                                                        <label>System Description</label>
+                                                        <label class="build-label">System Description</label>
                                                         <!--<textarea rows="4" class="form-control form-custom" placeholder="Enter description of this system" id="sysDescription"></textarea>-->
 
                                                         <div id="sysDescription" class=""></div>
@@ -4580,13 +4539,13 @@
                                             <div class="row">
                                                 <div class="col-lg-12" style="padding: 0px">
                                                 <div class="form-group">
-                                                    <label>System Variables</label>
+                                                    <label class="build-label">System Variables</label>
                                                     <a class="newSysVarBtn" href="#" style=""><i class="fa fa-plus fa-fw"></i></a>
                                                     <table class="table varTable">
                                                         <thead>
                                                         <tr class="d-flex">
-                                                            <th class="col-2 dashboardLabel">Name</th>
-                                                            <th class="col-2 dashboardLabel center">Private</th>
+                                                            <th class="col-3 dashboardLabel">Name</th>
+                                                            <th class="col-1 dashboardLabel center">Private</th>
                                                             <!--<th class="col-2 dashboardLabel center">Type</th>-->
                                                             <th class="col-6 dashboardLabel">Value</th>
                                                         </tr>
@@ -4598,7 +4557,7 @@
                                             </div>
                                             <div class="row">
                                                 <div class="form-group">
-                                                    <label>Icon</label>
+                                                    <label class="build-label">Icon</label>
                                                     <div id="sysIcon"></div>
                                                     <div id="iconPaste">
                                                         <!--<p>Paste icon image: </p>-->
@@ -4642,7 +4601,7 @@
                                 <div class="panel-body job-form-panel" id="job-form-panel">
                                     <form id="jobForm">
                                         <div class="row">
-                                            <div id="topLeftForm" class="col-lg-6 topLeftForm">
+                                            <div id="topLeftForm" class="col topLeftForm">
                                                 <div class="row" id="firstRow" >
                                                     <div class="col-lg-4 jobCompNameCol">
                                                         <div class="form-group">
@@ -4651,13 +4610,13 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-sm-2">
-                                                        <div class="form-group">
-                                                            <label class="build-label">Version</label>
-                                                            <div id="version" class="statusBox"></div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-sm-2">
+                                                    <!--<div class="col-sm-2 switchCol">-->
+                                                        <!--<div class="form-group">-->
+                                                            <!--<label class="build-label">Version</label>-->
+                                                            <!--<div id="version" class="statusBox"></div>-->
+                                                        <!--</div>-->
+                                                    <!--</div>-->
+                                                    <div class="col-sm-2 switchCol">
                                                         <div class="form-group">
                                                             <label class="build-label">Enabled</label>
                                                             <div>
@@ -4670,7 +4629,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-sm-2">
+                                                    <div class="col-sm-2 switchCol">
                                                         <div class="form-group">
                                                             <label class="build-label">Promoted</label>
                                                             <div>
@@ -4714,7 +4673,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div id="screenShotImageHolder" class="col-lg-6 screenShotImageHolder"></div>
+                                            <div id="screenShotImageHolder" class="col screenShotImageHolder"></div>
                                         </div>
                                         <div class="row">
 
@@ -4723,15 +4682,13 @@
                                                 <div id="buildCodeAccordion">
                                                     <div class="card jobCard">
                                                         <div class="card-header" id="codeHeading" data-toggle="collapse" data-target="#codeCollapse" aria-expanded="true" aria-controls="codeCollapse">
-                                                            <h5 class="mb-0">
-                                                                    Build Code
-                                                            </h5>
+                                                            <i class="fa fa-tasks fa-fw"></i>Build Code
                                                         </div>
 
                                                         <div id="codeCollapse" class="collapse cardBody" aria-labelledby="codeHeading" data-parent="#buildCodeAccordion">
                                                             <div class="card-body">
                                                                 <div class="row" >
-                                                                    <div class="col-sm-2">
+                                                                    <div class="col-sm-2 switchCol">
                                                                         <div class="form-group">
                                                                             <label class="build-label">Rerunnable</label>
                                                                             <div>
@@ -4744,7 +4701,7 @@
                                                                             </div>
                                                                         </div>
                                                                     </div>
-                                                                    <div class="col-sm-2">
+                                                                    <div class="col-sm-2 switchCol">
                                                                         <div class="form-group">
                                                                             <label class="build-label">System Function</label>
                                                                             <div>
@@ -4757,7 +4714,7 @@
                                                                             </div>
                                                                         </div>
                                                                     </div>
-                                                                    <div class="col-sm-2">
+                                                                    <div class="col-sm-2 switchCol">
                                                                         <div class="form-group">
                                                                             <label class="build-label">Run Locally</label>
                                                                             <div>
@@ -4799,9 +4756,7 @@
                                                 <div id="buildResAccordion">
                                                     <div class="card jobCard">
                                                         <div class="card-header" id="resHeading" data-toggle="collapse" data-target="#resCollapse" aria-expanded="true" aria-controls="resCollapse">
-                                                            <h5 class="mb-0">
-                                                                    Resources
-                                                            </h5>
+                                                            <i class="fa fa-upload fa-fw"></i>Resources
                                                         </div>
 
                                                         <div id="resCollapse" class="collapse cardBody" aria-labelledby="resHeading" data-parent="#buildResAccordion">
@@ -4826,9 +4781,7 @@
                                                 <div id="buildTestAccordion">
                                                     <div class="card jobCard">
                                                         <div class="card-header" id="testHeading" data-toggle="collapse" data-target="#testCollapse" aria-expanded="true" aria-controls="testCollapse">
-                                                            <h5 class="mb-0">
-                                                                Test
-                                                            </h5>
+                                                            <i class="fa fa- fa-check-square-o fa-fw"></i>Test
                                                         </div>
 
                                                         <div id="testCollapse" class="collapse cardBody" aria-labelledby="testHeading" data-parent="#buildTestAccordion">
@@ -4847,22 +4800,19 @@
                                                 <div id="buildMetaAccordion">
                                                     <div class="card jobCard">
                                                         <div class="card-header" id="metaHeading" data-toggle="collapse" data-target="#metaCollapse" aria-expanded="true" aria-controls="metaCollapse">
-                                                            <h5 class="mb-0">
-                                                                 Meta
-                                                            </h5>
+                                                            <i class="fa fa- fa-list fa-fw"></i>Meta
                                                         </div>
-
                                                         <div id="metaCollapse" class="collapse cardBody" aria-labelledby="metaHeading" data-parent="#buildMetaAccordion">
                                                             <div class="card-body">
 
-                                                                <div class="col-lg-6 ">
-                                                                    <div class="form-group"><label>Created Date: </label><input class="form-control form-custom" id="createdDate"></div>
-                                                                    <div class="form-group"><label>Created By: </label><input class="form-control form-custom" id="createdBy"></div>
+                                                                <div class="col ">
+                                                                    <div class="form-group"><label class="build-label">Created Date: </label><input class="form-control form-custom" id="createdDate"></div>
+                                                                    <div class="form-group"><label class="build-label">Created By: </label><input class="form-control form-custom" id="createdBy"></div>
                                                                 </div>
 
-                                                                <div class="col-lg-6 ">
-                                                                    <div class="form-group"><label>ID: </label><input class="form-control form-custom" id="idDisp"></div>
-                                                                    <div class="form-group"><label>Price: </label><input class="form-control form-custom" id="price"></div>
+                                                                <div class="col ">
+                                                                    <div class="form-group"><label class="build-label">ID: </label><input class="form-control form-custom" id="idDisp"></div>
+                                                                    <div class="form-group"><label class="build-label">Price: </label><input class="form-control form-custom" id="price"></div>
                                                                 </div>
 
 
@@ -4970,7 +4920,7 @@
                         <!--<label><input type="radio" id="darkStyleRadio" name="setupRadio" >Dark</label>-->
                     <!--</div>-->
                     <!--<hr>-->
-                    No command prompt time out (ms):
+                    No command prompt time out (ms): 
                     <div class="form-group">
                         <input class="form-control form-custom-meta" placeholder="(ms)" id="timeout" style="width:75px"> <button id = "set_timeout" class="btn btn-default jobFormbtn jobSetFormbtn">Set</button> <span id="set_timeout_results"></span>
                     </div>
@@ -5012,13 +4962,13 @@
                     <div class="form-group" id="runClosestAnGroup">
                         <!--<label style="padding-left: 40px">-->
                         <span class="model-label"><input name="runClosestAn" id="runClosestAn" value="yes" type="checkbox" checked/>Run from closest rerunnable ancestor?</span>
-                        <!--</label>-->
+                        <div id="closestAnWarning"></div>
                     </div>
                     <div class="form-group">
                         <!--<label style="padding-left: 40px">-->
-                        <span class="model-label">AWS Key Pair File (.pem):</span>
+                        <span class="model-label">AWS Key Pair File (.pem): <a id='newKeyButton' class='newKey' href='#'><i class="fa  fa-folder-open fa-fw"></i></a></span>
                         <!--</label>-->
-                        <div><span id = 'keyList' class = 'keyList'></span><label style="padding-left: 10px"><a id='newKeyButton' class='newKey' href='#'>[select]</a></label></div>
+                        <div><span id = 'keyList' class = 'keyList'></span></div>
                         <input id="upload-key" type="file" name="key" multiple="single">
                     </div>
                     <div class="form-group">
@@ -5029,9 +4979,9 @@
 
                     <div class="form-group">
                         <!--<label style="padding-left: 40px">-->
-                        <span class="model-label">AWS Access code File (.csv):</span>
+                        <span class="model-label">AWS Access code File (.csv): <a id='newAccessButton' class='newKey' href='#'><i class="fa  fa-folder-open fa-fw"></i></a></span>
                         <!--</label>-->
-                        <div><span id = 'accessList' class = 'keyList'></span><div style="padding-left: 10px"><a id='newAccessButton' class='newKey' href='#'>[select]</a></div></div>
+                        <div><span id = 'accessList' class = 'keyList'></span><div style="padding-left: 10px"></div></div>
                         <input id="upload-access" type="file" name="key" multiple="single">
                     </div>
                     <div class="form-group">
@@ -5063,7 +5013,7 @@
                 <form  class="form" id="copyModalForm">
                     <div class="form-group">
                         <div class="radio">
-                            <label><input name="copyChildrenCb" id="copyChildrenCb" value="yes" type="checkbox"/>Copy all children?</label>
+                            <label class="build-label"><input name="copyChildrenCb" id="copyChildrenCb" value="yes" type="checkbox"/>Copy all children?</label>
                         </div>
                     </div>
                 </form>
@@ -5089,7 +5039,7 @@
                 <form  class="form" id="copyToLibModalForm">
                     <div class="form-group">
                         <div class="radio">
-                            <label><input name="copyToLibChildrenCb" id="copyToLibChildrenCb" value="yes" type="checkbox"/>Copy all children?</label>
+                            <label class="build-label"><input name="copyToLibChildrenCb" id="copyToLibChildrenCb" value="yes" type="checkbox"/>Copy all children?</label>
                         </div>
                     </div>
                 </form>
@@ -5150,22 +5100,22 @@
                 <div class="form-group insertScopeGroup">
                     <label style="padding-left: 15px;padding-top: 0px;padding-bottom: 0px;">From:</label>
                     <div class="radio">
-                        <label>
+                        <label class="build-label">
                             <input name="insertScope" id="insertScope0" value="Component" checked="" type="radio">Component
                         </label>
                     </div>
                     <div class="radio">
-                        <label>
+                        <label class="build-label">
                             <input name="insertScope" id="insertScope1" value="Parent" type="radio">Parent
                         </label>
                     </div>
                     <div class="radio">
-                        <label>
+                        <label class="build-label">
                             <input name="insertScope" id="insertScope2" value="Ancestors" type="radio">Ancestors
                         </label>
                     </div>
                     <div class="radio">
-                        <label>
+                        <label class="build-label">
                             <input name="insertScope" id="insertScope3" value="Same System" type="radio">Same System
                         </label>
                     </div>

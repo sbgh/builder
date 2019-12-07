@@ -517,7 +517,7 @@ input:focus + .slider {
 
 .os-panel{
     transition: background-color 0.5s;
-    background-color: rgba(255, 255, 255, 0.2);
+    /*background-color: rgba(255, 255, 255, 0.2);*/
 }
 
 .jobCard > .card-header {

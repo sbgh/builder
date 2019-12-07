@@ -286,7 +286,10 @@ padding-left: 0px;
    padding: 0px 12px;
 }
 
-
+.switchCol{
+   min-width: 110px;
+   text-align: center;
+}
 
 .modal-dialog {
    max-width: 70vw;
@@ -451,13 +454,13 @@ padding-left: 0px;
 
 #screenShotImageHolder  #videoCanvas{
    width:100%;
-   height:100%;
+   /*height:100%;*/
    text-align: center;
 }
 
 #videoBody #videoCanvas{
    width:100%;
-   height:100%;
+   /*height:100%;*/
 }
 
 .topLeftForm{
@@ -624,6 +627,9 @@ input:checked + .slider:before {
 
 .build-label{
    white-space: nowrap;
+   font-size: .8rem;
+   font-weight: 400;
+   line-height: 24px;
 }
 
 .btn-dashboard{
@@ -634,8 +640,8 @@ input:checked + .slider:before {
 
 }
 
-.dashboardLabel{
-   font-size: 1rem;
+.dashboardLabel, .varLabel{
+   font-size: .8rem;
    font-weight: 400;
    line-height: 24px;
 }
@@ -1213,11 +1219,11 @@ tbody.varTbody{
    padding-right: 5px;
 }
 
-.varLabel{
-   font-size: 1rem;
-   font-weight: 400;
-   line-height: 24px;
-}
+/*.varLabel{*/
+   /*font-size: 1rem;*/
+   /*font-weight: 400;*/
+   /*line-height: 24px;*/
+/*}*/
 
 .varRow{
    cursor: pointer;
@@ -1314,9 +1320,17 @@ tbody.varTbody{
 }
 
 #idInspectLabel{
-   padding-bottom:40px;
+   /*padding-bottom:40px;*/
 }
 
 .idInspectLabel{
    font-weight: 600;
+}
+
+.firstCol{
+   padding-left: 0px;
+}
+
+.lastCol{
+   padding-right: 0px;
 }

@@ -184,7 +184,7 @@ function noClientTimeoutProcess(){
     execSync('sudo shutdown now');
 };
 
-//Reqs to / endpoint are ignored for now
+//Requests to / endpoint are ignored for now
 router.get("/",function(req,res){
     res.end('')
 });
@@ -311,7 +311,7 @@ var HighlightConfig = {
     shapeColor:{r:128, g:168, b:219, a:1 },
     shapeMarginColor:{r:128, g:168, b:219, a:1 },
     cssGridColor:{r:128, g:168, b:219, a:1 }
-}
+};
 
 router.get("/inspect",function(req,res){
     //Turn on inspection mode
@@ -365,36 +365,81 @@ router.get("/VideoClick",function(req,res){
             //mouse Pressed
             await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
 
+            // console.log("x: " + x.toString() + " y: " + y.toString());
+            // console.log("mouse press");
+
             //mouse up
             type="mouseReleased";
             await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
 
-            var id = currentBackendNodeId
+            // console.log("mouse up");
+
+            type="mouseMoved";
+            await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
+
+            // console.log("mouse move");
+
+            const metrics = await Page.getLayoutMetrics();
+
+            // console.log("got metrics");
+
+            const offsetY = metrics.visualViewport.pageY;
+            var loc = await DOM.getNodeForLocation({x:x,y:y + offsetY});
+
+            //console.log("got getNodeForLocation");
+
+            // console.log(x,y);
+            currentBackendNodeId = loc.backendNodeId
+
+            var id = currentBackendNodeId;
 
             //get html & attributes of currentBackendNodeId and put in response
             const data = await DOM.resolveNode({backendNodeId: id});
+
+            // console.log("got data");
+
             //object: {type: "object", subtype: "node", className: "HTMLParagraphElement", description: "p", objectId: "{"injectedScriptId":3,"id":1}"}
             const RemoteObjectId = data.object.objectId;
 
-            const outerHtmlObj = await DOM.getOuterHTML({backendNodeId: id});
-            var outerHtml = ""
-            if(outerHtmlObj.outerHTML){
-                outerHtml = outerHtmlObj.outerHTML
-            };
+            var outerHtml = "";
+            try {
+                const outerHtmlObj = await DOM.getOuterHTML({backendNodeId: id});
+                if(outerHtmlObj.outerHTML){
+                    outerHtml = outerHtmlObj.outerHTML
+                }
+            } catch(e) {
+
+            }
 
             const docu = await DOM.getDocument({depth:1});
+
+            //console.log("got docu");
 
             const node = await DOM.requestNode({objectId:RemoteObjectId});
             var nodeId = node.nodeId;
 
-            const attributesObj = await DOM.getAttributes({nodeId: nodeId});
+            //console.log("got node: " + node.nodeId.toString());
 
-            const matchingComponents = searchComponentProperties(attributesObj.attributes);
+            if(nodeId){
+                var attributesObj = {};
+                try {
+                    attributesObj = await DOM.getAttributes({nodeId: nodeId});
+                    //console.log("got attrib");
 
-            //console.log(matchingComponents);
+                    const matchingComponents = searchComponentProperties(attributesObj.attributes);
 
-            const RetObj = {outerHtml:outerHtml, attributes:attributesObj.attributes, matchingComponents:matchingComponents};
-            res.end(JSON.stringify(RetObj));
+                    const RetObj = {outerHtml:outerHtml, attributes:attributesObj.attributes, matchingComponents:matchingComponents};
+                    res.end(JSON.stringify(RetObj));
+
+                   // console.log("");
+                } catch(e) {
+                    //console.log("not got attrib");
+                    res.end(JSON.stringify({}));
+                }
+
+            }else{
+                res.end(JSON.stringify({}));
+            }
 
         })(res);
     }else{
@@ -430,10 +475,10 @@ function searchComponentProperties(AttributesArray){
         }
     }
     return(foundArr)
-}
+};
 
 //Service Rt: /VideoMove to send chromium page a mouse position, Method: get, Requires: x & y reletive position, Returns:  nothing
-var currentBackendNodeId
+var currentBackendNodeId;
 router.get("/mouseMove",function(req,res){
     var xHover = req.query.x;
     var yHover = req.query.y;
@@ -454,14 +499,6 @@ router.get("/mouseMove",function(req,res){
             lastHoverY = y;
 
             await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
-
-            const metrics = await Page.getLayoutMetrics();
-            const offsetY = metrics.visualViewport.pageY
-
-
-             var loc = await DOM.getNodeForLocation({x:x,y:y + offsetY});
-            // console.log(x,y);
-            currentBackendNodeId = loc.backendNodeId
 
         })(xHover, yHover);
     }
@@ -1848,19 +1885,19 @@ var latestResultsFileList = [];
 var latestVarCache = {};
 
 //Service Rt: /run to build a list of components. Disabled components and thier children will be skipped, Method: post, Requires: ids = list of ids to build seperated by ';' , Returns: A very long chunked responcse containg ssh output and imbedded codes to update the ui
+//the ssh connect obj
+var conn;
 router.post("/run",function(req,res){
 
     var job;
     var jobIndex;
-    var ids; //list of component ids send from client seperated by ;
+    var ids; //list of component ids send from client separated by ;
     var storeLocal;
+    var storeLocalAccess;
     var runKey="";
     var newKey=false;
     var runAccess="";
     var newAccess=false;
-
-    //the ssh connect obj
-    var conn;
 
     //users remote ip
     var remoteIP = req.connection.remoteAddress.toString();
@@ -1883,9 +1920,6 @@ router.post("/run",function(req,res){
 
     }
 
-    // console.log('builderIP: '+builderIP);
-    // console.log('remoteIP: '+remoteIP);
-    //save file with remote ip
     fs.writeFileSync("sec_group_ips.json",JSON.stringify({'builderIP':builderIP, 'remoteIP':remoteIP}))
 
     //set default timeout. May be over written by user prefs
@@ -1893,7 +1927,6 @@ router.post("/run",function(req,res){
 
     //lookup user pref timeout value
     const timeoutNumber = parseInt(config.timeout);
-    //console.log("timeoutNumber: " + timeoutNumber)
     if (timeoutNumber > 0 ){ //If config holds timeout, use it.
         timeOut = timeoutNumber
     }
@@ -1913,7 +1946,7 @@ router.post("/run",function(req,res){
             ids = fields.ids.split(';');
 
             //storeLocal holds val of 'store key in browser' checkbox
-            var storeLocal = fields.storeLocal;
+            storeLocal = fields.storeLocal;
             //if key-pair file is attached
             if(files.hasOwnProperty('key')   ){
                 //capture the key-pair in runKey and delete the attached file
@@ -1935,7 +1968,7 @@ router.post("/run",function(req,res){
             }
 
             //storeLocalAccess holds val of 'store access key in browser' checkbox
-            var storeLocalAccess = fields.storeLocalAccess;
+            storeLocalAccess = fields.storeLocalAccess;
             if(files.hasOwnProperty('access')   ){
                 var myFiles = files['access'];
 
@@ -1968,13 +2001,15 @@ router.post("/run",function(req,res){
         console.log('An error has occured.\n/run \n' + err);
     });
 
-    // once form is uploaded, run 1st component
+    // once form is uploaded, run first component
     form.on('end', function() {
         res.setHeader('Connection', 'Transfer-Encoding');
         res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
         res.setHeader('Transfer-Encoding', 'chunked');
 
-        if(runKey.toString() !== '' && newKey === true){
+        //console.log('storeLocal: ' + storeLocal);
+
+        if(runKey.toString() !== '' && newKey === true &&  storeLocal === "yes"){
             res.write("\n");
             res.write("key:"+runKey.toString().split('\n').join('key:') );
             res.write("\n");
@@ -1986,8 +2021,7 @@ router.post("/run",function(req,res){
             var find = '\r';
             var re = new RegExp(find, 'g');
             trimmedAccess = trimmedAccess.toString().replace(re, '');
-
-            if( newAccess === true){
+            if( newAccess === true &&  storeLocalAccess === "yes"){
                 res.write("\n");
                 res.write("access:"+ trimmedAccess.toString());
                 res.write("\n");
@@ -2053,12 +2087,58 @@ router.post("/run",function(req,res){
         jobIndex = 0;
         if (SystemsJSON.hasOwnProperty(id)){
             job = SystemsJSON[id];
-                cacheVarVals(latestResultsFileList,job.ft.split('/')[1]);
+            cacheVarVals(latestResultsFileList,job.ft.split('/')[1]);
+
+            conn = new Client(); //connection obj
+
+            //connection error event. Message UI
+            conn.on('error', function (err) {
+                console.log('SSH - Connection Error: ' + err);
+                message('SSH - Connection Error: ' + err);
+                flushMessQueue();
+                res.end("status:Scripts Aborted\n");
+            });
+
+            //connection (job run) end event.
+            conn.on('end', function () {
+
+            });
+
+            //connection ready event. create shell and send commands
+            conn.on('ready', function () {
+                message('connected To: ' + connectHost);
                 runScript(id, job ,"SSH");
+            });
+
+            var username = getSystemVarVal(id, 'username');
+            var host = getSystemVarVal(id, 'host');
+            if(username && (host || job.runLocal === 1)){
+                var  connectHost = job.runLocal === 1 ? "127.0.0.1" : host;
+                sshConnect(id, runKey, connectHost, username);
+            }else{
+                console.log("Error: Connection requires username & host specified in the system variables list.");
+                message("Error: Connection requires username & host specified in the system variables list.");
+                flushMessQueue();
+                res.end("status:Scripts Aborted\n");
+            }
         }else{
             console.log("Error: /run id not found in SystemsJSON: "+ id);
+            message("Error: /run id not found in SystemsJSON: "+ id);
+            flushMessQueue();
+            res.end("status:Scripts Aborted\n");
         }
     });
+
+
+    function sshConnect(jobId, runKey, connectHost, username){
+
+        conn.connect({
+            host: connectHost ,
+            port: getSystemVarVal(jobId, 'port'),
+            username: username,
+            privateKey: runKey
+        });
+    }
 
     var resultsArray = [];
 
@@ -2143,10 +2223,7 @@ router.post("/run",function(req,res){
                                 if(typeof latestVarCache[id] === 'undefined'){
                                     latestVarCache[id] = {};
                                 }
-                                //var appendedTResults = typeof latestVarCache[id][varName] === 'undefined'  ?  trimmedResults  : latestVarCache[id][varName] + trimmedResults;
                                 latestVarCache[id][varName] = trimmedResults.replace(/\n$/, "").replace(/\r$/, "");
-
-//console.log("found: id:" + id + " varName:" + varName + "=" + JSON.stringify(latestVarCache[id][varName]))
                             }
                         }
                         if (row.hasOwnProperty('x') && row.x !== '') {
@@ -2155,9 +2232,7 @@ router.post("/run",function(req,res){
                             if(typeof latestVarCache[id] === 'undefined'){
                                 latestVarCache[id] = {};
                             }
-                            //var appendedTResults = typeof latestVarCache[id][varName] === 'undefined'  ?  trimmedResults  : latestVarCache[id][varName] + trimmedResults;
                             latestVarCache[id][varName] = trimmedResults.replace(/\n$/, "").replace(/\r$/, "");
-//console.log("found: id:" + id + " varName:" + varName + "=" + JSON.stringify(latestVarCache[id][varName]))
                         }
                     });
                 }
@@ -2174,19 +2249,26 @@ router.post("/run",function(req,res){
             var kVal = varListAr[thisVar].value;
             latestVarCache[systemId][kName] = kVal
         }
-        // varListAr.forEach(function(pair){
-        //
-        //     //console.log("found: id:" + systemId + " varName:" + kName + "=" + JSON.stringify(latestVarCache[systemId][kName]))
-        // });
     }
 
-    //disply results of cacheVarVals in log
-    console.log("complete cacheVarVals - " + Object.keys(latestVarCache).length.toString() + " results files" );
+    //log number of vars found cacheVarVals in
+    console.log("complete cacheVarVals - " + Object.keys(latestVarCache).length.toString() + " results added" );
 
     //function runScript to build a specified component. requires: jobId = job id string | job = component obj , runMethod = "exec" or "SSH"
     function runScript(jobId, job, runMethod) {
         var script = job.script + "\n"; //add return to end of string to ensure prpompt is returned at end of script
         var scriptArray = script.split("\n"); // the list of commands by row
+        var commandIndex = 0;
+        var prompt = "[SysStack]"; //prompt will be changed to this
+        var atPrompt = false; //flag to indicate if prompt returned
+        var aSyncInProgress = 0; //counter to indicate number of async processes in flight
+        var deferredExit = false; //flag to indicate async processes exist
+        var respBufferAccu = new Buffer([]); //response buffer
+
+        resultsArray = []; // array to hold results key vals init
+        SystemsJSON[jobId].lastBuild = {}; //Obj to hold last build time stamp, pass/fall, url
+
+        var sshSuccess = false; //error flag creation
 
         if (runMethod === "exec") {
             scriptArray.forEach(function (item) {
@@ -2201,735 +2283,652 @@ router.post("/run",function(req,res){
 
         //create ssh connection
         if (runMethod === "SSH") {
-            var sshSuccess = false; //error flag creation
 
-            conn = new Client(); //connection obj
+            conn.shell(function (err, stream) {
+                if (err) throw err;
 
-            var exportCommand = "";// holds command to be exported (saved as variable) flag
+                //close event to update ui, save log
 
-            //meggege ui that build is starting for the current job
-            message('Building:' + job.name);
-            message('BuildID:[' +jobId+ ']'); //send id to trigger ui functions
+                var exportCommand = "";// holds command to be exported (saved as variable) flag
 
+                //meggege ui that build is starting for the current job
+                message('Building:' + job.name);
+                message('BuildID:[' +jobId+ ']'); //send id to trigger ui functions
 
-            //connection error event. Message UI
-            conn.on('error', function (err) {
-                console.log('SSH - Connection Error: ' + err);
-                message('SSH - Connection Error: ' + err);
-                flushMessQueue();
-                res.end("status:Scripts Aborted\n");
-            });
+                stream.on('close', function (code, signal){
+                    var dsString = new Date().toISOString(); //date stamp
 
-            //connection (job run) end event. Run next job in list or send success message or error message
-            conn.on('end', function () {
-                jobIndex++;
+                    clearTimeout(lastTimeout);
 
-                if (ids.length > jobIndex) {
+                    //message ui
+                    message("Completed " + job.name);
+                    message(sshSuccess === true ? "CompletionSuccess:true\n" : "CompletionSuccess:false\n");
+                    flushMessQueue();
 
-                    id = ids[jobIndex];
+                    //format date string
+                    var fds = dsString.replace(/_/g, '-').replace(/T/, '-').replace(/:/g, '-').replace(/\..+/, '');
+                    var fileName = "";
+                    SystemsJSON[jobId].lastBuild.ct = fds;
 
-                    if (SystemsJSON.hasOwnProperty(id)) {
-                        //console.log("\nrunning: "+ SystemsJSON[id].name);
-                        if (sshSuccess) {
-                            var job = SystemsJSON[id];
-
-                                runScript(id, job ,"SSH");
-
-                        } else {
-                            // message("Script Aborted\n");
-                            // flushMessQueue();
-                            res.end("status:Scripts Aborted\n");
-                        }
+                    //update SystemsJSON component with pass or fail and build results file name
+                    if (sshSuccess === true) {
+                        SystemsJSON[jobId].lastBuild.pass = 1;
+                        fileName =  jobId + '_' + fds + '_p.json';
                     } else {
-                        console.log("Error: /run id not found in SystemsJSON: " + id);
+                        SystemsJSON[jobId].lastBuild.pass = 0;
+                        fileName = jobId + '_' + fds + '_f.json';
                     }
-                } else {
-                    //console.log("all scripts completed")
-                    if (sshSuccess) {
 
-                        message("All scripts completed\n");
-                        flushMessQueue();
-                        res.end("status:All scripts completed\n");  //This line triggers ui to complete style format
-                    } else {
-                        message("Script Aborted\n");
-                        flushMessQueue();
-                        res.end("status:Scripts Aborted\n");
-                    }
-                }
-            });
+                    //save results file and cache vars to lookup - latestVarCache[Id][varName]
+                    fs.writeFile(resultsPath + fileName, JSON.stringify(resultsArray), function (err) {
+                        if (err) {
+                            console.log('There has been an error saving your json.\n'+err.message);
+                        }else{
+                            if(typeof latestVarCache[jobId] === 'undefined'){
+                                delete latestVarCache[jobId]
+                            }
+                            cacheVarVals([fileName],SystemsJSON[jobId].ft.split('/')[1]);
 
-            //connection ready event. create shell and send commands
-            conn.on('ready', function () {
-                var commandIndex = 0;
-                var prompt = "[SysStack]"; //prompt will be chaned to this
-                var atPrompt = false; //flag to indicate if prompt returned
-                var aSyncInProgress = 0; //counter to indicate number of async processes in flight
-                var deferredExit = false; //flag to indicate async processes exist
-                var respBufferAccu = new Buffer([]); //responce buffer
+                            //If this is a special 'system' job then update the system variables
+                            if(SystemsJSON[jobId].systemFunction === 1){
+                                copySystemVarToSystem(jobId)
+                            }
 
-                resultsArray = []; // array to hold resuktes key vals init
+                            jobIndex++;
 
-                SystemsJSON[jobId].lastBuild = {}; //Obj to hold last build time stamp, pass/fall, url
+                            if (ids.length > jobIndex) {
 
-                //spawn a command shell
-                conn.shell(function (err, stream) {
-                    if (err) throw err;
+                                var id = ids[jobIndex];
 
-                    //close event to update ui, save log
+                                if (SystemsJSON.hasOwnProperty(id)) {
+                                    //console.log("\nrunning: "+ SystemsJSON[id].name);
+                                    if (sshSuccess) {
+                                        var job = SystemsJSON[id];
 
-                    stream.on('close', function (code, signal){
-                        var dsString = new Date().toISOString(); //date stamp
+                                        runScript(id, job ,"SSH");
 
-                        clearTimeout(lastTimeout);
-
-                        //message ui
-                        message("Completed " + job.name);
-                        message(sshSuccess === true ? "CompletionSuccess:true\n" : "CompletionSuccess:false\n");
-                        flushMessQueue();
-
-                        //format date string
-                        var fds = dsString.replace(/_/g, '-').replace(/T/, '-').replace(/:/g, '-').replace(/\..+/, '');
-                        var fileName = "";
-                        SystemsJSON[jobId].lastBuild.ct = fds;
-
-                        //update SystemsJSON component with pass or fail and build results file name
-                        if (sshSuccess === true) {
-                            SystemsJSON[jobId].lastBuild.pass = 1;
-                            fileName =  jobId + '_' + fds + '_p.json';
-                        } else {
-                            SystemsJSON[jobId].lastBuild.pass = 0;
-                            fileName = jobId + '_' + fds + '_f.json';
-                        }
-
-
-                        //save results file and cache vars to lookup - latestVarCache[Id][varName]
-                        fs.writeFile(resultsPath + fileName, JSON.stringify(resultsArray), function (err) {
-                            if (err) {
-                                console.log('There has been an error saving your json.\n'+err.message);
-                            }else{
-                                if(typeof latestVarCache[jobId] === 'undefined'){
-                                    delete latestVarCache[jobId]
+                                    } else {
+                                        // message("Script Aborted\n");
+                                        // flushMessQueue();
+                                        res.end("status:Scripts Aborted\n");
+                                    }
+                                } else {
+                                    console.log("Error: /run id not found in SystemsJSON: " + id);
                                 }
-                                cacheVarVals([fileName],job.ft.split('/')[1]);
+                            } else {
+                                //console.log("all scripts completed")
+                                if (sshSuccess) {
 
-                                //If this is a special 'system' job then update the system variables
-                                if(SystemsJSON[jobId].systemFunction === 1){
-                                    copySystemVarToSystem(jobId)
+                                    message("All scripts completed\n");
+                                    flushMessQueue();
+                                    res.end("status:All scripts completed\n");  //This line triggers ui to complete style format
+                                } else {
+                                    message("Script Aborted\n");
+                                    flushMessQueue();
+                                    res.end("status:Scripts Aborted\n");
                                 }
-
-                                //save SystemsJSON no backup
 
                                 conn.end();
                             }
-
-                        });
-                        saveAllJSON(false);
-
-                        //function to update system variables if job = system job. Used to set host etc.
-                        //eg var:systemVar:host=1.2.3.4 will add/change host variable in the system to a value of 1.2.3.4
-                        function copySystemVarToSystem(id){
-
-                            if(typeof SystemsJSON[id] !== "undefined") {
-
-                                var resultsSystem = SystemsJSON[id].ft.split('/')[1];
-                                if(SystemsJSON[resultsSystem].variables){
-                                    if(latestVarCache[id]){
-                                        //loop through each var in this job
-                                        //if one is systemVar get the value and add/update in in system
-                                        for(varName in latestVarCache[id]){
-                                            if(varName === "systemVar"){
-                                                var newVar = latestVarCache[id][varName];
-                                                SystemsJSON[resultsSystem].variables[newVar.split("=")[0]] = {value:newVar.split("=")[1], private: false, type: "Text"}
-                                            }
-                                        }
-                                        saveAllJSON(false)
-                                    }
-                                }
-                            }
                         }
+
                     });
+                    saveAllJSON(false);
 
-                    //event when data is returned on ssh session
-                    stream.on('data', function (data) {
+                    //function to update system variables if job = system job. Used to set host etc.
+                    //eg var:systemVar:host=1.2.3.4 will add/change host variable in the system to a value of 1.2.3.4
+                    function copySystemVarToSystem(id){
 
-                        //send data to ui
-                        res.write(data.toString());
+                        if(typeof SystemsJSON[id] !== "undefined") {
 
-                        //Accumulate to buffer until the prompt appears
-                        respBufferAccu = Buffer.concat([respBufferAccu, data]);
-
-
-                        //var tempVal = respBufferAccu.toString();
-
-                        //if the response contains the current prompt string send next command and process directives
-                        if( respBufferAccu.toString().split('\n').slice(-1)[0]  === prompt){
-                            //console.log(respBufferAccu.toString().split('\n').slice(-1)[0] + '===' + prompt);
-
-                            writeResponse(respBufferAccu);
-                            respBufferAccu = new Buffer([]);
-
-                            if (commandIndex < scriptArray.length) {
-                                var command = scriptArray[commandIndex];
-                                var currentCommand = replaceVar(command, job);
-                                processDirectives();
-                            }
-                            if (commandIndex < scriptArray.length) {
-                                var command = scriptArray[commandIndex];
-                                var currentCommand = replaceVar(command, job);
-                                sendCommand();
-                            }
-                             if (commandIndex < scriptArray.length){
-                                 var command = scriptArray[commandIndex];
-                                 var currentCommand = replaceVar(command, job);
-                                 processDirectives();
-                             }
-
-                             //if all commands have been sent
-                            if (commandIndex === scriptArray.length) {
-                                commandIndex++;
-
-                                //exit stream if no async processes
-                                if (aSyncInProgress < 1){
-                                    stream.write("exit" + '\n');
-                                    sshSuccess = true
-                                }else{ //otherwise set deferredExit flag
-                                    message('Waiting for asynchronous processes to complete...');
-                                    deferredExit = true
+                            var resultsSystem = SystemsJSON[id].ft.split('/')[1];
+                            if(SystemsJSON[resultsSystem].variables){
+                                if(latestVarCache[id]){
+                                    //loop through each var in this job
+                                    //if one is systemVar get the value and add/update in in system
+                                    for(varName in latestVarCache[id]){
+                                        if(varName === "systemVar"){
+                                            var newVar = latestVarCache[id][varName];
+                                            SystemsJSON[resultsSystem].variables[newVar.split("=")[0]] = {value:newVar.split("=")[1], private: false, type: "Text"}
+                                        }
+                                    }
+                                    saveAllJSON(false)
                                 }
-                                flushMessQueue();
                             }
-                        };
+                        }
+                    }
+                });
 
-                        //Function to create response obj to add to results file
-                        function writeResponse(newData) {
+                //event when data is returned on ssh session
+                stream.on('data', function (data) {
 
-                            var ds = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-');
-                            messQueue.forEach(function (mess) {
-                                resultsArray.push({
-                                    t: ds,
-                                    m: mess
-                                });
-                                res.write("\nmessage:" + mess + "\n")
+                    //send data to ui
+                    res.write(data.toString());
+
+                    //Accumulate to buffer until the prompt appears
+                    respBufferAccu = Buffer.concat([respBufferAccu, data]);
+
+                    //if the response contains the current prompt string send next command and process directives
+                    if( respBufferAccu.toString().split('\n').slice(-1)[0]  === prompt){
+                        //console.log(respBufferAccu.toString().split('\n').slice(-1)[0] + '===' + prompt);
+
+                        writeResponse(respBufferAccu);
+                        respBufferAccu = new Buffer([]);
+
+                        if (commandIndex < scriptArray.length) {
+                            var command = scriptArray[commandIndex];
+                            var currentCommand = replaceVar(command, job);
+                            processDirectives();
+                        }
+                        if (commandIndex < scriptArray.length) {
+                            var command = scriptArray[commandIndex];
+                            var currentCommand = replaceVar(command, job);
+                            sendCommand();
+                        }
+                        if (commandIndex < scriptArray.length){
+                            var command = scriptArray[commandIndex];
+                            var currentCommand = replaceVar(command, job);
+                            processDirectives();
+                        }
+
+                        //if all commands have been sent
+                        if (commandIndex === scriptArray.length) {
+                            commandIndex++;
+
+                            //exit stream if no async processes
+                            if (aSyncInProgress < 1){
+                                stream.write("exit" + '\n');
+                                sshSuccess = true
+                            }else{ //otherwise set deferredExit flag
+                                message('Waiting for asynchronous processes to complete...');
+                                deferredExit = true
+                            }
+                            flushMessQueue();
+                        }
+                    };
+
+                    //Function to create response obj to add to results file
+                    function writeResponse(newData) {
+
+                        var ds = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-');
+                        messQueue.forEach(function (mess) {
+                            resultsArray.push({
+                                t: ds,
+                                m: mess
                             });
-                            messQueue = [];
+                            res.write("\nmessage:" + mess + "\n")
+                        });
+                        messQueue = [];
 
-                            var newdataStr = newData.toString();
+                        var newdataStr = newData.toString();
 
-                            //console.log('writeResponse: ' + newdataStr);
+                        //console.log('writeResponse: ' + newdataStr);
 
-                            newdataStr = newdataStr.replace(/\n$/, "");
-                            var newdataAr = newdataStr.split('\n');
+                        newdataStr = newdataStr.replace(/\n$/, "");
+                        var newdataAr = newdataStr.split('\n');
 
-                            newdataAr.forEach(function (row) {
-                                if (row === prompt) {
-                                    atPrompt = true;
+                        newdataAr.forEach(function (row) {
+                            if (row === prompt) {
+                                atPrompt = true;
+                            } else {
+                                if (atPrompt == true) {
+                                    resultsArray.push({
+                                        t: ds,
+                                        x: atPrompt === true ? '' : exportVar,
+                                        results: prompt + row + '\n'
+                                    });
                                 } else {
-                                    if (atPrompt == true) {
-                                        resultsArray.push({
-                                            t: ds,
-                                            x: atPrompt === true ? '' : exportVar,
-                                            results: prompt + row + '\n'
-                                        });
-                                    } else {
-                                        resultsArray.push({
-                                            t: ds,
-                                            x: atPrompt === true ? '' : exportVar,
-                                            results: row + '\n'
-                                        });
-                                    }
-                                    atPrompt = false;
+                                    resultsArray.push({
+                                        t: ds,
+                                        x: atPrompt === true ? '' : exportVar,
+                                        results: row + '\n'
+                                    });
                                 }
-                            });
-                            resultsArray.push({t: ds, x: '', cc: newData});
-                        }
-
-                        //function to send next command to ssh stream
-                        function sendCommand() {
-                            if (data.slice(-(prompt.length)).toString() === prompt) {
-                                exportVar = '';
-                                exportCommand = '';
-                                if (currentCommand.substr(0, 7) === "export:") {
-                                    exportVar = currentCommand.substr(currentCommand.indexOf(":") + 1);
-                                    currentCommand = exportVar.substr(exportVar.indexOf(":") + 1);
-                                    exportVar = exportVar.substr(0, exportVar.indexOf(":"));
-                                    exportCommand = currentCommand;
-                                }
-                                //console.log('sent  [' + currentCommand + " \n ex:" + exportVar +'\n data:'+ data.toString() + ']');
-
-                                //console.log('sent :' + currentCommand);
-                                stream.write(currentCommand + '\n');
-                                commandIndex++;
+                                atPrompt = false;
                             }
+                        });
+                        resultsArray.push({t: ds, x: '', cc: newData});
+                    }
+
+                    //function to send next command to ssh stream
+                    function sendCommand() {
+                        if (data.slice(-(prompt.length)).toString() === prompt) {
+                            exportVar = '';
+                            exportCommand = '';
+                            if (currentCommand.substr(0, 7) === "export:") {
+                                exportVar = currentCommand.substr(currentCommand.indexOf(":") + 1);
+                                currentCommand = exportVar.substr(exportVar.indexOf(":") + 1);
+                                exportVar = exportVar.substr(0, exportVar.indexOf(":"));
+                                exportCommand = currentCommand;
+                            }
+                            //console.log('sent  [' + currentCommand + " \n ex:" + exportVar +'\n data:'+ data.toString() + ']');
+
+                            //console.log('sent :' + currentCommand);
+                            stream.write(currentCommand + '\n');
+                            commandIndex++;
                         }
+                    }
 
-                        //function to process the directives on the current command .
-                        function processDirectives(){
-                            do{
-                                // console.log("commandIndex: " + commandIndex);
-                                // console.log("process:" + currentCommand);
-                                // console.log("");
+                    //function to process the directives on the current command .
+                    function processDirectives(){
+                        do{
+                            // console.log("commandIndex: " + commandIndex);
+                            // console.log("process:" + currentCommand);
+                            // console.log("");
 
-                                var isDirective = false;//flag to indicate current command was indeed a directive
+                            var isDirective = false;//flag to indicate current command was indeed a directive
 
-                                //parse each line and search for directives. while found it is processed and the next line is parsed
-                                if (currentCommand.substr(0, 7) === "noWait:") {
-                                    currentCommand = currentCommand.substr(currentCommand.indexOf(":") + 1);
-                                    stream.write(currentCommand + '\n');
+                            //parse each line and search for directives. while found it is processed and the next line is parsed
+                            if (currentCommand.substr(0, 7) === "noWait:") {
+                                currentCommand = currentCommand.substr(currentCommand.indexOf(":") + 1);
+                                stream.write(currentCommand + '\n');
 
-                                    isDirective = true;
-                                } else if
-                                (currentCommand.substr(0, 3) === "^c:") {
-                                    stream.write("\x03");
-                                    isDirective = true;
-                                    //console.log('send ^c');
-                                } else if
-                                (currentCommand.substr(0, 10) === "setPrompt:") {
-                                    prompt = currentCommand.substr(currentCommand.indexOf(":") + 1);
-                                    //console.log('set prompt [' + prompt + ']');
-                                    isDirective = true;
-                                } else if
-                                (currentCommand.substr(0, 15) === "setPromptCodes:") {
-                                    promptCodes = currentCommand.substr(currentCommand.indexOf(":") + 1);
-                                    var codesAr = promptCodes.split(" ");
-                                    var codePrompt = "";
-                                    codesAr.forEach(function (code) {
-                                        codePrompt += String.fromCharCode(parseInt(code, 16));
-                                    });
-                                    prompt = codePrompt;
-                                    //console.log('set promptCodes [' + codePrompt + ']');
-                                    isDirective = true;
-                                } else if
-                                (currentCommand.substr(0, 13) === "saveTemplate:") {
-
-                                    var template = "";
-                                    var pathFileName = "";
-
-                                    var tempNum = parseInt(currentCommand.split(':')[1], 10);
-                                    if (tempNum > 1 && tempNum < 100) {
-                                        template = job.templates.tempArr[tempNum - 1].c;
-                                        pathFileName = currentCommand.substr(currentCommand.indexOf(":") + 1);
-                                        pathFileName = pathFileName.substr(pathFileName.indexOf(":") + 1);
-                                    }else{
-                                        template = job.templates.tempArr[0].c;
-                                        pathFileName = currentCommand.substr(currentCommand.indexOf(":") + 1);
-                                    }
-
-                                    var pathFileNameAr = pathFileName.split('/');
-                                    var fileName = pathFileNameAr[pathFileNameAr.length - 1];
-                                    var rmResp = execSync("sudo rm -f /tmp/" + fileName);
-
-                                    sendTemplate(pathFileName, fileName, template);
-                                    function sendTemplate(aPathFileName, aFileName, aTemplate){
-                                        aSyncInProgress++;
-                                        fs.writeFile('/tmp/' + aFileName, aTemplate, function (err) {
-                                            if (err) {
-                                                aSyncInProgress--;
-                                                return console.log(err);
-                                            }
-                                            //var chownResp = execSync("sudo chown " + getSystemVarVal(jobId, 'username') + ":" + getSystemVarVal(jobId, 'username') + ' /tmp/' + aFileName);
-                                            conn.sftp(
-                                                function (err, sftp) {
-                                                    //var msg = "";
-                                                    if (err) {
-                                                        console.log("Error, problem starting SFTP: %s", err);
-                                                        message('error:saveTemplate - problem starting SFTP');
-                                                        stream.close();
-                                                        aSyncInProgress--;
-                                                    } else {
-                                                        var readStream = fs.createReadStream("/tmp/" + aFileName);
-                                                        var writeStream = sftp.createWriteStream(pathFileName);
-                                                        //console.log('creating write stream' + aFileName);
-                                                        writeStream.on('error', function (e) {
-                                                            aSyncInProgress--;
-                                                            console.log('error:saveTemplate - error creating target stream - ' + aPathFileName, e);
-                                                            message('error:saveTemplate - error creating target stream - ' + aPathFileName);
-                                                            stream.close();
-                                                        });
-
-                                                        writeStream.on('close', function () {
-                                                                aSyncInProgress--;
-                                                                //console.log('saveTemplate:Sent - ' + aFileName);
-                                                                sftp.end();
-                                                                //console.log("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName);
-                                                                //Execute sudo chown to change file ownership to the user as defined in the system
-                        conn.exec("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName, function(err, stream) {
-                                    if (err) throw err;
-                                    stream.on('close', function(code, signal) {
-                                        //console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
-                                        //conn.end();
-                                    }).on('data', function(data) {
-                                        console.log('STDOUT: ' + data);
-                                    }).stderr.on('data', function(data) {
-                                        console.log('STDERR: ' + data);
-                                    });
+                                isDirective = true;
+                            } else if
+                            (currentCommand.substr(0, 3) === "^c:") {
+                                stream.write("\x03");
+                                isDirective = true;
+                                //console.log('send ^c');
+                            } else if
+                            (currentCommand.substr(0, 10) === "setPrompt:") {
+                                prompt = currentCommand.substr(currentCommand.indexOf(":") + 1);
+                                //console.log('set prompt [' + prompt + ']');
+                                isDirective = true;
+                            } else if
+                            (currentCommand.substr(0, 15) === "setPromptCodes:") {
+                                promptCodes = currentCommand.substr(currentCommand.indexOf(":") + 1);
+                                var codesAr = promptCodes.split(" ");
+                                var codePrompt = "";
+                                codesAr.forEach(function (code) {
+                                    codePrompt += String.fromCharCode(parseInt(code, 16));
                                 });
-                                                                message('saveTemplate:send complete - ' + aPathFileName);
-                                                                var rmResp = execSync("sudo rm -f /tmp/" + aFileName);
-                                                                if(deferredExit == true && aSyncInProgress == 0){
-                                                                    stream.write("exit" + '\n');
-                                                                    sshSuccess = true
-                                                                }
-                                                            }
-                                                        );
-                                                        readStream.pipe(writeStream);
-                                                    }
-                                                }
-                                            )
-                                        })
-                                    }
+                                prompt = codePrompt;
+                                //console.log('set promptCodes [' + codePrompt + ']');
+                                isDirective = true;
+                            } else if
+                            (currentCommand.substr(0, 13) === "saveTemplate:") {
 
-                                    isDirective = true;
-                                } else if
-                                (currentCommand.substr(0, 9) === "saveFile:") {
+                                var template = "";
+                                var pathFileName = "";
 
-                                    var fileName = currentCommand.split(':')[1].trim();
-                                    var remotePath = currentCommand.split(':')[2].trim();
+                                var tempNum = parseInt(currentCommand.split(':')[1], 10);
+                                if (tempNum > 1 && tempNum < 100) {
+                                    template = job.templates.tempArr[tempNum - 1].c;
+                                    pathFileName = currentCommand.substr(currentCommand.indexOf(":") + 1);
+                                    pathFileName = pathFileName.substr(pathFileName.indexOf(":") + 1);
+                                }else{
+                                    template = job.templates.tempArr[0].c;
+                                    pathFileName = currentCommand.substr(currentCommand.indexOf(":") + 1);
+                                }
 
-                                    var foundErr = false;
-                                    if (fileName.trim() === "" || remotePath.trim() === "") {
-                                        //console.log("Error saving resource file. Please provide file name and path");
-                                        message('error:saveFile - Please provide file name and path');
-                                        stream.close();
-                                    }
+                                var pathFileNameAr = pathFileName.split('/');
+                                var fileName = pathFileNameAr[pathFileNameAr.length - 1];
+                                var rmResp = execSync("sudo rm -f /tmp/" + fileName);
 
-                                    if (!fs.existsSync(filesPath + jobId + '/' + fileName)) {
-                                        console.log("Error saving resource file. File resource not found.");
-                                        //foundErr = true;
-                                        message('error:Resource not found - ' + filesPath + jobId + '/' + fileName);
-                                        stream.close();
-                                    } else {
-                                        aSyncInProgress++;
-                                        sendFile(fileName, remotePath, jobId);
-                                        function sendFile(aFileName, aRemotePath, aJobID) {
-                                            conn.sftp(
-                                                function (err, sftp) {
-                                                    //    var msg = "";
-                                                    if (err) {
-                                                        console.log("Error, problem starting SFTP:", err);
-                                                        message('error:problem starting SFTP - ' + filesPath + aJobID + '/' + aFileName);
+                                sendTemplate(pathFileName, fileName, template);
+                                function sendTemplate(aPathFileName, aFileName, aTemplate){
+                                    aSyncInProgress++;
+                                    fs.writeFile('/tmp/' + aFileName, aTemplate, function (err) {
+                                        if (err) {
+                                            aSyncInProgress--;
+                                            return console.log(err);
+                                        }
+                                        //var chownResp = execSync("sudo chown " + getSystemVarVal(jobId, 'username') + ":" + getSystemVarVal(jobId, 'username') + ' /tmp/' + aFileName);
+                                        conn.sftp(
+                                            function (err, sftp) {
+                                                //var msg = "";
+                                                if (err) {
+                                                    console.log("Error, problem starting SFTP: %s", err);
+                                                    message('error:saveTemplate - problem starting SFTP');
+                                                    stream.close();
+                                                    aSyncInProgress--;
+                                                } else {
+                                                    var readStream = fs.createReadStream("/tmp/" + aFileName);
+                                                    var writeStream = sftp.createWriteStream(pathFileName);
+                                                    //console.log('creating write stream' + aFileName);
+                                                    writeStream.on('error', function (e) {
                                                         aSyncInProgress--;
+                                                        console.log('error:saveTemplate - error creating target stream - ' + aPathFileName, e);
+                                                        message('error:saveTemplate - error creating target stream - ' + aPathFileName);
                                                         stream.close();
-                                                        // msg = "Error, problem starting SFTP" + '\n';
-                                                        // stream.write(msg);
-                                                    } else {
-                                                        //console.log("file sftp: " + filesPath + aJobID + '/' + aFileName + ' > ' + aRemotePath + '/' + aFileName);
-                                                        var readStream = fs.createReadStream(filesPath + aJobID + '/' + aFileName);
+                                                    });
 
-                                                        var writeStream = sftp.createWriteStream(remotePath + '/' + aFileName);
-                                                        writeStream.on('error', function (e) {
-                                                            //console.log(e);
-                                                            message('error:saveFile - error creating target stream - ' + aRemotePath + '/' + aFileName);
+                                                    writeStream.on('close', function () {
                                                             aSyncInProgress--;
-                                                            stream.close();
-                                                        });
-
-                                                        writeStream.on('close', function () {
+                                                            //console.log('saveTemplate:Sent - ' + aFileName);
                                                             sftp.end();
-                                                            message('saveFile:send complete - ' + aRemotePath + '/' + aFileName);
-                                                            aSyncInProgress--;
+                                                            //console.log("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName);
+                                                            //Execute sudo chown to change file ownership to the user as defined in the system
+                                                            conn.exec("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName, function(err, stream) {
+                                                                if (err) throw err;
+                                                                stream.on('close', function(code, signal) {
+                                                                    //console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
+                                                                    //conn.end();
+                                                                }).on('data', function(data) {
+                                                                    console.log('STDOUT: ' + data);
+                                                                }).stderr.on('data', function(data) {
+                                                                    console.log('STDERR: ' + data);
+                                                                });
+                                                            });
+                                                            message('saveTemplate:send complete - ' + aPathFileName);
+                                                            var rmResp = execSync("sudo rm -f /tmp/" + aFileName);
                                                             if(deferredExit == true && aSyncInProgress == 0){
                                                                 stream.write("exit" + '\n');
                                                                 sshSuccess = true
                                                             }
-                                                        });
-                                                        readStream.pipe(writeStream);
-
-                                                    }
+                                                        }
+                                                    );
+                                                    readStream.pipe(writeStream);
                                                 }
-                                            )
-                                        }
-                                    }
+                                            }
+                                        )
+                                    })
+                                }
 
-                                    isDirective = true;
-                                } else if
-                                (currentCommand.substr(0, 5) === "snap:") {
+                                isDirective = true;
+                            } else if
+                            (currentCommand.substr(0, 9) === "saveFile:") {
 
-                                    var url = currentCommand.replace('snap:','').trim();
-                                    //console.log('url: ' + url);
-                                    aSyncInProgress++;
-                                    message('url:' + url);
+                                var fileName = currentCommand.split(':')[1].trim();
+                                var remotePath = currentCommand.split(':')[2].trim();
 
-                                    SystemsJSON[ids[0]].lastBuild.url=url;
-
-                                    (async function () {
-
-                                        console.log("Page.navigate: " + url)
-
-                                        await Page.navigate({url: url});
-                                        await Page.loadEventFired();
-
-                                        console.log("Page.loadEventFired: " + url)
-
-                                        // message('snap:created: ' + "screenshot.png");
-
-                                        aSyncInProgress--;
-                                        console.log(aSyncInProgress.toString())
-                                        if(deferredExit == true && aSyncInProgress == 0){
-                                            stream.write("exit" + '\n');
-                                            sshSuccess = true
-                                        }
-
-                                    })();
-                                    isDirective = true;
-
-                                } else if
-                                (currentCommand.substr(0, 9) === "navigate:") {
-
-                                    var url = currentCommand.replace('navigate:','').trim();
-                                    //console.log('url: ' + url);
-                                    aSyncInProgress++;
-                                    message('url:' + url);
-
-                                    SystemsJSON[ids[0]].lastBuild.url=url;
-
-                                    (async function () {
-
-                                        console.log("Page.navigate: " + url)
-
-
-                                        await Page.navigate({url: url});
-                                        await Page.loadEventFired();
-
-                                        console.log("Page.loadEventFired: " + url)
-
-                                        // message('snap:created: ' + "screenshot.png");
-
-                                        aSyncInProgress--;
-                                        if(deferredExit == true && aSyncInProgress == 0){
-                                            stream.write("exit" + '\n');
-                                            sshSuccess = true
-                                        }
-
-                                    })();
-                                    isDirective = true;
-
-                                } else if
-                                (currentCommand.substr(0, 11) === "reloadPage:") {
-
-                                    aSyncInProgress++;
-
-                                    (async function () {
-
-                                        console.log("Page.reload ")
-
-                                        await Page.reload();
-                                        aSyncInProgress--;
-                                        if(deferredExit == true && aSyncInProgress == 0){
-                                            stream.write("exit" + '\n');
-                                            sshSuccess = true
-                                        }
-
-                                    })();
-                                    isDirective = true;
-
-                                } else if
-                                (currentCommand.substr(0, 6) === "abort:") {
-
-                                    message('Abort directive called');
+                                var foundErr = false;
+                                if (fileName.trim() === "" || remotePath.trim() === "") {
+                                    //console.log("Error saving resource file. Please provide file name and path");
+                                    message('error:saveFile - Please provide file name and path');
                                     stream.close();
-
-                                    isDirective = true;
                                 }
 
-                                if (isDirective === true) {
-                                    commandIndex++;
-                                    if (commandIndex < scriptArray.length){
-                                        command = scriptArray[commandIndex];
-                                        currentCommand = replaceVar(command, job);
-                                    }  else{
-                                        isDirective = false;
+                                if (!fs.existsSync(filesPath + jobId + '/' + fileName)) {
+                                    console.log("Error saving resource file. File resource not found.");
+                                    //foundErr = true;
+                                    message('error:Resource not found - ' + filesPath + jobId + '/' + fileName);
+                                    stream.close();
+                                } else {
+                                    aSyncInProgress++;
+                                    sendFile(fileName, remotePath, jobId);
+                                    function sendFile(aFileName, aRemotePath, aJobID) {
+                                        conn.sftp(
+                                            function (err, sftp) {
+                                                //    var msg = "";
+                                                if (err) {
+                                                    console.log("Error, problem starting SFTP:", err);
+                                                    message('error:problem starting SFTP - ' + filesPath + aJobID + '/' + aFileName);
+                                                    aSyncInProgress--;
+                                                    stream.close();
+                                                    // msg = "Error, problem starting SFTP" + '\n';
+                                                    // stream.write(msg);
+                                                } else {
+                                                    //console.log("file sftp: " + filesPath + aJobID + '/' + aFileName + ' > ' + aRemotePath + '/' + aFileName);
+                                                    var readStream = fs.createReadStream(filesPath + aJobID + '/' + aFileName);
+
+                                                    var writeStream = sftp.createWriteStream(remotePath + '/' + aFileName);
+                                                    writeStream.on('error', function (e) {
+                                                        //console.log(e);
+                                                        message('error:saveFile - error creating target stream - ' + aRemotePath + '/' + aFileName);
+                                                        aSyncInProgress--;
+                                                        stream.close();
+                                                    });
+
+                                                    writeStream.on('close', function () {
+                                                        sftp.end();
+                                                        message('saveFile:send complete - ' + aRemotePath + '/' + aFileName);
+                                                        aSyncInProgress--;
+                                                        if(deferredExit == true && aSyncInProgress == 0){
+                                                            stream.write("exit" + '\n');
+                                                            sshSuccess = true
+                                                        }
+                                                    });
+                                                    readStream.pipe(writeStream);
+
+                                                }
+                                            }
+                                        )
                                     }
                                 }
-                            }while(isDirective === true);
-                         }
 
-                         //function to replace the embedded var references with values. Returns new formatted commandStr
-                        function replaceVar(commandStr, job) {// find and replace inserted command vars eg. <%p.mVar4%>
+                                isDirective = true;
+                            } else if
+                            (currentCommand.substr(0, 5) === "snap:") {
 
-                            const items = commandStr.split(new RegExp('<%', 'g'));
-                            items.forEach(function (item) {
-                                item = item.substr(0, item.indexOf('%>'));
+                                var url = currentCommand.replace('snap:','').trim();
+                                //console.log('url: ' + url);
+                                aSyncInProgress++;
+                                message('url:' + url);
 
-                                if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 'c.') {
-                                    var targetVarName = item.substr(2);
-                                    var pid = job.parent;
-                                    var repStr = "<%c." + targetVarName + "%>";
-                                    if(job.variables[targetVarName]){
-                                        var val = job.variables[targetVarName].value;
+                                SystemsJSON[ids[0]].lastBuild.url=url;
+
+                                (async function () {
+
+                                    console.log("Page.navigate: " + url)
+
+                                    await Page.navigate({url: url});
+                                    await Page.loadEventFired();
+
+                                    console.log("Page.loadEventFired: " + url)
+
+                                    // message('snap:created: ' + "screenshot.png");
+
+                                    aSyncInProgress--;
+                                    console.log(aSyncInProgress.toString())
+                                    if(deferredExit == true && aSyncInProgress == 0){
+                                        stream.write("exit" + '\n');
+                                        sshSuccess = true
+                                    }
+
+                                })();
+                                isDirective = true;
+
+                            } else if
+                            (currentCommand.substr(0, 9) === "navigate:") {
+
+                                var url = currentCommand.replace('navigate:','').trim();
+                                //console.log('url: ' + url);
+                                aSyncInProgress++;
+                                message('url:' + url);
+
+                                SystemsJSON[ids[0]].lastBuild.url=url;
+
+                                (async function () {
+
+                                    console.log("Page.navigate: " + url)
+
+
+                                    await Page.navigate({url: url});
+                                    await Page.loadEventFired();
+
+                                    console.log("Page.loadEventFired: " + url)
+
+                                    // message('snap:created: ' + "screenshot.png");
+
+                                    aSyncInProgress--;
+                                    if(deferredExit == true && aSyncInProgress == 0){
+                                        stream.write("exit" + '\n');
+                                        sshSuccess = true
+                                    }
+
+                                })();
+                                isDirective = true;
+
+                            } else if
+                            (currentCommand.substr(0, 11) === "reloadPage:") {
+
+                                aSyncInProgress++;
+
+                                (async function () {
+
+                                    console.log("Page.reload ")
+
+                                    await Page.reload();
+                                    aSyncInProgress--;
+                                    if(deferredExit == true && aSyncInProgress == 0){
+                                        stream.write("exit" + '\n');
+                                        sshSuccess = true
+                                    }
+
+                                })();
+                                isDirective = true;
+
+                            } else if
+                            (currentCommand.substr(0, 6) === "abort:") {
+
+                                message('Abort directive called');
+                                stream.close();
+
+                                isDirective = true;
+                            }
+
+                            if (isDirective === true) {
+                                commandIndex++;
+                                if (commandIndex < scriptArray.length){
+                                    command = scriptArray[commandIndex];
+                                    currentCommand = replaceVar(command, job);
+                                }  else{
+                                    isDirective = false;
+                                }
+                            }
+                        }while(isDirective === true);
+                    }
+
+                    //function to replace the embedded var references with values. Returns new formatted commandStr
+                    function replaceVar(commandStr, job) {// find and replace inserted command vars eg. <%p.mVar4%>
+
+                        const items = commandStr.split(new RegExp('<%', 'g'));
+                        items.forEach(function (item) {
+                            item = item.substr(0, item.indexOf('%>'));
+
+                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 'c.') {
+                                var targetVarName = item.substr(2);
+                                var pid = job.parent;
+                                var repStr = "<%c." + targetVarName + "%>";
+                                if(job.variables[targetVarName]){
+                                    var val = job.variables[targetVarName].value;
+                                    commandStr = commandStr.replace(repStr, val)
+                                }
+                            }; //look in job for vars
+
+                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 'p.') {
+                                var targetVarName = item.substr(2);
+                                var pid = job.parent;
+                                var repStr = "<%p." + targetVarName + "%>";
+                                if (typeof latestVarCache[pid] !== "undefined"){
+                                    if (typeof latestVarCache[pid][targetVarName] !== "undefined"){
+                                        var val = latestVarCache[pid][targetVarName].replace(/\n$/, "").replace(/\r$/, "")
                                         commandStr = commandStr.replace(repStr, val)
                                     }
-                                }; //look in job for vars
+                                }
+                            }; //look in parent for vars
 
-                                if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 'p.') {
-                                    var targetVarName = item.substr(2);
-                                    var pid = job.parent;
-                                    var repStr = "<%p." + targetVarName + "%>";
-                                    if (typeof latestVarCache[pid] !== "undefined"){
-                                        if (typeof latestVarCache[pid][targetVarName] !== "undefined"){
-                                            var val = latestVarCache[pid][targetVarName].replace(/\n$/, "").replace(/\r$/, "")
+                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 'a.') {
+                                var targetVarName = item.substr(2);
+                                var repStr = "<%a." + targetVarName + "%>";
+                                var anArr = job.ft.replace('#/', '').split('/');
+                                anArr.reverse().forEach(function (an) {
+                                    if (typeof latestVarCache[an] !== "undefined"){
+                                        if (typeof latestVarCache[an][targetVarName] !== "undefined"){
+                                            var val = latestVarCache[an][targetVarName];
                                             commandStr = commandStr.replace(repStr, val)
                                         }
                                     }
-                                }; //look in parent for vars
+                                })//reverse the ancestor list so that closer ancestor values are used first.
+                            }; //look in ancestors for vars
 
-                                if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 'a.') {
-                                    var targetVarName = item.substr(2);
-                                    var repStr = "<%a." + targetVarName + "%>";
-                                    var anArr = job.ft.replace('#/', '').split('/');
-                                    anArr.reverse().forEach(function (an) {
-                                        if (typeof latestVarCache[an] !== "undefined"){
-                                            if (typeof latestVarCache[an][targetVarName] !== "undefined"){
-                                                var val = latestVarCache[an][targetVarName];
-                                                commandStr = commandStr.replace(repStr, val)
-                                            }
-                                        }
-                                    })//reverse the ancestor list so that closer ancestor values are used first.
-                                }; //look in ancestors for vars
+                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 's.') {
+                                var targetVarName = item.substr(2);
+                                var ft = job.ft;
+                                var repStr = "<%s." + targetVarName + "%>";
+                                var bestVal;
+                                var relativeScore = 0; //track how close of a relative the job the varwas found in and give pref to closer relatives.
 
-                                if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 's.') {
-                                    var targetVarName = item.substr(2);
-                                    var ft = job.ft;
-                                    var repStr = "<%s." + targetVarName + "%>";
-                                    var bestVal;
-                                    var relativeScore = 0; //track how close of a relative the job the varwas found in and give pref to closer relatives.
-                                    
-                                    for (var id in SystemsJSON) { //look in all jobs for var.
-                                        if (SystemsJSON.hasOwnProperty(id) && SystemsJSON[id].comType === 'job') {
-                                            var resultsSystem = SystemsJSON[id].ft.split('/')[1];
-                                            if (resultsSystem === ft.split('/')[1]){ //if same system...
-                                                if (typeof latestVarCache[id] !== "undefined"){
-                                                    if (typeof latestVarCache[id][targetVarName] !== "undefined"){
-                                                        var thisScore = calcRelativeScore(ft, SystemsJSON[id].ft);
-                                                        var val = latestVarCache[id][targetVarName];
-                                                        if(relativeScore < thisScore){
-                                                            relativeScore = thisScore;
-                                                            bestVal = val;
-                                                        }
+                                for (var id in SystemsJSON) { //look in all jobs for var.
+                                    if (SystemsJSON.hasOwnProperty(id) && SystemsJSON[id].comType === 'job') {
+                                        var resultsSystem = SystemsJSON[id].ft.split('/')[1];
+                                        if (resultsSystem === ft.split('/')[1]){ //if same system...
+                                            if (typeof latestVarCache[id] !== "undefined"){
+                                                if (typeof latestVarCache[id][targetVarName] !== "undefined"){
+                                                    var thisScore = calcRelativeScore(ft, SystemsJSON[id].ft);
+                                                    var val = latestVarCache[id][targetVarName];
+                                                    if(relativeScore < thisScore){
+                                                        relativeScore = thisScore;
+                                                        bestVal = val;
                                                     }
                                                 }
                                             }
                                         }
                                     }
-                                    //now look in system for the var
-                                    if (typeof latestVarCache[ft.split('/')[1]] !== "undefined"){
-                                        if (typeof latestVarCache[ft.split('/')[1]][targetVarName] !== "undefined"){
-                                            var val = latestVarCache[ft.split('/')[1]][targetVarName];
-                                            var thisScore = 2;
-                                            if(relativeScore < thisScore){
-                                                relativeScore = thisScore;
-                                                bestVal = val;
-                                            }
+                                }
+                                //now look in system for the var
+                                if (typeof latestVarCache[ft.split('/')[1]] !== "undefined"){
+                                    if (typeof latestVarCache[ft.split('/')[1]][targetVarName] !== "undefined"){
+                                        var val = latestVarCache[ft.split('/')[1]][targetVarName];
+                                        var thisScore = 2;
+                                        if(relativeScore < thisScore){
+                                            relativeScore = thisScore;
+                                            bestVal = val;
                                         }
+                                    }
+                                };
+                                if (typeof bestVal !== "undefined"){
+                                    commandStr = commandStr.replace(repStr, bestVal);
+                                }
+
+
+
+
+                            }; //look in same system for vars
+
+                            //function to return number of ancestors the current running job has in common with the found var job. Requires: jobFT and foundFT job ID strings separated by "/".
+                            function calcRelativeScore(jobFT, foundFT){//how many gr/parents does the current running job have in common with the found var job..
+                                const jobFTArr = jobFT.split('/');
+                                const foundFTArr = foundFT.split('/');
+                                var x = 0;
+                                var score = 0;
+                                while((typeof jobFTArr[x] !== "undefined")&&(typeof foundFTArr[x] !== "undefined")){
+                                    if (jobFTArr[x] === foundFTArr[x]){
+                                        score++;
                                     };
-                                    if (typeof bestVal !== "undefined"){
-                                        commandStr = commandStr.replace(repStr, bestVal);
-                                    }
-
-
-
-
-                                }; //look in same system for vars
-
-                                //function to return number of ancestors the current running job has in common with the found var job. Requires: jobFT and foundFT job ID strings separated by "/".
-                                function calcRelativeScore(jobFT, foundFT){//how many gr/parents does the current running job have in common with the found var job..
-                                    const jobFTArr = jobFT.split('/');
-                                    const foundFTArr = foundFT.split('/');
-                                    var x = 0;
-                                    var score = 0;
-                                    while((typeof jobFTArr[x] !== "undefined")&&(typeof foundFTArr[x] !== "undefined")){
-                                       if (jobFTArr[x] === foundFTArr[x]){
-                                            score++;
-                                        };
-                                       x++;
-                                    }
-                                    return score;
+                                    x++;
                                 }
-                            });
-
-                            //If there are any <% patterns left in the line then raise error and abort
-                            const  remainingItemsCount = commandStr.split(new RegExp('<%', 'g')).length;
-                            const  remainingItems = commandStr.split(new RegExp('<%', 'g'));
-                            if(remainingItemsCount > 1){
-                                var item = remainingItems[1]
-                                item = item.substr(0, item.indexOf('%>'));
-
-                                if (item.length > 2 && item.length < 32) {
-                                    //console.log("Error: Component Variable not found: " + item + '\n');
-                                    message("Error: Component Variable not found: " + item + '\n');
-                                    flushMessQueue();
-                                    sshSuccess = false;
-                                    stream.close();
-                                    return ('');
-                                }
+                                return score;
                             }
-                            return (commandStr);
+                        });
+
+                        //If there are any <% patterns left in the line then raise error and abort
+                        const  remainingItemsCount = commandStr.split(new RegExp('<%', 'g')).length;
+                        const  remainingItems = commandStr.split(new RegExp('<%', 'g'));
+                        if(remainingItemsCount > 1){
+                            var item = remainingItems[1]
+                            item = item.substr(0, item.indexOf('%>'));
+
+                            if (item.length > 2 && item.length < 32) {
+                                //console.log("Error: Component Variable not found: " + item + '\n');
+                                message("Error: Component Variable not found: " + item + '\n');
+                                flushMessQueue();
+                                sshSuccess = false;
+                                stream.close();
+                                return ('');
+                            }
                         }
+                        return (commandStr);
+                    }
 
-                        // function getVarValFromFilex(file, targetVarName) {
-                        //     try {
-                        //         var results = JSON.parse(fs.readFileSync(resultsPath + file));
-                        //     } catch (e) {
-                        //         console.log(resultsPath + file + " not valid results JSON");
-                        //         return('');
-                        //     }
-                        //     var trimmedResults = '';
-                        //     results.forEach(function (row) {
-                        //         if (row.hasOwnProperty('results')) {
-                        //             if (row.results.substr(0, 4) === 'var:') {
-                        //                 var varName = row.results.split(':')[1];
-                        //                 if (varName === targetVarName) {
-                        //                     trimmedResults += row.results.substr(('var:' + varName + ':').length)
-                        //                 }
-                        //             }
-                        //         }
-                        //         if (row.hasOwnProperty('x') && row.x !== '') {
-                        //             varName = row.x;
-                        //             if (varName === targetVarName) {
-                        //                 trimmedResults += row.results
-                        //             }
-                        //         }
-                        //     });
-                        //     return (trimmedResults.replace(/\n$/, "").replace(/\r$/, ""));
-                        // }   // delete--------------------
-                    });
-                    stream.stderr.on('data', function (data) {
-                        clearTimeout(lastTimeout);
-                        console.log('STDERR: ' + data);
-                        res.end('STDERR: ' + data);
-                    });
 
-                    //first command
-                    stream.write('stty cols 200' + '\n' + "PS1='[SysStack]'" + '\n'); //set prompt
-                    lastTimeout = setTimeout(conTimeout, timeOut);
                 });
-             });
 
-            //Try to connect to the host
-            try {
-                var connectHost;
-
-                //If commponent is set 'run local' set connectHost to local host (127.0.0.1) otherwise use system var 'host' value and 'username' value
-                if(SystemsJSON[jobId].runLocal === 1){
-                    connectHost = "127.0.0.1"
-                }else{
-                    connectHost = getSystemVarVal(jobId, 'host')
-                }
-                conn.connect({
-                    host: connectHost ,
-                    port: getSystemVarVal(jobId, 'port'),
-                    username: getSystemVarVal(jobId, 'username'),
-                    privateKey: runKey
+                stream.stderr.on('data', function (data) {
+                    clearTimeout(lastTimeout);
+                    console.log('STDERR: ' + data);
+                    res.end('STDERR: ' + data);
                 });
-            }
-            catch(error) {
-                console.error(error);
-                console.log('runKey: ' + runKey);
-                res.end("**Connection Error**");
-            }
 
+                //first command
+                stream.write('stty cols 200' + '\n' + "PS1='[SysStack]'" + '\n'); //set prompt
+                lastTimeout = setTimeout(conTimeout, timeOut);
+            });
         }
     }
 });
+
 
 //Service Rt: /getVars to return a list of all vars in current system , Method: get, Requires: nothing , Returns: json string of format {pri:priFiles, pub:pubFiles}
 //The service is to be rewritten utalizing new lookups
@@ -3227,9 +3226,10 @@ router.get("/ClosestRerunnableAn",function(req,res){
                 parentID = SystemsJSON[parentID].parent;
                 x++
             }
+        }else{
+            ClosestRerunnableAn = SystemsJSON[id];
+            ClosestRerunnableAnID = id
         }
-
-    }else{
 
     }
     res.end(JSON.stringify({id:ClosestRerunnableAnID, ClosestRerunnableAn:ClosestRerunnableAn}));
