@@ -329,12 +329,16 @@ router.get("/highlight",function(req,res){
     }
     if(possibleJsId !== ""){
         (async function () {
-            const { exceptionDetails, result: remoteObject } = await protocol.send('Runtime.evaluate', {
+            var { exceptionDetails, result: remoteObject } = await protocol.send('Runtime.evaluate', {
                 expression: `document.getElementById(${JSON.stringify(possibleJsId)})`
             });
             //console.log(remoteObject);
             if(remoteObject.subtype !== "null" && remoteObject.subtype !== "error"){
+                //highlight ele
                 await Overlay.highlightNode({"highlightConfig":HighlightConfig, "objectId":remoteObject.objectId});
+
+                //scroll to ele
+                await protocol.send('Runtime.evaluate', { expression: ` $('.scroller').animate({scrollTop: $("#` + possibleJsId  + `").offset().top}, 200);` });
             }
         })();
     }
