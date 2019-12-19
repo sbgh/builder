@@ -242,7 +242,7 @@ padding-left: 0px;
 
 .cust-panel-heading {
    padding: 1px 1px;
-   min-width: 145px;
+   min-width: 185px;
 }
 
 .treePanelHeading{
@@ -900,7 +900,7 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
 .search-group{
    float: right;
    width: calc(100% - 150px);
-   max-width: 150px;
+   max-width: 200px;
    margin-bottom: 0px;
    padding-left: 5px;
 }
@@ -1333,4 +1333,12 @@ tbody.varTbody{
 
 .lastCol{
    padding-right: 0px;
+}
+
+#searchCycleDiv{
+   float: right;
+   /*margin-left: -40px;*/
+}
+
+.searchCycleBtn{
 }

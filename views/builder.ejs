@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>/builder</title>
+    <title>ezStack builder</title>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <!--<script src="//https://ajax.googleapis.com/ajax/libs/d3js/5.12.0/d3.min.js"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.3/jstree.min.js"></script>
     <script src="https://pagecdn.io/lib/ace/1.4.6/ace.js" integrity="sha256-CVkji/u32aj2TeC+D13f7scFSIfphw2pmu4LaKWMSY8=" crossorigin="anonymous"></script>
-    <script src='/tinymce/js/tinymce/tinymce.min.js' referrerpolicy="origin"></script>
+    <script src="/tinymce/js/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
 
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="/theme/startbootstrap-sb-admin-2-gh-pages/dist/css/sb-admin-2.min.css">
@@ -27,18 +27,15 @@
 
     <script src="ansi_up/ansi_up.js" type="text/javascript"></script>
 
-     <!-- <link rel="stylesheet" href="/jstree/dist/themes/proton/style.min.css" /> -->
-
-    <!-- doc.ready() -->
+    <!--Builder Functions-->
     <script type = "text/javascript" language = "javascript" >
 
         var pickedLib = '#';
         var lastStyleSheet;
         var bottomHiddenFlag = true;
         var bottomMinimizedFlag = true;
+        <!-- doc.ready() -->
         $(document).ready(function() {
-
-
 
             $('#jobForm').on('submit', function(e){ e.preventDefault()});
             $('#sysForm').on('submit', function(e){ e.preventDefault()});
@@ -418,6 +415,8 @@
             //$('#jstree_div').on("copy_node.jstree", function (e, data) {});  //not used
 
             //tree ready
+            var foundList = [];
+            var searchCycleIndex = 0;
             $("#jstree_div").bind('ready.jstree', function(e, data) {
 
                 //Add events for shift click expand/close
@@ -435,7 +434,53 @@
                         $("#jstree_div").jstree("close_all", data.node);
                     }
                 });
+
+                $('#jstree_div').on('refresh.jstree', function () {
+                    searchCycleIndex = 0;
+
+                    $.get('/getFoundList', function(data) {
+                        foundList = JSON.parse(data);
+                        if(foundList.length > 0){
+                            $("#searchCycleDiv").show();
+                            $("#compSearch").css({width : "calc(100% - 190px)"});
+                        }else{
+                            $("#searchCycleDiv").hide();
+                            $("#compSearch").css({width : "calc(100% - 150px)"});
+                        }
+                    })
+                });
             })
+            $("#searchCycleDiv").hide();
+
+            $("#searchCycleDown").click(function(event){
+                const matches = foundList;
+                searchCycleIndex++;
+                searchCycleIndex = searchCycleIndex > (matches.length - 1) ? 0 : searchCycleIndex;
+                const id = matches[searchCycleIndex];
+
+                $("#jstree_div").jstree("close_all", '#');
+
+                $('#jstree_div').jstree("deselect_all");
+                $('#jstree_div').jstree('select_node', id);
+                $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
+
+
+            })
+
+            $("#searchCycleUp").click(function(event){
+                const matches = foundList;
+                searchCycleIndex--;
+                searchCycleIndex = searchCycleIndex < 0 ? matches.length - 1 : searchCycleIndex;
+                const id = matches[searchCycleIndex];
+
+                $("#jstree_div").jstree("close_all", '#');
+
+                $('#jstree_div').jstree("deselect_all");
+                $('#jstree_div').jstree('select_node', id);
+                $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
+            })
+
+
 
             //tree click
             $('#jstree_div').on("select_node.jstree", function (e, data) {
@@ -466,6 +511,7 @@
 
                             //query backend for a specific job and update ui fields
                             getJobByID(selectedNode, "read");
+                            $.get('/highlight', { id: selectedNode }, function(data) {});
                             $("#comType").val('Job');
 
                             $("#sysScreen").hide();
@@ -520,14 +566,6 @@
             });
 
             function loadDashboard(){
-//                if(localStorage['lastSreenShot']) {
-//                    $('#screenShotImageDashboard')[0].src=localStorage['lastSreenShot']
-//                }else{
-//                    $("#screenShotImageDashboard").hide();
-//                };
-//                if(localStorage['appLink']) {
-//                    $("#screenShotLink")[0].innerHTML=localStorage['appLink']
-//                };
 
                 loadDashSystemDropdown();
 
@@ -861,14 +899,14 @@
                 $("#bottomRow").hide(function(){
                     var container = $('#rowContainer');
                     //bottomHiddenFlag = true;
-                    setWindowHeight(container.height(), container, true);
+                    setWindowHeight(container.height(), container, false);
                 });
             }
             function showBottom(){
                 $("#bottomRow").show(function(){
                     var container = $('#rowContainer');
                     //bottomHiddenFlag = false;
-                    setWindowHeight(currentHeight, container, true);
+                    setWindowHeight(currentHeight, container, false);
                 });
             }
             //hideBottom();
@@ -887,14 +925,7 @@
                 $("#sysFuncVal").html('');
                 $("#runLoc").html('');
                 $("#runLocVal").html('');
-
-          //      description.setContents("");
-
-//                templates
-
                 $("#compVariables").html('');
-
-                //$("#version").text('');
                 $("#text").val('');
                 $('#resourceFiles').val('');
                 $("#ft").val('');
@@ -944,7 +975,7 @@
                 }
             });
 
-            //function to create a block of var input html for new vars and edits. prvide indev str eg "0" or "1" ...
+            //function to create a block of var input html for new vars and edits. provide index str eg "0" or "1" ...
             function createVarEditHtml(currentRowCntStr){
                 var newHtml = '<tr id="new_row'+currentRowCntStr+'" class="d-flex varRow newVarRow">'
 
@@ -1026,7 +1057,6 @@
                 $('#varEditModal').on('hidden.bs.modal', function() {
                     var idn = $("#varEditModalCutrrentIdn").val();
                     $("#newCompVarValue"+idn).val( tinymce.activeEditor.getContent() )
-
                 });
             }
 
@@ -1043,18 +1073,8 @@
                 newHtml += '<span id="newSysVarPrivateDisp'+currentRowCntStr+'" class="newSysVarPrivateDisp"></span>';
                 newHtml += '</div></td>';
 
-                //New var type pick
-//                newHtml += '<td class="col-2 center">'
-//                newHtml += '<button class="dropdown-toggle newSysVarTypeButton" type="button" id="newSysVarTypeButton'+currentRowCntStr+'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Text</button>';
-//                newHtml += '<div id="newSysVarTypeDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="newSysVarTypeButton'+currentRowCntStr+'" x-placement="bottom-start" >';
-
-//                newHtml +=  '<div><a class="dropdown-item newSysVarTypeDropdownItem" data-target="newSysVarTypeButton'+currentRowCntStr+'" data-type="Text" href="#">Text</a></div>' +
-//                    '<div><a class="dropdown-item newSysVarTypeDropdownItem" data-target="newSysVarTypeButton'+currentRowCntStr+'" data-type="WYSIWYG" href="#" >WYSIWYG</a></div>' ;
-//                newHtml +=  '</div></td>'
-
                 //New system variable value
                 newHtml += '<td class="col-6"><div class="sysVarEditValRow"><a href="#">' +
-//                    '<i class="fa fa-pencil fa-fw sysVarEditValButton" data-idn="'+currentRowCntStr+'" style=""></i></a>' +
                     '<input id="newSysVarValue'+currentRowCntStr+'" class="form-control newSysVarValue" type="text"></div></td>';
                 newHtml += '</tr>'
 
@@ -1418,7 +1438,6 @@
                     loadVarTable(data[0].variables, false);
 
                     $("#compVariables").val(data[0].variables);
-                    //$("#version").text(data[0].ver);
                     $("#templateType").val(data[0].templateType);
                     $("#text").val(data[0].text);
                     $('#resourceFiles').val(data[0].resourceFiles);
@@ -1490,9 +1509,6 @@
                         currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "none";
                         currentTemplatesArr[inx].setReadOnly(true);
                     }
-
-
-                    // readModeJob();
                 })
             }
 
@@ -1555,10 +1571,6 @@
                             //add private col
                             pSysHtml += "<td class='col-1 center'>" + (data[0].variables[varName].private ? "Yes":"No") + "</td>";
 
-                            //add type col
-//                            var typeTxt = data[0].variables[varName].type;
-//                            pSysHtml += "<td class='col-2 center'>" + (typeTxt === "" ? "Text" : typeTxt) + "</td>";
-
                             //add value col
                             pSysHtml += "<td class='col-6 varValTd'>" +
                                 "<span id = 'varSysValTd" + idn + "'></span>" +
@@ -1602,7 +1614,6 @@
 
                             $("#newSysVarName" + idn).val(varName);
                             $("#newSysVarPrivateInput" + idn)[0].checked = currentSysVarArr[varName].private;
-//                            $("#newSysVarTypeButton" + idn).val(currentSysVarArr[varName].type);
                             $("#newSysVarValue" + idn).val(currentSysVarArr[varName].value);
                             $("#newSysVarPrivateDisp"+idn).html(currentSysVarArr[varName].private ? 'Yes' : 'No');
 
@@ -1650,7 +1661,6 @@
                         );
                     };
 
-                  //  $("#sysVariables").val(data[0].variables);
                     $("#text").val(data[0].text);
                     $("#iconURL").val('');
 
@@ -1715,7 +1725,7 @@
                 $("#text").val('');
             }
 
-            //run 
+            //run
             var refreshFlag = false;
             $("#run_button").click(function(event){
                 var id = $("#id").val();
@@ -1930,17 +1940,8 @@
                     $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
                     $('#jstree_div').jstree(true).refresh(true);
 
-                    //Enable tree
-//                    $('#jstree_div li').each( function() {
-//                        $("#jstree_div").jstree().enable_node(this.id);
-//                    })
-
                 }).fail(function (e) {
 
-                    //Enable tree
-//                    $('#jstree_div li').each( function() {
-//                        $("#jstree_div").jstree().enable_node(this.id);
-//                    })
                 });
 
                 $('#runModal').modal('toggle');
@@ -1954,7 +1955,6 @@
                 }else{
                     //enable run button hide warning
                     $("#runConfirmButton").removeAttr("disabled");
-//                    $('#runClosestAnGroup').hide();
                     $("#closestAnWarning").text(" ")
                 }
             });
@@ -1971,10 +1971,8 @@
                     $("#ClosestRerunnableAn").val(dataObj.id );
                     if (dataObj.id !== "" && dataObj.ClosestRerunnableAn.enabled){
                         $("#runConfirmButton").removeAttr("disabled");
-//                        $('#runClosestAnGroup').hide();
                         $("#closestAnWarning").text(" ")
                     }else{
-//                        $('#runClosestAnGroup').show();
                         if(!dataObj.ClosestRerunnableAn.enabled){
                             $("#runConfirmButton").attr("disabled","true");
                             $("#closestAnWarning").text("Warning: Component "+dataObj.ClosestRerunnableAn.name+" is disabled.")
@@ -2286,9 +2284,8 @@
                 $(".ql-toolbar").hide()
 
                 $(".newSysVarBtn").hide();
-                $(".sysVarDelButton").hide()
+                $(".sysVarDelButton").hide();
                 $(".sysVarEditButton").hide()
-//                $(".sysVarEditValButton").hide()
             }
 
             function readModeLibJob(){
@@ -2322,7 +2319,6 @@
                 $("#moveUp_button").hide();
                 $("#moveDn_button").hide();
                 $("#screenShotImageHolder").hide();
-                screenShotImageHolder
                 
                 var checkBoxes = $(".varCheckboxFileList")
                 if (checkBoxes.exists()){
@@ -3118,7 +3114,7 @@
                 });
             });
 
-            //Calling this function will set the hight of each element in
+            //Calling this function will set the height of each element in the view
             function setWindowHeight(topHeight, container, AnimateIt){
                 var heightAniDuration = 0 ;
                 if(AnimateIt){heightAniDuration = 300}
@@ -3132,17 +3128,17 @@
                     topHeight = currentHeight = container.height()- 33
                 }
 
-                 if(!bottomHiddenFlag){
-                     if (topHeight > (container.height() - 33) && isResizingHeight){
-                         topHeight = container.height() - 33;
-                         bottomMinimizedFlag = true;
-                     }
+                if(!bottomHiddenFlag){
+                    if (topHeight > (container.height() - 33) && isResizingHeight){
+                        topHeight = container.height() - 33;
+                        bottomMinimizedFlag = true;
+                    }
 
-                     if (topHeight < (container.height() * .2)){
-                         topHeight = container.height() * .2
-                     }
+                    if (topHeight < (container.height() * .2)){
+                        topHeight = container.height() * .2
+                    }
 
-                     //would be nice to include jquery-ui libs...
+                    //would be nice to include jquery-ui libs...
                     $("#jstree_div").animate({height: (topHeight - (28 + 30))},heightAniDuration);
                     $("#jslibtree_div").animate({height: (topHeight - (28 + 29))},heightAniDuration);
 
@@ -3158,7 +3154,7 @@
                     $('#results_html').animate({height: container.height() - topHeight - (34 + 15)},heightAniDuration);
                     $('#results_codes').animate({height: container.height() - topHeight - (34 + 15)},heightAniDuration);
                     $('#results-group').animate({height: container.height() - topHeight - (34 + 15)},heightAniDuration);
-                 }else{
+                }else{
 
                     $("#jstree_div").height(topHeight -26);
                     $("#jslibtree_div").height(topHeight -26 );
@@ -3168,7 +3164,7 @@
 
                     $("#job-form-panel").height(topHeight -84 );
                     $("#sys-form-panel").height(topHeight -84 );
-                 }
+                }
             }
 
             function setLibWindowWidth(leftWidth, container){
@@ -3832,9 +3828,9 @@
                             //alert('up');
                             var targetNode =  currentTree.jstree(true).get_prev_dom($("#id").val());
                             if(targetNode.length > 0){
-                                currentTree.jstree(true).get_node(targetNode, true).children('.jstree-anchor').focus();
                                 currentTree.jstree("deselect_all");
                                 currentTree.jstree('select_node',targetNode);
+                                currentTree.jstree(true).get_node(targetNode, true).children('.jstree-anchor').focus();
                             }
                             break;
                         case 39:
@@ -4476,9 +4472,10 @@
                         <div class="cust-panel-heading">
                             Systems <a class='newSys' href='#'><i class="fa fa-plus fa-fw"></i></a> <a href="#" data-toggle="modal" data-target="#welcomeModal">  <i class="fa fa-question fa-fw"></i></a>
                             <i id="search-icon" class="fa fa-search  fa-fw search-icon"></i>
-                            <div class="form-group search-group">
+                            <span id="searchCycleDiv"><i id="searchCycleUp" class="fa fa-chevron-up fa-fw searchCycleBtn"></i><i  id="searchCycleDown" class="fa fa-chevron-down fa-fw searchCycleBtn"></i></span>
+                            <span id="compSearch" class="form-group search-group">
                                 <input class="form-control form-custom searchInput" placeholder="" id="searchInput" >
-                            </div>
+                            </span>
                         </div>
                     </div>
 

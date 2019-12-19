@@ -655,3 +655,7 @@ input:focus + .slider {
 .idInspectLabel{
     color: #F8F8F8;
 }
+
+.searchCycleBtn, .search-icon{
+    color: #79bdf3;
+}

@@ -60,6 +60,7 @@ global.SystemsJSON = JSON.parse(SystemsJSONContents);
 
 //-----------headless chrome-------------
 global.Page = '';
+global.Runtime = '';
 global.pageInput = '';
 global.protocol='';
 global.chrome='';
@@ -86,7 +87,8 @@ const viewport = [1280,720];
     PageInput = protocol.Input;
     Overlay = protocol.Overlay;
     DOM = protocol.DOM;
-    const {Emulation, Runtime} = protocol;
+    Runtime = protocol.Runtime
+    const {Emulation} = protocol;
     await Promise.all([Page.enable(), Runtime.enable(), DOM.enable(), Overlay.enable()]);
 
     //Event when inspected element is clicked after Overlay.setInspectMode is turned on.
@@ -110,9 +112,6 @@ const viewport = [1280,720];
     await Emulation.setDeviceMetricsOverride(device);
     await Emulation.setVisibleSize({width: viewport[0], height:viewport[1]});
 
-    //await Page.navigate({url: 'http://google.com'});
-    //await Page.loadEventFired();
-
     //start screen cast
     Page.startScreencast({
         format: 'jpeg',
@@ -129,12 +128,7 @@ const viewport = [1280,720];
         currentFrame = image;
 
         //console.log('saved frame ' + frameCount.toString());
-
-        // lastShot = setTimeout(ackFrame, 1000);
-        // lastFrameId = sessionId;
-        // function ackFrame(){
-            Page.screencastFrameAck({sessionId: sessionId});
-        // }
+        Page.screencastFrameAck({sessionId: sessionId});
     });
 
 
@@ -323,11 +317,37 @@ router.get("/inspect",function(req,res){
     res.end();
 });
 
+router.get("/highlight",function(req,res){
+    var compId = req.query.id;
+
+    //obtain value of id component variable if it exists
+    var possibleJsId = "";
+    if(SystemsJSON[compId].hasOwnProperty("variables")){
+        if(SystemsJSON[compId].variables.hasOwnProperty("id")){
+            possibleJsId = SystemsJSON[compId].variables.id.value;
+        }
+    }
+    if(possibleJsId !== ""){
+        (async function () {
+            const { exceptionDetails, result: remoteObject } = await protocol.send('Runtime.evaluate', {
+                expression: `document.getElementById(${JSON.stringify(possibleJsId)})`
+            });
+            //console.log(remoteObject);
+            if(remoteObject.subtype !== "null" && remoteObject.subtype !== "error"){
+                await Overlay.highlightNode({"highlightConfig":HighlightConfig, "objectId":remoteObject.objectId});
+            }
+        })();
+    }
+    res.end();
+});
+
 var lastFrame = {};
 var currentFrame = {};
 var startDate = new Date();
 var totalStartDate = new Date();
 var frameCount = 0;
+
+var searchFoundList = [];
 
 //Service Rt: /navigate to set chromium page navigation url, Method: get, Requires: url = target url, Returns:  nothing
 router.get("/navigate",function(req,res){
@@ -589,11 +609,11 @@ router.get("/JobsTree",function(req,res){
         rowdata.parent = '#';
         resJSON.push(rowdata);
 
+        searchFoundList = [];
+
         //Loop through all SystemJSON and filter if search term is present.
         for (var key in SystemsJSON) {
             if (SystemsJSON.hasOwnProperty(key)) {
-
-
 
                 //filter by search string
                 if (searchSt.length === 0) { //If no search then simply add row
@@ -601,6 +621,7 @@ router.get("/JobsTree",function(req,res){
                 } else { //if there is filter spcified, use isFound function to flag rows that match
                     if(isFoundIn(key, searchSt)){ //Component matches
 
+                        searchFoundList.push(key)
                         var found = resJSON.find(function (row) {
                             return row.id === key;  //Add a prop ID to hold component ID
                         });
@@ -789,6 +810,10 @@ router.get("/JobsTree",function(req,res){
 
     //return new formated json
     res.end(respTxt);
+});
+
+router.get("/getFoundList",function(req,res){
+    res.end(JSON.stringify(searchFoundList));
 });
 
 //Service Rt: /jobs [components], Method: get, Requires: id = component ID or # [all], Returns:  raw SystemJSON object for ajax queries
@@ -3549,7 +3574,6 @@ app.use("*",function(req,res){
 var secureServer = https.createServer({
     key: fs.readFileSync('./ssl/server.key'),
     cert: fs.readFileSync('./ssl/server.crt'),
-    requestCert: true,
     rejectUnauthorized: false
 }, app).listen('8443', function() {
     console.log("Secure Express server listening on port 8443");
