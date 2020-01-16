@@ -338,7 +338,7 @@ router.get("/highlight",function(req,res){
                 await Overlay.highlightNode({"highlightConfig":HighlightConfig, "objectId":remoteObject.objectId});
 
                 //scroll to ele
-                await protocol.send('Runtime.evaluate', { expression: ` $('.scroller').animate({scrollTop: $("#` + possibleJsId  + `").offset().top}, 200);` });
+                await protocol.send('Runtime.evaluate', { expression: ` $('.scroller').animate({scrollTop: ($("#` + possibleJsId  + `").offset().top + $(".scroller").scrollTop()) - Math.max(document.documentElement.clientHeight, window.innerHeight || 0)/5 }, 200);` });
             }
         })();
     }
