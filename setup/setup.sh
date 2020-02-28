@@ -47,8 +47,10 @@ mkdir ./library/public/library1;
 mkdir ./library/private/library1;
 mkdir ./library/public/library1/uploads;
 mkdir ./library/private/library1/uploads;
-echo "{}" > ./library/public/library1/SystemsJSON.json
-echo "{}" > ./library/private/library1/SystemsJSON.json
+echo "{}" > ./library/public/library/SystemsJSON.json
+echo "{}" > ./library/public/library/BuildCode.json
+echo "{}" > ./library/private/library/SystemsJSON.json
+echo "{}" > ./library/private/library/BuildCode.json
 
 echo
 echo 'Creating library folders and files'

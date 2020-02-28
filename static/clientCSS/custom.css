@@ -657,6 +657,7 @@ input:checked + .slider:before {
 
 .dashTableRow{
    cursor: pointer;
+   font-size: 12px;
 }
 
 .dashTableEnableItem{
@@ -673,12 +674,7 @@ input:checked + .slider:before {
 
 .dashListRowClicked > td.dashTableNameItem{
    font-weight: 900;
-   font-size: 16px;
-}
-
-.dashListRowClicked > td.dashTableNameItem{
-   font-weight: 900;
-   font-size: 16px;
+   font-size: 12px;
 }
 
 div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
@@ -698,7 +694,7 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
    -webkit-transition: max-height 0.2s;
    transition: max-height 0.2s;
    overflow: hidden;
-   max-height: 1.2em;
+   max-height: 20px;
 }
 
 /*.DashListRowPass{*/
@@ -999,13 +995,18 @@ a.foundInSearchParent{
 
 }
 
-.dashSystemDropdownButton{
+.dashSystemDropdownButton {
 
    background: none;
    padding: 0;
-   padding-bottom: 15px;
+   /*padding-bottom: 15px;*/
    border: none;
    font-size: 16px;
+}
+
+.buildCodePickButton {
+   float: right;
+
 }
 
 .dashDropButtonHR{
@@ -1019,10 +1020,26 @@ a.foundInSearchParent{
 }
 
 .dashSystemsDropdownMenu{
-   padding:2px ;
+   padding-top: 0px;
+   padding-bottom: 0px;
+   max-height: 500px;
+   overflow: auto;
+   max-width: 400px;
 }
+
+/*.buildCodeDropdownMenu{*/
+   /*padding:0px ;*/
+   /*max-height: 500px;*/
+   /*overflow: auto;*/
+   /*max-width: 400px;*/
+/*}*/
+
 .dropdown-settings{
 
+}
+
+.dashSystemDropdownItem, .newCompVarTypeDropdownItem {
+    width: 200%;
 }
 
 .dashSystemIcon{
@@ -1188,6 +1205,14 @@ th.col-1, td.col-1{
    overflow:auto
 }
 
+.jstree-default .jstree-wholerow-clicked {
+   /*background: #dcdcdc;*/
+   background: rgba(220, 220, 220, 0.6);
+   color: #2c3433;
+   /*background: -webkit-linear-gradient(top, #0078d7 0%, #0078d7 100%);*/
+   /*background: linear-gradient(to bottom, #0078d7 0%, #0078d7 100%);*/
+}
+
 ::-webkit-scrollbar {
 width: 14px;
 }
@@ -1246,13 +1271,15 @@ tbody.varTbody{
    text-align: center;
 }
 
+.privacy-switch{
+   margin-left: -10px;
+}
+
 .newCompVarTypeButton{
 
    background: none;
    padding: 0;
-   /*padding-bottom: 15px;*/
    border: none;
-
    font-weight: 500;
    font-size: 14px;
 
@@ -1342,3 +1369,112 @@ tbody.varTbody{
 
 .searchCycleBtn{
 }
+
+#componentLinks{
+   text-align: left;
+}
+
+.matchLink{
+   font-size: small;
+   font-weight: 700;
+}
+
+.varValEditorTextArea{
+   width: 100%;
+   height: 300px;
+}
+
+tbody.buildCodeTbody{
+   display: block;
+   max-height: 50vh;
+   overflow-y: auto;
+    margin-top: 5px;
+}
+
+.buildCodePickItem{
+
+}
+
+.buildCodeListDSCol{
+   font-size: x-small;
+   text-align: center;
+}
+.buildCodeListNameCol{
+   font-size: small;
+}
+.buildCodeListRRCol{
+   font-size: x-small;
+   text-align: center;
+}
+.buildCodeListSFCol{
+   font-size: x-small;
+   text-align: center;
+}
+
+.buildCodeFilterGroup div.radio {
+   margin-left: 10px;
+   display: inline-block;
+}
+
+.buildCodeTable>tfoot>tr>th, .buildCodeTable>thead>tr>th, .buildCodeTable>tbody>tr>th{
+   border: 0px ;
+    padding: 3px;
+}
+
+  .buildCodeTable>thead>tr>td, .buildCodeTable>tbody>tr>td, .buildCodeTable>tfoot>tr>td{
+   padding: 3px;
+   border-top: 0px;
+   border-bottom: 1px solid #dee2e6;
+}
+
+.buildCodeListNameCol>.form-group{
+   margin-bottom: 0px;
+}
+
+.buildCodeHeader{
+   display: flex;
+   justify-content: space-between;
+}
+
+.cardLable{
+
+}
+.newBuildCodeName{
+   display: flex;
+   align-self: center;
+}
+.newBuildCodeName > input{
+   font-size: 14px;
+   height: 20px;
+}
+
+.buildCodeNameRead{
+   cursor: text;
+}
+
+.templateTypeDropdownButton{
+   font-size: .8rem;
+   font-weight: 400;
+   line-height: 24px;
+}
+
+.dropdown-toggle:disabled::after  {
+   content: none;
+   border: 0px;
+}
+
+.buildCodeButton{
+   margin-left: 5px;
+}
+
+#buildModalTitleName{
+   font-size: .8rem;
+   font-weight: 800;
+   padding-top: 7px
+}
+
+.buildCodeForkModal-dialog{
+   width: 500px;
+}
+
+

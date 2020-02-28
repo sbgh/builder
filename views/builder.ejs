@@ -112,7 +112,7 @@
                         "a_attr": { class : " systemRow "}
                     },
                     "job" : {
-                        "icon" : "fa fa-code jobRow"
+                        "icon" : "fa fa-check-circle-o jobRow"
                     },
                     "needfull" : {
                         "icon" : "fa fa-play-circle-o",
@@ -127,7 +127,7 @@
                         "icon" : "fa fa-server"
                     },
                     "disabled" : {
-                        "icon" : "fa fa-hand-paper-o disabledRow",
+                        "icon" : "fa fa-times-circle-o disabledRow",
                         "li_attr": { class : "  "},
                         "li_attr": { class : "  "}
                     }
@@ -204,14 +204,14 @@
                         "a_attr": { class : " systemRow "}
                     },
                     "job" : {
-                        "icon" : "fa fa-code"
+                        "icon" : "fa fa-play-circle-o"
                     },
                     "rerunnable" : {
                         "icon" : "fa fa-repeat rerunnableRow",
                         "a_attr": { class : " rerunnableRow "}
                     },
                     "disabled" : {
-                        "icon" : "fa fa-hand-paper-o disabledRow",
+                        "icon" : "fa fa-times-circle-o disabledRow",
                         "li_attr": { class : "  "}
                     }
                 },
@@ -255,7 +255,7 @@
                     data: JSON.stringify(mydata)
                 }).done(function (e) {
                     //console.log('copy refresh' );
-                    $('#jstree_div').jstree(true).refresh();
+                    $('#jstree_div').jstree(true).refresh(true);
                 }).fail(function (e) {
                     console.log('copy failed' );
                     console.log(e );
@@ -480,8 +480,6 @@
                 $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
             })
 
-
-
             //tree click
             $('#jstree_div').on("select_node.jstree", function (e, data) {
 
@@ -500,6 +498,7 @@
 
                         $("#sysScreen").hide();
                         $("#jobScreen").hide();
+                        $(".jstree-children").removeClass("jstree-codeBlock");
                         hideBottom();
                         bottomHiddenFlag = true;
 
@@ -511,6 +510,15 @@
 
                             //query backend for a specific job and update ui fields
                             getJobByID(selectedNode, "read");
+
+                            $.get('/ClosestRerunnableAn', { id: selectedNode }, function(data) {
+                                const dataObj = JSON.parse(data);
+                                $(".jstree-children").removeClass("jstree-codeBlock");
+                                $("#"+dataObj.id+"_anchor").next().addClass("jstree-codeBlock");
+                            })
+
+                            //loadBuildCodeModalList();
+
                             $.get('/highlight', { id: selectedNode }, function(data) {});
                             $("#comType").val('Job');
 
@@ -545,6 +553,8 @@
                             $("#comType").val('system');
                             readModeSys();
                             getSysByID(selectedNode);
+                            $(".jstree-children").removeClass("jstree-codeBlock");
+                            $("#"+selectedNode+"_anchor").next().addClass("jstree-codeBlock");
                             updateResultsList(selectedNode);
                         };
                     }
@@ -700,7 +710,7 @@
                             var thisClass = 'd-flex dashTableRow';
                             pCompHtml += "<tr id='row_" + rowJson.id +"' data-id='" + rowJson.id +"' data-runSys='"+ rowJson.systemId +"' data-runSysName='"+ rowJson.systemName + "' class='" + thisClass + "'>";
 
-                            var thisNameColHtml = "<div>" + rowJson.name + "</div>";
+                            var thisNameColHtml = "<div>" + rowJson.aNames.join("<br>") + "</div>";
                             thisNameColHtml += "<div class='dashTableNameButtonRow' >"
                             var display = rowJson.enabled == 1 ? 'style="display: inline;"' : 'style="display: none;"'
                             thisNameColHtml += "<i id='DashBuildMenu' "+display+" class='fa  fa-play fa-fw  dashTableBuildButton'></i>  "
@@ -984,9 +994,9 @@
 
                 //New privacy switch
                 newHtml += '<td class="col-1"><div class="newCompVarPrivateButtonRow">';
-                newHtml += '<label class="switch" ><input id="newCompVarPrivateInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class="success newCompVarPrivateButton"><span class="slider round"></span></label>';
+                newHtml += '<label class="switch privacy-switch" ><input id="newCompVarPrivateInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class="success newCompVarPrivateButton"><span class="slider round"></span></label>';
                 newHtml += '<span id="newCompVarPrivateDisp'+currentRowCntStr+'" class="newCompVarPrivateDisp"></span>';
-                newHtml += '</div></td>';
+                newHtml += '</td>';
 
                 //New var type pick
                 newHtml += '<td class="col-2 center">'
@@ -998,14 +1008,16 @@
                 newHtml +=  '</div></td>'
 
                 //New component variable value
-                newHtml += '<td class="col-6"><div class="compVarEditValRow"><a href="#"><i class="fa fa-pencil fa-fw compVarEditValButton" data-idn="'+currentRowCntStr+'" style=""></i></a><input id="newCompVarValue'+currentRowCntStr+'" class="form-control newCompVarValue" type="text"></div></td>';
-                newHtml += '</tr>'
+                newHtml += '<td class="col-6"><div class="compVarEditValRow">';
+                newHtml += '<input id="newCompVarValue'+currentRowCntStr+'" class="form-control newCompVarValue" type="text">';
+                newHtml += '<a href="#"><i class="fa fa-expand fa-fw compVarEditValButton" data-idn="'+currentRowCntStr+'" style=""></i></a>';
+                newHtml += '</td></tr>';
 
                 return newHtml;
             }
             $('.newCompVarBtn').on('click', function(){
 
-                var currentRowCntStr = Object.keys(currentCompVarArr).length.toString();
+                var currentRowCntStr = Object.keys(currentCompVarObj).length.toString();
 
                 var newHtml =  createVarEditHtml(currentRowCntStr);
 
@@ -1013,7 +1025,7 @@
                 $("#compVariables").append(newHtml);
 
 
-                currentCompVarArr[varName] = {private:false, type:"", value:"", changed: currentRowCntStr};
+                currentCompVarObj[varName] = {private:false, type:"", value:"", changed: currentRowCntStr};
                 $("#newCompVarPrivateDisp"+currentRowCntStr).html( 'No');
                 insertVarEditEvents()
 
@@ -1039,23 +1051,38 @@
                     var idn = $(this).attr('data-idn');
 
                     var varName = "";
-                    for(var x in currentCompVarArr){
-                        if (currentCompVarArr[x].idn == idn)(
-                            varName = x
-                        )
+                    var varType = $("#newCompVarTypeButton" + idn).text();
+                    for(var nm in currentCompVarObj){
+                        if (currentCompVarObj[nm].idn === idn){
+                            varName = nm;
+                        }
+
                     }
+                    if(varType === "WYSIWYG"){
+                        $('#varEditWYSIWYGModal').modal('show');
 
-                    $('#varEditModal').modal('show');
+                        // Sets the HTML contents of the activeEditor editor
+                        tinymce.activeEditor.setContent($("#newCompVarValue"+idn).val());
 
-                    // Sets the HTML contents of the activeEditor editor
-                    tinymce.activeEditor.setContent($("#newCompVarValue"+idn).val());
+                        $("#varEditWYSIWYGModalCutrrentIdn").val(idn);
 
-                    $("#varEditModalCutrrentIdn").val(idn);
+                    }else{
+                        $('#varEditModal').modal('show');
+                        $('#varValEditor').val($("#newCompVarValue"+idn).val());
+                        $("#varEditModalCutrrentIdn").val(idn);
+                    }
 
                 });
 
+                //Save value of text area into #newCompVarValue
                 $('#varEditModal').on('hidden.bs.modal', function() {
                     var idn = $("#varEditModalCutrrentIdn").val();
+                    $("#newCompVarValue"+idn).val( $('#varValEditor').val() )
+                });
+
+                //Save value of tinymce into #newCompVarValue
+                $('#varEditWYSIWYGModal').on('hidden.bs.modal', function() {
+                    var idn = $("#varEditWYSIWYGModalCutrrentIdn").val();
                     $("#newCompVarValue"+idn).val( tinymce.activeEditor.getContent() )
                 });
             }
@@ -1065,11 +1092,11 @@
                 var newHtml = '<tr id="new_row'+currentRowCntStr+'" class="d-flex varRow newVarRow">'
 
                 //new var name input
-                newHtml += '<td class="col-2"><input id="newSysVarName'+currentRowCntStr+'" class="form-control newSysVarName" type="text"></td>'
+                newHtml += '<td class="col-3"><input id="newSysVarName'+currentRowCntStr+'" class="form-control newSysVarName" type="text"></td>'
 
                 //New privacy switch
-                newHtml += '<td class="col-2"><div class="newSysVarPrivateButtonRow">';
-                newHtml += '<label class="switch" ><input id="newSysVarPrivateInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class="success newSysVarPrivateButton"><span class="slider round"></span></label>';
+                newHtml += '<td class="col-1"><div class="newSysVarPrivateButtonRow">';
+                newHtml += '<label class="switch privacy-switch" ><input id="newSysVarPrivateInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class="success newSysVarPrivateButton"><span class="slider round"></span></label>';
                 newHtml += '<span id="newSysVarPrivateDisp'+currentRowCntStr+'" class="newSysVarPrivateDisp"></span>';
                 newHtml += '</div></td>';
 
@@ -1082,7 +1109,7 @@
             }
             $('.newSysVarBtn').on('click', function(){
 
-                var currentRowCntStr = Object.keys(currentCompVarArr).length.toString();
+                var currentRowCntStr = Object.keys(currentCompVarObj).length.toString();
 
                 var newHtml =  createSysVarEditHtml(currentRowCntStr);
 
@@ -1107,7 +1134,7 @@
             }
 
             tinymce.init({
-                selector: "#varValEditor",
+                selector: "#varValWYSIWYGEditor",
                 plugins: [
                     "advlist autolink lists link image charmap print preview anchor",
                     "searchreplace visualblocks code fullscreen",
@@ -1126,21 +1153,21 @@
             });
 
             //getJobByID - query backend and update fields
-            var currentCompVarArr = {};
+            var currentCompVarObj = {};
             function getJobByID(NodeID, viewmode){
                 clearJobFields();
                 $.get('/Jobs', { id: NodeID }, function(data) {
 
                     // testing vvvvvvvvvvvvvvvvvvv
                    var dispData = JSON.parse(JSON.stringify(data[0]) )  ;
-                    delete dispData.script;
-                    //delete dispData.custTemplates;
-                    //delete dispData.template;
 
                     $("#nodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  );
                     // testing ^^^^^^^^^^^^^^^^^^^
 
                     $("#id").val(data[0].id);
+
+                    loadBuildCode(data[0].buildCode.linkArr[0]);
+
                     $("#comType").val(data[0].comType);
                     $("#idDisp").val(data[0].id);
                     $("#parent").val(data[0].parent);
@@ -1164,30 +1191,6 @@
                         $('#promotedVal').html('No');
                     }
 
-                    if(data[0].rerunnable === 1){
-                        $('#rerunnable').prop('checked', true);
-                        $('#rerunnableVal').html('Yes');
-                    }else{
-                        $('#rerunnable').prop('checked', false);
-                        $('#rerunnableVal').html('No');
-                    }
-
-                    if(data[0].systemFunction === 1){
-                        $('#sysFunc').prop('checked', true);
-                        $('#sysFuncVal').html('Yes');
-                    }else{
-                        $('#sysFunc').prop('checked', false);
-                        $('#sysFuncVal').html('No')
-                    }
-
-                    if(data[0].runLocal === 1){
-                        $('#runLoc').prop('checked', true);
-                        $('#runLocVal').html('Yes')
-                    }else{
-                        $('#runLoc').prop('checked', false);
-                        $('#runLocVal').html('No');
-                    }
-
                     if(data[0].description.hasOwnProperty("ops")){
                         description.setContents(data[0].description.ops)
                     }else{
@@ -1197,20 +1200,13 @@
                         );
                     };
 
-
-                    var curTxtVal = scriptEditor.getValue();
-                    var newTxtVal = data[0].script;
-                    if(curTxtVal !== newTxtVal){
-                        scriptEditor.session.setValue(data[0].script);
-                    }
-
                     //load var table
                     var pCompHtml = "";
                     var x = 0;
                     //get variables obj and add an index number to each member
-                    currentCompVarArr = data[0].variables;
-                    for(var varName in currentCompVarArr){
-                        currentCompVarArr[varName].idn = x.toString();
+                    currentCompVarObj = data[0].variables;
+                    for(var varName in currentCompVarObj){
+                        currentCompVarObj[varName].idn = x.toString();
                         x++
                     }
 
@@ -1219,12 +1215,11 @@
 
                     $(".compVarDelButton").on('click', function(){
                         var idn = $(this).attr('data-idn');
-                        for(varName in currentCompVarArr){
-                            if (currentCompVarArr[varName].idn == idn){
-                                delete currentCompVarArr[varName];break
+                        for(varName in currentCompVarObj){
+                            if (currentCompVarObj[varName].idn == idn){
+                                delete currentCompVarObj[varName];break
                             }
                         }
-
                         $("#varRow_"+idn).remove();
                     });
 
@@ -1235,25 +1230,26 @@
                         $("#varRow_"+idn).html(newHtml);
                         insertVarEditEvents();
                         var varName = "";
-                        for(var x in currentCompVarArr){
-                            if (currentCompVarArr[x].idn == idn)(
+                        for(var x in currentCompVarObj){
+                            if (currentCompVarObj[x].idn == idn)(
                                 varName = x
                             )
                         }
 
-                        $("#newCompVarName" + idn).val(varName);
-                        $("#newCompVarPrivateInput" + idn)[0].checked = currentCompVarArr[varName].private;
-                        $("#newCompVarTypeButton" + idn).val(currentCompVarArr[varName].type);
-                        $("#newCompVarValue" + idn).val(currentCompVarArr[varName].value);
-                        $("#newCompVarPrivateDisp"+idn).html(currentCompVarArr[varName].private ? 'Yes' : 'No');
+                        $("#newCompVarName" + idn).val(varName); 
+                        $("#newCompVarPrivateInput" + idn)[0].checked = currentCompVarObj[varName].private;
+                        var thisType = currentCompVarObj[varName].type === "" ? "Text" : currentCompVarObj[varName].type;
 
-                        currentCompVarArr[varName].changed = idn;
+                        $("#newCompVarTypeButton" + idn).val(thisType);
+                        $("#newCompVarTypeButton" + idn).text(thisType);
+                        $("#newCompVarValue" + idn).val(currentCompVarObj[varName].value);
+                        $("#newCompVarPrivateDisp"+idn).html(currentCompVarObj[varName].private ? 'Yes' : 'No');
+
+                        currentCompVarObj[varName].changed = idn;
                     });
 
-                    //$("#version").text(data[0].ver);
-                    $("#templateType").val(data[0].templateType);
                     $("#text").val(data[0].text);
-                    $('#resourceFiles').val(data[0].resourceFiles);
+
                     $("#ft").val(data[0].ft);
 
                     if(data[0].hasOwnProperty("hist")){
@@ -1261,11 +1257,12 @@
                         $("#createdDate").val(data[0].hist[0].ds)
                     }
 
-                    populateFileList( $('#resourceFiles').val(), false);
-                    $.get('/fileList', { id: $('#id').val() }, function(data) {
-                        $('#resourceFiles').val(data);
-                        populateFileList(data, false);
-                    });
+
+
+//                    $.get('/fileList', { id: $('#id').val() }, function(data) {
+//                        $('#resourceFiles').val(data);
+//                        populateFileList(data, false);
+//                    });
 
                     //Navigate to lastbuild.url if exists
                     if(data[0].lastBuild){
@@ -1273,74 +1270,6 @@
                             var url= data[0].lastBuild.url;
                             navigate(url);
                         }
-                    }
-
-
-                    //load templates
-                    var x=0;
-                    var tempObjArr = data[0].templates.tempArr;
-
-                    tempObjArr.forEach(function(tempObj){
-
-                        //if ther is onenot an instance to reuse create a new
-                        if(!currentTemplatesArr[x]){
-                            var inHtml = authorTemplateHTML(x);
-
-                            $('#custTemplates').append(inHtml);
-
-                            currentTemplatesArr.push(ace.edit("template"+x.toString()));
-
-                            currentTemplatesArr[currentTemplatesArr.length-1].session.setMode("ace/mode/text");
-                            document.getElementById("template"+x.toString()).style.fontSize='14px';
-
-                            currentTemplatesArr[currentTemplatesArr.length-1].renderer.$cursorLayer.element.style.display = "none"
-
-                            loadjobTempTypeDropdown(x)
-
-                            $("#templateWindowMax"+x.toString()).click( function(){
-                                var inx = parseInt($(this).attr('data-inx'), 10);
-                                setTempAceHeight(inx, "max")
-                            })
-                            $("#templateWindowMin"+x.toString()).click( function(){
-                                var inx = parseInt($(this).attr('data-inx'), 10);
-                                setTempAceHeight(inx, "min")
-                            })
-                        }else{
-                            //unhide the old template code to reuse it
-                            $("#templateBlock" + x.toString()).show();
-                        }
-
-                        currentTemplatesArr[x].session.setValue(tempObj.c);
-                        currentTemplatesArr[x].isValid = true;
-                        x++;
-                    });
-
-                    //mark the rest if the ace instances as invalid, hide the block and clear the values so they can be recycled
-                    while (x < currentTemplatesArr.length ){
-                        $("#templateBlock" + x.toString()).hide();
-                        currentTemplatesArr[x].session.setValue("");
-                        currentTemplatesArr[x].isValid = false;
-                        x++;
-                    }
-
-                    //inset the contents of the instances and populate type dropdowns
-                    x=0;
-                    tempObjArr.forEach(function(tempObj){
-                        var tempType =  tempObj.t === "" ? "text" :  tempObj.t;
-                        currentTemplatesArr[x].session.setMode("ace/mode/" + tempType);
-                        $("#templateType" + x.toString()).val(tempType);
-                        $("#dropdownTemplateTypeButton"+x.toString())[0].innerHTML = tempType;
-                        x++;
-                    })
-
-                    //set the style if eack instance
-                    setAceStyle(currentStyleName);
-                    $(".ace_editor").addClass("aceDisabled");
-
-                    //hide the cursor for each instance
-                    for(var inx in currentTemplatesArr){
-                        currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "none";
-                        currentTemplatesArr[inx].setReadOnly(true);
                     }
 
                     //format screen for either read mode or write
@@ -1352,6 +1281,145 @@
                 })
             }
 
+            function loadBuildCode(id){
+//                    console.log("try to get build code " + data[0].buildCode.linkArr[0]);
+                $.get('/BuildCode', { id: id }, function(data) {
+
+                    // testing vvvvvvvvvvvvvvvvvvv
+                    var dispData = JSON.parse(JSON.stringify(data[0]) )  ;
+                    $("#buildCodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  );
+                    // testing ^^^^^^^^^^^^^^^^^^^
+
+                    if(!data[0].hasOwnProperty("id")){
+                        $("#buildCode").val("");
+                        $("#newBuildCodeName").val("New Build Code");
+                        $("#buildCodeNameRead").html("New Build Code");
+                        scriptEditor.session.setValue("");
+                        $('#custTemplates').html("");
+
+                        $('#rerunnable').prop('checked', false);
+                        $('#rerunnableVal').html('No');
+                        $('#sysFunc').prop('checked', false);
+                        $('#sysFuncVal').html('No');
+                        $('#runLoc').prop('checked', false);
+                        $('#runLocVal').html('No');
+
+                    }else{
+                        $("#buildCode").val(data[0].id);
+                        $("#newBuildCodeName").val(data[0].name);
+                        $("#buildCodeNameRead").html(data[0].name);
+
+                        if(data[0].rerunnable === 1){
+                            $('#rerunnable').prop('checked', true);
+                            $('#rerunnableVal').html('Yes');
+                        }else{
+                            $('#rerunnable').prop('checked', false);
+                            $('#rerunnableVal').html('No');
+                        }
+
+                        if(data[0].systemFunction === 1){
+                            $('#sysFunc').prop('checked', true);
+                            $('#sysFuncVal').html('Yes');
+                        }else{
+                            $('#sysFunc').prop('checked', false);
+                            $('#sysFuncVal').html('No')
+                        }
+
+                        if(data[0].runLocal === 1){
+                            $('#runLoc').prop('checked', true);
+                            $('#runLocVal').html('Yes')
+                        }else{
+                            $('#runLoc').prop('checked', false);
+                            $('#runLocVal').html('No');
+                        }
+
+                        var curTxtVal = scriptEditor.getValue();
+                        var newTxtVal = data[0].script;
+                        if(curTxtVal !== newTxtVal){
+                            scriptEditor.session.setValue(data[0].script);
+                        }
+
+                        //load templates
+                        var x=0;
+                        var tempObjArr = data[0].templates.tempArr;
+
+                        tempObjArr.forEach(function(tempObj){
+
+                            //if there is not an instance to reuse create a new
+                            if(!currentTemplatesArr[x]){
+                                var inHtml = authorTemplateHTML(x, true);
+
+                                $('#custTemplates').append(inHtml);
+
+                                currentTemplatesArr.push(ace.edit("template"+x.toString()));
+
+                                currentTemplatesArr[currentTemplatesArr.length-1].session.setMode("ace/mode/text");
+                                document.getElementById("template"+x.toString()).style.fontSize='14px';
+
+                                currentTemplatesArr[currentTemplatesArr.length-1].renderer.$cursorLayer.element.style.display = "none"
+
+                                loadjobTempTypeDropdown(x);
+                                $("#templateWindowMin"+x.toString()).hide();
+
+                                $("#templateWindowMax"+x.toString()).click( function(){
+                                    var inx = parseInt($(this).attr('data-inx'), 10);
+                                    setTempAceHeight(inx, "max");
+                                    $("#templateWindowMax"+inx.toString()).hide();
+                                    $("#templateWindowMin"+inx.toString()).show()
+                                })
+                                $("#templateWindowMin"+x.toString()).click( function(){
+                                    var inx = parseInt($(this).attr('data-inx'), 10);
+                                    setTempAceHeight(inx, "min");
+                                    $("#templateWindowMax"+inx.toString()).show();
+                                    $("#templateWindowMin"+inx.toString()).hide()
+                                })
+                            }else{
+                                //unhide the old template code to reuse it
+                                $("#templateBlock" + x.toString()).show();
+                            }
+
+                            currentTemplatesArr[x].session.setValue(tempObj.c);
+                            currentTemplatesArr[x].isValid = true;
+                            x++;
+                        });
+
+                        //mark the rest if the ace instances as invalid, hide the block and clear the values so they can be recycled
+                        while (x < currentTemplatesArr.length ){
+                            $("#templateBlock" + x.toString()).hide();
+                            currentTemplatesArr[x].session.setValue("");
+                            currentTemplatesArr[x].isValid = false;
+                            x++;
+                        }
+
+                        //insert the contents of the instances and populate type dropdowns
+                        x=0;
+                        tempObjArr.forEach(function(tempObj){
+                            var tempType =  tempObj.t === "" ? "text" :  tempObj.t;
+                            currentTemplatesArr[x].session.setMode("ace/mode/" + tempType);
+                            $("#templateType" + x.toString()).val(tempType);
+                            $("#dropdownTemplateTypeButton"+x.toString())[0].innerHTML = tempType;
+                            x++;
+                        })
+
+                        //set the style if eack instance
+                        setAceStyle(currentStyleName);
+                        $(".ace_editor").addClass("aceDisabled");
+
+                        //hide the cursor for each instance
+                        for(var inx in currentTemplatesArr){
+                            currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "none";
+                            currentTemplatesArr[inx].setReadOnly(true);
+                        }
+
+                        $('#resourceFiles').val(data[0].resourceFiles);
+                        populateFileList( $('#resourceFiles').val(), false);
+
+                    }
+
+
+                });
+            }
+
             //geLibJobByID
             function getLibJobByID(NodeID, lib){
                 //const viewmode = "read"
@@ -1359,14 +1427,130 @@
                 $.get('/getLib', { id: NodeID, 'pickedLib':lib }, function(data) {
                     // testing vvvvvvvvvvvvvvvvvvv
                     var dispData = JSON.parse(JSON.stringify(data[0]) )  ;
-                    delete dispData.script;
-                    //delete dispData.custTemplates;
-                    //delete dispData.template;
-
                     $("#nodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  );
                     // testing ^^^^^^^^^^^^^^^^^^^
 
                     $("#id").val(data[0].id);
+
+                    $.get('/BuildCodeLib', { id: data[0].buildCode.linkArr[0], lib: lib }, function(data) {
+
+                        // testing vvvvvvvvvvvvvvvvvvv
+                        dispData = JSON.parse(JSON.stringify(data[0]) )  ;
+                        $("#buildCodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  );
+                        // testing ^^^^^^^^^^^^^^^^^^^
+
+                        $("#buildCode").val(data[0].id);
+                        $("#newBuildCodeName").val(data[0].name);
+                        $("#buildCodeNameRead").html(data[0].name);
+
+                        if(data[0].rerunnable === 1){
+                            $('#rerunnable').prop('checked', true);
+                            $('#rerunnableVal').html('Yes');
+                        }else{
+                            $('#rerunnable').prop('checked', false);
+                            $('#rerunnableVal').html('No');
+                        }
+
+                        if(data[0].systemFunction === 1){
+                            $('#sysFunc').prop('checked', true);
+                            $('#sysFuncVal').html('Yes');
+                        }else{
+                            $('#sysFunc').prop('checked', false);
+                            $('#sysFuncVal').html('No')
+                        }
+
+                        if(data[0].runLocal === 1){
+                            $('#runLoc').prop('checked', true);
+                            $('#runLocVal').html('Yes')
+                        }else{
+                            $('#runLoc').prop('checked', false);
+                            $('#runLocVal').html('No');
+                        }
+
+                        var curTxtVal = scriptEditor.getValue();
+                        var newTxtVal = data[0].script;
+                        if(curTxtVal !== newTxtVal){
+                            scriptEditor.session.setValue(data[0].script);
+                        }
+
+                        //load templates
+                        var x=0;
+                        var tempObjArr = data[0].templates.tempArr;
+
+                        tempObjArr.forEach(function(tempObj){
+
+                            //if there is not an instance to reuse create a new
+                            if(!currentTemplatesArr[x]){
+                                var inHtml = authorTemplateHTML(x, true);
+
+                                $('#custTemplates').append(inHtml);
+
+                                currentTemplatesArr.push(ace.edit("template"+x.toString()));
+
+                                currentTemplatesArr[currentTemplatesArr.length-1].session.setMode("ace/mode/text");
+                                document.getElementById("template"+x.toString()).style.fontSize='14px';
+
+                                currentTemplatesArr[currentTemplatesArr.length-1].renderer.$cursorLayer.element.style.display = "none"
+
+                                loadjobTempTypeDropdown(x)
+
+                                $("#templateWindowMax"+x.toString()).click( function(){
+                                    var inx = parseInt($(this).attr('data-inx'), 10);
+                                    setTempAceHeight(inx, "max")
+                                })
+                                $("#templateWindowMin"+x.toString()).click( function(){
+                                    var inx = parseInt($(this).attr('data-inx'), 10);
+                                    setTempAceHeight(inx, "min")
+                                })
+                            }else{
+                                //unhide the old template code to reuse it
+                                $("#templateBlock" + x.toString()).show();
+                            }
+
+                            currentTemplatesArr[x].session.setValue(tempObj.c);
+                            currentTemplatesArr[x].isValid = true;
+                            x++;
+                        });
+
+                        //mark the rest if the ace instances as invalid, hide the block and clear the values so they can be recycled
+                        while (x < currentTemplatesArr.length ){
+                            $("#templateBlock" + x.toString()).hide();
+                            currentTemplatesArr[x].session.setValue("");
+                            currentTemplatesArr[x].isValid = false;
+                            x++;
+                        }
+
+                        //inset the contents of the instances and populate type dropdowns
+                        x=0;
+                        tempObjArr.forEach(function(tempObj){
+                            var tempType =  tempObj.t === "" ? "text" :  tempObj.t;
+                            currentTemplatesArr[x].session.setMode("ace/mode/" + tempType);
+                            $("#templateType" + x.toString()).val(tempType);
+                            $("#dropdownTemplateTypeButton"+x.toString())[0].innerHTML = tempType;
+                            x++;
+                        })
+
+                        //set the style if eack instance
+                        setAceStyle(currentStyleName);
+                        $(".ace_editor").addClass("aceDisabled");
+
+                        //hide the cursor for each instance
+                        for(var inx in currentTemplatesArr){
+                            currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "none";
+                            currentTemplatesArr[inx].setReadOnly(true);
+                        }
+
+                        $('#resourceFiles').val(data[0].resourceFiles);
+                        populateLibFileList( $('#resourceFiles').val());
+
+                        setAceBuildCodeHeight();
+
+                    });
+
+                    $("#buildCode").val(data[0].buildCode.linkArr[0]);
+
+
+
                     $("#comType").val(data[0].comType);
                     $("#idDisp").val(data[0].id);
                     $("#parent").val(data[0].parent);
@@ -1388,30 +1572,6 @@
                         $('#promotedVal').html('No');
                     }
 
-                    if(data[0].rerunnable === 1){
-                        $('#rerunnable').prop('checked', true);
-                        $('#rerunnableVal').html('Yes');
-                    }else{
-                        $('#rerunnable').prop('checked', false);
-                        $('#rerunnableVal').html('No');
-                    }
-
-                    if(data[0].systemFunction === 1){
-                        $('#sysFunc').prop('checked', true);
-                        $('#sysFuncVal').html('Yes');
-                    }else{
-                        $('#sysFunc').prop('checked', false);
-                        $('#sysFuncVal').html('No');
-                    }
-
-                    if(data[0].runLocal === 1){
-                        $('#runLoc').prop('checked', true);
-                        $('#runLocVal').html('Yes');
-                    }else{
-                        $('#runLoc').prop('checked', false);
-                        $('#runLocVal').html('No');
-                    }
-
                     if(data[0].description.hasOwnProperty("ops")){
                         description.setContents(data[0].description.ops)
                     }else{
@@ -1421,16 +1581,16 @@
                         );
                     };
 
-                    scriptEditor.session.setValue(data[0].script);
-                    setAceBuildCodeHeight();
+                    //scriptEditor.session.setValue(data[0].script);
+                    //setAceBuildCodeHeight();
 
                     //load var table
                     var pCompHtml = "";
                     var x = 0;
                     //get variables obj and add an index number to each member
-                    currentCompVarArr = data[0].variables;
-                    for(var varName in currentCompVarArr){
-                        currentCompVarArr[varName].idn = x.toString();
+                    currentCompVarObj = data[0].variables;
+                    for(var varName in currentCompVarObj){
+                        currentCompVarObj[varName].idn = x.toString();
                         x++
                     }
 
@@ -1438,9 +1598,9 @@
                     loadVarTable(data[0].variables, false);
 
                     $("#compVariables").val(data[0].variables);
-                    $("#templateType").val(data[0].templateType);
+//                    $("#templateType").val(data[0].templateType);
                     $("#text").val(data[0].text);
-                    $('#resourceFiles').val(data[0].resourceFiles);
+                    //$('#resourceFiles').val(data[0].resourceFiles);
                     $("#ft").val(data[0].ft);
 
                     if(data[0].hasOwnProperty("hist")){
@@ -1448,67 +1608,6 @@
                         $("#createdDate").val(data[0].hist[0].ds)
                     }
 
-                    populateLibFileList( $('#resourceFiles').val());
-
-                    //load templates
-                    var x=0;
-                    var tempObjArr = data[0].templates.tempArr;
-
-                    tempObjArr.forEach(function(tempObj){
-
-                        if(!currentTemplatesArr[x]){
-                            var inHtml = authorTemplateHTML(x);
-
-                            $('#custTemplates').append(inHtml);
-
-                            currentTemplatesArr.push(ace.edit("template"+x.toString()));
-
-                            currentTemplatesArr[currentTemplatesArr.length-1].session.setMode("ace/mode/text");
-                            document.getElementById("template"+x.toString()).style.fontSize='14px';
-
-                            currentTemplatesArr[currentTemplatesArr.length-1].renderer.$cursorLayer.element.style.display = "none"
-
-                            loadjobTempTypeDropdown(x)
-
-                            $("#templateWindowMax"+x.toString()).click( function(){
-                                var inx = parseInt($(this).attr('data-inx'), 10);
-                                setTempAceHeight(inx, "max")
-                            })
-                            $("#templateWindowMin"+x.toString()).click( function(){
-                                var inx = parseInt($(this).attr('data-inx'), 10);
-                                setTempAceHeight(inx, "min")
-                            })
-                        }else{
-                            $("#templateBlock" + x.toString()).show();
-                        }
-
-                        currentTemplatesArr[x].session.setValue(tempObj.c);
-
-                        x++;
-                    });
-
-                    while (x < currentTemplatesArr.length ){
-                        $("#templateBlock" + x.toString()).hide();
-                        currentTemplatesArr[x].session.setValue("");
-                        x++;
-                    }
-
-                    x=0;
-                    tempObjArr.forEach(function(tempObj){
-                        var tempType =  tempObj.t === "" ? "text" :  tempObj.t;
-                        currentTemplatesArr[x].session.setMode("ace/mode/" + tempType);
-                        $("#templateType" + x.toString()).val(tempType);
-                        $("#dropdownTemplateTypeButton"+x.toString())[0].innerHTML = tempType;
-                        x++;
-                    })
-
-                    setAceStyle(currentStyleName);
-                    $(".ace_editor").addClass("aceDisabled");
-
-                    for(var inx in currentTemplatesArr){
-                        currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "none";
-                        currentTemplatesArr[inx].setReadOnly(true);
-                    }
                 })
             }
 
@@ -1555,7 +1654,6 @@
                             currentSysVarArr[varName].idn = x.toString();
                             x++
                         }
-
                         for(var varName in currentSysVarArr){
                             //new row
                             var idn = currentSysVarArr[varName].idn
@@ -1661,6 +1759,47 @@
                         );
                     };
 
+                    //load var table
+                    var pSysHtml = "";
+                    var x = 0;
+                    //get variables obj and add an index number to each member
+                    if(data[0].variables){
+                        currentSysVarArr = data[0].variables;
+                    }else{
+                        currentSysVarArr = {};
+                    }
+                    for(var varName in currentSysVarArr){
+                        currentSysVarArr[varName].idn = x.toString();
+                        x++
+                    }
+
+                    for(var varName in currentSysVarArr){
+                        //new row
+                        var idn = currentSysVarArr[varName].idn
+                        pSysHtml = "<tr id='varSysRow_" + idn +"'" +  " class='d-flex varRow'>";
+
+                        //add name col
+                        pSysHtml += "<td class='col-3 varSysNameTd'>" +
+                            "<i class='fa fa-pencil fa-fw sysVarEditButton' data-idn='" + idn +"'></i>" +
+                            "<span id = 'varSysNameTd" + idn + "'></span>" +
+                            "<i class='fa fa-times fa-fw sysVarDelButton' data-idn='" + idn +"'></i>" +
+                            "</td>";
+
+                        //add private col
+                        pSysHtml += "<td class='col-1 center'>" + (data[0].variables[varName].private ? "Yes":"No") + "</td>";
+
+                        //add value col
+                        pSysHtml += "<td class='col-6 varValTd'>" +
+                            "<span id = 'varSysValTd" + idn + "'></span>" +
+                            "</td>";
+
+                        pSysHtml += "</tr>";
+
+                        $("#sysVariables").append(pSysHtml);
+                        $("#varSysNameTd" + idn).text(varName);
+                        $("#varSysValTd" + idn).text(data[0].variables[varName].value);
+                    }
+
                     $("#text").val(data[0].text);
                     $("#iconURL").val('');
 
@@ -1679,7 +1818,7 @@
             function loadVarTable(variables, showTools){
                 for(var varName in variables){
                     //new row
-                    var idn = currentCompVarArr[varName].idn
+                    var idn = currentCompVarObj[varName].idn
                     pCompHtml = "<tr id='varRow_" + idn +"'" +  " class='d-flex varRow'>";
 
                     //add name col
@@ -1706,6 +1845,9 @@
                     $("#compVariables").append(pCompHtml);
                     $("#varNameTd" + idn).text(varName);
                     var valText = variables[varName].value;
+                    if(variables[varName].private){
+                        valText = variables[varName].value === "" ? "" : "************"
+                    }
                     if(valText.length >40){
                         valText = valText.substring(0, 37)+"..."
                     }
@@ -1734,6 +1876,10 @@
             });
 
             $("#runConfirmButton").on("click",function() {
+
+                var currentRespText = "";
+                var formData = new FormData();
+
                 var ids = $("#idToBeRun").val();
                 if($('#runClosestAn').is(':checked')){
                     if($("#ClosestRerunnableAn").val() !== ""){
@@ -1741,8 +1887,15 @@
                     }
                 }
 
+                if($('#runRerunnableCh').is(':checked')){
+                    formData.append('runRerunnableCh', 'yes');
+                }else{
+                    formData.append('runRerunnableCh', 'no');
+                }
+
                 var sys = $("#sysToBeRun").val();
 
+                //build list of ids
                 if($('#runChildrenCb').is(':checked')){
                     var selectedNodes = $("#jstree_div").jstree(true).get_json(ids, { flat: true }); //returns parent and all children objs
                     var selectedNodesArr = selectedNodes.map(a => a.id); //extract ids into arr
@@ -1755,9 +1908,6 @@
                 $("#resultsStatus")[0].innerHTML = '';
                 $("#results_html").addClass('result_fresh');
                 $("#results_html").removeClass('result_history');
-
-                var currentRespText = "";
-                var formData = new FormData();
 
                 formData.append('ids', ids);
 
@@ -1813,6 +1963,7 @@
                 $('.runningJobCompleteFail').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
 
                 var closedNodeList = [];
+                var CompletionSuccess = false;
 
                 $.ajax({
                     url: '/run',
@@ -1849,10 +2000,11 @@
                                     if(row.slice(26) === 'true'){
 //                                        $("#resultsStatus").append( "<i class='fa  fa-check fa-fw DashListRowPass'></i>");
                                         $("#resultsStatus").html(  $("#resultsStatus").html().replace('<img src="/images/throbber.gif">',"<i class='fa  fa-check fa-fw DashListRowPass'></i>"));
-
+                                        CompletionSuccess = true;
                                     }else{
 //                                        $("#resultsStatus").append( "<i class='fa  fa-times fa-fw DashListRowFail'></i>");
                                         $("#resultsStatus").html(  $("#resultsStatus").html().replace('<img src="/images/throbber.gif">',"<i class='fa  fa-times fa-fw DashListRowFail'></i>"));
+                                        CompletionSuccess = false;
                                     }
                                 }
 
@@ -1932,12 +2084,14 @@
                     updateResultsList(selectedNode);
                     loadDashboard();
 
-                    //close all nodes that were opened
-                    for(var x in closedNodeList){
-                        $("#jstree_div").jstree("close_node", closedNodeList[x]);
+                    if(CompletionSuccess){
+                        //close all nodes that were opened
+                        for(var x in closedNodeList){
+                            $("#jstree_div").jstree("close_node", closedNodeList[x]);
+                        }
+                        $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
                     }
 
-                    $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
                     $('#jstree_div').jstree(true).refresh(true);
 
                 }).fail(function (e) {
@@ -1947,20 +2101,41 @@
                 $('#runModal').modal('toggle');
             });
 
+            $('#runChildrenCb').on('change', function(){
+                if(this.checked) {
+                    $("#runRerunnableChGroup").show();
+                }else{
+                    $("#runRerunnableChGroup").hide();
+                }
+            });
+
             //launch run modal and populate values
             $('#runClosestAn').on('change', function(){
                 if(this.checked) {
                     //call checkRerunnable to get rerunnable ancestor and update ui accordingly
-                    checkRerunnable($("#idToBeRun").val(),  $("#sysToBeRun").val())
+          //          checkRerunnable($("#idToBeRun").val(),  $("#sysToBeRun").val())
+                    checkRerunnable($("#idToBeRun").val())
                 }else{
                     //enable run button hide warning
                     $("#runConfirmButton").removeAttr("disabled");
-                    $("#closestAnWarning").text(" ")
+                    $("#closestAnWarning").text(" ");
+                    $.get('/getChildCount', { id: $("#idToBeRun").val() }, function(data) {
+                        const dataObj = JSON.parse(data);
+                        if(dataObj.count > 0){
+                            $("#runChildrenGroup").show();
+                            $("#runRerunnableChGroup").show();
+                        }else{
+                            $("#runChildrenGroup").hide();
+                            $("#runRerunnableChGroup").hide();
+                        }
+                        $("#buildModalTitleName").text($("#name").val());
+                    });
                 }
             });
 
-            function checkRerunnable(id, sys){
-                $.get('/ClosestRerunnableAn', { id: id, sys: sys }, function(data) {
+            function checkRerunnable(id){
+               // $.get('/ClosestRerunnableAn', { id: id, sys: sys }, function(data) {
+                    $.get('/ClosestRerunnableAn', { id: id }, function(data) {
 
                     //data is expected to be json;
                     //{id : the id str of the ancestor that if found or '', ClosestRerunnableAn : An object containing the found ancestor}
@@ -1969,9 +2144,25 @@
                     //Place id in ClosestRerunnableAn input
                     //Hide or show warning/disable confirmation button if id is blank or comp is not enabled
                     $("#ClosestRerunnableAn").val(dataObj.id );
+                    if(dataObj.id === id){
+                        $("#runClosestAnGroup").hide()
+                    }else{
+                        $("#runClosestAnGroup").show()
+                    }
+                        $("#buildModalTitleName").text(dataObj.ClosestRerunnableAn.name);
                     if (dataObj.id !== "" && dataObj.ClosestRerunnableAn.enabled){
                         $("#runConfirmButton").removeAttr("disabled");
-                        $("#closestAnWarning").text(" ")
+                        $("#closestAnWarning").text(" ");
+                        $.get('/getChildCount', { id: dataObj.id }, function(data) {
+                            const dataObj = JSON.parse(data);
+                            if(dataObj.count > 0){
+                                $("#runChildrenGroup").show();
+                                $("#runRerunnableChGroup").show();
+                            }else{
+                                $("#runChildrenGroup").hide();
+                                $("#runRerunnableChGroup").hide();
+                            }
+                        });
                     }else{
                         if(!dataObj.ClosestRerunnableAn.enabled){
                             $("#runConfirmButton").attr("disabled","true");
@@ -1982,6 +2173,8 @@
                             $("#closestAnWarning").text("Warning: None of the ansestors are rerunnable.")
                         }
                     }
+
+
 
                 })
             }
@@ -2023,7 +2216,6 @@
                 $("#sysToBeRun").val(sys);
 
                 checkRerunnable(id);
-
             }
 
             //remove
@@ -2128,6 +2320,7 @@
                 }
 
                 $(".templateTypeDropdownButton").attr("disabled" , false);
+//                $("#buildCodeDropdownButton").attr("disabled" , false);
 
                 $("#createdBy")[0].readOnly = true;
                 $("#createdDate")[0].readOnly = true;
@@ -2179,10 +2372,12 @@
                 $(".newCompVarBtn").show();
                 $(".compVarDelButton").show();
                 $(".compVarEditButton").show();
-                $(".compVarEditValButton").hide()
+                $(".compVarEditValButton").hide();
 
-
+                $("#buildCodeNameEdit").show();
+                $("#buildCodeNameRead").hide();
             }
+
             function readModeJob(){
                 inputFields = $("#jobForm").find("input");
                 inputFields.each(disableElement);
@@ -2207,6 +2402,7 @@
                 $("#new_button").show();
 
                 $(".templateTypeDropdownButton").attr("disabled" , true);
+//                $("#buildCodeDropdownButton").attr("disabled" , true);
 
                 $("#run_button").show();
 
@@ -2223,7 +2419,7 @@
 
                 scriptEditor.renderer.$cursorLayer.element.style.display = "none";
                 scriptEditor.setReadOnly(true);
-                setAceBuildCodeHeight();
+                //setAceBuildCodeHeight();
 
                 description.enable(false);
                 $(".ql-toolbar").hide(0.3)
@@ -2234,6 +2430,10 @@
                 $(".compVarEditButton").hide();
                 $(".compVarEditValButton").hide()
                 $("#screenShotImageHolder").show();
+
+                $("#buildCodeNameEdit").hide();
+                $("#buildCodeNameRead").show();
+
 
             }
 
@@ -2319,6 +2519,9 @@
                 $("#moveUp_button").hide();
                 $("#moveDn_button").hide();
                 $("#screenShotImageHolder").hide();
+
+                $("#buildCodeNameEdit").hide();
+                $("#buildCodeNameRead").show();
                 
                 var checkBoxes = $(".varCheckboxFileList")
                 if (checkBoxes.exists()){
@@ -2426,29 +2629,29 @@
                     mydata.runLocal = 0;
                 }
 
-                //find changed/new variables and add them to currentCompVarArr;
-                for(var idn in currentCompVarArr){
+                //find changed/new variables and add them to currentCompVarObj;
+                for(var idn in currentCompVarObj){
 
-                    if(currentCompVarArr[idn].changed){
-                        var currentRowCntStr = currentCompVarArr[idn].changed;
-                        delete currentCompVarArr[idn].changed;
+                    if(currentCompVarObj[idn].changed){
+                        var currentRowCntStr = currentCompVarObj[idn].changed;
+                        delete currentCompVarObj[idn].changed;
 
                         if($("#newCompVarName"+currentRowCntStr).val().trim() !== "" ){
-                            delete currentCompVarArr[idn];
+                            delete currentCompVarObj[idn];
                             var newVarsObj = {};
                             newVarsObj["private"] = $("#newCompVarPrivateInput"+currentRowCntStr)[0].checked ? true : false;
                             newVarsObj["type"] = $("#newCompVarTypeButton"+currentRowCntStr).text();
                             newVarsObj["value"] = $("#newCompVarValue"+currentRowCntStr).val();
 
-                            currentCompVarArr[$("#newCompVarName"+currentRowCntStr).val()]  = newVarsObj;
+                            currentCompVarObj[$("#newCompVarName"+currentRowCntStr).val()]  = newVarsObj;
                         }else{
-                            delete currentCompVarArr[idn];
+                            delete currentCompVarObj[idn];
                         }
                     }
                 }
 
                 //push compVariables
-                mydata.compVariables = currentCompVarArr;
+                mydata.compVariables = currentCompVarObj;
 
                 //push script
                 mydata.script = scriptEditor.getValue();
@@ -2470,6 +2673,10 @@
 
                 mydata.text = $("#text").val();
                 mydata.resourceFiles = $('#resourceFiles').val();
+
+                mydata.buildCode = $("#buildCode").val();
+
+                mydata.buildCodeName = $("#newBuildCodeName").val();
 
                 $.ajax({
                     type: 'POST',
@@ -2704,14 +2911,13 @@
 
                 if(scopeRadioVal === "Component" ){
                    // var compVarsArr = [];
-                    for(var cVar in currentCompVarArr){
-                    //    compVarsArr.push(currentCompVarArr[cVar])
-                        var currentVal = currentCompVarArr[cVar].value;
+                    for(var cVar in currentCompVarObj){
+                    //    compVarsArr.push(currentCompVarObj[cVar])
+                        var currentVal = currentCompVarObj[cVar].value;
                         html += "<tr role='row' class='gradeA odd'><td width = '10%'>"
                         html +="<input value='c."  + cVar + "' type='checkbox' class='varCheckbox pull-right'>";
                         html +="</td><td class='var_Table_td' width = '30%'>" + cVar + '</td>' + "<td class='var_Table_td' width = '60%'>" + currentVal  + '</td>'
                         html += "</tr>";
-                       // $("#insertVarBody").append(html)
 
                     }
 
@@ -2902,7 +3108,7 @@
                 }else{
 
                     if(!currentTemplatesArr[nextValidIndex]){
-                        var inHtml = authorTemplateHTML(nextValidIndex);
+                        var inHtml = authorTemplateHTML(nextValidIndex, false);
 
                         $('#custTemplates').append(inHtml);
 
@@ -2930,12 +3136,12 @@
                 }
             });
 
-            function authorTemplateHTML(x){
+            function authorTemplateHTML(x, disabled){
                 var inHtml = "<div class='form-group' id='templateBlock"+x.toString()+"'>";
                 inHtml += "     <div>";
                 inHtml += "         <label class='build-label'>Template "+ (x > 0 ? (x + 1).toString() : "") +"</label>";
                 inHtml += "         <input type='hidden' id='templateType"+x.toString()+"'>"
-                inHtml += "         <button class='dropdown-toggle templateTypeDropdownButton' type='button' id='dropdownTemplateTypeButton"+x.toString()+"' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>"
+                inHtml += "         <button "+ (disabled ? "disabled": "") +" class='dropdown-toggle templateTypeDropdownButton' type='button' id='dropdownTemplateTypeButton"+x.toString()+"' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>"
                 inHtml += "Pick..."
                 inHtml += "         </button>"
                 inHtml += "     <span class='templateWindowSizeButtons'>" +
@@ -2950,21 +3156,6 @@
                 inHtml += "</div>";
                 return(inHtml);
             }
-
-            //Default set codes window to min
-//            min_codes_window();
-            $('#results_html').on('click', function(){
-               // setEndOfContenteditable($('#results_html').get(0))
-            })
-
-
-
-//            function min_codes_window(){
-//                var container = $('#rowContainer');
-//                setWindowHeight(container.height()- 30 , container);
-//                currentHeight = container.height()- 30
-//                currentRatio = currentHeight / container.height();
-//            }
 
             //min codes window
             $('.codes_btn_min').on('click', function(){
@@ -3239,7 +3430,7 @@
                     if(fList.length > 0){
                         fList.forEach(function(fName){
                             fileNamesHtml += "<tr role='row' class='gradeA odd'><td width = '10%'>"
-                            fileNamesHtml += "<a href='/library/" + pickedLib + "/uploads/" + $('#id').val() + "/" + fName.name + "' target='_new'>" + fName.name + "</a>";
+                            fileNamesHtml += "<a href='/library/" + pickedLib + "/uploads/" + $('#buildCode').val() + "/" + fName.name + "' target='_new'>" + fName.name + "</a>";
                             fileNamesHtml +="</td></tr>";
                         })
                     }else{
@@ -3698,6 +3889,10 @@
             scriptEditor.session.setMode("ace/mode/sh");
             document.getElementById('script').style.fontSize='14px';
 
+            scriptEditor.on("change", function() {
+                setAceBuildCodeHeight();
+            })
+
             function setAceBuildCodeHeight(){
                 let newHeight;
 
@@ -4071,11 +4266,12 @@
                         }
 
                         matchLinksHtml += idHtml;
-                        if(matchingComponents.length > 0){
+                        if(Object.keys(matchingComponents).length > 0){
                             matchLinksHtml += '<div id="componentLinksLable" class="build-label">Component Links</div>';
                             for(var c in matchingComponents){
-                                var title = $("#jstree_div").jstree().get_node(matchingComponents[c]).text;
-                                matchLinksHtml += '<div id="matchLink_' + matchingComponents[c] + '" class="matchLink"><a href="#">' + title + '</div>';
+                                var title = matchingComponents[c].name;
+                                var gpNames = matchingComponents[c].gpNameArr.join("/");
+                                matchLinksHtml += '<div id="matchLink_' + c + '" class="matchLink"><a href="#">' + gpNames + "/" + title + '</div>';
                             }
                         }
 
@@ -4097,6 +4293,199 @@
             }
             $("#HtmlLabel").hide();
             $("#AttributesLabel").hide();
+
+            //user picks build code. Show modal. Load build code table
+            $("#buildCodePickButton").click(function(evt){
+
+                $('#buildCodePickModal').modal('toggle');
+
+                var id = $('#id').val();
+
+                var mode = $("input[name='buildCodeFilter']:checked"). val();
+                loadBuildCodeModalList(id, mode);
+
+                evt.stopPropagation();
+            });
+
+
+            //Upon clicking the filter radio the function loadBuildCodeModalList(id, pickedMode) is called
+            $('.buildCodeFilter').on('click', function(evt){
+                var pickedMode = $(this).attr('data-ID');
+                $("#buildCodeFilter-"+pickedMode).prop("checked", true);
+//                var id = $('#id').val();
+//                var mode = $("input[name='buildCodeFilter']:checked"). val();
+                //loadBuildCodeModalList(id, mode);
+                evt.stopPropagation();
+            });
+
+            $(".buildCodeFilterRadio").click(function(evt){
+                //var pickedMode = $(this).attr('value');
+               // $("#buildCodeFilter-"+pickedMode).prop("checked", true);
+                var id = $('#id').val();
+                var mode = $("input[name='buildCodeFilter']:checked").val();
+                loadBuildCodeModalList(id, mode);
+                evt.stopPropagation();
+            });
+
+            //user clicks build code fork. Show warning modal.
+            $("#buildCodeForkButton").click(function(evt){
+                $('#buildCodeForkModal').modal('toggle');
+                evt.stopPropagation();
+            });
+
+            //user clicks copy code btn.
+            var copyCodeId = ""
+            $("#buildCodeCopyButton").click(function(evt){
+                copyCodeId = $("#buildCode").val();
+                $("#buildCodePasteButton").show();
+                evt.stopPropagation();
+            });
+
+            //user clicks paste code btn.
+            $("#buildCodePasteButton").hide();
+            $("#buildCodePasteButton").click(function(evt){
+                loadBuildCode(copyCodeId);
+                editModeJob();
+                evt.stopPropagation();
+            });
+
+
+            function loadBuildCodeModalList(node, mode){
+                $("#buildCodeList").html("");
+                $('#buildCodeList').scrollTop(0);
+                var mydata = {id:"#", node:node, mode:mode};
+                $.ajax({
+                    type: 'get',
+                    data: mydata,
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    url: '/BuildCode',
+                    success : function(data) {
+
+                        const buildCodes = JSON.parse(data);
+
+                        var codesSorted = buildCodes.sort(function (a, b) //sort by date + name
+                        {
+                            var aBuildCodeHist = [];
+                            var aBuildCodeLastDS = "2000-02-20T20:20:20.200Z";
+                            if(a.hasOwnProperty("hist")){
+                                aBuildCodeHist = a.hist;
+                                if(aBuildCodeHist.length > 0){
+                                    aBuildCodeLastDS = aBuildCodeHist[aBuildCodeHist.length -1].ds
+                                }
+                            }
+                            var bBuildCodeLastDS = "2000-02-20T20:20:20.200Z";
+                            if(b.hasOwnProperty("hist")){
+                                bBuildCodeHist = b.hist;
+                                if(bBuildCodeHist.length > 0){
+                                    bBuildCodeLastDS = bBuildCodeHist[bBuildCodeHist.length -1].ds
+                                }
+                            }
+
+                            //return a.name.toLowerCase().localeCompare( b.name.toLowerCase()) && bBuildCodeLastDS.split("T")[0].localeCompare(aBuildCodeLastDS ) ;
+
+                            if(a.name.toLowerCase() == b.name.toLowerCase())
+                            {
+                                return (aBuildCodeLastDS.split("T")[0] > bBuildCodeLastDS.split("T")[0]) ? -1 : (aBuildCodeLastDS.split("T")[0] < bBuildCodeLastDS.split("T")[0]) ? 1 : 0;
+                            }
+                            else
+                            {
+                                return (a.name.toLowerCase() < b.name.toLowerCase()) ? -1 : 1;
+                            }
+                        });
+
+
+                        codesSorted.forEach(function(row){
+                            var thisBuildCodeId = row.id;
+                            var thisBuildCodeRR = row.rerunnable;
+                            var thisBuildCodeSF = row.systemFunction;
+                            var thisBuildCodeName = row.name;
+                            var thisBuildCodeHist = [];
+                            var thisBuildCodeLastDS = "2020-02-20T20:20:20.200Z";
+                            if(row.hasOwnProperty("hist")){
+                                thisBuildCodeHist = row.hist;
+                                if(thisBuildCodeHist.length > 0){
+                                    thisBuildCodeLastDS = thisBuildCodeHist[thisBuildCodeHist.length -1].ds
+                                }
+                            }
+                            var dropDownListHtml = "";
+
+                            dropDownListHtml += '<tr class="d-flex"><td class="col-2 buildCodeListDSCol">' ;
+                            dropDownListHtml += thisBuildCodeLastDS.split("T")[0] + '</td>';
+
+                            dropDownListHtml += '<td class="col-6 buildCodeListNameCol" >' ;
+
+                            dropDownListHtml += '<div class="form-group"><div data-id="'+ thisBuildCodeId +'" class="radio buildCodePickItem">'
+                            dropDownListHtml += '    <input name="buildCodeSelect" type="radio">   ' + thisBuildCodeName
+                            dropDownListHtml += '</div> </div>'
+                            //dropDownListHtml += "<a class='dropdown-item buildCodePickItem' href='#' data-id='"+ thisBuildCodeId +"' data-buildCodeName='"+ thisBuildCodeName +"'>"+ thisBuildCodeName +"</a>";
+                            dropDownListHtml += '</td>'
+
+                            dropDownListHtml += '<td class="col-2 buildCodeListRRCol">' ;
+                            dropDownListHtml += thisBuildCodeRR === 1 ? "Yes" : "No";
+                            dropDownListHtml += '</td>';
+
+                            dropDownListHtml += '<td class="col-2 buildCodeListSFCol">' ;
+                            dropDownListHtml += thisBuildCodeSF === 1 ? "Yes" : "No";
+                            dropDownListHtml += '</td>';
+
+                            $("#buildCodeList").append(dropDownListHtml);
+                        });
+                        selectedBuildCode = "";
+
+
+                        if($("#buildCode").val() !== ""){
+                            var rowpos = $('div[data-id="' + $("#buildCode").val() + '"]').offset();
+                            var listpos = $('#buildCodeList').offset();
+                            $('#buildCodeList').animate({scrollTop: rowpos.top - listpos.top - 30}, 500);
+
+                            $('div[data-id="' + $("#buildCode").val() + '"]').find("input").prop("checked", true);
+                        }
+
+                        $(".buildCodePickItem").on('click', function(evt){
+                            selectedBuildCode = $(this).attr('data-Id');
+
+                            $(this).find("input").prop("checked", true);
+
+                            evt.stopPropagation();
+                        });
+
+                    },
+                    error : function(error) {
+                        console.log(error)
+                    }
+                })
+            }
+
+            var selectedBuildCode = "";
+            $("#buildCodeSelectBtn").on('click', function(evt){
+                if(selectedBuildCode !== ""){
+                    loadBuildCode(selectedBuildCode);
+                    editModeJob();
+                }
+            });
+
+            $("#buildCodeNameRead").click(function(evt){
+                evt.stopPropagation();
+            });
+
+            $("#buildCodeNameEdit").click(function(evt){
+                evt.stopPropagation();
+            });
+
+            $('#compFocus').on('click', function(){
+                var id = $("#id").val();
+
+                var runningNode =  $('#jstree_div').jstree(true).get_node(id, true);
+                $("#jstree_div").jstree("_open_to", id);
+                runningNode.children('.jstree-anchor').focus();
+            });
+
+            $("#buildCodeForkBtn").on('click', function(evt){
+                $("#buildCode").val("");
+            });
 
 
         }); //-------------------------------------------   doc ready -------------------------------------------
@@ -4507,7 +4896,7 @@
                                     <form id="sysForm">
                                         <div class="col-lg-12">
                                             <div class="row">
-                                                <div class="col-lg-3 nomarg">
+                                                <div class="col nomarg">
                                                     <div class="form-group">
                                                         <label class="build-label">System Name</label>
                                                         <input class="form-control form-custom" placeholder="Enter system name" id="sysName">
@@ -4519,7 +4908,7 @@
                                                         <!--<div id="sysVersion" class="statusBox"></div>-->
                                                     <!--</div>-->
                                                 <!--</div>-->
-                                                <div class="col-lg-8 "></div>
+                                                <!--<div class="col-lg-8 "></div>-->
                                             </div>
                                             <div class="row">
                                                 <div class="col-lg-12" style="padding: 0px">
@@ -4594,7 +4983,11 @@
 
                             </div>
                             <div class="panel panel-default jobPanel">
-                                <input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="comType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >
+                                <!--<input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="comType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >-->
+                                <input type="hidden" id="buildCode" ><input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="comType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >
+
+
+
                                 <div class="panel-body job-form-panel" id="job-form-panel">
                                     <form id="jobForm">
                                         <div class="row">
@@ -4602,7 +4995,8 @@
                                                 <div class="row" id="firstRow" >
                                                     <div class="col jobCompNameCol">
                                                         <div class="form-group">
-                                                            <label class="build-label">Component Name</label>
+                                                            <label id='compFocus' class="build-label ">Component Name</label>
+                                                            <!--<i id='compFocus' class='fa  fa-fw fa-folder-open compFocusButton'></i>-->
                                                             <input class="form-control form-custom" placeholder="Enter name" id="name">
                                                         </div>
                                                     </div>
@@ -4678,8 +5072,16 @@
 
                                                 <div id="buildCodeAccordion">
                                                     <div class="card jobCard">
-                                                        <div class="card-header" id="codeHeading" data-toggle="collapse" data-target="#codeCollapse" aria-expanded="true" aria-controls="codeCollapse">
-                                                            <i class="fa fa-tasks fa-fw"></i>Build Code
+                                                        <div class="card-header buildCodeHeader" id="codeHeading" data-toggle="collapse" data-target="#codeCollapse" aria-expanded="true" aria-controls="codeCollapse">
+                                                            <span class="cardLable"><i class="fa fa-tasks fa-fw"></i>Build Code</span>
+                                                            <span id="buildCodeNameEdit" class="newBuildCodeName">
+                                                                <input id="newBuildCodeName" class="form-control" type="text">
+                                                                <i id="buildCodePickButton" class="fa fa-list fa-fw buildCodeButton"></i>
+                                                                <i id="buildCodeForkButton" class="fa fa-code-fork fa-fw buildCodeButton"></i>
+                                                                <i id="buildCodeCopyButton" class="fa fa-copy fa-fw buildCodeButton"></i>
+                                                                <i id="buildCodePasteButton" class="fa fa-paste fa-fw buildCodeButton"></i>
+                                                            </span>
+                                                            <span id="buildCodeNameRead" class="buildCodeNameRead"></span>
                                                         </div>
 
                                                         <div id="codeCollapse" class="collapse cardBody" aria-labelledby="codeHeading" data-parent="#buildCodeAccordion">
@@ -4824,6 +5226,8 @@
                                                 <div class="form-group">
                                                     <label class="build-label">nodeData</label>
                                                     <textarea type="disabled" class="form-control form-custom code" rows="25" id="nodeData"></textarea>
+                                                    <hr>
+                                                    <textarea type="disabled" class="form-control form-custom code" rows="25" id="buildCodeData"></textarea>
                                                 </div>
 
                                             </div>
@@ -4832,6 +5236,7 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
@@ -4873,6 +5278,72 @@
         </div>
     </div>
 </body>
+<div id="buildCodeForkModal" class="modal fade" role="dialog">
+    <div class="modal-dialog buildCodeForkModal-dialog">
+        <nav class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"><i class="fa fa-code-fork fa-fw"></i>Fork Build Codes</h4>
+            </div>
+            <div class="modal-body">
+
+                <p>Upon saving this component, the build code will be saved in a new build code record.</p>
+                <p>Do you want to create a new Build Code record? </p>
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="buildCodeForkBtn" class="btn btn-default jobFormbtn" data-dismiss="modal">Ok</button>
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+            </div>
+        </nav>
+    </div>
+</div>
+<div id="buildCodePickModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <nav class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"><i id="buildCodePickButton" class="fa fa-code fa-fw"></i>Build Codes</h4>
+            </div>
+            <div class="modal-body">
+
+
+                <div class="form-group buildCodeFilterGroup">
+                    <label >Filter:</label>
+                    <div class="radio">
+                        <label class="buildCodeFilter" data-ID="thisBranch">
+                            <input name="buildCodeFilter" class="buildCodeFilterRadio" id="buildCodeFilter-thisBranch" value="thisBranch" checked="true" type="radio">Same Rerunnable Ancestor
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label class="buildCodeFilter" data-ID="thisSys">
+                            <input name="buildCodeFilter" class="buildCodeFilterRadio" id="buildCodeFilter-thisSys" value="thisSys" type="radio">This System
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label class="buildCodeFilter" data-ID="allSys">
+                            <input name="buildCodeFilter" class="buildCodeFilterRadio" id="buildCodeFilter-allSys" value="allSys" type="radio">All Systems
+                        </label>
+                    </div>
+                </div>
+                <table class="table buildCodeTable">
+                    <thead>
+                    <tr class="d-flex">
+                        <th class="col-2 varLabel center">Last Save</th>
+                        <th class="col-6 varLabel">Name</th>
+                        <th class="col-2 varLabel center">Rerunable</th>
+                        <th class="col-2 varLabel center">Sys Func</th>
+                    </tr>
+                    </thead>
+                    <tbody id="buildCodeList" class="buildCodeTbody"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="buildCodeSelectBtn" class="btn btn-default jobFormbtn" data-dismiss="modal">Select</button>
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
+            </div>
+        </nav>
+    </div>
+</div>
 <div id="profileModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <nav class="modal-content">
@@ -4909,14 +5380,6 @@
             </div>
             <div class="modal-body">
                 <div>
-                    <!--Theme:-->
-                    <!--<div class="radio stylePick" data-id="default">-->
-                        <!--<label><input type="radio" id ="defaultStyleRadio" name="setupRadio" checked>Light</label>-->
-                    <!--</div>-->
-                    <!--<div class="radio stylePick" data-id="dark">-->
-                        <!--<label><input type="radio" id="darkStyleRadio" name="setupRadio" >Dark</label>-->
-                    <!--</div>-->
-                    <!--<hr>-->
                     No command prompt time out (ms): 
                     <div class="form-group">
                         <input class="form-control form-custom-meta" placeholder="(ms)" id="timeout" style="width:75px"> <button id = "set_timeout" class="btn btn-default jobFormbtn jobSetFormbtn">Set</button> <span id="set_timeout_results"></span>
@@ -4944,6 +5407,7 @@
         <nav class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title"><i class="fa fa-play fa-fw"></i>Build</h4>
+                <label id="buildModalTitleName"></label>
             </div>
             <div id='runConfirmationBody' class="modal-body run-model-body">
                 <form class="form">
@@ -4951,19 +5415,23 @@
                     <input name="sysToBeRun" id="sysToBeRun" type="hidden" />
                     <input name="ClosestRerunnableAn" id="ClosestRerunnableAn" type="hidden" />
 
-                    <div class="form-group">
-                        <!--<label style="padding-left: 40px">-->
-                        <span class="model-label"><input name="runChildrenCb" id="runChildrenCb" value="yes" type="checkbox" checked/>Run all children?</span>
-                        <!--</label>-->
-                    </div>
                     <div class="form-group" id="runClosestAnGroup">
                         <!--<label style="padding-left: 40px">-->
                         <span class="model-label"><input name="runClosestAn" id="runClosestAn" value="yes" type="checkbox" checked/>Run from closest rerunnable ancestor?</span>
                         <div id="closestAnWarning"></div>
                     </div>
+                    <div class="form-group" id="runChildrenGroup">
+                        <!--<label style="padding-left: 40px">-->
+                        <span class="model-label"><input name="runChildrenCb" id="runChildrenCb" value="yes" type="checkbox" checked/>Run children?</span>
+                        <!--</label>-->
+                    </div>
+                    <div class="form-group" id="runRerunnableChGroup">
+                        <!--<label style="padding-left: 40px">-->
+                        <span class="model-label"><input name="runRerunnableCh" id="runRerunnableCh" value="yes" type="checkbox"/>Run rerunnable children?</span>
+                    </div>
                     <div class="form-group">
                         <!--<label style="padding-left: 40px">-->
-                        <span class="model-label">AWS Key Pair File (.pem): <a id='newKeyButton' class='newKey' href='#'><i class="fa  fa-folder-open fa-fw"></i></a></span>
+                        <span class="model-label">SSH Key Pair File (.pem): <a id='newKeyButton' class='newKey' href='#'><i class="fa  fa-folder-open fa-fw"></i></a></span>
                         <!--</label>-->
                         <div><span id = 'keyList' class = 'keyList'></span></div>
                         <input id="upload-key" type="file" name="key" multiple="single">
@@ -5166,6 +5634,11 @@
                     Tells builder what the expected prompt is. Separate 2 digit hex ascii codes with a single space. This is the same as setPrompt but the prompt is defined as ascii hex codes. <br/>
                     Eg: setPromptCodes:3e 20 will set the expected prompt to '> '.
 
+                    <li><b>saveVar:</b></li>
+                    Usage: saveVar:component_var_name:remote_file_path<br/>
+                    Will launch an asynchronous process that will save the specified component variable value to a path and file name on the remote host.<br/>
+                    Eg: saveVar:foo:/tmp/bar.txt will save the value of component variable foo to /tmp/bar.txt. The variable must exist in the current component or a fatal error will occur.
+
                     <li><b>saveTemplate:</b></li>
                     Usage: saveTemplate:remote_file_path<br/>
                     Will launch an asynchronous process that will save the string contents of the template field to a file on the remote host.<br/>
@@ -5267,14 +5740,30 @@
     </div>
 
 </div>
+<div id="varEditWYSIWYGModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-VarEdit">
+
+        <nav class="modal-content varEditWYSIWYGModal-modal-content">
+            <div id='WYSIWYGBody' class="modal-body varEditWYSIWYGModal-modal-body">
+                <input id="varEditWYSIWYGModalCutrrentIdn" type="hidden">
+                <br/>
+                <textarea id="varValWYSIWYGEditor" name="content"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
+            </div>
+        </nav>
+    </div>
+
+</div>
 <div id="varEditModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-dialog-VarEdit">
 
         <nav class="modal-content varEditModal-modal-content">
-            <div id='welcomeBody' class="modal-body varEditModal-modal-body">
+            <div id='varEditBody' class="modal-body varEditModal-modal-body">
                 <input id="varEditModalCutrrentIdn" type="hidden">
                 <br/>
-                <textarea id="varValEditor" name="content"></textarea>
+                <textarea id="varValEditor" class="varValEditorTextArea" name="content"></textarea>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>

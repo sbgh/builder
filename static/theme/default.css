@@ -215,48 +215,29 @@ div.grippie {
 
 .jstree-default .jstree-wholerow-hovered {
     color: #9b9b9b;
-    background: #f0f0f0;
+    background: rgba(220, 220, 220, 0.6);
 }
 
-.jstree-default> .jstree-default>.jstree-wholerow-ul .jstree-clicked {
-    background: 0 0;
-    box-shadow: none;
-    border-radius: 0;
-    color: white;
-}
-.jstree-default>.jstree-wholerow-ul .jstree-hovered {
-    background: 0 0;
-    box-shadow: none;
-    border-radius: 0;
-    color: #2c3433;
-}
+/*.jstree-default> .jstree-default>.jstree-wholerow-ul .jstree-clicked {*/
+    /*background: 0 0;*/
+    /*box-shadow: none;*/
+    /*border-radius: 0;*/
+    /*color: white;*/
+/*}*/
 
 .jstree-default .jstree-wholerow-clicked {
     transition: background 1s;
-    background: #dcdcdc;
+    /*background: #dcdcdc;*/
+    background: rgba(220, 220, 220, 0.6);
+    border: 2px solid #333333;
     color: #2c3433;
     /*background: -webkit-linear-gradient(top, #0078d7 0%, #0078d7 100%);*/
     /*background: linear-gradient(to bottom, #0078d7 0%, #0078d7 100%);*/
 }
 
-.jstree-default-responsive .jstree-wholerow {
-    border-top: 1px solid rgba(255, 255, 255, 0.7);
-    border-bottom: 1px solid rgba(64, 64, 64, 0.2);
-    background: #ebebeb;
-}
-.jstree-default-responsive .jstree-wholerow-hovered {
-    background: #6c88b9;
-}
-.jstree-default-responsive .jstree-wholerow-clicked {
-    background: #beebff;
-    color: #f9f9f9;
-}
-.jstree-default-responsive .jstree-children .jstree-last > .jstree-wholerow {
-    box-shadow: inset 0 -6px 3px -5px #ececec;
-}
-.jstree-default-responsive .jstree-children .jstree-open > .jstree-wholerow {
-    box-shadow: inset 0 6px 3px -5px #ececec;
-    border-top: 0;
+.jstree-codeBlock{
+    transition: border 0.5s;
+    border-left: 4px solid #6c88b9;
 }
 
 .disabledRow{
@@ -264,6 +245,10 @@ div.grippie {
 }
 .rerunnableRow{
     color: #2b2b2b;
+}
+
+.newJobRow{
+    color: #2b2b2b !important;
 }
 
 .needfull{
@@ -394,7 +379,7 @@ input:focus + .slider {
 
 }
 
-.dashSystemDropdownButton{
+.dashSystemDropdownButton, .buildCodeDropdownButton{
 
     color:#367ae0;
 
@@ -455,7 +440,7 @@ input:focus + .slider {
     color: #367ae0;
 }
 
-.stylePickTop{
+.stylePickTop, .buildCodeFilter{
     color: #367ae0
 }
 
@@ -484,11 +469,14 @@ input:focus + .slider {
     filter: brightness(50%);
 }
 
-.compVarEditValButton, .compVarEditButton, .ql-snow a {
+.compVarEditValButton, .compVarEditButton, .ql-snow a, .buildCodePickButton, .compFocusButton {
     color: #367ae0;
 }
 
-.idInspectLabel{
+.idInspectLabel, .buildCodeNameRead{
     color: #000000;
 }
 
+.dropdown-toggle:disabled  {
+    color: #000000;
+}

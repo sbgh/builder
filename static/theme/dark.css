@@ -313,14 +313,20 @@ border: 1px solid #adadad;
 .jstree-default .jstree-wholerow-clicked {
     color: #ffffff;
     transition: background 0.5s;
-    background: #3c3f41;
+    background: rgba(60, 63, 65, 0.8);
     transition: border 0.5s;
     border: 2px solid #bbbbbb;
 
 }
 .jstree-default .jstree-wholerow-hovered {
     color: #adadad;
-    background-color: #3c3f41;
+    /*background-color: #3c3f41;*/
+    background: rgba(60, 63, 65, 0.8);
+}
+
+.jstree-codeBlock{
+    transition: border 0.5s;
+    border-left: 4px solid #79bdf3;
 }
 
 .jstree-default .jstree-node,
@@ -369,7 +375,7 @@ border: 1px solid #adadad;
 }
 
 .jobRow{
-    color: white;
+    color: #4dff4b;
 }
 
 .sys-form-panel{
@@ -511,7 +517,7 @@ input:focus + .slider {
 
 }
 
-.dashSystemDropdownButton{
+.dashSystemDropdownButton, .buildCodeDropdownButton{
     color:#79bdf3;
 }
 
@@ -537,7 +543,7 @@ input:focus + .slider {
      border-color: inherit;
 }
 
-.dashSystemDropdownItem {
+.dashSystemDropdownItem, .buildCodeDropdownItem, .newCompVarTypeDropdownItem, .buildCodePickItem {
     transition: background-color 0.5s;
     background-color: rgb(60, 63, 65);
     border-bottom: 1px solid rgba(0,0,0,.125);
@@ -583,7 +589,7 @@ input:focus + .slider {
     color: #79bdf3;
 }
 
-.stylePickTop{
+.stylePickTop, .buildCodeFilter{
     color: #79bdf3
 }
 
@@ -632,12 +638,13 @@ input:focus + .slider {
     color: #F8F8F8;
 }
 
+
 .varRow > td {
     color: #adadad;
 }
 
 .newCompVarTypeButton{
-    color: #adadad;
+    color: #79bdf3;
 }
 
 .compVarDelButton{
@@ -648,14 +655,27 @@ input:focus + .slider {
     filter: brightness(150%);
 }
 
-.compVarEditValButton, .compVarEditButton, .ql-snow a {
+.compVarEditValButton, .compVarEditButton, .ql-snow a , .buildCodePickButton, .compFocusButton{
     color: #79bdf3;
 }
 
-.idInspectLabel{
+.idInspectLabel, .buildCodeNameRead{
     color: #F8F8F8;
 }
 
 .searchCycleBtn, .search-icon{
     color: #79bdf3;
+}
+
+.buildCodeListDSCol, .buildCodeListNameCol, .buildCodeListRRCol, .buildCodeListSFCol{
+    color: #fcfcef;
+}
+
+
+.buildCodeTable > thead > tr > th {
+    color: #F8F8F8;
+}
+
+.dropdown-toggle:disabled  {
+    color: #fff;
 }

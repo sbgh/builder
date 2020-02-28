@@ -58,6 +58,9 @@ const homedir = require('os').homedir();
 const SystemsJSONContents = fs.readFileSync('SystemsJSON.json');
 global.SystemsJSON = JSON.parse(SystemsJSONContents);
 
+const BuildCodeContents = fs.readFileSync('BuildCode.json');
+global.BuildCode = JSON.parse(BuildCodeContents);
+
 //-----------headless chrome-------------
 global.Page = '';
 global.Runtime = '';
@@ -152,7 +155,7 @@ router.use(function (req,res,next) {
         pathname: req.originalUrl,
         rad: req.connection.remoteAddress
     };
-    fs.appendFile('accesslog.txt', log, function (err) {
+    fs.appendFile('accesslog.txt', JSON.stringify(log)+"\n", function (err) {
         if (err) throw err;
         //console.log('Saved!');
     });
@@ -474,21 +477,33 @@ router.get("/VideoClick",function(req,res){
 
 function searchComponentProperties(AttributesArray){
 
-    var foundArr = [];
+    var foundObj = {};
     for(var key in SystemsJSON){
         if(SystemsJSON[key].comType === "job"){
             if(SystemsJSON[key].hasOwnProperty("variables")){
                 for(var i = 0; i < AttributesArray.length; i+=2) {
-                    if(AttributesArray[i] == "id" && SystemsJSON[key].variables.hasOwnProperty(AttributesArray[i])){
+                    if(AttributesArray[i] === "id" && SystemsJSON[key].variables.hasOwnProperty(AttributesArray[i])){
 
                         var attribToMatch =  AttributesArray[i+1];
                         var systemVarValue = SystemsJSON[key].variables[AttributesArray[i]].value;
 
-                        // if( systemVarValue == "runStartButton"){
-                        //      a= 1
-                        // }
+
                         if(attribToMatch.substring(0, systemVarValue.length) === systemVarValue){
-                            foundArr.push(key)
+                            //add SystemsJSON row
+                            foundObj[key] = SystemsJSON[key];
+
+                            //add the names of promoted gr/parents to each row
+                            var gpNameArr =  [];
+                            var ancestors = SystemsJSON[key].ft.split("/")
+                            for (var idx in ancestors) {
+                                //exclude '#'
+                                if(SystemsJSON.hasOwnProperty(ancestors[idx])){
+                                    if(SystemsJSON[ancestors[idx]].comType === "system" || SystemsJSON[ancestors[idx]].promoted === 1){
+                                        gpNameArr.push(SystemsJSON[ancestors[idx]].name)
+                                    }
+                                }
+                            }
+                            foundObj[key].gpNameArr = gpNameArr;
                         }
                     }
                 }
@@ -498,7 +513,7 @@ function searchComponentProperties(AttributesArray){
 
         }
     }
-    return(foundArr)
+    return(foundObj)
 };
 
 //Service Rt: /VideoMove to send chromium page a mouse position, Method: get, Requires: x & y reletive position, Returns:  nothing
@@ -615,6 +630,8 @@ router.get("/JobsTree",function(req,res){
 
         searchFoundList = [];
 
+        var buildcode = {};
+
         //Loop through all SystemJSON and filter if search term is present.
         for (var key in SystemsJSON) {
             if (SystemsJSON.hasOwnProperty(key)) {
@@ -661,29 +678,35 @@ router.get("/JobsTree",function(req,res){
 
                 //for mass updates
 
-                // var newArr = {};
-                // if(SystemsJSON[key].hasOwnProperty("variables")){
-                //     SystemsJSON[key].variables.split("\n").forEach(function (vari) {
-                //         if(vari.includes("=")){
-                //             var vIndex = vari.split("=")[0];
-                //             var varNewVal = vari.split(/=(.+)/)[1];
+                // if(SystemsJSON[key].comType === "job"){
                 //
-                //             if(varNewVal){
-                //                 newArr[vIndex.trim()] = {"value": varNewVal.trim(),"type":"", "private":false};
-                //             }else{
-                //                 newArr[vIndex.trim()] = {"value": "","type":"", "private":false};
-                //                 console.log(vari)
-                //             }
-                //         }
-                //     });
+                //     // buildcode[key] = {   "name":SystemsJSON[key].name,
+                //     //     "rerunnable":SystemsJSON[key].rerunnable,
+                //     //     "promoted":SystemsJSON[key].promoted,
+                //     //     "systemFunction":SystemsJSON[key].systemFunction,
+                //     //     "runLocal":SystemsJSON[key].runLocal,
+                //     //     "description":SystemsJSON[key].description,
+                //     //     "templates":SystemsJSON[key].templates,
+                //     //     "script":SystemsJSON[key].script,
+                //     //     "resourceFiles":SystemsJSON[key].resourceFiles,
+                //     //     "hist":SystemsJSON[key].hist,
+                //     //     "ver":SystemsJSON[key].ver
+                //     // };
                 //
-                //     SystemsJSON[key].variables = newArr;
+                //     //SystemsJSON[key].buildCode = {linkArr:[key]}
+                //
+                //     // delete SystemsJSON[key].rerunnable;
+                //     // delete SystemsJSON[key].script;
+                //     // delete SystemsJSON[key].systemFunction;
+                //     // delete SystemsJSON[key].runLocal;
+                //     // delete SystemsJSON[key].templates;
+                //     // delete SystemsJSON[key].resourceFiles;
+                //     // delete SystemsJSON[key].ver;
+                //
                 // }
 
             }
         }
-       // for mass updates
-       //  saveAllJSON(true);
 
         respTxt = JSON.stringify(resJSON)
     }
@@ -722,22 +745,31 @@ router.get("/JobsTree",function(req,res){
                 }
             }
         }
-        if (SystemsJSON[key].hasOwnProperty("script")) {
-            if (SystemsJSON[key].script.includes(searchSt)) {
-                filter = true
+
+        if(SystemsJSON[key].hasOwnProperty("buildCode")){
+            if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].hasOwnProperty("script")) {
+                if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].script.includes(searchSt)) {
+                    filter = true
+                }
+            }
+            if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].hasOwnProperty("templates")) {
+                BuildCode[SystemsJSON[key].buildCode.linkArr[0]].templates.tempArr.forEach(function(row){
+                    // console.log(JSON.stringify(row));
+                    if(row.hasOwnProperty("c")){
+                        if (row.c.includes(searchSt)) {
+                            filter = true
+                        }
+                    }
+                })
+
+            }
+            if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].hasOwnProperty("name")) {
+                if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].name.includes(searchSt)) {
+                    filter = true
+                }
             }
         }
-        if (SystemsJSON[key].hasOwnProperty("templates")) {
-            SystemsJSON[key].templates.tempArr.forEach(function(row){
-                // console.log(JSON.stringify(row));
-                if(row.hasOwnProperty("c")){
-                    if (row.c.includes(searchSt)) {
-                        filter = true
-                    }
-                }
-            })
 
-        }
         return filter
     }
 
@@ -756,14 +788,24 @@ router.get("/JobsTree",function(req,res){
             rowdata.type = "system"
         } else { //if non-system add type as 'job'
             rowdata.type = "job";
+
             if (SystemsJSON[key].hasOwnProperty("enabled")) {
                 rowdata.enabled = SystemsJSON[key].enabled;
+//debug
+//     if(SystemsJSON[key].buildCode.linkArr[0]==="d87849b7-7b7f-42a3-ae92-214d58acb9c6"){
+//         var a = 1;
+//     }
+//console.log("try buildCode.linkArr[0]].rerunnable " + SystemsJSON[key].buildCode.linkArr[0] );
+
 
                 if (rowdata.enabled === 0) { //If enabled set type that is used in jstree type plugin
                     rowdata.type = "disabled";
-                } else if (!SystemsJSON[key].hasOwnProperty("lastBuild")) {
+                }
+                else if (!SystemsJSON[key].hasOwnProperty("lastBuild")) {
                     rowdata.type = "needfull"
-                } else if (SystemsJSON[key].rerunnable === 1) {
+                }
+
+                else if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].rerunnable === 1) {
                     rowdata.type = "rerunnable"
                 }
             }
@@ -820,7 +862,7 @@ router.get("/getFoundList",function(req,res){
     res.end(JSON.stringify(searchFoundList));
 });
 
-//Service Rt: /jobs [components], Method: get, Requires: id = component ID or # [all], Returns:  raw SystemJSON object for ajax queries
+//Service Rt: /jobs [components], Method: get, Requires: id = component ID or # [all], Returns:  raw SystemJSON row
 router.get("/Jobs",function(req,res){
     var id = req.query.id;
     var searchSt = req.query.searchSt;
@@ -828,6 +870,100 @@ router.get("/Jobs",function(req,res){
     var resJSON = [];
     if (id !== '#'){
         var rowdata = JSON.parse(JSON.stringify(SystemsJSON[id]) );
+
+        rowdata.id = id;
+        resJSON.push(rowdata);
+    }
+    res.end(JSON.stringify(resJSON));
+});
+
+//Service Rt: /BuildCode [components build code], Method: get, Requires: id = build code ID or '#' [all], Returns:   raw BuildCode row(s)
+router.get("/BuildCode",function(req,res){
+    var id = req.query.id;
+    res.writeHead(200, {"Content-Type": "application/json"});
+    var resJSON = [];
+    var rowdata = {};
+    if (id !== '#'){
+        if(BuildCode.hasOwnProperty(id)){
+            rowdata = JSON.parse(JSON.stringify(BuildCode[id]) );
+            rowdata.id = id;
+        }
+
+        resJSON.push(rowdata);
+    }else{
+
+        var nd = "";
+        if(req.query.hasOwnProperty("node")){
+            nd = req.query.node;
+        }
+
+        var mode = "";
+        if(req.query.hasOwnProperty("mode")){
+            mode = req.query.mode;
+        }
+
+        if(nd !== "" && nd !== "All"){
+            var tracker = {};
+
+            if(SystemsJSON.hasOwnProperty(nd)){
+                if(SystemsJSON[nd].comType === "job"){
+                    var nodeFtArr = SystemsJSON[nd].ft.split('/');
+                    var currentNode = SystemsJSON[nd].ft.split('/')[1];
+
+                    if(mode === "thisBranch" ){
+                        for(var idx in nodeFtArr){
+                            if(SystemsJSON.hasOwnProperty(nodeFtArr[idx])){
+                                if(SystemsJSON[nodeFtArr[idx]].comType === "job"){
+                                    var bcId = SystemsJSON[nodeFtArr[idx]].buildCode.linkArr[0]
+                                    if(BuildCode.hasOwnProperty(bcId)){
+                                        if(BuildCode[bcId].rerunnable === 1){
+                                            currentNode = nodeFtArr[idx];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            var currentFT = SystemsJSON[currentNode].ft + "/" + currentNode;
+
+            for(var key in SystemsJSON){
+                if(SystemsJSON[key].comType === "job"){
+                    if(currentFT === SystemsJSON[key].ft.substring(0, currentFT.length) || mode === "allSys" ){
+                        var bldId = SystemsJSON[key].buildCode.linkArr[0];
+                        if(BuildCode.hasOwnProperty(bldId)){
+                            var rowdata = JSON.parse(JSON.stringify(BuildCode[bldId]) );
+                            rowdata.id = bldId;
+                            //if tracker obj does not have property of build id then push into responce array.
+                            if(! tracker[bldId]){
+                                resJSON.push(rowdata);
+                                tracker[bldId] = true
+                            }
+                        }
+                    }
+                }
+             }
+
+        }else{
+            //resJSON = BuildCode;
+        }
+
+    }
+    res.end(JSON.stringify(resJSON));
+});
+
+//Service Rt: /BuildCode [components build code], Method: get, Requires: id = component ID, Returns:   raw BuildCode row
+router.get("/BuildCodeLib",function(req,res){
+    var id = req.query.id;
+    var lib = req.query.lib;
+    var BuildCodeLib = JSON.parse(fs.readFileSync("library/" + lib + "/BuildCode.json"));
+    res.writeHead(200, {"Content-Type": "application/json"});
+    var resJSON = [];
+    if (id !== '#'){
+        var rowdata = JSON.parse(JSON.stringify(BuildCodeLib[id]) );
 
         rowdata.id = id;
         resJSON.push(rowdata);
@@ -1246,12 +1382,7 @@ router.post("/save",function(req,res){
             id = generateUUID();
 
             //Build new OBJ
-            foundRow = {parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, ver:1, enabled:1, promoted:0, rerunnable:0, systemFunction:0,  runLocal:0, comType: 'job', description: req.body.description, script:"", variables:{}, templates:{tempArr:[{"c":"", "t":""}]} , text:req.body.name, resourceFiles:[], sort:x};
-            //append history json
-            var ds = new Date().toISOString();
-            var currentHist = [];
-            currentHist.push({username:config.username, ds: ds, created: pid});
-            foundRow.hist=currentHist;
+            foundRow = {buildCode:{linkArr:[]}, parent:pid, ft:parentFamTree+'/'+pid, name:req.body.name, enabled:1, promoted:0, comType: 'job', description: req.body.description, variables:{}, text:req.body.name, sort:x};
 
             //append history json
             var ds = new Date().toISOString();
@@ -1265,56 +1396,94 @@ router.post("/save",function(req,res){
             //If not new
         }else{
 
-        //Build new obj and move values over
-        var newData = {};
-        newData.parent = SystemsJSON[id].parent;;
-        newData.ft = SystemsJSON[id].ft;
-        newData.name = req.body.name;
-        newData.enabled = req.body.enabled;
-        newData.rerunnable = req.body.rerunnable;
-        newData.promoted = req.body.promoted;
-        newData.systemFunction = req.body.systemFunction;
-        newData.runLocal = req.body.runLocal;
+            //Build new obj and move values over
+            var newData = {};
+            var newBuildCode = {};
 
-        if(SystemsJSON[id].hasOwnProperty("lastBuild") ){
-            newData.lastBuild = SystemsJSON[id].lastBuild
-        }
-        newData.comType = 'job';
-        newData.description = req.body.description;
-        newData.variables = req.body.compVariables;
-        newData.script = req.body.script;
+            newData.parent = SystemsJSON[id].parent;;
+            newData.ft = SystemsJSON[id].ft;
 
-        // newData.template = {"code":req.body.template, "type":req.body.templateType};
-        newData.templates = req.body.templates
+            newData.name = req.body.name;
 
-        newData.text = req.body.name;
+            newData.enabled = req.body.enabled;
 
-        newData.resourceFiles = req.body.resourceFiles;
+            newData.promoted = req.body.promoted;
 
-        //Move sort value over
-        newData.sort = SystemsJSON[id].sort;
+            if(SystemsJSON[id].hasOwnProperty("lastBuild") ){
+                newData.lastBuild = SystemsJSON[id].lastBuild
+            }
 
-        //add history json to SystemsJSON if not there
-        // if(!SystemsJSON[id].hasOwnProperty("hist")){
-        //     SystemsJSON[id].hist = [];
-        // }
+            newData.comType = 'job';
+            newData.description = req.body.description;
+            newData.variables = req.body.compVariables;
+            newData.text = req.body.name;
+            newData.sort = SystemsJSON[id].sort;
 
-        //append history json
-        var ds = new Date().toISOString();
-        var currentHist = SystemsJSON[id].hist;
-        currentHist.push({username:config.username, ds: ds, fromId: ""});
-        newData.hist=currentHist;
+            //add history json to SystemsJSON if not there
+            if(!SystemsJSON[id].hasOwnProperty("hist")){
+                SystemsJSON[id].hist = [];
+            }
 
-        //Increment component version number
-        if ( SystemsJSON[id].hasOwnProperty('ver') ) {
-            newData.ver = SystemsJSON[id].ver + 1;
-        }else{
-            newData.ver = 1;
-        }
+            //append systemsJson history
+            var ds = new Date().toISOString();
+            var currentHist = SystemsJSON[id].hist;
+            currentHist.push({username:config.username, ds: ds, fromId: ""});
+            newData.hist=currentHist;
+
+            //store linked build code
+
+            var bCode = req.body.buildCode
+
+            //hopefully the picked build code exists
+            if(BuildCode.hasOwnProperty(bCode)){
+                newBuildCode.description = BuildCode[bCode].description;
+                newBuildCode.name = BuildCode[bCode].name;
+                newBuildCode.promoted = BuildCode[bCode].promoted;
+
+                newData.buildCode = {linkArr:[bCode]};
+
+                //append build code history
+                if(BuildCode[bCode].hasOwnProperty("hist")){
+                    currentHist = BuildCode[bCode].hist;
+                }else{
+                    currentHist = [];
+                }
+
+                currentHist.push({username:config.username, ds: ds});
+                newBuildCode.hist=currentHist;
+
+                //Increment build code version number
+                if ( BuildCode[bCode].hasOwnProperty('ver') ) {
+                    newBuildCode.ver = BuildCode[bCode].ver + 1;
+                }else{
+                    newBuildCode.ver = 1;
+                }
+
+            }else{ //If BuildCode record does not exist
+                bCode = generateUUID();
+                newData.buildCode = {linkArr:[bCode]};
+                newBuildCode.description = newData.description;
+                newBuildCode.ver = 1;
+                newBuildCode.hist=[];
+
+            }
+
+            newBuildCode.rerunnable = req.body.rerunnable;
+            newBuildCode.systemFunction = req.body.systemFunction;
+            newBuildCode.runLocal = req.body.runLocal;
+
+            newBuildCode.resourceFiles = req.body.resourceFiles;
+            newBuildCode.templates = req.body.templates
+            newBuildCode.script = req.body.script;
+
+            newBuildCode.name = req.body.buildCodeName === "" ? "New Build Code" : req.body.buildCodeName;
+
+
 
             SystemsJSON[id] = newData;
+            BuildCode[bCode] = newBuildCode;
+
             foundRow = SystemsJSON[id];
-           //console.log('v:' + req.body.compVariables)
         }
     }else{
         //Component type = System
@@ -1487,7 +1656,7 @@ router.post("/copy",function(req,res){
                     parent: newParentId,
                     name: fromNode.name,
                     description: fromNode.description,
-                    ver: 1,
+                    // ver: 1,
                     comType: fromNode.comType,
                     sort:fromNode.sort,
                     text: fromNode.name,
@@ -1504,17 +1673,21 @@ router.post("/copy",function(req,res){
                 //Add more properties to the new component obj if type = 'job' (ie component)
                 if(fromNode.comType === 'job' ){
                     NewRow.enabled=fromNode.enabled;
-                    NewRow.rerunnable=fromNode.rerunnable;
                     NewRow.promoted=fromNode.promoted;
-                    NewRow.systemFunction=fromNode.systemFunction;
-                    NewRow.runLocal=fromNode.runLocal;
-                    NewRow.script=fromNode.script;
-                    NewRow.variables=fromNode.variables;
-                    //NewRow.template=fromNode.template;
-                    NewRow.templates=fromNode.templates;
-                    //NewRow.custTemplates=fromNode.custTemplates;
-                    NewRow.resourceFiles=fromNode.resourceFiles;
+
+                    NewRow.variables = {};
+                    //copy vars that are not private
+                    for(var ind in SystemsJSON[fromId].variables){
+                        if (!fromNode.variables[ind].private) {
+                            NewRow.variables[ind] = fromNode.variables[ind]
+                        }else{
+                            NewRow.variables[ind] = fromNode.variables[ind]
+                            NewRow.variables[ind].value = "";
+                        }
+                    }
+
                     NewRow.icon=fromNode.icon;
+                    NewRow.buildCode=fromNode.buildCode;
                 }
 
                 SystemsJSON[id] = NewRow;
@@ -1587,6 +1760,9 @@ router.post("/copy",function(req,res){
                 }
             }
 
+            //create libPath string
+            const libPath = libsPath + lib + "/";
+
             //loop through all fromIds and copy
             fromIds.forEach(function(fromId) {
                 var fromNode = libJSON[fromId];
@@ -1602,12 +1778,11 @@ router.post("/copy",function(req,res){
                 const ds = new Date().toISOString();
                 const hist=[{username:config.username, ds: ds, fromId: fromId}];
 
-                //build new component object version 1
+                //build new component object
                 var NewRow = {
                     parent: newParentId,
                     name: fromNode.name,
                     description: fromNode.description,
-                    ver: 1,
                     comType: fromNode.comType,
                     variables: fromNode.variables,
                     sort:fromNode.sort,
@@ -1628,46 +1803,67 @@ router.post("/copy",function(req,res){
                 if(fromNode.comType === 'job'){
                     NewRow.ft = SystemsJSON[newParentId].ft + '/' + newParentId;
                     NewRow.enabled=fromNode.enabled;
-                    NewRow.rerunnable=fromNode.rerunnable;
+                    // NewRow.rerunnable=fromNode.rerunnable;
                     NewRow.promoted=fromNode.promoted;
-                    NewRow.systemFunction=fromNode.systemFunction;
-                    NewRow.runLocal=fromNode.runLocal;
-                    NewRow.script=fromNode.script;
-                    // NewRow.template=fromNode.template;
-                    NewRow.templates=fromNode.templates;
 
-                    // NewRow.custTemplates=fromNode.custTemplates;
-                    NewRow.resourceFiles=fromNode.resourceFiles;
-                    NewRow.icon=fromNode.icon;
-                // }else{
-                //     NewRow.icon=fromNode.icon;
+                    NewRow.buildCode=fromNode.buildCode;
                 }
 
                 //Add to SystemsJSON
                 SystemsJSON[id] = NewRow;
 
-                //create libPath string
-                const libPath = libsPath + lib + "/";
+                //remove values from private variables
+                var varListAr = SystemsJSON[id].variables;
+                for(var thisVar in varListAr){
+                    if(varListAr[thisVar].private === true){
+                        libJSON[id].variables[thisVar].value = "";
+                    }
+                }
 
-                //copy resource files
-                if ( fs.existsSync( libPath + "/uploads/" + fromId ) ) { //copy file resources if they exist
-
-                    fs.mkdirSync(filesPath + id);
-                    const files = fs.readdirSync(libPath + "/uploads/" + fromId +  "/");
+                //copy resource files that are attached to component/system
+                if ( fs.existsSync( libPath + '/uploads/' + fromId ) ) {
+                    if ( !fs.existsSync( filesPath + id) ) {
+                        fs.mkdirSync(filesPath + id);
+                    }
+                    let files = fs.readdirSync( libPath + '/uploads/' + fromId);
                     files.forEach(function (file) {
-                        if (!fs.lstatSync(libPath + "/uploads/" + fromId + '/' + file).isDirectory()) {
-                            const targetFile = filesPath + id +"/"+ file;
-                            const source = libPath + "/uploads/" + fromId + '/' + file;
-                            //console.log("targetFile:" + targetFile);
-                            //console.log("source:" + source);
+                        if (!fs.lstatSync( libPath + '/uploads/' + fromId + '/' + file).isDirectory()) {
+                            let source = libPath + '/uploads/' + fromId + '/' + file;
+                            let targetFile = filesPath + id + '/' + file;
                             fs.writeFileSync(targetFile, fs.readFileSync(source))
                         }
                     })
                 }
+
             });
 
             //add new sort order value to the 1st id
             SystemsJSON[idMap[fromIds[0]]].sort = x;
+
+            //copy build code
+            let bcJSON = JSON.parse(fs.readFileSync("library/" + lib + "/BuildCode.json"));
+            fromIds.forEach(function(fromId) {
+                if(SystemsJSON[fromId].comType === "job"){
+                    BuildCode[SystemsJSON[fromId].buildCode.linkArr[0]] = bcJSON[SystemsJSON[fromId].buildCode.linkArr[0]];
+
+                    //copy file resources if they exist
+                    let bcId = SystemsJSON[fromId].buildCode.linkArr[0];
+                    if ( fs.existsSync( libPath + '/uploads/' + bcId ) ) {
+                        if ( !fs.existsSync(filesPath + bcId) ) {
+                            fs.mkdirSync(filesPath + bcId);
+                        }
+                        let files = fs.readdirSync(libPath + '/uploads/' + bcId);
+                        files.forEach(function (file) {
+                            if (!fs.lstatSync(libPath + '/uploads/' + bcId + '/' + file).isDirectory()) {
+                                let source = libPath + '/uploads/' + bcId + '/' + file;
+                                let targetFile = filesPath + bcId + '/' + file;
+                                fs.writeFileSync(targetFile, fs.readFileSync(source)) // find a better way to copy
+                            }
+                        })
+                    }
+                }
+
+            });
 
             //Save SystemsJSON and backup
             saveAllJSON(true);
@@ -1693,13 +1889,14 @@ router.post("/copyToLib",function(req,res){
     var targetId = reqJSON.parent;
     var lib = reqJSON.lib;
 
-   //If targetId is 'lib' then set the target id to 'root' of tree
+    //If targetId is 'lib' then set the target id to 'root' of tree
     if(targetId === 'lib'){
         targetId = '#'
     }
 
     //Open specified lib from file system
     libJSON = JSON.parse(fs.readFileSync("library/" + lib + "/SystemsJSON.json"));
+    libBuildCode = JSON.parse(fs.readFileSync("library/" + lib + "/BuildCode.json"));
 
     //create error flag
     var error = false;
@@ -1762,11 +1959,21 @@ router.post("/copyToLib",function(req,res){
                 comType: fromNode.comType,
                 description: fromNode.description,
                 ver: fromNode.ver,
-                variables: fromNode.variables,
                 sort: fromNode.sort,
                 hist: fromNode.hist,
-                icon: fromNode.icon
+                icon: fromNode.icon,
+                variables: {}
             };
+
+            //copy vars that are not private
+            for(var ind in SystemsJSON[fromId].variables){
+                if (!fromNode.variables[ind].private) {
+                    NewRow.variables[ind] = fromNode.variables[ind]
+                }else{
+                    NewRow.variables[ind] = fromNode.variables[ind]
+                    NewRow.variables[ind].value = "";
+                }
+            }
 
             //build family tree string
             if(newParentId === "#"){
@@ -1778,29 +1985,32 @@ router.post("/copyToLib",function(req,res){
             //if type = job (component) then copy other prpoerties
             const nodeType = fromNode.comType;
             if (nodeType === 'job' ){
-                NewRow.script=fromNode.script;
-                // NewRow.template=fromNode.template;
-                NewRow.templates=fromNode.templates;
-                // NewRow.custTemplates=fromNode.custTemplates;
-                NewRow.resourceFiles=fromNode.resourceFiles;
-                NewRow.rerunnable=fromNode.rerunnable;
                 NewRow.promoted=fromNode.promoted;
-                NewRow.systemFunction=fromNode.systemFunction;
-                NewRow.runLocal=fromNode.runLocal;
                 NewRow.enabled=fromNode.enabled;
+                NewRow.buildCode=fromNode.buildCode;
             }
 
             //Add new row to lib json
             libJSON[id] = NewRow;
 
-            //copy file resources if they exist
+            //remove values from private variables
+            var varListAr = libJSON[id].variables;
+            for(var thisVar in varListAr){
+                if(varListAr[thisVar].private == true){
+                    libJSON[id].variables[thisVar].value = "";
+                }
+            }
+
+            //copy resource files that are attached to component/system
             if ( fs.existsSync( filesPath + fromId ) ) {
-                fs.mkdirSync(libPath + '/uploads/' + id);
-                const files = fs.readdirSync(filesPath + fromId);
+                if ( !fs.existsSync( libPath + '/uploads/' + id) ) {
+                    fs.mkdirSync(libPath + '/uploads/' + id);
+                }
+                let files = fs.readdirSync(filesPath + fromId);
                 files.forEach(function (file) {
                     if (!fs.lstatSync(filesPath + fromId + '/' + file).isDirectory()) {
-                        const targetFile = libPath + '/uploads/' + id + '/' + file;
-                        const source = filesPath + fromId + '/' + file;
+                        let targetFile = libPath + '/uploads/' + id + '/' + file;
+                        let source = filesPath + fromId + '/' + file;
                         fs.writeFileSync(targetFile, fs.readFileSync(source))
                     }
                 })
@@ -1810,18 +2020,58 @@ router.post("/copyToLib",function(req,res){
         //set sort order
         libJSON[idMap[fromIds[0]]].sort = x;
 
-        //Save library
+        //Save library and copy build code
         fs.writeFile(libPath + '/SystemsJSON.json', JSON.stringify(libJSON), function (err) {
             if (err) {
                 console.log('There has been an error saving your library json');
                 console.log(err.message);
-            }
-            //console.log('json saved successfully.')
-        });
+                //return error status
+                res.sendStatus(500);
+                res.end(err.message);
+            }else{
+                let bcJSON = JSON.parse(fs.readFileSync("library/" + lib + "/BuildCode.json"));
 
-        //return OK status
-        res.sendStatus(200);
-        res.end('');
+                //copy build code
+                fromIds.forEach(function(fromId) {
+                    if(SystemsJSON[fromId].comType === "job"){
+
+                        bcJSON[SystemsJSON[fromId].buildCode.linkArr[0]] = BuildCode[SystemsJSON[fromId].buildCode.linkArr[0]];
+
+                        //copy file resources if they exist
+                        let bcId = SystemsJSON[fromId].buildCode.linkArr[0]
+                        if ( fs.existsSync( filesPath + bcId ) ) {
+                            if ( !fs.existsSync( libPath + '/uploads/' + bcId) ) {
+                                fs.mkdirSync(libPath + '/uploads/' + bcId);
+                            }
+                            let files = fs.readdirSync(filesPath + bcId);
+                            files.forEach(function (file) {
+                                if (!fs.lstatSync(filesPath + bcId + '/' + file).isDirectory()) {
+                                    let targetFile = libPath + '/uploads/' + bcId + '/' + file;
+                                    let source = filesPath + bcId + '/' + file;
+                                    fs.writeFileSync(targetFile, fs.readFileSync(source))
+                                }
+                            })
+                        }
+                    }
+                });
+
+                //save build code in lib
+                fs.writeFile(libPath + '/BuildCode.json', JSON.stringify(bcJSON), function (err) {
+                    if (err) {
+                        console.log('There has been an error saving your build code json');
+                        console.log(err.message);
+                        //return error status
+                        res.sendStatus(500);
+                        res.end(err.message);
+                    }else{
+                        //return OK status
+                        res.sendStatus(200);
+                        res.end('');
+                    }
+                });
+
+            }
+        });
     }
 });
 
@@ -1915,13 +2165,14 @@ var latestVarCache = {};
 
 //Service Rt: /run to build a list of components. Disabled components and thier children will be skipped, Method: post, Requires: ids = list of ids to build seperated by ';' , Returns: A very long chunked responcse containg ssh output and imbedded codes to update the ui
 //the ssh connect obj
-var conn;
+var conn; //global object to store the ssh2 connection
 router.post("/run",function(req,res){
 
     var job;
     var jobIndex;
-    var ids; //list of component ids send from client separated by ;
+    var ids; //list of component ids send from client separated by ; and children need to follow parernts
     var storeLocal;
+    var runRerunnableCh;
     var storeLocalAccess;
     var runKey="";
     var newKey=false;
@@ -1932,24 +2183,24 @@ router.post("/run",function(req,res){
     var remoteIP = req.connection.remoteAddress.toString();
     remoteIP = remoteIP.substring(remoteIP.lastIndexOf(":") + 1);
 
-    var builderIP = getIPAddress();
-    function getIPAddress() {
-        // var interfaces = require('os').networkInterfaces();
-        // for (var devName in interfaces) {
-        //     var iface = interfaces[devName];
-        //     console.log(JSON.stringify(iface));
-        //     for (var i = 0; i < iface.length; i++) {
-        //         var alias = iface[i];
-        //         if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal)
-        //             return alias.address;
-        //     }
-        // }
-        //
-        // return '';
+    // var builderIP = getIPAddress();
+    // function getIPAddress() {
+    //     // var interfaces = require('os').networkInterfaces();
+    //     // for (var devName in interfaces) {
+    //     //     var iface = interfaces[devName];
+    //     //     console.log(JSON.stringify(iface));
+    //     //     for (var i = 0; i < iface.length; i++) {
+    //     //         var alias = iface[i];
+    //     //         if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal)
+    //     //             return alias.address;
+    //     //     }
+    //     // }
+    //     //
+    //     // return '';
+    //
+    // }
 
-    }
-
-    fs.writeFileSync("sec_group_ips.json",JSON.stringify({'builderIP':builderIP, 'remoteIP':remoteIP}))
+    //fs.writeFileSync("sec_group_ips.json",JSON.stringify({'builderIP':builderIP, 'remoteIP':remoteIP}))
 
     //set default timeout. May be over written by user prefs
     var timeOut = 30000;  //By default - how many ms all connections should wait for the prompt to reappear before connection is terminated
@@ -1973,6 +2224,9 @@ router.post("/run",function(req,res){
 
             //set list of ids into ids array
             ids = fields.ids.split(';');
+
+            //set flag to run promoted children
+            runRerunnableCh = fields.runRerunnableCh;
 
             //storeLocal holds val of 'store key in browser' checkbox
             storeLocal = fields.storeLocal;
@@ -2086,15 +2340,25 @@ router.post("/run",function(req,res){
             }
         }
 
+        //loop through ids and build 'disabled ids' list
         var disabledIds = [];
+        var y = 0;
         ids.forEach(function(id){
             if(SystemsJSON[id].enabled !== 1){
+                //add if comp is not enabled
+                disabledIds.push(id);
+            }else if (BuildCode[SystemsJSON[id].buildCode.linkArr[0]].rerunnable === 1 && runRerunnableCh === "no" && y > 0){
+                //add if run promoted flag is no and comp is promoted
                 disabledIds.push(id);
             }else if (disabledIds.indexOf(SystemsJSON[id].parent) !== -1){
+                //add if comp's parent is in the disabled list already (include all children)
                 disabledIds.push(id);
             }
+            y++;
         });
-        var y = 0;
+
+        //loop through list of disabled ids, remove each from ids list, build list of disabled names to send back to ui
+        y = 0;
         var nameList = [];
         disabledIds.forEach(function(id){
             var i = ids.indexOf(id);
@@ -2111,6 +2375,8 @@ router.post("/run",function(req,res){
             res.write( "Skipping " + y.toString() + " disabled components (" + nameList.join(', ') + ")");
             res.write("\n");
         }
+
+
         var id = ids[0];
         //console.log("running: "+ ids);
         jobIndex = 0;
@@ -2141,7 +2407,7 @@ router.post("/run",function(req,res){
 
             var username = getSystemVarVal(id, 'username');
             var host = getSystemVarVal(id, 'host');
-            if(username && (host || job.runLocal === 1)){
+            if(username && (host.trim().length > 0 || BuildCode[SystemsJSON[id].buildCode.linkArr[0]].runLocal === 1)){
                 var  connectHost = job.runLocal === 1 ? "127.0.0.1" : host;
                 sshConnect(id, runKey, connectHost, username);
             }else{
@@ -2285,7 +2551,7 @@ router.post("/run",function(req,res){
 
     //function runScript to build a specified component. requires: jobId = job id string | job = component obj , runMethod = "exec" or "SSH"
     function runScript(jobId, job, runMethod) {
-        var script = job.script + "\n"; //add return to end of string to ensure prpompt is returned at end of script
+        var script = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].script + "\n"; //add return to end of string to ensure prpompt is returned at end of script
         var scriptArray = script.split("\n"); // the list of commands by row
         var commandIndex = 0;
         var prompt = "[SysStack]"; //prompt will be changed to this
@@ -2359,7 +2625,7 @@ router.post("/run",function(req,res){
                             cacheVarVals([fileName],SystemsJSON[jobId].ft.split('/')[1]);
 
                             //If this is a special 'system' job then update the system variables
-                            if(SystemsJSON[jobId].systemFunction === 1){
+                            if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].systemFunction === 1){
                                 copySystemVarToSystem(jobId)
                             }
 
@@ -2582,11 +2848,14 @@ router.post("/run",function(req,res){
 
                                 var tempNum = parseInt(currentCommand.split(':')[1], 10);
                                 if (tempNum > 1 && tempNum < 100) {
-                                    template = job.templates.tempArr[tempNum - 1].c;
+                                    template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[tempNum - 1].c;
                                     pathFileName = currentCommand.substr(currentCommand.indexOf(":") + 1);
                                     pathFileName = pathFileName.substr(pathFileName.indexOf(":") + 1);
                                 }else{
-                                    template = job.templates.tempArr[0].c;
+
+                                    //console.log({job: job.name, id: jobId});
+
+                                    template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[0].c;
                                     pathFileName = currentCommand.substr(currentCommand.indexOf(":") + 1);
                                 }
 
@@ -2640,6 +2909,97 @@ router.post("/run",function(req,res){
                                                                 });
                                                             });
                                                             message('saveTemplate:send complete - ' + aPathFileName);
+                                                            var rmResp = execSync("sudo rm -f /tmp/" + aFileName);
+                                                            if(deferredExit == true && aSyncInProgress == 0){
+                                                                stream.write("exit" + '\n');
+                                                                sshSuccess = true
+                                                            }
+                                                        }
+                                                    );
+                                                    readStream.pipe(writeStream);
+                                                }
+                                            }
+                                        )
+                                    })
+                                }
+
+                                isDirective = true;
+                            } else if
+                            (currentCommand.substr(0, 8) === "saveVar:") {
+
+                                var varVal = "";
+                                var pathFileName = "";
+
+                                var varName = currentCommand.split(':')[1];
+                                if (varName.length > 0) {
+
+                                    if(SystemsJSON[jobId].variables.hasOwnProperty(varName)){
+
+                                        varVal = SystemsJSON[jobId].variables[varName].value;
+
+                                        pathFileName = currentCommand.substr(currentCommand.indexOf(":") + 1);
+                                        pathFileName = pathFileName.substr(pathFileName.indexOf(":") + 1);
+
+                                        var pathFileNameAr = pathFileName.split('/');
+                                        var fileName = pathFileNameAr[pathFileNameAr.length - 1];
+                                        var rmResp = execSync("sudo rm -f /tmp/" + fileName);
+
+                                        sendVar(pathFileName, fileName, varVal);
+                                    }else{
+                                        aSyncInProgress--;
+                                        console.log('error:sendVar - Var not found: ' + varName);
+                                        message('error:sendVar - Var not found: ' + varName);
+                                        stream.close();
+                                    }
+                                }else{
+                                    aSyncInProgress--;
+                                    console.log('error:sendVar - Var name not specified');
+                                    message('error:sendVar - Var name not specified');
+                                    stream.close();
+                                }
+
+
+
+                                function sendVar(aPathFileName, aFileName, aVar){
+                                    aSyncInProgress++;
+                                    fs.writeFile('/tmp/' + aFileName, aVar, function (err) {
+                                        if (err) {
+                                            aSyncInProgress--;
+                                            return console.log(err);
+                                        }
+                                        conn.sftp(
+                                            function (err, sftp) {
+                                                if (err) {
+                                                    console.log("Error, problem starting SFTP: %s", err);
+                                                    message('error:saveVar - problem starting SFTP');
+                                                    stream.close();
+                                                    aSyncInProgress--;
+                                                } else {
+                                                    var readStream = fs.createReadStream("/tmp/" + aFileName);
+                                                    var writeStream = sftp.createWriteStream(pathFileName);
+
+                                                    writeStream.on('error', function (e) {
+                                                        aSyncInProgress--;
+                                                        console.log('error:saveVar - error creating target stream - ' + aPathFileName, e);
+                                                        message('error:saveVar - error creating target stream - ' + aPathFileName);
+                                                        stream.close();
+                                                    });
+
+                                                    writeStream.on('close', function () {
+                                                            aSyncInProgress--;
+
+                                                            sftp.end();
+
+                                                            conn.exec("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName, function(err, stream) {
+                                                                if (err) throw err;
+                                                                stream.on('close', function(code, signal) {
+                                                                }).on('data', function(data) {
+                                                                    console.log('STDOUT: ' + data);
+                                                                }).stderr.on('data', function(data) {
+                                                                    console.log('STDERR: ' + data);
+                                                                });
+                                                            });
+                                                            message('saveVar:send complete - ' + aPathFileName);
                                                             var rmResp = execSync("sudo rm -f /tmp/" + aFileName);
                                                             if(deferredExit == true && aSyncInProgress == 0){
                                                                 stream.write("exit" + '\n');
@@ -2729,14 +3089,23 @@ router.post("/run",function(req,res){
 
                                 (async function () {
 
-                                    console.log("Page.navigate: " + url)
+                                    //console.log("Page.navigate: " + url)
 
                                     await Page.navigate({url: url});
                                     await Page.loadEventFired();
 
-                                    console.log("Page.loadEventFired: " + url)
+                                    //console.log("Page.loadEventFired: " + url)
 
-                                    // message('snap:created: ' + "screenshot.png");
+                                    const screenshot = await Page.captureScreenshot({format: "png", fromSurface: true});
+                                    const buffer = new Buffer(screenshot.data, 'base64');
+                                    fs.writeFile(filesPath + jobId + '/' +'screenshot.png', buffer, 'base64', function(err) {
+                                        if (err) {
+                                            console.error(err);
+                                        } else {
+                                            console.log('Screenshot saved');
+                                        }
+                                    });
+                                    message('snap:created: ' + "screenshot.png");
 
                                     aSyncInProgress--;
                                     console.log(aSyncInProgress.toString())
@@ -2760,15 +3129,12 @@ router.post("/run",function(req,res){
 
                                 (async function () {
 
-                                    console.log("Page.navigate: " + url)
-
+                                    //console.log("Page.navigate: " + url)
 
                                     await Page.navigate({url: url});
                                     await Page.loadEventFired();
 
-                                    console.log("Page.loadEventFired: " + url)
-
-                                    // message('snap:created: ' + "screenshot.png");
+                                    //console.log("Page.loadEventFired: " + url)
 
                                     aSyncInProgress--;
                                     if(deferredExit == true && aSyncInProgress == 0){
@@ -3240,16 +3606,23 @@ router.get("/ClosestRerunnableAn",function(req,res){
     var ClosestRerunnableAn = {};
     var ClosestRerunnableAnID = "";
     if (SystemsJSON.hasOwnProperty(id) ){
-        if(SystemsJSON[id].rerunnable !== 1){
+        if(BuildCode[SystemsJSON[id].buildCode.linkArr[0]].rerunnable !== 1){
             var parentID = SystemsJSON[id].parent;
             var x = 0;
-            //loop through parent > parent > parent etc (max 100 times) and capture compont that is rerunnable.
+            //loop through parent > parent > parent etc (max 100 times) and capture component that is rerunnable.
+            //if none found when reached system set return id to self
             while ((parentID !== "#") && (ClosestRerunnableAnID === "") && (x < 100)){
 
                 if (SystemsJSON.hasOwnProperty(parentID) ){
-                    if(SystemsJSON[parentID].rerunnable === 1){
-                        ClosestRerunnableAn = SystemsJSON[parentID];
-                        ClosestRerunnableAnID = parentID
+                    if(SystemsJSON[parentID].comType !== "system"){
+                        if(BuildCode[SystemsJSON[parentID].buildCode.linkArr[0]].rerunnable === 1){
+                            ClosestRerunnableAn = SystemsJSON[parentID];
+                            ClosestRerunnableAnID = parentID
+                        }
+                    }else{
+                        //no rerunnable in parents chain. Set return id to query id
+                        ClosestRerunnableAn = SystemsJSON[id];
+                        ClosestRerunnableAnID = id
                     }
                 }
                 parentID = SystemsJSON[parentID].parent;
@@ -3351,7 +3724,7 @@ router.get("/getPromotedSystems",function(req,res){
 
                 var  hostIP = getSystemVarVal(key, "host");
 
-                if(hostIP !=="" || SystemsJSON[key].runLocal === 1){
+                if(hostIP !=="" || BuildCode[SystemsJSON[key].buildCode.linkArr[0]].runLocal === 1){
                     var systemName =  SystemsJSON[SystemsJSON[key].ft.split("/")[1]].name;
                     var systemId =  SystemsJSON[key].ft.split("/")[1];
                     rowdata[systemId] = systemName
@@ -3376,7 +3749,7 @@ router.get("/getPromoted",function(req,res){
                 var  hostIP = getSystemVarVal(key, "host");
 
                 if(SystemsJSON[key].ft.split("/")[1] == systemId){
-                    if(hostIP !=="" || SystemsJSON[key].runLocal === 1){
+                    if(hostIP !=="" || BuildCode[SystemsJSON[key].buildCode.linkArr[0]].runLocal === 1){
                         rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
                         rowdata.id = key;
                         rowdata.systemName =  SystemsJSON[rowdata.ft.split("/")[1]].name;
@@ -3385,12 +3758,19 @@ router.get("/getPromoted",function(req,res){
                         //convert family tree+key string to string containing sort values eg ?1?2?1?6?3
                         var sortStr = " ";
                         var sArr = rowdata.ft.split('/');
+                        var aNames = [];
                         sArr.push(key);
                         sArr.forEach(function(parent_id){
                             sortStr += parent_id.length>20 ? "?" + SystemsJSON[parent_id].sort.toString() : "";
+                            if(SystemsJSON.hasOwnProperty(parent_id)){
+                                if(SystemsJSON[parent_id].promoted){
+                                    aNames.push(SystemsJSON[parent_id].name)
+                                }
+                            }
                         });
 
                         rowdata.sortStr = sortStr;
+                        rowdata.aNames = aNames;
 
                         resJSON.push(rowdata);
                     }
@@ -3410,6 +3790,22 @@ router.get("/getPromoted",function(req,res){
     });
 
     res.end(JSON.stringify(resJSON));
+});
+
+//Service Rt: /getChildCount
+router.get("/getChildCount",function(req,res){
+    var id = req.query.id;
+    var x = 0;
+    for (var key in SystemsJSON) {
+        if (SystemsJSON.hasOwnProperty(key)) {
+            if(SystemsJSON[key].parent === id){
+                x++
+            }
+        }
+    };
+
+    var resObj = {count:x}
+    res.end(JSON.stringify(resObj));
 });
 
 
@@ -3456,6 +3852,86 @@ router.get("/getTempTypes",function(req,res){
 
     res.end(JSON.stringify(resJSON));
 });
+
+router.get("/massupdate",function(req,res){
+//mass updates
+
+    res.write("<html><body>");
+
+    var x=0;
+    var list = {};
+    for (var key in SystemsJSON) {
+        //console.log(x++);
+        if(SystemsJSON[key].comType === "job"){
+            bc =  SystemsJSON[key].buildCode.linkArr[0];
+
+            // console.log("=====");
+            // console.log(BuildCode[bc].name );
+
+
+            var scriptC = BuildCode[bc].script.length
+
+            var tempObjArr = BuildCode[bc].templates.tempArr;
+
+            var tempC = 0;
+            tempObjArr.forEach(function(tempObj){
+                tempC += tempObj.c.length
+            });
+            var resC = 0;
+            // console.log(typeof BuildCode[bc].resourceFiles);
+            // console.log(BuildCode[bc].resourceFiles);
+
+            if(BuildCode[bc].hasOwnProperty("resourceFiles")){
+                if(BuildCode[bc].resourceFiles !== '[object Object]'){
+                    if(BuildCode[bc].resourceFiles !== ""){
+                        var resArr = JSON.parse(BuildCode[bc].resourceFiles);
+                        for (let i = 0; i < resArr.length; i++) {
+                            resC += resArr[i].name.length
+                        }
+
+                    }else{
+                        console.log("=====");
+                        console.log(BuildCode[bc].name );
+                        console.log("blank" );
+                        // BuildCode[bc].resourceFiles = "[]"
+                    }
+                }else{
+                    console.log("=====");
+                    console.log(BuildCode[bc].name );
+                    console.log("o o");
+                    // BuildCode[bc].resourceFiles = "[]"
+                }
+            }else{
+                console.log("=====");
+                console.log(BuildCode[bc].name );
+                console.log("no resourceFiles");
+                // BuildCode[bc].resourceFiles = "[]"
+            }
+
+            var idx = BuildCode[bc].name + (scriptC + tempC + resC).toString();
+            if(! list.hasOwnProperty(idx)){
+                list[idx] = {count : 0, cid : bc, sid : key}
+            }else{
+                list[idx].count++;
+               // SystemsJSON[key].buildCode.linkArr[0] = list[idx].cid
+            }
+
+        }
+
+    }
+
+
+    for (var key in list) {
+        res.write( "<br>");
+        res.write(list[key].count.toString() + " : " + key + "<br>");
+    }
+
+
+    res.write("</body></html>");
+    res.end("");
+
+});
+
 
 //Service Rt: /getCPUStats to return an array of CPU stats of the current server , Method: get, Requires: none, Returns: array of stats in the format {last10:[val], last50:[val], last100:[val], freeMem:[val]}
 router.get("/getCPUStats",function(req,res){
@@ -3529,6 +4005,43 @@ function saveAllJSON(backup){
                                     if((x + 20) <  files.length){
                                         //console.log("removing"  + __dirname + "/backup/" + mFile );
                                         fs.unlinkSync(__dirname + "/backup/" + mFile)
+                                    };
+                                    x++
+                                }
+                            })
+                        }
+
+                    });
+                }
+            })
+        }
+    })
+    fs.writeFile('BuildCode.json', JSON.stringify(BuildCode), function (err) {
+        if (err) {
+            console.log('There has been an error saving your BuildCode json.');
+            console.log(err.message);
+            return;
+        }else if(backup){
+            console.log("backup");
+            var dsString = new Date().toISOString();
+            var fds = dsString.replace(/_/g, '-').replace(/T/, '-').replace(/:/g, '-').replace(/\..+/, '');
+            const fname = 'BuildCode_'+fds+'.json';
+            fs.writeFile(__dirname + "/backup/buildcode/" + fname, JSON.stringify(BuildCode), function (err) {
+                if (err) {
+                    console.log('There has been an error saving your json: /backup/'+fname);
+                    console.log(err.message);
+                    return;
+                }else{
+                    var x = 1;
+                    fs.readdir(__dirname + "/backup/buildcode/", function(err, files){ // delete older backups files
+                        if (err){
+                            console.log("Error reading " + __dirname + "/backup/buildcode/ dir\n" + err);
+                        }else{
+                            files.forEach(function(mFile){
+                                if (fs.statSync(__dirname + "/backup/buildcode/" + mFile).isFile()){
+                                    if((x + 30) <  files.length){
+                                        //console.log("removing"  + __dirname + "/backup/" + mFile );
+                                        fs.unlinkSync(__dirname + "/backup/buildcode/" + mFile)
                                     };
                                     x++
                                 }
