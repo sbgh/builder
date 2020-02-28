@@ -2183,24 +2183,24 @@ router.post("/run",function(req,res){
     var remoteIP = req.connection.remoteAddress.toString();
     remoteIP = remoteIP.substring(remoteIP.lastIndexOf(":") + 1);
 
-    // var builderIP = getIPAddress();
-    // function getIPAddress() {
-    //     // var interfaces = require('os').networkInterfaces();
-    //     // for (var devName in interfaces) {
-    //     //     var iface = interfaces[devName];
-    //     //     console.log(JSON.stringify(iface));
-    //     //     for (var i = 0; i < iface.length; i++) {
-    //     //         var alias = iface[i];
-    //     //         if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal)
-    //     //             return alias.address;
-    //     //     }
-    //     // }
-    //     //
-    //     // return '';
-    //
-    // }
+    var builderIP = getIPAddress();
+    function getIPAddress() {
+        var interfaces = require('os').networkInterfaces();
+        for (var devName in interfaces) {
+            var iface = interfaces[devName];
+            console.log(JSON.stringify(iface));
+            for (var i = 0; i < iface.length; i++) {
+                var alias = iface[i];
+                if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal)
+                    return alias.address;
+            }
+        }
 
-    //fs.writeFileSync("sec_group_ips.json",JSON.stringify({'builderIP':builderIP, 'remoteIP':remoteIP}))
+        return '';
+
+    }
+
+    fs.writeFileSync("sec_group_ips.json",JSON.stringify({'builderIP':builderIP, 'remoteIP':remoteIP}));
 
     //set default timeout. May be over written by user prefs
     var timeOut = 30000;  //By default - how many ms all connections should wait for the prompt to reappear before connection is terminated
