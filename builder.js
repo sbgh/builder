@@ -2188,7 +2188,7 @@ router.post("/run",function(req,res){
         var interfaces = require('os').networkInterfaces();
         for (var devName in interfaces) {
             var iface = interfaces[devName];
-            console.log(JSON.stringify(iface));
+            //console.log(JSON.stringify(iface));
             for (var i = 0; i < iface.length; i++) {
                 var alias = iface[i];
                 if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal)
@@ -2427,12 +2427,18 @@ router.post("/run",function(req,res){
 
     function sshConnect(jobId, runKey, connectHost, username){
 
-        conn.connect({
-            host: connectHost ,
-            port: getSystemVarVal(jobId, 'port'),
-            username: username,
-            privateKey: runKey
-        });
+        if(getSystemVarVal(jobId, 'port') === ""){
+            message("Error: Connection requires ssh port variable in system. Default value is 22");
+            flushMessQueue();
+            res.end("status:Scripts Aborted\n");
+        }else{
+            conn.connect({
+                host: connectHost ,
+                port: getSystemVarVal(jobId, 'port'),
+                username: username,
+                privateKey: runKey
+            });
+        }
     }
 
     var resultsArray = [];
@@ -3743,39 +3749,52 @@ router.get("/getPromoted",function(req,res){
     var rowdata={};
     var resJSON = [];
     for (var key in SystemsJSON) {
-        if (SystemsJSON.hasOwnProperty(key)) {
-            if(SystemsJSON[key].promoted === 1){
+        if(SystemsJSON[key].comType === "job"){
+            if (SystemsJSON.hasOwnProperty(key)) {
+                if(SystemsJSON[SystemsJSON[key].parent].hasOwnProperty("lastBuild") || SystemsJSON[SystemsJSON[key].parent].comType === "system"  ){
+                    var hasParentRun = false;
+                    if (SystemsJSON[SystemsJSON[key].parent].comType === "system"){
+                        hasParentRun = true
+                    }else if (SystemsJSON[SystemsJSON[key].parent].lastBuild.pass === 1 || BuildCode[SystemsJSON[key].buildCode.linkArr[0]].runLocal === 1){
+                        hasParentRun = true
+                    }
 
-                var  hostIP = getSystemVarVal(key, "host");
+                    if((SystemsJSON[key].promoted === 1 && hasParentRun)){
 
-                if(SystemsJSON[key].ft.split("/")[1] == systemId){
-                    if(hostIP !=="" || BuildCode[SystemsJSON[key].buildCode.linkArr[0]].runLocal === 1){
-                        rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
-                        rowdata.id = key;
-                        rowdata.systemName =  SystemsJSON[rowdata.ft.split("/")[1]].name;
-                        rowdata.systemId =  rowdata.ft.split("/")[1];
+                        var  hostIP = getSystemVarVal(key, "host");
 
-                        //convert family tree+key string to string containing sort values eg ?1?2?1?6?3
-                        var sortStr = " ";
-                        var sArr = rowdata.ft.split('/');
-                        var aNames = [];
-                        sArr.push(key);
-                        sArr.forEach(function(parent_id){
-                            sortStr += parent_id.length>20 ? "?" + SystemsJSON[parent_id].sort.toString() : "";
-                            if(SystemsJSON.hasOwnProperty(parent_id)){
-                                if(SystemsJSON[parent_id].promoted){
-                                    aNames.push(SystemsJSON[parent_id].name)
-                                }
+                        if(SystemsJSON[key].ft.split("/")[1] == systemId){
+                            if(hostIP !=="" || BuildCode[SystemsJSON[key].buildCode.linkArr[0]].runLocal === 1){
+                                rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
+                                rowdata.id = key;
+                                rowdata.systemName =  SystemsJSON[rowdata.ft.split("/")[1]].name;
+                                rowdata.systemId =  rowdata.ft.split("/")[1];
+
+                                //convert family tree+key string to string containing sort values eg ?1?2?1?6?3
+                                var sortStr = " ";
+                                var sArr = rowdata.ft.split('/');
+                                var aNames = [];
+                                sArr.push(key);
+                                sArr.forEach(function(parent_id){
+                                    sortStr += parent_id.length>20 ? "?" + SystemsJSON[parent_id].sort.toString() : "";
+                                    if(SystemsJSON.hasOwnProperty(parent_id)){
+                                        if(SystemsJSON[parent_id].promoted){
+                                            aNames.push(SystemsJSON[parent_id].name)
+                                        }
+                                    }
+                                });
+
+                                rowdata.sortStr = sortStr;
+                                rowdata.aNames = aNames;
+
+                                resJSON.push(rowdata);
                             }
-                        });
-
-                        rowdata.sortStr = sortStr;
-                        rowdata.aNames = aNames;
-
-                        resJSON.push(rowdata);
+                        }
                     }
                 }
+
             }
+
         }
     };
 
