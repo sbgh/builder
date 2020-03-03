@@ -46,10 +46,12 @@ body {
 }
 
 .var_Table {
+    transition: color 0.5s;
     color: #adadad;
 }
 
 .var_Table>tbody>tr:hover{
+    transition: color 0.2s;
     color: #fcfcfd;
 }
 
@@ -120,25 +122,6 @@ a.list-group-item {
     background-color: #555555;
     color: #bbbbbb;
 }
-
-/*::-webkit-scrollbar {*/
-    /*width: 14px;*/
-/*}*/
-
-/*::-webkit-scrollbar-track {*/
-    /*-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);*/
-    /*border-radius: 10px;*/
-/*}*/
-
-/*::-webkit-scrollbar-thumb {*/
-    /*border-radius: 10px;*/
-    /*-webkit-box-shadow: inset 0 0 6px #999;*/
-/*}*/
-
-
-/*::-webkit-scrollbar-corner {*/
-    /*background: transparent !important;*/
-/*}*/
 
 div.grippie {
     border-color:#DDDDDD;
@@ -212,15 +195,19 @@ div.grippie {
 .form-control::-ms-input-placeholder { color: #555555; }  /* Microsoft Edge */
 
 .runningJobCompleteSuccess{
+    rtransition: color 0.5s;
     color: #4dff4b !important;
 }
 .runningJobCompleteFail{
+    transition: color 0.5s;
     color: #ff1917 !important;
 }
 .runningJob{
+    transition: color 0.5s;
     color: #ffffff !important;
 }
 .newJobRow{
+    transition: color 0.5s;
     color: #dcdcdc !important;
 }
 
@@ -437,6 +424,15 @@ input:checked + .slider {
     background-color: #79bdf3;
 }
 
+input:not(:checked) + .slider.round:before{
+    background-color: #79bdf3;
+}
+
+.slider {
+    transition: background-color 0.5s;
+    background-color: #000000;
+}
+
 input:focus + .slider {
     box-shadow: 0 0 1px #79bdf3;
 }
@@ -578,18 +574,22 @@ input:focus + .slider {
 }
 
 .dashTbody > tr.dashListRowClicked > td.dashTableDescriptionItem{
+    transition: color 0.5s;
     color: white;
 }
 
 
 .dashTableBuildButton{
+    transition: color 0.5s;
     color: #79bdf3;
 }
 .dashTableOpenButton{
+    transition: color 0.5s;
     color: #79bdf3;
 }
 
 .stylePickTop, .buildCodeFilter{
+    transition: color 0.5s;
     color: #79bdf3
 }
 
@@ -598,9 +598,11 @@ input:focus + .slider {
 }
 
 .DashListRowPass{
+    transition: color 0.5s;
     color: #4dff4b;
 }
 .DashListRowFail{
+    transition: color 0.5s;
     color: #ff1917;
 }
 
@@ -609,6 +611,7 @@ input:focus + .slider {
 }
 
 .templateTypeDropdownButton{
+    transition: color 0.5s;
     color:#79bdf3;
 }
 
@@ -631,23 +634,28 @@ input:focus + .slider {
 .aceDisabled {
     transition: color 0.5s;
     transition: background-color 0.5s;
+    transition: color 0.5s;
     background-color: #323232;
 }
 
 .varTable > thead > tr > th {
+    transition: color 0.5s;
     color: #F8F8F8;
 }
 
 
 .varRow > td {
+    transition: color 0.5s;
     color: #adadad;
 }
 
 .newCompVarTypeButton{
+    transition: color 0.5s;
     color: #79bdf3;
 }
 
 .compVarDelButton{
+    transition: color 0.5s;
     color:#ff1917;
 }
 
@@ -656,26 +664,42 @@ input:focus + .slider {
 }
 
 .compVarEditValButton, .compVarEditButton, .ql-snow a , .buildCodePickButton, .compFocusButton{
+    transition: color 0.5s;
     color: #79bdf3;
 }
 
 .idInspectLabel, .buildCodeNameRead{
+    transition: color 0.5s;
     color: #F8F8F8;
 }
 
-.searchCycleBtn, .search-icon{
+.searchCycleBtn, .search-icon, .icon-EZStack{
+    transition: color 2.5s;
     color: #79bdf3;
 }
 
 .buildCodeListDSCol, .buildCodeListNameCol, .buildCodeListRRCol, .buildCodeListSFCol{
+    transition: color 0.5s;
     color: #fcfcef;
 }
 
 
 .buildCodeTable > thead > tr > th {
+    transition: color 0.5s;
     color: #F8F8F8;
 }
 
 .dropdown-toggle:disabled  {
+    transition: color 0.5s;
     color: #fff;
+}
+
+.welcome-hr{
+    border-color: #79bdf3;
+}
+.welcome-nav{
+    color: #cfcdcd;
+    transition: background-color 0.5s;
+    /*background-color: #1a1b1c;*/
+    border-bottom: 4px solid #0f6ab4;
 }

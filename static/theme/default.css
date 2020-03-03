@@ -6,6 +6,7 @@ body {
 }
 
 .navbar-default .navbar-nav>li>a {
+    transition: color 0.5s;
     color: #555555;
 }
 
@@ -57,6 +58,7 @@ a {
 }
 
 .ql-picker-label, .ql-stroke{
+    transition: color 0.5s;
     color: #367ae0;
     stroke:  #367ae0 !important;
 }
@@ -109,24 +111,6 @@ a.list-group-item {
     background-color: #555555;
     color: #bbbbbb;
 }
-
-/*::-webkit-scrollbar {*/
-    /*width: 14px;*/
-/*}*/
-
-/*::-webkit-scrollbar-track {*/
-    /*-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);*/
-    /*border-radius: 10px;*/
-/*}*/
-
-/*::-webkit-scrollbar-thumb {*/
-    /*border-radius: 10px;*/
-    /*-webkit-box-shadow: inset 0 0 6px #646464;*/
-/*}*/
-
-/*::-webkit-scrollbar-corner {*/
-    /*background: transparent !important;*/
-/*}*/
 
 div.grippie {
     border-color:#DDDDDD;
@@ -185,12 +169,15 @@ div.grippie {
 .form-control::-ms-input-placeholder { color: #a3a3a3; }  /* Microsoft Edge */
 
 .runningJobCompleteSuccess{
+    transition: color 0.5s;
     color: #009b23 !important;
 }
 .runningJobCompleteFail{
+    transition: color 0.5s;
     color: #901514 !important;
 }
 .runningJob{
+    transition: color 0.5s;
     color: #323232 !important;
 }
 
@@ -321,6 +308,15 @@ input:focus + .slider {
     box-shadow: 0 0 1px #367ae0;
 }
 
+input:not(:checked) + .slider.round:before{
+    background-color: #367ae0;
+}
+
+.slider {
+    transition: background-color 0.5s;
+    background-color: #dcdcdc;
+}
+
 .systemRow{
 
 }
@@ -399,11 +395,12 @@ input:focus + .slider {
 .card-body{
     transition: background-color 1s;
     background-color: #f7f7f7;
-
+    transition: color 0.5s;
     color: #1a1b1c;
 }
 
 .dashTable > thead > tr > th {
+    transition: color 0.5s;
     border-color: #1a1b1c ;
 }
 
@@ -415,6 +412,7 @@ input:focus + .slider {
 }
 
 .dashTbody > tr.dashListRowClicked > td.dashTableDescriptionItem{
+    transition: color 0.5s;
     color: black;
 }
 
@@ -434,20 +432,25 @@ input:focus + .slider {
 }
 
 .dashTableBuildButton{
+    transition: color 0.5s;
     color: #367ae0;
 }
-.dashTableOpenButton{ 
+.dashTableOpenButton{
+    transition: color 0.5s;
     color: #367ae0;
 }
 
 .stylePickTop, .buildCodeFilter{
+    transition: color 0.5s;
     color: #367ae0
 }
 
 .DashListRowPass{
+    transition: color 0.5s;
     color: #009b23;
 }
 .DashListRowFail{
+    transition: color 0.5s;
     color: #901514;
 }
 
@@ -462,6 +465,7 @@ input:focus + .slider {
 }
 
 .compVarDelButton{
+    transition: color 0.5s;
     color:#901514;
 }
 
@@ -470,13 +474,32 @@ input:focus + .slider {
 }
 
 .compVarEditValButton, .compVarEditButton, .ql-snow a, .buildCodePickButton, .compFocusButton {
+    transition: color 0.5s;
+    color: #367ae0;
+}
+
+.searchCycleBtn, .search-icon, .icon-EZStack{
+    transition: color 2.5s;
     color: #367ae0;
 }
 
 .idInspectLabel, .buildCodeNameRead{
+    transition: color 0.5s;
     color: #000000;
 }
 
 .dropdown-toggle:disabled  {
+    transition: color 0.5s;
     color: #000000;
+}
+
+.welcome-hr{
+    border-color: #367ae0;
+}
+
+.welcome-nav{
+    color: #000000;
+    transition: background-color 0.5s;
+    /*background-color: #1a1b1c;*/
+    border-bottom: 4px solid #367ae0;
 }

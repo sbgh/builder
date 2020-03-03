@@ -4,7 +4,7 @@
  Complete back-end code for ezStack Builder Prototype. Ensure SystemsJSON.json (at least "{}") exists in the builder folder.
 */
 const express = require("express");
-const http = require('http');
+// const http = require('http');
 const https = require('https');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
@@ -115,6 +115,10 @@ const viewport = [1280,720];
     await Emulation.setDeviceMetricsOverride(device);
     await Emulation.setVisibleSize({width: viewport[0], height:viewport[1]});
 
+    // default url to cast
+    // await Page.navigate({url: "ezStack.systems"});
+    Page.navigate({url: "https://ezStack.systems"});
+
     //start screen cast
     Page.startScreencast({
         format: 'jpeg',
@@ -122,7 +126,6 @@ const viewport = [1280,720];
         everyNthFrame: 5
     });
     //await Overlay.setShowFPSCounter({ show: true });
-    // debugger;
     Page.screencastFrame(image => {
 
         frameCount++;
@@ -363,7 +366,7 @@ router.get("/navigate",function(req,res){
     (async function () {
 
         await Page.navigate({url: url});
-        await Page.loadEventFired();
+        //await Page.loadEventFired();
 
         //console.log("navigate: " + url)
 
@@ -907,14 +910,14 @@ router.get("/BuildCode",function(req,res){
 
             if(SystemsJSON.hasOwnProperty(nd)){
                 if(SystemsJSON[nd].comType === "job"){
-                    var nodeFtArr = SystemsJSON[nd].ft.split('/');
-                    var currentNode = SystemsJSON[nd].ft.split('/')[1];
+                    var nodeFtArr = SystemsJSON[nd].ft.split('/'); //get arr of all gr-parents
+                    var currentNode = SystemsJSON[nd].ft.split('/')[1]; //currentNode is the system by default
 
                     if(mode === "thisBranch" ){
                         for(var idx in nodeFtArr){
                             if(SystemsJSON.hasOwnProperty(nodeFtArr[idx])){
                                 if(SystemsJSON[nodeFtArr[idx]].comType === "job"){
-                                    var bcId = SystemsJSON[nodeFtArr[idx]].buildCode.linkArr[0]
+                                    var bcId = SystemsJSON[nodeFtArr[idx]].buildCode.linkArr[0];
                                     if(BuildCode.hasOwnProperty(bcId)){
                                         if(BuildCode[bcId].rerunnable === 1){
                                             currentNode = nodeFtArr[idx];
@@ -923,11 +926,13 @@ router.get("/BuildCode",function(req,res){
                                 }
                             }
                         }
+                    }else if(mode === "thisParent" ){
+                        currentNode = SystemsJSON[nd].parent;
                     }
-
                 }
             }
 
+            //all returned BuildCode need to be children of currentFT unless mode === all systems
             var currentFT = SystemsJSON[currentNode].ft + "/" + currentNode;
 
             for(var key in SystemsJSON){
@@ -2344,10 +2349,16 @@ router.post("/run",function(req,res){
         var disabledIds = [];
         var y = 0;
         ids.forEach(function(id){
+            var hasRun = false;
+            if(SystemsJSON[id].hasOwnProperty("lastBuild")){
+                if(SystemsJSON[id].lastBuild.pass === 1){
+                    hasRun = true;
+                }
+            }
             if(SystemsJSON[id].enabled !== 1){
                 //add if comp is not enabled
                 disabledIds.push(id);
-            }else if (BuildCode[SystemsJSON[id].buildCode.linkArr[0]].rerunnable === 1 && runRerunnableCh === "no" && y > 0){
+            }else if (BuildCode[SystemsJSON[id].buildCode.linkArr[0]].rerunnable === 1 && runRerunnableCh === "no" && hasRun && y > 0){
                 //add if run promoted flag is no and comp is promoted
                 disabledIds.push(id);
             }else if (disabledIds.indexOf(SystemsJSON[id].parent) !== -1){
@@ -3108,13 +3119,13 @@ router.post("/run",function(req,res){
                                         if (err) {
                                             console.error(err);
                                         } else {
-                                            console.log('Screenshot saved');
+                                            //console.log('Screenshot saved');
                                         }
                                     });
                                     message('snap:created: ' + "screenshot.png");
 
                                     aSyncInProgress--;
-                                    console.log(aSyncInProgress.toString())
+                                    //console.log(aSyncInProgress.toString())
                                     if(deferredExit == true && aSyncInProgress == 0){
                                         stream.write("exit" + '\n');
                                         sshSuccess = true
@@ -3771,7 +3782,6 @@ router.get("/getPromoted",function(req,res){
                     allow = true;
                 }
 
-
                 if(allow){
                     rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
                     rowdata.id = key;
@@ -3797,14 +3807,7 @@ router.get("/getPromoted",function(req,res){
 
                     resJSON.push(rowdata);
                 }
-
-                // if(){
-                //     if(hostIP !=="" || BuildCode[SystemsJSON[key].buildCode.linkArr[0]].systemFunction === 1){
-                //
-                //     }
-                // }
             }
-
         }
     };
 
@@ -3836,28 +3839,6 @@ router.get("/getChildCount",function(req,res){
     var resObj = {count:x}
     res.end(JSON.stringify(resObj));
 });
-
-
-// function fixSystemsJSONSort(){
-//     for (var key in SystemsJSON) {
-//         if (SystemsJSON.hasOwnProperty(key)) {
-//
-//             if(!SystemsJSON[key].hasOwnProperty("sort")){
-//                 var allSibs = [];
-//                 for (var skey in SystemsJSON) {
-//                     if(SystemsJSON[key].parent === SystemsJSON[skey].parent){
-//                         allSibs.push(skey)
-//                     }
-//                 }
-//                 let x=0;
-//                 allSibs.forEach(function(sib){
-//                     SystemsJSON[sib].sort = x;
-//                     x++
-//                 })
-//             }
-//         }
-//     }
-// }
 
 router.get("/setEnable",function(req,res){
     const id = req.query.id;
@@ -3934,7 +3915,6 @@ router.get("/massupdate",function(req,res){
                 console.log("=====");
                 console.log(BuildCode[bc].name );
                 console.log("no resourceFiles");
-                // BuildCode[bc].resourceFiles = "[]"
             }
 
             var idx = BuildCode[bc].name + (scriptC + tempC + resC).toString();
@@ -3942,19 +3922,16 @@ router.get("/massupdate",function(req,res){
                 list[idx] = {count : 0, cid : bc, sid : key}
             }else{
                 list[idx].count++;
-               // SystemsJSON[key].buildCode.linkArr[0] = list[idx].cid
             }
 
         }
 
     }
 
-
     for (var key in list) {
         res.write( "<br>");
         res.write(list[key].count.toString() + " : " + key + "<br>");
     }
-
 
     res.write("</body></html>");
     res.end("");
@@ -4039,7 +4016,6 @@ function saveAllJSON(backup){
                                 }
                             })
                         }
-
                     });
                 }
             })
@@ -4124,8 +4100,6 @@ var secureServer = https.createServer({
 }, app).listen('8443', function() {
     console.log("Secure Express server listening on port 8443");
 });
-//http.createServer(app).listen('80');
-//console.log("Express server listening on port 80");
 
 console.log(new Date().toISOString());
 
