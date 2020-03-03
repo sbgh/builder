@@ -27,7 +27,7 @@
 
     <script src="ansi_up/ansi_up.js" type="text/javascript"></script>
 
-    <!--Builder Functions-->
+    <!--------------------------------------Builder Functions-------------------------------------->
     <script type = "text/javascript" language = "javascript" >
 
         var pickedLib = '#';
@@ -604,7 +604,6 @@
                         const promoted = JSON.parse(data);
 
                         var pCompHtml = "";
-                        //var oldSytemName = "";
 
                         var dropDownListHtml = "";
                         for (var property in promoted) {
@@ -2712,7 +2711,6 @@
                 var delta = sysDescription.getContents();
                 mydata.description = delta;
 
-                //mydata.variables = $("#sysVariables").val();
                 //find changed/new variables and add them to currentSysVarArr;
                 for(var idn in currentSysVarArr){
 
@@ -2835,7 +2833,6 @@
                 if (scopeRadioVal === 'Ancestors'){scopeCode = 'a'};
                 if (scopeRadioVal === 'Same System'){scopeCode = 's'};
                 $('.varCheckbox:checkbox:checked').each(function () {
-                    //var thisLink = (this.checked ? $(this).val() : "");
                     var thisLink = scopeCode + '.' + $(this).val().split('.')[1];
                     if (thisLink !== ""){
                         pasteText += '<%%' + thisLink + '%> '
@@ -3713,6 +3710,7 @@
             //Check first run and run firstRunTasks() if required
             function checkFirstRun(){
 
+
                 //query server for first run setting
                 var mydata = {};
                 $.ajax({
@@ -3740,18 +3738,63 @@
 
                 function firstRunTasks(result){
                     $("#welcomeModal").modal();
+
+
+
+                    //pick first system
+                    $.get("/getPromotedSystems",{},function(data){
+                        const promoted = JSON.parse(data);
+
+                        if(Object.keys(promoted).length > 0){
+                            var id = Object.keys(promoted)[0];
+                            var sysName = promoted[Object.keys(promoted)[0]];
+
+                            var urlString = "'/uploads/" + id + "/icon.png'";
+                            $("#dropdownMenuButton")[0].innerHTML = '<img id="dashSystemIcon" class="dashSystemIcon" src='+urlString+'></img>';
+                            $("#dropdownMenuButton")[0].innerHTML += sysName;
+                            loadDashTable(id);
+                            loadDashSystemDetails(id);
+
+                            localStorage['dashSystemDropItemClicked'] = JSON.stringify({ id:id, sysName:sysName }) ;
+                        }
+
+                    });
+
                     setFirstRun();
-//                $("#sysScreen").hide();
-//                $("#jobScreen").hide();
-//                $('#componentTabs').hide();
-//                $("#componentsBtn").click();
 
                 }
 
                 //Things to do after welcome modal
                 function afterWelcomeModal(){
-//                    $("#dashBtn").click();
+
                 }
+
+                $("#welcome-nav-Comp").on("click",function(evt){
+                    $("#componentsBtn").click();
+                })
+
+                $("#welcome-nav-Dash").on("click",function(evt){
+                    $("#dashBtn").click();
+                })
+
+                $("#welcome-nav-Brow").on("click",function(evt){
+                    $("#videoCanvas").css("border","14px dashed #E91E63");
+                    $("#videoCanvas").animate({borderWidth : "0px"}, 2000);
+                })
+
+                $("#welcome-nav-Icon").on("click",function(evt){
+                    $("#ezStackTopIcon").css("border","14px dashed #E91E63");
+                    $("#ezStackTopIcon").animate({borderWidth : "0px"}, 2000);
+                })
+
+                $("#welcome-nav-Syst").on("click",function(evt){
+                    $("#dashBtn").click();
+                    $(".dashSystemDropdownButton").delay(800).dropdown("toggle");
+                     evt.stopPropagation();
+                    $("#dashSystemsDropdownMenu").css("border","14px dashed #E91E63");
+                    $("#dashSystemsDropdownMenu").animate({borderWidth : "0px"}, 2000)
+                })
+
                 //Tell server to set firstRun flag for admin user settings
                 function setFirstRun(){  //signal server to set 'firstRun' flag in settings
                     $.ajax({
@@ -3771,6 +3814,7 @@
                         }
                     });
                 }
+
 
                 //Welcome modal close event will run afterWelcomeModal()
                 $('#welcomeModal').on('hidden.bs.modal', function() {
@@ -4530,78 +4574,6 @@
             }
         }
 
-//        function setEndOfContenteditable(contentEditableElement) {
-//            var range,selection;
-//            if(document.createRange)//Firefox, Chrome, Opera, Safari, IE 9+
-//            {
-//                range = document.createRange();//Create a range (a range is a like the selection but invisible)
-//                range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
-//                range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
-//                selection = window.getSelection();//get the selection object (allows you to change selection)
-//                selection.removeAllRanges();//remove any selections already made
-//                selection.addRange(range);//make the range you have just created the visible selection
-//            }
-//            else if(document.selection)//IE 8 and lower
-//            {
-//                range = document.body.createTextRange();//Create a range (a range is a like the selection but invisible)
-//                range.moveToElementText(contentEditableElement);//Select the entire contents of the element with the range
-//                range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
-//                range.select();//Select the range (make it the visible selection
-//            }
-//        }
-
-//        $(document).on('click', '.BuildCode-Heading', function(e){
-//            var $this = $(this);
-//            if(!$this.hasClass('panel-collapsed')) {
-//                $this.parents('.codePanel').find('.panel-body').slideUp();
-//                $this.addClass('panel-collapsed');
-//                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-//            } else {
-//                $this.parents('.codePanel').find('.panel-body').slideDown();
-//                $this.removeClass('panel-collapsed');
-//                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
-//            }
-//        })
-//
-//        $(document).on('click', '.BuildTest-Heading', function(e){
-//            var $this = $(this);
-//            if(!$this.hasClass('panel-collapsed')) {
-//                $this.parents('.testPanel').find('.panel-body').slideUp();
-//                $this.addClass('panel-collapsed');
-//                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-//            } else {
-//                $this.parents('.testPanel').find('.panel-body').slideDown();
-//                $this.removeClass('panel-collapsed');
-//                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
-//            }
-//        })
-//
-//        $(document).on('click', '.BuildMeta-Heading', function(e){
-//            var $this = $(this);
-//            if(!$this.hasClass('panel-collapsed')) {
-//                $this.parents('.metaPanel').find('.panel-body').slideUp();
-//                $this.addClass('panel-collapsed');
-//                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-//            } else {
-//                $this.parents('.metaPanel').find('.panel-body').slideDown();
-//                $this.removeClass('panel-collapsed');
-//                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
-//            }
-//        })
-//
-//        $(document).on('click', '.BuildRes-Heading', function(e){
-//            var $this = $(this);
-//            if(!$this.hasClass('panel-collapsed')) {
-//                $this.parents('.resPanel').find('.panel-body').slideUp();
-//                $this.addClass('panel-collapsed');
-//                $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-//            } else {
-//                $this.parents('.resPanel').find('.panel-body').slideDown();
-//                $this.removeClass('panel-collapsed');
-//                $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
-//            }
-//        })
-
     </script>
 
     <!-- paste icom image -->
@@ -4704,7 +4676,7 @@
     </script>
 
 </head>
-<body>
+
 <svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <defs>
         <symbol id="icon-EZStack" viewBox="0 0 26 32">
@@ -4859,7 +4831,10 @@
                 <div id="treePanel" class='panel panel-default cust-panel locTree-panel-body' style="float: left;"  >
                     <div class='panel-heading treePanelHeading '>
                         <div class="cust-panel-heading">
-                            Systems <a class='newSys' href='#'><i class="fa fa-plus fa-fw"></i></a> <a href="#" data-toggle="modal" data-target="#welcomeModal">  <i class="fa fa-question fa-fw"></i></a>
+                            Systems <a class='newSys' href='#'><i class="fa fa-plus fa-fw"></i></a>
+
+                            <!--<a href="#" data-toggle="modal" data-target="#welcomeModal">  <i class="fa fa-question fa-fw"></i></a>-->
+
                             <i id="search-icon" class="fa fa-search  fa-fw search-icon"></i>
                             <span id="searchCycleDiv"><i id="searchCycleUp" class="fa fa-chevron-up fa-fw searchCycleBtn"></i><i  id="searchCycleDown" class="fa fa-chevron-down fa-fw searchCycleBtn"></i></span>
                             <span id="compSearch" class="form-group search-group">
@@ -5310,8 +5285,13 @@
                 <div class="form-group buildCodeFilterGroup">
                     <label >Filter:</label>
                     <div class="radio">
+                        <label class="buildCodeFilter" data-ID="thisParent">
+                            <input name="buildCodeFilter" class="buildCodeFilterRadio" id="buildCodeFilter-thisParent" value="thisParent" checked="true" type="radio">Same Parent
+                        </label>
+                    </div>
+                    <div class="radio">
                         <label class="buildCodeFilter" data-ID="thisBranch">
-                            <input name="buildCodeFilter" class="buildCodeFilterRadio" id="buildCodeFilter-thisBranch" value="thisBranch" checked="true" type="radio">Same Rerunnable Ancestor
+                            <input name="buildCodeFilter" class="buildCodeFilterRadio" id="buildCodeFilter-thisBranch" value="thisBranch" type="radio">Same Rerunnable Ancestor
                         </label>
                     </div>
                     <div class="radio">
@@ -5727,10 +5707,48 @@
             <div id='welcomeBody' class="modal-body welcome-modal-body">
                 <br/>
                 <h2>Welcome to ezStack Builder</h2>
-                <p>Click the Dashboard icon on the left to get started.</p>
-                <p></p>
-                <br/>
-                <p>
+                <hr class="welcome-hr">
+                <p>ezStack Builder can connect to any linux server to build and configure it for you.
+                    In ezStack Builder a 'System' represents the infrastructure of your web server and 'component' records (the code and assets) are attached to it.
+                    If you provide a system with a host or ip address it can connect and configure the server as specified by the components.
+                    As a non-technical high level user you can modify a web server's look and functionality by changing and rearranging components.
+                    Components can be copied, moved or disabled. You can change component variable values to change your server software stack.
+                    If you want to get technical all of the under laying code for a component is modifiable via shared 'Build Code' records that are attached to each component.
+                </p>
+                <p>Click the
+                    <a id="welcome-nav-Icon" class="welcome-nav" href="#">ezStack icon</a>
+                    in the upper left to open this window again.</p>
+
+                <h3>Screen Selection</h3>
+                <h6>
+                    <a id="welcome-nav-Dash" class="welcome-nav" href="#">Dashboard</a>
+                </h6>
+                <p>The Dashboard provides a high level view of your 'promoted' components and the ability to make quick changes. You can enable/disable components or change their properties.  </p>
+                <h6>
+                    <a id="welcome-nav-Comp" class="welcome-nav" href="#">Components</a>
+                </h6>
+                <p>The Components screen allows you to dive deeper into the code by providing a tree view of all components that are installed. You can change properties and edit/author components and build code.</p>
+
+                <h3>Integrated Chrome Browser</h3>
+                <p>ezStack Builder provides a live instance of headless-chrome to aid in building your web sites. You can interact with this instance in the
+                    <a id="welcome-nav-Brow" class="welcome-nav" href="#">browser window</a>.
+                    Headless-chrome gives you a live view of your apps being built. You can scroll and click the browser window like a real browser.
+                    You can also find components by clicking on the displayed web page elements.
+                    When browsing components, elements will be highlighted when a component, that created it, is selected.</p>
+
+                <h3>First Steps</h3>
+                <p>If you are new to ezStack Builder you can learn how it works by Building a few apps and making a few changes. ezStack Builder comes with
+                    <a id="welcome-nav-Syst" class="welcome-nav" href="#">two predefined systems</a>.
+                    Builder itself is the first system. This allows you to build components to Builder to increase its own capabilities. It is private to you and also known as localhost.
+                    Second is the 'Demo' system that contains components to build sample applications. </p>
+                <ol>
+                    <li>Most components can not be built if the system they are attached to does not have a host or ip address specified.
+                        Enter a host name or ip address in the 'host' variable in the system.</li>
+                    <li>Select the "Prime" component and build it for each system including the "ezStack Builder" system. The Prime component installs some utilities to aid in building.
+                        This only needs to be run once per server.</li>
+                    <li>Once primed you can start building.</li>
+                </ol>
+
 
             </div>
             <div class="modal-footer">
