@@ -586,6 +586,7 @@
                     $("#dropdownMenuButton")[0].innerHTML += dashSystemDropItemClickedJson.sysName;
                     loadDashTable(dashSystemDropItemClickedJson.id);
                     loadDashSystemDetails(dashSystemDropItemClickedJson.id);
+
                 }
             }
 
@@ -635,6 +636,16 @@
                         });
 
                         $("#dashboardList")[0].innerHTML = pCompHtml;
+
+
+//                        // Add slideDn animation to Bootstrap dropdown when opening.
+//                        $('.dashSystemsDropdownMenu').on('show.bs.dropdown', function() {
+//                            $(this).find('.dropdown-menu').first().stop(true, true).slideDown();
+//                        });
+//                        // Add slideUp animation to Bootstrap dropdown when collapsing.
+//                        $('.dashSystemsDropdownMenu').on('hide.bs.dropdown', function() {
+//                            $(this).find('.dropdown-menu').first().stop(true, true).slideUp();
+//                        });
 
                     },
                     error : function(error) {
@@ -3789,10 +3800,12 @@
 
                 $("#welcome-nav-Syst").on("click",function(evt){
                     $("#dashBtn").click();
-                    $(".dashSystemDropdownButton").delay(800).dropdown("toggle");
+                  //  setTimeout(function() {
+                        $(".dashSystemDropdownButton").dropdown("toggle");
+                        $("#dashSystemsDropdownMenu").css("border","14px dashed #E91E63");
+                        $("#dashSystemsDropdownMenu").animate({borderWidth : "0px"}, 2000)
+                  //  }, 2000);
                      evt.stopPropagation();
-                    $("#dashSystemsDropdownMenu").css("border","14px dashed #E91E63");
-                    $("#dashSystemsDropdownMenu").animate({borderWidth : "0px"}, 2000)
                 })
 
                 //Tell server to set firstRun flag for admin user settings
@@ -3837,7 +3850,6 @@
             $("#dashBtn").addClass("active");
             $("#componentsRow").hide();
             loadDashboard();
-            //hideBottom();
 
             //Main menu selections
             $("#dashBtn").on("click",function(){
@@ -3879,9 +3891,6 @@
                 }
 
             }
-
-           // var statusPanel = $("#resultsStatus")[0].innerHTML;
-           // if(statusPanel === ""){$("#status-panel-body").hide()};
 
             function loadjobTempTypeDropdown(templateNumber){
                 var mydata = {};
@@ -5739,7 +5748,7 @@
                 <h3>First Steps</h3>
                 <p>If you are new to ezStack Builder you can learn how it works by Building a few apps and making a few changes. ezStack Builder comes with
                     <a id="welcome-nav-Syst" class="welcome-nav" href="#">two predefined systems</a>.
-                    Builder itself is the first system. This allows you to build components to Builder to increase its own capabilities. It is private to you and also known as localhost.
+                    The Builder server itself is the first system. This allows you to build components to Builder to increase its own capabilities. It is private to you and also known as localhost.
                     Second is the 'Demo' system that contains components to build sample applications. </p>
                 <ol>
                     <li>Most components can not be built if the system they are attached to does not have a host or ip address specified.

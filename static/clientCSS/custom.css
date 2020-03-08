@@ -1154,7 +1154,7 @@ th.col-1, td.col-1{
 }
 
 .stylePickTop{
-   padding-left: 10px;
+   /*padding-left: 10px;*/
    padding-right: 10px;
 }
 
@@ -1499,5 +1499,9 @@ tbody.buildCodeTbody{
 .buildCodeForkModal-dialog{
    width: 500px;
 }
+
+.jobCodeEditor  {
+   transition: background-color 0.5s;
+)
 
 
