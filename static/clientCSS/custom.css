@@ -878,6 +878,11 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
    max-width: 100vw;
 }
 
+.varHelpBody{
+    overflow-y: auto;
+    height: 250px;
+}
+
 .buildHelpBody{
     overflow-y: auto;
     height: 70vh;

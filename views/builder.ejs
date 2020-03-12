@@ -5695,11 +5695,11 @@
             <div class="modal-header">
                 <h1 class="modal-title">Component Variables</h1>
             </div>
-            <div id='varHelpBody' class="modal-body" style="overflow-y: auto;height: 60vh;">
-                <p>Component variables are used to provide configurability of components to non-developers. A build script developer can insert a component variable into the build script that a non-developer user can adjust.</p>
-                <p>Enter variable-name=value pairs. Separate each with a new line.<br></p>
+            <div id='varHelpBody' class="modal-body varHelpBody" >
+                <p>Component variables are used to provide configurability to each component. A build script developer can insert a component variable into the build script that can be adjusted without changing the build code.</p>
+                <p>In edit mode click the + button to add a new variable. Provide a name and a text value. Setting privacy to yes will prevent the value from being seen on the builder screen and will prevent the value from being copied when components are copied.  <br></p>
                 <p>Replace any hardcoded value in the build script with &lt;%c.variable-name%&gt;<br>
-                    When the build script is executed the &lt;%c.variable-name%&gt; tag will be replaced with the value string in the component variable list.
+                    When the build script is executed the &lt;%c.variable-name%&gt; tag will be replaced with the text in the component variable list. If the matching variable is not found in the component variable list a fatal error will occur.
                 </p>
             </div>
             <div class="modal-footer">
@@ -5718,11 +5718,11 @@
                 <h2>Welcome to ezStack Builder</h2>
                 <hr class="welcome-hr">
                 <p>ezStack Builder can connect to any linux server to build and configure it for you.
-                    In ezStack Builder a 'System' represents the infrastructure of your web server and 'component' records (the code and assets) are attached to it.
-                    If you provide a system with a host or ip address it can connect and configure the server as specified by the components.
-                    As a non-technical high level user you can modify a web server's look and functionality by changing and rearranging components.
-                    Components can be copied, moved or disabled. You can change component variable values to change your server software stack.
-                    If you want to get technical all of the under laying code for a component is modifiable via shared 'Build Code' records that are attached to each component.
+                    In ezStack Builder a 'system' represents the infrastructure of your web server. A 'component' record is arranged on a tree and is the user's implementation of a seperate 'build code' record. The build code record holds the code and resources and are shared by the components.
+                    If you provide a system with a host or ip address it can connect and configure the server as specified by the components and how they are arranged.
+                    As a non-technical high level user you can modify a web server's look and functionality by changing variables and rearranging components.
+                    Components can be copied, moved or disabled. You can change component variable values to change how your server behaves after the next build.
+                    If you want to get technical all of the under laying code for a component is modifiable via shared 'Build Code' records that are attached to each component. In edit mode resource files can be uploaded and attched to a build code record for deploment by the build script.
                 </p>
                 <p>Click the
                     <a id="welcome-nav-Icon" class="welcome-nav" href="#">ezStack icon</a>
@@ -5747,15 +5747,15 @@
 
                 <h3>First Steps</h3>
                 <p>If you are new to ezStack Builder you can learn how it works by Building a few apps and making a few changes. ezStack Builder comes with
-                    <a id="welcome-nav-Syst" class="welcome-nav" href="#">two predefined systems</a>.
-                    The Builder server itself is the first system. This allows you to build components to Builder to increase its own capabilities. It is private to you and also known as localhost.
-                    Second is the 'Demo' system that contains components to build sample applications. </p>
+                    <a id="welcome-nav-Syst" class="welcome-nav" href="#">two predefined system records.</a>.
+                    The Builder server itself is the first system. This allows you to build components to Builder to increase its own capabilities. Its ip (host) points to localhost (its self).
+                    Second is the 'Demo' system that contains components to build sample applications. The systems included in ezStack builder are intended to represent Red Hat Enterprise Linux/CentOS environments.</p>
                 <ol>
                     <li>Most components can not be built if the system they are attached to does not have a host or ip address specified.
-                        Enter a host name or ip address in the 'host' variable in the system.</li>
-                    <li>Select the "Prime" component and build it for each system including the "ezStack Builder" system. The Prime component installs some utilities to aid in building.
+                        Enter a host name or ip address in the 'host' variable in the system. If you have an AWS account you can also build the included AWS specific components to spawn and manage AWS instances. </li>
+                    <li>Select the "Prime" component and build it for each system new system including the "ezStack Builder" system. The Prime component installs some utilities to aid in building.
                         This only needs to be run once per server.</li>
-                    <li>Once primed you can start building.</li>
+                    <li>Once primed you can start building. Any change made to a component record or build code record will not be reflected on a web server until the next build.</li>
                 </ol>
 
 
