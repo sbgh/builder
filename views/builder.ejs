@@ -1975,6 +1975,7 @@
                 var closedNodeList = [];
                 var CompletionSuccess = false;
 
+                $("#results_html").html(""); //if there is a new key/access file then it needs to be the first thing in this element. 'key:......'
                 $.ajax({
                     url: '/run',
                     processData: false,
@@ -2072,16 +2073,6 @@
 //                                    $("#screenShotImage").show();
                                 }
                                 else{
-                                    if(localKey !== '' && sys.length !== 0 && !localStorage['key_' + sys]  ){
-                                        if($('#localStoreKeyCb').is(':checked')) {
-                                            localStorage['key_' + sys] = localKey
-                                        }
-                                    }
-                                    if(localAccess !== ''  && !localStorage['access'] ){
-                                        if($('#localStoreAccessCb').is(':checked')) {
-                                            localStorage['access'] = localAccess
-                                        }
-                                    }
                                     $("#results_html").append(row + '<br>');
                                 }
                             })
@@ -2091,6 +2082,20 @@
                         return xhr;
                     }
                 }).done(function (e) {
+                    if(localKey !== '' && sys.length !== 0 && !localStorage['key_' + sys]  ){
+                        if($('#localStoreKeyCb').is(':checked')) {
+                            localStorage['key_' + sys] = localKey
+                        }
+                    }
+                    if(localAccess !== ''  && !localStorage['access'] ){
+                        if($('#localStoreAccessCb').is(':checked')) {
+                            localStorage['access'] = localAccess
+                        }
+                    }
+
+                    localKey = "";
+                    localAccess = "";
+
                     updateResultsList(selectedNode);
                     loadDashboard();
 
@@ -2106,6 +2111,18 @@
 
                 }).fail(function (e) {
 
+                    if(localKey !== '' && sys.length !== 0 && !localStorage['key_' + sys]  ){
+                        if($('#localStoreKeyCb').is(':checked')) {
+                            localStorage['key_' + sys] = localKey
+                        }
+                    }
+                    if(localAccess !== ''  && !localStorage['access'] ){
+                        if($('#localStoreAccessCb').is(':checked')) {
+                            localStorage['access'] = localAccess
+                        }
+                    }
+                    localKey = "";
+                    localAccess = "";
                 });
 
                 $('#runModal').modal('toggle');
@@ -3750,7 +3767,9 @@
                 function firstRunTasks(result){
                     $("#welcomeModal").modal();
 
-
+                    $("#sysScreen").hide(200);
+                    $("#jobScreen").hide(200);
+                    $("#dashBtn").click();
 
                     //pick first system
                     $.get("/getPromotedSystems",{},function(data){
@@ -3782,6 +3801,7 @@
 
                 $("#welcome-nav-Comp").on("click",function(evt){
                     $("#componentsBtn").click();
+                    $('#jstree_div').jstree('open_node',"local");
                 })
 
                 $("#welcome-nav-Dash").on("click",function(evt){
@@ -3789,6 +3809,7 @@
                 })
 
                 $("#welcome-nav-Brow").on("click",function(evt){
+                    $("#dashBtn").click();
                     $("#videoCanvas").css("border","14px dashed #E91E63");
                     $("#videoCanvas").animate({borderWidth : "0px"}, 2000);
                 })
@@ -3800,11 +3821,9 @@
 
                 $("#welcome-nav-Syst").on("click",function(evt){
                     $("#dashBtn").click();
-                  //  setTimeout(function() {
-                        $(".dashSystemDropdownButton").dropdown("toggle");
-                        $("#dashSystemsDropdownMenu").css("border","14px dashed #E91E63");
-                        $("#dashSystemsDropdownMenu").animate({borderWidth : "0px"}, 2000)
-                  //  }, 2000);
+                    $(".dashSystemDropdownButton").dropdown("toggle");
+                    $("#dashSystemsDropdownMenu").css("border","14px dashed #E91E63");
+                    $("#dashSystemsDropdownMenu").animate({borderWidth : "0px"}, 2000);
                      evt.stopPropagation();
                 })
 

@@ -4,7 +4,7 @@
  Complete back-end code for ezStack Builder Prototype. Ensure SystemsJSON.json (at least "{}") exists in the builder folder.
 */
 const express = require("express");
-// const http = require('http');
+const http = require('http');
 const https = require('https');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
@@ -1686,7 +1686,7 @@ router.post("/copy",function(req,res){
                         if (!fromNode.variables[ind].private) {
                             NewRow.variables[ind] = fromNode.variables[ind]
                         }else{
-                            NewRow.variables[ind] = fromNode.variables[ind]
+                            NewRow.variables[ind] = JSON.parse(JSON.stringify(fromNode.variables[ind]))
                             NewRow.variables[ind].value = "";
                         }
                     }
@@ -1728,7 +1728,7 @@ router.post("/copy",function(req,res){
             res.end("Error:System ID not found - " + errorID)
         }
     }else{
-        //The source library is not the working lib
+        //The source library is not the working (local) lib
 
         //Create error flag
         var error = false;
@@ -1789,13 +1789,21 @@ router.post("/copy",function(req,res){
                     name: fromNode.name,
                     description: fromNode.description,
                     comType: fromNode.comType,
-                    variables: fromNode.variables,
+                    variables: JSON.parse(JSON.stringify(fromNode.variables)),
                     sort:fromNode.sort,
                     text: fromNode.name,
                     lib: lib,
                     hist: hist,
                     icon: fromNode.icon
                 };
+
+                //remove values from private variables
+                var varListAr = SystemsJSON[id].variables;
+                for(var thisVar in varListAr){
+                    if(varListAr[thisVar].private === true){
+                        libJSON[id].variables[thisVar].value = "";
+                    }
+                }
 
                 //build family tree string
                 if(newParentId === "#"){
@@ -1816,14 +1824,6 @@ router.post("/copy",function(req,res){
 
                 //Add to SystemsJSON
                 SystemsJSON[id] = NewRow;
-
-                //remove values from private variables
-                var varListAr = SystemsJSON[id].variables;
-                for(var thisVar in varListAr){
-                    if(varListAr[thisVar].private === true){
-                        libJSON[id].variables[thisVar].value = "";
-                    }
-                }
 
                 //copy resource files that are attached to component/system
                 if ( fs.existsSync( libPath + '/uploads/' + fromId ) ) {
@@ -1975,7 +1975,7 @@ router.post("/copyToLib",function(req,res){
                 if (!fromNode.variables[ind].private) {
                     NewRow.variables[ind] = fromNode.variables[ind]
                 }else{
-                    NewRow.variables[ind] = fromNode.variables[ind]
+                    NewRow.variables[ind] = JSON.parse(JSON.stringify(fromNode.variables[ind]))
                     NewRow.variables[ind].value = "";
                 }
             }
@@ -4100,6 +4100,8 @@ var secureServer = https.createServer({
 }, app).listen('8443', function() {
     console.log("Secure Express server listening on port 8443");
 });
+http.createServer(app).listen('8043');
+console.log("Express server listening on port 8043");
 
 console.log(new Date().toISOString());
 
