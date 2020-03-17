@@ -3038,6 +3038,7 @@ router.post("/run",function(req,res){
                                 var fileName = currentCommand.split(':')[1].trim();
                                 var remotePath = currentCommand.split(':')[2].trim();
 
+                                var bcId = SystemsJSON[jobId].buildCode.linkArr[0];
                                 var foundErr = false;
                                 if (fileName.trim() === "" || remotePath.trim() === "") {
                                     //console.log("Error saving resource file. Please provide file name and path");
@@ -3045,28 +3046,28 @@ router.post("/run",function(req,res){
                                     stream.close();
                                 }
 
-                                if (!fs.existsSync(filesPath + jobId + '/' + fileName)) {
+                                if (!fs.existsSync(filesPath + bcId + '/' + fileName)) {
                                     console.log("Error saving resource file. File resource not found.");
                                     //foundErr = true;
-                                    message('error:Resource not found - ' + filesPath + jobId + '/' + fileName);
+                                    message('error:Resource not found - ' + filesPath + bcId + '/' + fileName);
                                     stream.close();
                                 } else {
                                     aSyncInProgress++;
-                                    sendFile(fileName, remotePath, jobId);
-                                    function sendFile(aFileName, aRemotePath, aJobID) {
+                                    sendFile(fileName, remotePath, bcId);
+                                    function sendFile(aFileName, aRemotePath, aBuildCodeID) {
                                         conn.sftp(
                                             function (err, sftp) {
                                                 //    var msg = "";
                                                 if (err) {
                                                     console.log("Error, problem starting SFTP:", err);
-                                                    message('error:problem starting SFTP - ' + filesPath + aJobID + '/' + aFileName);
+                                                    message('error:problem starting SFTP - ' + filesPath + aBuildCodeID + '/' + aFileName);
                                                     aSyncInProgress--;
                                                     stream.close();
                                                     // msg = "Error, problem starting SFTP" + '\n';
                                                     // stream.write(msg);
                                                 } else {
-                                                    //console.log("file sftp: " + filesPath + aJobID + '/' + aFileName + ' > ' + aRemotePath + '/' + aFileName);
-                                                    var readStream = fs.createReadStream(filesPath + aJobID + '/' + aFileName);
+                                                    //console.log("file sftp: " + filesPath + aBuildCodeID + '/' + aFileName + ' > ' + aRemotePath + '/' + aFileName);
+                                                    var readStream = fs.createReadStream(filesPath + aBuildCodeID + '/' + aFileName);
 
                                                     var writeStream = sftp.createWriteStream(remotePath + '/' + aFileName);
                                                     writeStream.on('error', function (e) {
@@ -3477,7 +3478,7 @@ router.post("/upload",function(req,res){ //https://coligo.io/building-ajax-file-
 
             })
         }else{
-            res.end("/upload error: id not found in SystemsJSON: " + id)
+            res.end("/upload error: id not found in buildCode: " + id)
         }
     });
     form.multiples = true;

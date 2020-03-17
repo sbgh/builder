@@ -1267,13 +1267,6 @@
                         $("#createdDate").val(data[0].hist[0].ds)
                     }
 
-
-
-//                    $.get('/fileList', { id: $('#id').val() }, function(data) {
-//                        $('#resourceFiles').val(data);
-//                        populateFileList(data, false);
-//                    });
-
                     //Navigate to lastbuild.url if exists
                     if(data[0].lastBuild){
                         if(data[0].lastBuild.url){
@@ -2347,7 +2340,6 @@
                 }
 
                 $(".templateTypeDropdownButton").attr("disabled" , false);
-//                $("#buildCodeDropdownButton").attr("disabled" , false);
 
                 $("#createdBy")[0].readOnly = true;
                 $("#createdDate")[0].readOnly = true;
@@ -2378,7 +2370,7 @@
                     checkBoxes.show();
                 }
 
-                $.get('/fileList', { id: $('#id').val() }, function(data) {
+                $.get('/fileList', { id: $('#buildCode').val() }, function(data) {
                     $('#resourceFiles').val(data);
                     populateFileList(data, true);
                 });
@@ -3429,7 +3421,7 @@
                         fList.forEach(function(fName){
                             fileNamesHtml += "<tr role='row' class='gradeA odd'><td width = '10%'>"
                             fileNamesHtml +="<span class='varCheckboxFileList'><input class='CheckboxFileList' value='" + fName.name + "' type='checkbox'/></span>";
-                            fileNamesHtml += "<a class='fileListLink' href='/uploads/" + $('#id').val() + "/" + fName.name + "' target='_new'>" + fName.name + "</a>";
+                            fileNamesHtml += "<a class='fileListLink' href='/uploads/" + $('#buildCode').val() + "/" + fName.name + "' target='_new'>" + fName.name + "</a>";
                             fileNamesHtml +="</td></tr>";
                         })
                     }else{
@@ -3476,7 +3468,7 @@
             });
             $("#delFileButton").on('click', function(){
                 var filesString ='';
-                var id=$("#id").val();
+                var id=$("#buildCode").val();
                 $('.CheckboxFileList:checkbox:checked').each(function () {
                     filesString +=  $(this).val() + ';';
                 });
@@ -3503,7 +3495,7 @@
                 var files = $(this).get(0).files;
                 if (files.length > 0){
                     var formData = new FormData();
-                    formData.append('id', $('#id').val());
+                    formData.append('id', $('#buildCode').val());
 
                     for (var i = 0; i < files.length; i++) {
                         var file = files[i];
