@@ -889,7 +889,7 @@
             }
 
             serverStats();
-            setInterval(serverStats, 5000);
+            var serverStatsInterval = setInterval(serverStats, 5000);
             function serverStats(){
                 var mydata = {};
                 $.ajax({
@@ -910,7 +910,9 @@
                         }
                     },
                     error : function(error) {
-                        console.log(error)
+                        console.log(error);
+                        clearInterval(serverStatsInterval);
+                        $('#serverUnavailableModal').modal('show');
                     }
                 })
             }
@@ -4697,6 +4699,7 @@
 
 </head>
 
+<body>
 <svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <defs>
         <symbol id="icon-EZStack" viewBox="0 0 26 32">
@@ -5273,6 +5276,24 @@
         </div>
     </div>
 </body>
+<div id="serverUnavailableModal" class="modal fade" role="dialog">
+    <div class="modal-dialog serverUnavailable-dialog">
+        <nav class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"><i class="fa fa-server fa-fw"></i><i class="fa fa-exclamation fa-fw"></i>Server Unavailable</h4>
+            </div>
+            <div class="modal-body">
+
+                <p>The ezStack builder server is not available.</p>
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="buildCodeForkBtn" class="btn btn-default jobFormbtn" data-dismiss="modal">Ok</button>
+            </div>
+        </nav>
+    </div>
+</div>
 <div id="buildCodeForkModal" class="modal fade" role="dialog">
     <div class="modal-dialog buildCodeForkModal-dialog">
         <nav class="modal-content">

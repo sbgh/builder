@@ -1328,9 +1328,14 @@ tbody.varTbody{
 }
 
 .modal-dialog-welcome {
-    width: 70vw;
-    min-width: 100px;
+   width: 70vw;
+   min-width: 100px;
 }
+
+.serverUnavailable-dialog {
+   width: 400px;
+}
+
 .varValTd, .varNameTd{
    max-height: 25px;
    overflow: hidden;
