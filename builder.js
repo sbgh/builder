@@ -458,7 +458,7 @@ router.get("/VideoClick",function(req,res){
 
                     const matchingComponents = searchComponentProperties(attributesObj.attributes);
 
-                    const RetObj = {outerHtml:outerHtml, attributes:attributesObj.attributes, matchingComponents:matchingComponents};
+                    const RetObj = {domData:data, outerHtml:outerHtml, attributes:attributesObj.attributes, matchingComponents:matchingComponents};
                     res.end(JSON.stringify(RetObj));
 
                    // console.log("");
@@ -509,6 +509,7 @@ function searchComponentProperties(AttributesArray){
                                             foundObj[ancestors[idx]].text = SystemsJSON[ancestors[idx]].text;
                                             foundObj[ancestors[idx]].type = getType(ancestors[idx]);
                                             foundObj[ancestors[idx]].comType = SystemsJSON[ancestors[idx]].comType;
+                                            foundObj[ancestors[idx]].sort = SystemsJSON[ancestors[idx]].sort;
                                             foundObj[ancestors[idx]].parent = lastParent;
                                             if (SystemsJSON[ancestors[idx]].icon) {
                                                 foundObj[ancestors[idx]].icon = "/uploads/" + ancestors[idx] + "/" + "icon.png"
@@ -527,6 +528,7 @@ function searchComponentProperties(AttributesArray){
                             foundObj[key].id = key;
                             foundObj[key].text = SystemsJSON[key].text;
                             foundObj[key].comType = SystemsJSON[key].comType;
+                            foundObj[key].sort = SystemsJSON[key].sort;
                             foundObj[key].type = getType(key);
                             foundObj[key].parent = lastParent;
                             foundObj[key].li_attr = {"class": "matchTreeLi matchTreeLi-found"};

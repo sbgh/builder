@@ -1400,7 +1400,7 @@ tbody.varTbody{
 }
 
 #componentLinks{
-   text-align: left;
+   text-align: center;
    font-size: small;
    font-weight: 700;
 }
@@ -1536,3 +1536,4 @@ tbody.buildCodeTbody{
    /*font-size: .8rem;*/
    /*font-weight: 700;*/
 }
+

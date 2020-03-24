@@ -4303,7 +4303,7 @@
                 "sort" : function(a, b) {
                     a1 = this.get_node(a);
                     b1 = this.get_node(b);
-                    return (a1.original.text < b1.original.text) ? -1 : 1;
+                    return (a1.original.sort < b1.original.sort) ? -1 : 1;
 
                 },
                 "plugins" : [ "sort", "types", "wholerow"]
@@ -4317,7 +4317,7 @@
 
             $('#matchLink_jstree_div').on("select_node.jstree", function (e, data) {
                     var selectedNode = data.selected[0];
-                
+
                     if( ! $("#componentsBtn").hasClass('active')){
                         $("#componentsBtn").click();
                     }
@@ -4330,23 +4330,24 @@
                 $.get("/VideoClick",{x:x, y:y, ctrlKey:ctrlKey},function(resp){
 
                     var respObj = JSON.parse(resp);
-                    var matchLinksHtml = "";
+//                    var matchLinksHtml = "";
                     if(!respObj.hasOwnProperty('attributes')) {
 
                     }else{
                         var inspectAttributes = respObj.attributes;
                         var inspectHtml = respObj.outerHtml;
+                        var inspectDomObjDesc = respObj.domData.object.description
                         var matchingComponents = respObj.matchingComponents;
-                        var idHtml = "";
-                        for(var x=0;x<inspectAttributes.length;x += 2){
-                            if(inspectAttributes[x] == "id"){
-                                idHtml += '<div id="idInspectLabel"><span class="idInspectLabel">id = </span>' + inspectAttributes[x + 1] + '</div>';
-                            }
-                        }
+                        var idHtml =  '<div id="codeInspectLabel" class="code">' + inspectDomObjDesc+ '</div>';
+//                        for(var x=0;x<inspectAttributes.length;x += 2){
+//                            if(inspectAttributes[x] == "id"){
+//                                idHtml += '<div id="idInspectLabel"><span class="idInspectLabel">id = </span>' + inspectAttributes[x + 1] + '</div>';
+//                            }
+//                        }
 
-                        matchLinksHtml += idHtml;
+//                        matchLinksHtml += idHtml;
 
-                        $("#componentLinks").html(matchLinksHtml);
+                        $("#componentLinks").html(idHtml);
 
                         currectMatchTreeObjArr = matchingComponents;
 
@@ -4795,12 +4796,12 @@
                                     <div id="videoScreen">
                                         <div class="row">
                                             <span class="matchLinkCol">
-                                                <div id="componentLinks"></div>
                                                 <div id="matchLink_jstree_div"></div>
                                             </span>
                                             <span class="dashVideoCol">
                                                 <canvas id="videoCanvas"></canvas>
                                                 <div id="screenShotLink" class="screenShotLink"></div>
+                                                <div id="componentLinks"></div>
                                             </span>
                                             <!--<div class="">-->
                                             <!--</div>-->
