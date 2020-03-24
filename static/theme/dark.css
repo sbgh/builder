@@ -195,7 +195,7 @@ div.grippie {
 .form-control::-ms-input-placeholder { color: #555555; }  /* Microsoft Edge */
 
 .runningJobCompleteSuccess{
-    rtransition: color 0.5s;
+    transition: color 0.5s;
     color: #4dff4b !important;
 }
 .runningJobCompleteFail{

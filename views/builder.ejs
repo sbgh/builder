@@ -1248,7 +1248,7 @@
                             )
                         }
 
-                        $("#newCompVarName" + idn).val(varName); 
+                        $("#newCompVarName" + idn).val(varName);
                         $("#newCompVarPrivateInput" + idn)[0].checked = currentCompVarObj[varName].private;
                         var thisType = currentCompVarObj[varName].type === "" ? "Text" : currentCompVarObj[varName].type;
 
@@ -2543,7 +2543,7 @@
 
                 $("#buildCodeNameEdit").hide();
                 $("#buildCodeNameRead").show();
-                
+
                 var checkBoxes = $(".varCheckboxFileList")
                 if (checkBoxes.exists()){
                     checkBoxes.hide();
@@ -2585,26 +2585,6 @@
             $.fn.exists = function () {
                 return this.length !== 0;
             }
-
-            //expand & collapse textareas on comp/job form if triple-clicked
-//            function setTripleClickTextareaEvents(){
-//                var throttle = false;
-//                $('#jobForm textarea').click( function (evt) {
-//                    if (!throttle && evt.detail === 3) {
-//                        if(this.rows < 15 ){
-//                            $(this).css({ 'height' : ''});
-//                            this.rows = 20;
-//                        }else{
-//                            $(this).css({ 'height' : ''});
-//                            this.rows = 4;
-//                        }
-//                        throttle = true;
-//                        setTimeout(function () {
-//                            throttle = false;
-//                        }, 1000);
-//                    }
-//                });
-//            }
 
             //cancel save job
             $("#cancelSave_button").click(function(event){
@@ -2866,43 +2846,6 @@
                 scriptEditor.insert(pasteText);
 
             });
-
-//            function insertAtCaret(areaId, text) {//http://stackoverflow.com/questions/1064089/inserting-a-text-where-cursor-is-using-javascript-jquery
-//                var txtarea = document.getElementById(areaId);
-//                if (!txtarea) { return; }
-//
-//                var scrollPos = txtarea.scrollTop;
-//                var strPos = 0;
-//                var br = ((txtarea.selectionStart || txtarea.selectionStart === '0') ?
-//                    "ff" : (document.selection ? "ie" : false ) );
-//                if (br === "ie") {
-//                    txtarea.focus();
-//                    var range = document.selection.createRange();
-//                    range.moveStart ('character', -txtarea.value.length);
-//                    strPos = range.text.length;
-//                } else if (br === "ff") {
-//                    strPos = txtarea.selectionStart;
-//                }
-//
-//                var front = (txtarea.value).substring(0, strPos);
-//                var back = (txtarea.value).substring(strPos, txtarea.value.length);
-//                txtarea.value = front + text + back;
-//                strPos = strPos + text.length;
-//                if (br === "ie") {
-//                    txtarea.focus();
-//                    var ieRange = document.selection.createRange();
-//                    ieRange.moveStart ('character', -txtarea.value.length);
-//                    ieRange.moveStart ('character', strPos);
-//                    ieRange.moveEnd ('character', 0);
-//                    ieRange.select();
-//                } else if (br === "ff") {
-//                    txtarea.selectionStart = strPos;
-//                    txtarea.selectionEnd = strPos;
-//                    txtarea.focus();
-//                }
-//
-//                txtarea.scrollTop = scrollPos;
-//            };
 
             $('#varModal').on('shown.bs.modal', function() {
                 getVariables("Parent");
@@ -3848,6 +3791,7 @@
                 });
 
             };
+
             checkFirstRun()
 
             $("#search-icon").on("click",function(){
@@ -4315,12 +4259,81 @@
                 }
             });
 
+            //create matchlink tree
+            var currectMatchTreeObjArr = [];
+            $("#matchLink_jstree_div").jstree({
+                "core" : {
+                    "themes": {
+                        "name": "default",
+                        "dots": true,
+                        "icons": true,
+                        "variant" : "small"
+                    },
+                    "data" : currectMatchTreeObjArr,
+                    'check_callback': function(operation, node, node_parent, node_position, more) {
+                        return true;  //allow all other operations
+                    }
+                },
+                "types" : {
+                    "system" : {
+                        "icon" : "fa fa-desktop ",
+                        "a_attr": { class : " systemRow "}
+                    },
+                    "job" : {
+                        "icon" : "fa fa-check-circle-o jobRow"
+                    },
+                    "needfull" : {
+                        "icon" : "fa fa-play-circle-o",
+                        "a_attr": { class : " needfull "},
+                        "li_attr": { class : " needfull "}
+                    },
+                    "rerunnable" : {
+                        "icon" : "fa fa-repeat rerunnableRow",
+                        "a_attr": { class : " rerunnableRow "}
+                    },
+                    "dashboard" : {
+                        "icon" : "fa fa-server"
+                    },
+                    "disabled" : {
+                        "icon" : "fa fa-times-circle-o disabledRow",
+                        "li_attr": { class : "  "},
+                        "li_attr": { class : "  "}
+                    }
+                },
+                "sort" : function(a, b) {
+                    a1 = this.get_node(a);
+                    b1 = this.get_node(b);
+                    return (a1.original.text < b1.original.text) ? -1 : 1;
+
+                },
+                "plugins" : [ "sort", "types", "wholerow"]
+            }).on(  'create_node.jstree', function(e, data) {
+                //console.log('saved');
+            }  );
+
+            $('#matchLink_jstree_div').bind("refresh.jstree", function (e, data) {
+                $(this).jstree("open_all");
+            })
+
+            $('#matchLink_jstree_div').on("select_node.jstree", function (e, data) {
+                    var selectedNode = data.selected[0];
+                
+                    if( ! $("#componentsBtn").hasClass('active')){
+                        $("#componentsBtn").click();
+                    }
+                    $('#jstree_div').jstree("deselect_all");
+                    $('#jstree_div').jstree('select_node', selectedNode);
+                    $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
+                });
+
             function sendVideoMouseClick(x ,y, ctrlKey){
                 $.get("/VideoClick",{x:x, y:y, ctrlKey:ctrlKey},function(resp){
 
                     var respObj = JSON.parse(resp);
                     var matchLinksHtml = "";
-                    if(respObj){
+                    if(!respObj.hasOwnProperty('attributes')) {
+
+                    }else{
                         var inspectAttributes = respObj.attributes;
                         var inspectHtml = respObj.outerHtml;
                         var matchingComponents = respObj.matchingComponents;
@@ -4332,33 +4345,28 @@
                         }
 
                         matchLinksHtml += idHtml;
-                        if(Object.keys(matchingComponents).length > 0){
-                            matchLinksHtml += '<div id="componentLinksLable" class="build-label">Component Links</div>';
-                            for(var c in matchingComponents){
-                                var title = matchingComponents[c].name;
-                                var gpNames = matchingComponents[c].gpNameArr.join("/");
-                                matchLinksHtml += '<div id="matchLink_' + c + '" class="matchLink"><a href="#">' + gpNames + "/" + title + '</div>';
-                            }
-                        }
 
                         $("#componentLinks").html(matchLinksHtml);
 
-                        $(".matchLink").on("click",function(e) {
-                            var id = $(this).attr('id');
-                            id = id.replace("matchLink_", "");
-                            $('#videoModal').modal('hide');
-                            if( ! $("#componentsBtn").hasClass('active')){
-                                $("#componentsBtn").click();
-                            }
-                            $('#jstree_div').jstree("deselect_all");
-                            $('#jstree_div').jstree('select_node', id);
-                            $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
-                        });
+                        currectMatchTreeObjArr = matchingComponents;
+
+                        $('#matchLink_jstree_div').jstree(true).settings.core.data = currectMatchTreeObjArr;
+                        $('#matchLink_jstree_div').jstree(true).refresh();
+
+                        if(currectMatchTreeObjArr.length < 1){
+                            $('.matchLinkCol').hide();
+                            $(".dashVideoCol").css("width","100%")
+                        }else{
+                            $('.matchLinkCol').show();
+                            $(".matchLinkCol").css("max-width","40%")
+                            $(".dashVideoCol").css("width","60%")
+                        }
                     }
                 })
             }
             $("#HtmlLabel").hide();
             $("#AttributesLabel").hide();
+            $('.matchLinkCol').hide();
 
             //user picks build code. Show modal. Load build code table
             $("#buildCodePickButton").click(function(evt){
@@ -4378,9 +4386,6 @@
             $('.buildCodeFilter').on('click', function(evt){
                 var pickedMode = $(this).attr('data-ID');
                 $("#buildCodeFilter-"+pickedMode).prop("checked", true);
-//                var id = $('#id').val();
-//                var mode = $("input[name='buildCodeFilter']:checked"). val();
-                //loadBuildCodeModalList(id, mode);
                 evt.stopPropagation();
             });
 
@@ -4554,7 +4559,10 @@
             });
 
 
-        }); //-------------------------------------------   doc ready -------------------------------------------
+        });
+
+
+        //-------------------------------------------   doc ready -------------------------------------------
 
         /**
          * Randomize array element order in-place.
@@ -4786,13 +4794,16 @@
                                 <div id='screenshot-panel-body' class='panel-body dashPanelBody screenshot-panel-body' >
                                     <div id="videoScreen">
                                         <div class="row">
-                                            <div class="col dashVideoCol">
+                                            <span class="matchLinkCol">
+                                                <div id="componentLinks"></div>
+                                                <div id="matchLink_jstree_div"></div>
+                                            </span>
+                                            <span class="dashVideoCol">
                                                 <canvas id="videoCanvas"></canvas>
                                                 <div id="screenShotLink" class="screenShotLink"></div>
-                                                <div id="componentLinks"></div>
-                                            </div>
-                                            <div class="">
-                                            </div>
+                                            </span>
+                                            <!--<div class="">-->
+                                            <!--</div>-->
                                         </div>
                                     </div>
                                 </div>

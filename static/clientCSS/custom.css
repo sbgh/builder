@@ -441,7 +441,7 @@ padding-left: 0px;
 
 
 .screenShotImageHolder{
-   text-align: center;
+   /*text-align: center;*/
    padding-bottom: 40px;
    min-width: 410px;
 }
@@ -454,24 +454,19 @@ padding-left: 0px;
 
 #screenShotImageHolder  #videoCanvas{
    width:100%;
-   /*height:100%;*/
    text-align: center;
 }
 
 #videoBody #videoCanvas{
    width:100%;
-   /*height:100%;*/
 }
 
 .topLeftForm{
-   /*width:100%;*/
    min-width: 410px;
    padding: 0px;
 }
 
 .vakata-contextmenu{
-   /*display: none;*/
-   /*z-index:2;*/
 }
 
 #jstree-marker{
@@ -1347,6 +1342,7 @@ tbody.varTbody{
 
 .dashVideoCol{
    text-align: center;
+   padding-left: 15px;
 }
 
 #inspectHtml{
@@ -1405,6 +1401,8 @@ tbody.varTbody{
 
 #componentLinks{
    text-align: left;
+   font-size: small;
+   font-weight: 700;
 }
 
 .matchLink{
@@ -1514,4 +1512,27 @@ tbody.buildCodeTbody{
    transition: background-color 0.5s;
 )
 
+.matchLinkCol{
+   /*max-width: 40%;*/
+   max-height: 250px;
+}
 
+.matchTreeA{
+   /*font-size: .2rem;*/
+   /*font-weight: 400;*/
+}
+
+.matchTreeA-found{
+   /*font-size: .8rem;*/
+   /*font-weight: 700;*/
+}
+
+.matchTreeLi{
+   /*font-size: .6rem;*/
+   /*font-weight: 400;*/
+}
+
+.matchTreeLi-found{
+   /*font-size: .8rem;*/
+   /*font-weight: 700;*/
+}

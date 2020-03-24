@@ -479,8 +479,9 @@ router.get("/VideoClick",function(req,res){
 });
 
 function searchComponentProperties(AttributesArray){
-
+//return a jstree array of component ids and promoted gr/parents where the id attribute's, in a provided AttributesArray, value matches at least the first part of a component value named 'id'.
     var foundObj = {};
+    var foundObjArr = [];
     for(var key in SystemsJSON){
         if(SystemsJSON[key].comType === "job"){
             if(SystemsJSON[key].hasOwnProperty("variables")){
@@ -492,32 +493,106 @@ function searchComponentProperties(AttributesArray){
 
 
                         if(attribToMatch.substring(0, systemVarValue.length) === systemVarValue){
-                            //add SystemsJSON row
-                            foundObj[key] = SystemsJSON[key];
 
                             //add the names of promoted gr/parents to each row
                             var gpNameArr =  [];
-                            var ancestors = SystemsJSON[key].ft.split("/")
+                            var ancestors = SystemsJSON[key].ft.split("/");
+                            var lastParent = '#';
                             for (var idx in ancestors) {
-                                //exclude '#'
+
                                 if(SystemsJSON.hasOwnProperty(ancestors[idx])){
                                     if(SystemsJSON[ancestors[idx]].comType === "system" || SystemsJSON[ancestors[idx]].promoted === 1){
-                                        gpNameArr.push(SystemsJSON[ancestors[idx]].name)
+
+                                        if(!foundObj.hasOwnProperty(ancestors[idx])){
+                                            foundObj[ancestors[idx]] = {};
+                                            foundObj[ancestors[idx]].id = ancestors[idx];
+                                            foundObj[ancestors[idx]].text = SystemsJSON[ancestors[idx]].text;
+                                            foundObj[ancestors[idx]].type = getType(ancestors[idx]);
+                                            foundObj[ancestors[idx]].comType = SystemsJSON[ancestors[idx]].comType;
+                                            foundObj[ancestors[idx]].parent = lastParent;
+                                            if (SystemsJSON[ancestors[idx]].icon) {
+                                                foundObj[ancestors[idx]].icon = "/uploads/" + ancestors[idx] + "/" + "icon.png"
+                                            }
+                                            foundObj[ancestors[idx]].li_attr = {"class": "matchTreeLi"};
+                                            foundObj[ancestors[idx]].a_attr = {"class": "foundNotInSearch "};
+
+                                            foundObjArr.push(foundObj[ancestors[idx]]);
+                                        }
+                                        lastParent = ancestors[idx];
                                     }
                                 }
                             }
-                            foundObj[key].gpNameArr = gpNameArr;
+
+                            foundObj[key] = {};
+                            foundObj[key].id = key;
+                            foundObj[key].text = SystemsJSON[key].text;
+                            foundObj[key].comType = SystemsJSON[key].comType;
+                            foundObj[key].type = getType(key);
+                            foundObj[key].parent = lastParent;
+                            foundObj[key].li_attr = {"class": "matchTreeLi matchTreeLi-found"};
+                            foundObj[key].a_attr = {"class": "matchTreeA foundInSearch"}
+
+                            foundObjArr.push(foundObj[key]);
+
                         }
                     }
                 }
             }else{
                // console.log(SystemsJSON[key].name)
             }
-
         }
     }
-    return(foundObj)
+    return(foundObjArr)
 };
+
+function setRowDataClasses(rowdata, searchResultsClassToAdd){
+    //Set searchModClass to a class name to set color of jstree row
+    var searchModClass = searchResultsClassToAdd;
+
+    if (rowdata.comType === "job") {
+        if (SystemsJSON[rowdata.id].hasOwnProperty("lastBuild")) {
+            if (SystemsJSON[rowdata.id].lastBuild.pass === 1) {
+                rowdata.li_attr = {"class": "runningJobCompleteSuccess " + searchModClass};
+                rowdata.a_attr = {"class": "runningJobCompleteSuccess " + searchModClass}
+            } else if (SystemsJSON[rowdata.id].lastBuild.pass === 0) {
+                rowdata.li_attr = {"class": "runningJobCompleteFail " + searchModClass};
+                rowdata.a_attr = {"class": "runningJobCompleteFail " + searchModClass}
+            }
+        } else {
+            rowdata.li_attr = {"class": "newJobRow"};
+            rowdata.a_attr = {"class": searchModClass}
+        }
+
+    } else {
+        rowdata.li_attr = {"class": "newJobRow"};
+        rowdata.a_attr = {"class": searchModClass}
+    }
+    return rowdata;
+}
+
+function getType(key){
+    //calculate and return the type string that the jstree type plug-in can use based of various properties of the provided SystemJSON id
+    var type = "";
+    if (SystemsJSON[key].comType === "system") {
+        type = "system"
+    } else {
+        type = "job";
+
+        if (SystemsJSON[key].hasOwnProperty("enabled")) {
+            if (SystemsJSON[key].enabled === 0) { //If enabled set type that is used in jstree type plugin
+                type = "disabled";
+            }
+            else if (!SystemsJSON[key].hasOwnProperty("lastBuild")) {
+                type = "needfull"
+            }
+
+            else if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].rerunnable === 1) {
+                type = "rerunnable"
+            }
+        }
+    }
+    return type
+}
 
 //Service Rt: /VideoMove to send chromium page a mouse position, Method: get, Requires: x & y reletive position, Returns:  nothing
 var currentBackendNodeId;
@@ -783,7 +858,7 @@ router.get("/JobsTree",function(req,res){
         rowdata.id = key;
         rowdata.name = SystemsJSON[key].name;
         rowdata.text = SystemsJSON[key].name ;
-        //+ (SystemsJSON[key].sort > -1 ? " " + SystemsJSON[key].sort.toString() : "x");
+
         rowdata.sort = SystemsJSON[key].sort > -1 ? SystemsJSON[key].sort : 0;
 
         //if type of component = 'system' then add type
@@ -794,12 +869,6 @@ router.get("/JobsTree",function(req,res){
 
             if (SystemsJSON[key].hasOwnProperty("enabled")) {
                 rowdata.enabled = SystemsJSON[key].enabled;
-//debug
-//     if(SystemsJSON[key].buildCode.linkArr[0]==="d87849b7-7b7f-42a3-ae92-214d58acb9c6"){
-//         var a = 1;
-//     }
-//console.log("try buildCode.linkArr[0]].rerunnable " + SystemsJSON[key].buildCode.linkArr[0] );
-
 
                 if (rowdata.enabled === 0) { //If enabled set type that is used in jstree type plugin
                     rowdata.type = "disabled";
