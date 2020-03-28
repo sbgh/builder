@@ -74,7 +74,7 @@ const viewport = [1280,720];
 (async function () {
     async function launchChrome() {
         return await chromeLauncher.launch({
-            chromeFlags: ["--disable-gpu", "--headless",  "--no-sandbox"] //"--enable-logging",, "--enable-low-end-device-mode" , '--window-size=800,600', --force-device-scale-factor=1.5
+            chromeFlags: ["--disable-gpu", "--headless",  "--no-sandbox", "--allow-insecure-localhost"] //"--enable-logging",, "--enable-low-end-device-mode" , '--window-size=800,600', --force-device-scale-factor=1.5
         });
     }
     chrome = await launchChrome();
@@ -200,7 +200,7 @@ router.get("/login",function(req,res){
 router.post("/login",function(req,res) {
 
     console.log("login - referrer:" + req.headers.referer + ' remoteAddress:' + req.connection.remoteAddress); //sic
-    //if name and pw are empty, set errpr and redirect
+    //if name and pw are empty, set error and redirect
     if (req.body.username === "" || req.body.password === "") {
         res.redirect("/login?rd=" + encodeURIComponent(req.body.rd) +"&error=" + encodeURIComponent("ERROR: Please enter userID & password"))
     //else find user in user table and validate
@@ -214,6 +214,7 @@ router.post("/login",function(req,res) {
                 res.redirect("/login?rd=" + encodeURIComponent(req.body.rd) +"&error=" + encodeURIComponent("User identity not setup"))
             }else{
                 if (passwordHash.verify(req.body.password, userJSON[0].pw)) { //Verify PW and redirect to para rd if correct
+                    //console.log({pw:req.body.password, upw : userJSON[0].pw} )
                     const redirectTo = req.body.rd ? req.body.rd : '/';
                     req.session.authenticated = true;
                     req.session.username = "Admin";
@@ -458,7 +459,7 @@ router.get("/VideoClick",function(req,res){
 
                     const matchingComponents = searchComponentProperties(attributesObj.attributes);
 
-                    const RetObj = {domData:data, outerHtml:outerHtml, attributes:attributesObj.attributes, matchingComponents:matchingComponents};
+                    const RetObj = {domData:data, outerHtml:outerHtml, attributes:attributesObj.attributes, matchingComponents:matchingComponents.foundObjArr, matchingComponentsCount:matchingComponents.count};
                     res.end(JSON.stringify(RetObj));
 
                    // console.log("");
@@ -482,6 +483,7 @@ function searchComponentProperties(AttributesArray){
 //return a jstree array of component ids and promoted gr/parents where the id attribute's, in a provided AttributesArray, value matches at least the first part of a component value named 'id'.
     var foundObj = {};
     var foundObjArr = [];
+    var x=0;
     for(var key in SystemsJSON){
         if(SystemsJSON[key].comType === "job"){
             if(SystemsJSON[key].hasOwnProperty("variables")){
@@ -515,7 +517,7 @@ function searchComponentProperties(AttributesArray){
                                                 foundObj[ancestors[idx]].icon = "/uploads/" + ancestors[idx] + "/" + "icon.png"
                                             }
                                             foundObj[ancestors[idx]].li_attr = {"class": "matchTreeLi"};
-                                            foundObj[ancestors[idx]].a_attr = {"class": "foundNotInSearch "};
+                                            foundObj[ancestors[idx]].a_attr = {"class": "matchTreeA"};
 
                                             foundObjArr.push(foundObj[ancestors[idx]]);
                                         }
@@ -524,6 +526,7 @@ function searchComponentProperties(AttributesArray){
                                 }
                             }
 
+                            x++;
                             foundObj[key] = {};
                             foundObj[key].id = key;
                             foundObj[key].text = SystemsJSON[key].text;
@@ -532,7 +535,7 @@ function searchComponentProperties(AttributesArray){
                             foundObj[key].type = getType(key);
                             foundObj[key].parent = lastParent;
                             foundObj[key].li_attr = {"class": "matchTreeLi matchTreeLi-found"};
-                            foundObj[key].a_attr = {"class": "matchTreeA foundInSearch"}
+                            foundObj[key].a_attr = {"class": "matchTreeA matchTreeA-found "}
 
                             foundObjArr.push(foundObj[key]);
 
@@ -544,7 +547,8 @@ function searchComponentProperties(AttributesArray){
             }
         }
     }
-    return(foundObjArr)
+    var returnObj = {count:x, foundObjArr:foundObjArr};
+    return(returnObj)
 };
 
 function setRowDataClasses(rowdata, searchResultsClassToAdd){
@@ -625,6 +629,29 @@ router.get("/mouseMove",function(req,res){
     res.end();
 });
 
+router.get("/keySend",function(req,res){
+    // var reqObj = JSON.parse();
+    var KeyObj = req.query.KeyObj;
+
+        (async function (KeyObj) {
+            var modifiers=0; //Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
+
+           if(KeyObj.key.length > 1){
+                    var keyCodeNum = parseInt(KeyObj.keyCode);
+                    var keyCodeStr = String.fromCharCode(keyCodeNum);
+                    // console.log({ keyCodeStr });
+                    // console.log({ type: 'char', text : keyCodeStr, key : KeyObj.key, code : KeyObj.code, nativeVirtualKeyCode : keyCodeNum, windowsVirtualKeyCode : keyCodeNum  });
+                await PageInput.dispatchKeyEvent({ type: 'keyDown', text : keyCodeStr, key : KeyObj.key, code : KeyObj.code, nativeVirtualKeyCode : keyCodeNum, windowsVirtualKeyCode : keyCodeNum });
+                await PageInput.dispatchKeyEvent({ type: 'keyUp', text : keyCodeStr, key : KeyObj.key, code : KeyObj.code, nativeVirtualKeyCode : keyCodeNum, windowsVirtualKeyCode : keyCodeNum });
+            }else{
+                await PageInput.dispatchKeyEvent({ type: 'char', text:KeyObj.key});
+            }
+
+        })(KeyObj);
+
+    res.end();
+});
+
 router.get("/VideoScroll",function(req,res){
     delta = req.query.delta;
 
@@ -667,7 +694,7 @@ router.get("/*",function(req,res,next) {
 router.get('/logout', function (req, res) {
     delete req.session.authenticated;
     delete req.session.username;
-    res.redirect('/');
+    res.redirect('/builder');
 });
 
 //Service Rt: /builder, Method: get, Requires: none, Returns:  render(builder)
@@ -683,7 +710,7 @@ router.get("/JobsTree",function(req,res){
     var searchSt = req.query.searchSt;
     //console.log("jobs:" + id+":");
     res.writeHead(200, {"Content-Type": "application/json"});
-    var respTxt = ""
+    var respTxt = "";
     if (id !== '#'){
         //id is not '#' and is assumed to be a valid SystemsJSON[id]
         //var rowdata = JSON.parse(JSON.stringify(SystemsJSON[id]) );
@@ -2792,42 +2819,43 @@ router.post("/run",function(req,res){
                     respBufferAccu = Buffer.concat([respBufferAccu, data]);
 
                     //if the response contains the current prompt string send next command and process directives
-                    if( respBufferAccu.toString().split('\n').slice(-1)[0]  === prompt){
-                        //console.log(respBufferAccu.toString().split('\n').slice(-1)[0] + '===' + prompt);
+                    if( respBufferAccu.toString().includes(prompt) ){
+                        //if( respBufferAccu.toString().split('\n').slice(-1)[0]  === prompt ){
+                            //console.log(respBufferAccu.toString().split('\n').slice(-1)[0] + '===' + prompt);
 
-                        writeResponse(respBufferAccu);
-                        respBufferAccu = new Buffer([]);
+                            writeResponse(respBufferAccu);
+                            respBufferAccu = new Buffer([]);
 
-                        if (commandIndex < scriptArray.length) {
-                            var command = scriptArray[commandIndex];
-                            var currentCommand = replaceVar(command, job);
-                            processDirectives();
-                        }
-                        if (commandIndex < scriptArray.length) {
-                            var command = scriptArray[commandIndex];
-                            var currentCommand = replaceVar(command, job);
-                            sendCommand();
-                        }
-                        if (commandIndex < scriptArray.length){
-                            var command = scriptArray[commandIndex];
-                            var currentCommand = replaceVar(command, job);
-                            processDirectives();
-                        }
-
-                        //if all commands have been sent
-                        if (commandIndex === scriptArray.length) {
-                            commandIndex++;
-
-                            //exit stream if no async processes
-                            if (aSyncInProgress < 1){
-                                stream.write("exit" + '\n');
-                                sshSuccess = true
-                            }else{ //otherwise set deferredExit flag
-                                message('Waiting for asynchronous processes to complete...');
-                                deferredExit = true
+                            if (commandIndex < scriptArray.length) {
+                                var command = scriptArray[commandIndex];
+                                var currentCommand = replaceVar(command, job);
+                                processDirectives();
                             }
-                            flushMessQueue();
-                        }
+                            if (commandIndex < scriptArray.length) {
+                                var command = scriptArray[commandIndex];
+                                var currentCommand = replaceVar(command, job);
+                                sendCommand();
+                            }
+                            if (commandIndex < scriptArray.length){
+                                var command = scriptArray[commandIndex];
+                                var currentCommand = replaceVar(command, job);
+                                processDirectives();
+                            }
+
+                            //if all commands have been sent
+                            if (commandIndex === scriptArray.length) {
+                                commandIndex++;
+
+                                //exit stream if no async processes
+                                if (aSyncInProgress < 1){
+                                    stream.write("exit" + '\n');
+                                    sshSuccess = true
+                                }else{ //otherwise set deferredExit flag
+                                    message('Waiting for asynchronous processes to complete...');
+                                    deferredExit = true
+                                }
+                                flushMessQueue();
+                            }
                     };
 
                     //Function to create response obj to add to results file

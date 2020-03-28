@@ -668,7 +668,7 @@ input:focus + .slider {
     color: #79bdf3;
 }
 
-.idInspectLabel, .buildCodeNameRead{
+.idInspectLabel, .buildCodeNameRead, .matchTreeLi{
     transition: color 0.5s;
     color: #F8F8F8;
 }
@@ -689,9 +689,10 @@ input:focus + .slider {
     color: #F8F8F8;
 }
 
-.dropdown-toggle:disabled  {
+.dropdown-menu, .dropdown-toggle:disabled  {
     transition: color 0.5s;
     color: #fff;
+    background-color: rgba(43, 43, 43, 0.8);
 }
 
 .welcome-hr{

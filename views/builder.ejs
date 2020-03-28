@@ -604,7 +604,7 @@
 
                         const promoted = JSON.parse(data);
 
-                        var pCompHtml = "";
+//                        var pCompHtml = "";
 
                         var dropDownListHtml = "";
                         for (var property in promoted) {
@@ -635,7 +635,7 @@
                             localStorage['dashSystemDropItemClicked'] = JSON.stringify({ id:id, sysName:sysName }) ;
                         });
 
-                        $("#dashboardList")[0].innerHTML = pCompHtml;
+//                        $("#dashboardList")[0].innerHTML = pCompHtml;
 
 
 //                        // Add slideDn animation to Bootstrap dropdown when opening.
@@ -3224,7 +3224,15 @@
                     isResizingLibWidth = true;
                 });
 
+                $(".container-fluid-custom").height(window.innerHeight);
+                $("#dashboard").height(window.innerHeight - 30);
                 $(window).on('resize', function(){
+//                    window.addEventListener(orientationEvent, function() {
+//                        alert('HOLY ROTATING SCREENS BATMAN:' + window.orientation + " " + screen.width);
+//                    }, false);
+                    $(".container-fluid-custom").height(window.innerHeight);
+                    $("#dashboard").height(window.innerHeight - 30);
+
                     var container = $('#rowContainer');
                     if(bottomHiddenFlag){
                         setWindowHeight(container.height() , container, false);
@@ -3273,9 +3281,6 @@
                 if(AnimateIt){heightAniDuration = 300}
 
                 var topRowHeight = $("#dashBoardTopRow").height();
-                $("tbody.dashTbody").height(container.height() - topRowHeight - 100);
-                //$("#dashboard").animate({height: (topHeight - 33)},heightAniDuration);
-                $("#dashboard").animate({height: (topHeight + 20)},heightAniDuration);
 
                 if(bottomMinimizedFlag == true){
                     topHeight = currentHeight = container.height()- 33
@@ -4003,9 +4008,21 @@
                 theme: 'snow'
             });
 
-            //Allow arrow key navigation on trees in focus
+            //Allow arrow key navigation on trees in focus,
+            //also send key presses to  /keySend service
             document.onkeydown = function(e) {
+
+                var KeyObj = {
+                    key: e.key,
+                    code: e.code,
+                    ctrlKey: e.ctrlKey,
+                    shiftKey: e.shiftKey,
+                    altKey: e.altKey,
+                    charCode: e.charCode,
+                    keyCode: e.keyCode
+                }
                 var activeElement = document.activeElement;
+
                 //if current focus is a tree
                 if(activeElement.id.includes("_anchor")){
 
@@ -4054,6 +4071,17 @@
                             }
                     }
                 }
+
+                if(vidHoverFlag){
+
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $.get("/keySend",{KeyObj:KeyObj},function(resp){
+
+                    });
+                }
+                //console.log({vidHoverFlag})
+
             };
 
 
@@ -4136,22 +4164,22 @@
                 localStorage['appLink'] = url;
                 $.get('/navigate', {url:url}, function(data) {});
             }
-
+            $("#inspectLink").on('click', function(e){
+                $(".inspectLink").addClass('active');
+                $.get("/inspect")
+            })
+            $("#inspectMaximizeLink").on('click', function(e){
+                $('#videoModal').modal('show');
+                $("#videoScreen").detach().appendTo('#videoBody');
+                $("#inspectMaximizeLink").hide()
+            });
             function updateScreenShotLink(url){
-                var inspectLink = "<a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw inspectLink'></i></a>"
+//                var inspectLink = "<a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw inspectLink'></i></a>"
                 var urlText = url.length > 50 ? url.subString(0, 47)+'...' : url
                 var appLink = "<a href='" + url +"' target='_new'><i class='fa  fa-external-link fa-fw '></i>" + urlText + "</a>"
-                var maxLink = "<a id='inspectMaximizeLink' href='#'><i class='fa fa-window-maximize fa-fw inspectMaximize'></i></a>"
-                $("#screenShotLink").html(inspectLink + maxLink + appLink);
+              //  var maxLink = "<a id='inspectMaximizeLink' href='#'><i class='fa fa-expand fa-fw inspectMaximize'></i></a>"
+                $("#screenShotLink").html( appLink);
 
-                $("#inspectLink").on('click', function(e){
-                    $(".inspectLink").addClass('active');
-                    $.get("/inspect")
-                })
-                $("#inspectMaximizeLink").on('click', function(e){
-                    $('#videoModal').modal('show');
-                    $("#videoScreen").detach().appendTo('#videoBody');
-                });
             }
 
             if(localStorage['appLink']){
@@ -4164,6 +4192,7 @@
             var lastVideoHoverX = 0, lastVideoHoverY = 0;
             var xVideo1, yVideo1, xVideo2, yVideo2;
 
+            var vidHoverFlag=false;
 
             var currentVideoScroll = 0;
             //var lastVideoScroll;
@@ -4176,11 +4205,13 @@
                     currentVideoScroll += e.deltaY;
                     e.preventDefault();
 
-                }}, {passive: false}) //https://github.com/inuyaksa/jquery.nicescroll/issues/799#issuecomment-522275951
+                    }
+                }, {passive: false}) //https://github.com/inuyaksa/jquery.nicescroll/issues/799#issuecomment-522275951
 
                 $("#videoCanvas").mousemove( videoHover);
 
-
+                $("#videoCanvas").mouseenter( function(e){vidHoverFlag=true});
+                $("#videoCanvas").mouseleave( function(e){vidHoverFlag=false});
 
 
                 $("#videoCanvas").on('mousedown', function(e){
@@ -4251,12 +4282,15 @@
                 }
             }
 
+
+
             $('#videoModal').on('hidden.bs.modal', function() {
                 if($("#componentsBtn").hasClass('active')){
                     $("#videoScreen").detach().appendTo('#screenShotImageHolder');
                 }else{
                     $("#videoScreen").detach().appendTo('#screenshot-panel-body');
-                }
+                };
+                $("#inspectMaximizeLink").show();
             });
 
             //create matchlink tree
@@ -4338,14 +4372,8 @@
                         var inspectHtml = respObj.outerHtml;
                         var inspectDomObjDesc = respObj.domData.object.description
                         var matchingComponents = respObj.matchingComponents;
+                        var matchingComponentsCount = respObj.matchingComponentsCount;
                         var idHtml =  '<div id="codeInspectLabel" class="code">' + inspectDomObjDesc+ '</div>';
-//                        for(var x=0;x<inspectAttributes.length;x += 2){
-//                            if(inspectAttributes[x] == "id"){
-//                                idHtml += '<div id="idInspectLabel"><span class="idInspectLabel">id = </span>' + inspectAttributes[x + 1] + '</div>';
-//                            }
-//                        }
-
-//                        matchLinksHtml += idHtml;
 
                         $("#componentLinks").html(idHtml);
 
@@ -4355,19 +4383,18 @@
                         $('#matchLink_jstree_div').jstree(true).refresh();
 
                         if(currectMatchTreeObjArr.length < 1){
-                            $('.matchLinkCol').hide();
-                            $(".dashVideoCol").css("width","100%")
+                            $("#vidMenuMatchNum").html(" (0)")
                         }else{
                             $('.matchLinkCol').show();
-                            $(".matchLinkCol").css("max-width","40%")
-                            $(".dashVideoCol").css("width","60%")
+                            $("#vidMenuMatchNum").html(" ("+ matchingComponentsCount.toString() +")")
                         }
                     }
                 })
             }
             $("#HtmlLabel").hide();
             $("#AttributesLabel").hide();
-            $('.matchLinkCol').hide();
+            //$('.matchLinkCol').hide();
+            $("#vidMenuMatchNum").html(" (0)")
 
             //user picks build code. Show modal. Load build code table
             $("#buildCodePickButton").click(function(evt){
@@ -4559,6 +4586,28 @@
                 $("#buildCode").val("");
             });
 
+            document.body.addEventListener('wheel', function(e){
+                var csX = e.deltaX
+                var csY = e.deltaY;
+                if(Math.abs(csX) > Math.abs(csY)){
+                    e.preventDefault();
+//                   console.log({scrollLeft:currentVideoScrollX});
+                    setWindowWidth(JSON.parse(localStorage['locTreeWidth']).width - csX/2, container);
+                }
+            }, {passive: false}) //https://github.com/inuyaksa/jquery.nicescroll/issues/799#issuecomment-522275951
+
+            var ts=0;
+            $("#treePanelHandle").bind('touchstart', function(e) {
+                ts = e.originalEvent.touches[0].clientX;
+            });
+
+            $("#treePanelHandle").bind('touchmove', function(e) {
+                var te = e.originalEvent.changedTouches[0].clientX;
+                setWindowWidth( te - $("#leftLibCol").width(), container);
+            });
+
+
+
 
         });
 
@@ -4731,19 +4780,9 @@
                 <!--<input name="dashSysName" id="dashSysName" type="hidden" />-->
 
                 <div class='panel-body dashboardPanelBody'>
-                    <!--<div class="row ">-->
-
-                        <!--<div class="col-sm-2" >-->
-
-                        <!--</div>-->
-                        <!--<div class="col-sm-2" >-->
-
-                        <!--</div>-->
-
-                    <!--</div>-->
 
                     <div id = "dashBoardTopRow" class="row dashBoardTopRow">
-                        <div class="col-md-6" >
+                        <div class="col-md-6 dash-panel-column" >
 
                             <div class="row">
                                 <div class="os-panel-column firstCol" >
@@ -4789,24 +4828,33 @@
                             </div>
 
                         </div>
-                        <div class="col-md-6" >
-                            <div id="dashVideoPanal" class='panel'>
-                                <!--<div class='panel-heading dashboardPanelHeading '>Last Screenshot</div>-->
-                                <div id='screenshot-panel-body' class='panel-body dashPanelBody screenshot-panel-body' >
-                                    <div id="videoScreen">
-                                        <div class="row">
-                                            <span class="matchLinkCol">
+                        <div id='screenshot-panel-body' class="col-md-6 dashVideoCol" >
+                            <div id="videoScreen">
+
+                                <div class="col videoCol">
+                                    <div id="screenShotLink" class="videoMenuItemLeft"></div>
+                                    <div class="videoMenu">
+                                        <!--<button id="vidMenuMatch" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Match<div id="vidMenuMatchNum"></div></a></button>-->
+
+
+                                        <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fa fa-search fa-fw"></i>Match<div id="vidMenuMatchNum"></div>
+                                        </button>
+                                        <div id="vidMenuMatchOverlay" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="vidMenuMatch">
+                                            <!--<div><a class="dropdown-item" href="#">Action</a></div>-->
+                                            <div class="col matchLinkCol">
                                                 <div id="matchLink_jstree_div"></div>
-                                            </span>
-                                            <span class="dashVideoCol">
-                                                <canvas id="videoCanvas"></canvas>
-                                                <div id="screenShotLink" class="screenShotLink"></div>
-                                                <div id="componentLinks"></div>
-                                            </span>
-                                            <!--<div class="">-->
-                                            <!--</div>-->
+                                            </div>
                                         </div>
+
+                                        <a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw videoMenuItemRight'></i></a>
+                                        <a id='inspectMaximizeLink' href='#' class='screenShotLink'><i class='fa fa-expand fa-fw videoMenuItemRight'></i></a>
+
+                                        <!--<a href="#"><div id="vidMenuMatch">Match</div><div id="vidMenuMatchNum"></div></a>-->
                                     </div>
+                                    <div><canvas id="videoCanvas"></canvas></div>
+
+                                    <div id="componentLinks"></div>
                                 </div>
                             </div>
                         </div>
@@ -4828,9 +4876,9 @@
                         </div>
                     </div>
 
-                    <div id="dashboardList" class="row launchPadBody ">
+                    <!--<div id="dashboardList" class="row launchPadBody ">-->
 
-                    </div>
+                    <!--</div>-->
                 </div>
             </div>
         </div>

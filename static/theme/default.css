@@ -483,14 +483,15 @@ input:not(:checked) + .slider.round:before{
     color: #367ae0;
 }
 
-.idInspectLabel, .buildCodeNameRead{
+.idInspectLabel, .buildCodeNameRead, .matchTreeLi{
     transition: color 0.5s;
     color: #000000;
 }
 
-.dropdown-toggle:disabled  {
+.dropdown-menu, .dropdown-toggle:disabled  {
     transition: color 0.5s;
-    color: #000000;
+    color: #367ae0;
+    background-color: rgba(236, 236, 236, 0.9);
 }
 
 .welcome-hr{
