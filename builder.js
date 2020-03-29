@@ -632,7 +632,7 @@ router.get("/mouseMove",function(req,res){
 router.get("/keySend",function(req,res){
     // var reqObj = JSON.parse();
     var KeyObj = req.query.KeyObj;
-
+    console.log( KeyObj );
         (async function (KeyObj) {
             var modifiers=0; //Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
 

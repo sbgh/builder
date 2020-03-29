@@ -2404,6 +2404,7 @@
                 inputFields.each(disableElement);
                 inputFields = $("#jobForm").find("textarea");
                 inputFields.each(disableElement);
+                //$("#fakeInput")[0].readOnly = false;
 
                 $("#componentEnabledSlider").hide();
                 $("#promotedSlider").hide();
@@ -2413,7 +2414,9 @@
                 $("#runLocSlider").hide();
 
                 function disableElement(index, element) {
-                    element.readOnly = true;
+                    if(element.id !== "fakeInput"){
+                        element.readOnly = true;
+                    }
                 }
 
                 $("#edit_button").show();
@@ -4008,72 +4011,50 @@
                 theme: 'snow'
             });
 
-            //Allow arrow key navigation on trees in focus,
-            //also send key presses to  /keySend service
-            document.onkeydown = function(e) {
-
+            //Send key presses to /keySend service
+            var lastKeys  = "";
+            $(document).keydown(function (e) {
+                lastKeys = $("#fakeInput").val();
+            });
+            $(document).keyup(function (e) {
                 var KeyObj = {
                     key: e.key,
-                    code: e.code,
+                    code: e.originalEvent.code,
                     ctrlKey: e.ctrlKey,
                     shiftKey: e.shiftKey,
                     altKey: e.altKey,
                     charCode: e.charCode,
                     keyCode: e.keyCode
                 }
-                var activeElement = document.activeElement;
 
-                //if current focus is a tree
-                if(activeElement.id.includes("_anchor")){
+                //mobile does not send delete key:-(
+                if(lastKeys.length > $("#fakeInput").val().length){
+                    KeyObj = { key: 'Backspace',
+                        code: 'Backspace',
+                        ctrlKey: 'false',
+                        shiftKey: 'false',
+                        altKey: 'false',
+                        charCode: '0',
+                        keyCode: '8' }
 
-                    //find which tree is focused
-                    var currentTree;
-                    while (activeElement) {
-                        if(  activeElement.id == "jstree_div"){
-                            currentTree = $('#jstree_div');
-                            break
-                        }
-                        if(  activeElement.id == "jslibtree_div"){
-                            currentTree = $('#jslibtree_div');
-                            break
-                        }
-                        activeElement = activeElement.parentNode;
-                    }
-                    //down selects next node, up selects previous, right opens node, left closes it.
-                    switch (e.keyCode) {
-                        case 37:
-                            //alert('left');
-                            currentTree.jstree('close_node',$("#id").val());
-                            currentTree.jstree(true).get_node($("#id").val(), true).children('.jstree-anchor').focus();
-                            break;
-                        case 38:
-                            //alert('up');
-                            var targetNode =  currentTree.jstree(true).get_prev_dom($("#id").val());
-                            if(targetNode.length > 0){
-                                currentTree.jstree("deselect_all");
-                                currentTree.jstree('select_node',targetNode);
-                                currentTree.jstree(true).get_node(targetNode, true).children('.jstree-anchor').focus();
-                            }
-                            break;
-                        case 39:
-                            // alert('right');
-                            currentTree.jstree('open_node',$("#id").val());
-                            currentTree.jstree(true).get_node($("#id").val(), true).children('.jstree-anchor').focus();
-                            break;
-                        case 40:
-                            //alert('down');
-                            var targetNode =  currentTree.jstree(true).get_next_dom($("#id").val());
-                            if(targetNode.length > 0){
-                                currentTree.jstree("deselect_all");
-                                currentTree.jstree('select_node',targetNode);
-                                currentTree.jstree(true).get_node(targetNode, true).children('.jstree-anchor').focus();
-                                break;
-                            }
-                    }
                 }
 
-                if(vidHoverFlag){
+                //https://stackoverflow.com/questions/30743490/capture-keys-typed-on-android-virtual-keyboard-using-javascript
+                if(KeyObj.keyCode === 229){
+                    var fi = $("#fakeInput").val();
+                    //KeyObj.key = $("#fakeInput").val();
+                    KeyObj.keyCode = fi.charCodeAt(fi.length-1);
+                }else{
 
+                }
+
+                //$("#fakeInput").val("");
+
+                if(vidHoverFlag){
+                    if(KeyObj.key === "Enter"){
+                        $("#fakeInput").blur();
+                        $("#fakeInput").val("");
+                    }
                     e.preventDefault();
                     e.stopPropagation();
                     $.get("/keySend",{KeyObj:KeyObj},function(resp){
@@ -4082,7 +4063,7 @@
                 }
                 //console.log({vidHoverFlag})
 
-            };
+            });
 
 
             var webStreamCanvas = document.getElementById("videoCanvas");
@@ -4360,6 +4341,17 @@
                     $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
                 });
 
+//            const fakeInput = document.createElement('input');
+//            fakeInput.setAttribute('type', 'text');
+//            fakeInput.setAttribute('id', 'fakeInput');
+//            fakeInput.style.position = 'absolute';
+//            fakeInput.style.opacity = 0;
+//            fakeInput.style.height = 0;
+//            fakeInput.style.fontSize = '16px'; // disable auto zoom
+//
+//            $("#screenShotLink").append(fakeInput);
+////            document.body.prepend(fakeInput);
+
             function sendVideoMouseClick(x ,y, ctrlKey){
                 $.get("/VideoClick",{x:x, y:y, ctrlKey:ctrlKey},function(resp){
 
@@ -4376,6 +4368,11 @@
                         var idHtml =  '<div id="codeInspectLabel" class="code">' + inspectDomObjDesc+ '</div>';
 
                         $("#componentLinks").html(idHtml);
+
+                        if(inspectDomObjDesc.substr(0,5) === "input"){
+                            // if the clicked element is an input try to raise mobile kb
+                            $("#fakeInput").focus();
+                        }
 
                         currectMatchTreeObjArr = matchingComponents;
 
@@ -4769,9 +4766,11 @@
         </symbol>
     </defs>
 </svg>
+<input type="text" id="fakeInput" style="position: absolute; opacity: 0; height: 0px; font-size: 16px; right: 25%; top: 25%;">
 
 <div id="rowContainer" class="container-fluid container-fluid-custom">
         <%- include topMenu.ejs %>
+
         <div id="dashRow" class="row top-row">
             <div class="panel panel-default dashboardPanel" id="dashboard">
 
@@ -4885,6 +4884,7 @@
         <div id="componentsRow" class="row top-row">
 
 
+
             <div id="leftLibCol" class="topLib-col-fixed-240" >
                 <div id="libTreePanel" class='panel panel-default cust-panel' style="float: left;"  >
                     <div class='panel-heading cust-panel-heading' style="white-space: nowrap;"><i class='fa  fa-book' id="LibDropDownPickIcon"></i> Library
@@ -4939,6 +4939,7 @@
 
                 <div class="tab-content">
                     <div role="tabpanel"  class="tab-pane fade show active" id="Component_Details">
+
                         <div id="sysScreen">
                             <div class="buttonRow">
                                 <button id = "edit_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
