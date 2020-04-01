@@ -1,9 +1,7 @@
 #!/bin/sh
-cd /home/ec2-user/builder
+cd /home/ec2-user/builder;
 pwd;
 echo;
-echo Killing Chrome
-pkill chrome
 echo Stopping server builder.js..;
 forever stop builder.js;
 echo;

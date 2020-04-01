@@ -62,6 +62,7 @@ const BuildCodeContents = fs.readFileSync('BuildCode.json');
 global.BuildCode = JSON.parse(BuildCodeContents);
 
 //-----------headless chrome-------------
+global.chrome='';
 global.Page = '';
 global.Runtime = '';
 global.pageInput = '';
@@ -70,8 +71,82 @@ global.chrome='';
 global.Overlay='';
 global.DOM='';
 const viewport = [1280,720];
+
 //Launch headless Chrome
-(async function () {
+// (async function () {
+//     async function launchChrome() {
+//         return await chromeLauncher.launch({
+//             chromeFlags: ["--disable-gpu", "--headless",  "--no-sandbox", "--allow-insecure-localhost"] //"--enable-logging",, "--enable-low-end-device-mode" , '--window-size=800,600', --force-device-scale-factor=1.5
+//         });
+//     }
+//     chrome = await launchChrome();
+//     console.log('Chrome debugging port running on ' + chrome.port);
+//
+//     const viewport = [1280,720];
+//
+//     protocol = await CDP({
+//         port: chrome.port
+//     });
+//
+//     Page = protocol.Page;
+//     PageInput = protocol.Input;
+//     Overlay = protocol.Overlay;
+//     DOM = protocol.DOM;
+//     Runtime = protocol.Runtime
+//     const {Emulation} = protocol;
+//     await Promise.all([Page.enable(), Runtime.enable(), DOM.enable(), Overlay.enable()]);
+//
+//     //Event when inspected element is clicked after Overlay.setInspectMode is turned on.
+//     Overlay.inspectNodeRequested(backendNodeId => {
+//         (async function (backendNodeId) {
+//             //A backend ID is returned but we are not using it currently.
+//             //const id = backendNodeId.backendNodeId;
+//
+//             await Overlay.setInspectMode({"mode":"none", "highlightConfig":HighlightConfig});
+//         })(backendNodeId)
+//     })
+//
+//     // set viewport and visible size
+//     var device = {
+//         width: viewport[0],
+//         height: viewport[1],
+//         deviceScaleFactor: 1.0,
+//         mobile: false,
+//         fitWindow: true
+//     };
+//     await Emulation.setDeviceMetricsOverride(device);
+//     await Emulation.setVisibleSize({width: viewport[0], height:viewport[1]});
+//
+//     // default url to cast
+//     if(Page.hasOwnProperty("startScreencast")){
+//         Page.navigate({url: "https://ezStack.systems"});
+//
+//         //start screen cast
+//         // Page.startScreencast({
+//         //     format: 'jpeg',
+//         //     quality: 50,
+//         //     everyNthFrame: 5
+//         // });
+//
+//         Page.screencastFrame(image => {
+//
+//             frameCount++;
+//             const {data, metadata, sessionId} = image;
+//             image.frameCount = frameCount;
+//             currentFrame = image;
+//
+//             //console.log('saved frame ' + frameCount.toString());
+//             Page.screencastFrameAck({sessionId: sessionId});
+//         });
+//     }else{
+//         res.end("");
+//         console.log("Page not ready @ startup")
+//     }
+//
+// })();
+
+//Launch headless Chrome and enable stream
+async function startChrome() {
     async function launchChrome() {
         return await chromeLauncher.launch({
             chromeFlags: ["--disable-gpu", "--headless",  "--no-sandbox", "--allow-insecure-localhost"] //"--enable-logging",, "--enable-low-end-device-mode" , '--window-size=800,600', --force-device-scale-factor=1.5
@@ -102,7 +177,7 @@ const viewport = [1280,720];
 
             await Overlay.setInspectMode({"mode":"none", "highlightConfig":HighlightConfig});
         })(backendNodeId)
-    })
+    });
 
     // set viewport and visible size
     var device = {
@@ -116,35 +191,43 @@ const viewport = [1280,720];
     await Emulation.setVisibleSize({width: viewport[0], height:viewport[1]});
 
     // default url to cast
-    // await Page.navigate({url: "ezStack.systems"});
-    Page.navigate({url: "https://ezStack.systems"});
+    if(Page.hasOwnProperty("startScreencast")){
+        Page.navigate({url: "https://ezStack.systems"});
 
-    //start screen cast
-    Page.startScreencast({
-        format: 'jpeg',
-        quality: 50,
-        everyNthFrame: 5
-    });
-    //await Overlay.setShowFPSCounter({ show: true });
-    Page.screencastFrame(image => {
+        //start screen cast
+        // Page.startScreencast({
+        //     format: 'jpeg',
+        //     quality: 50,
+        //     everyNthFrame: 5
+        // });
 
-        frameCount++;
-        const {data, metadata, sessionId} = image;
-        image.frameCount = frameCount;
-        currentFrame = image;
+        Page.screencastFrame(image => {
 
-        //console.log('saved frame ' + frameCount.toString());
-        Page.screencastFrameAck({sessionId: sessionId});
-    });
+            frameCount++;
+            const {data, metadata, sessionId} = image;
+            image.frameCount = frameCount;
+            currentFrame = image;
 
+            //console.log('saved frame ' + frameCount.toString());
+            Page.screencastFrameAck({sessionId: sessionId});
+        });
+    }else{
+        res.status(500).send(new Error('Page not available at startup'));
+        console.log("Page not ready @ startup")
+    }
 
-})();
+}
+startChrome();
+
+async function endChrome() {
+    await chrome.kill();
+}
 
 //Define user table global
 var userTable = fs.readFileSync("./identity/identity.json");
 var userTableJSON = JSON.parse(userTable);
 
-//Use bodyParser in various router.post to assist in parcing req data
+//Use bodyParser in various router.post to assist in parsing req data
 app.use(bodyParser.json({limit: '10mb'}));
 app.use(bodyParser.urlencoded({limit: '10mb', extended: true}));
 
@@ -188,6 +271,18 @@ function noClientTimeoutProcess(){
 router.get("/",function(req,res){
     res.end('')
 });
+
+
+router.get("/startChrome",function(req,res){
+    startChrome();
+    res.end("")
+});
+
+router.get("/endChrome",function(req,res){
+    endChrome();
+    res.end("")
+});
+
 
 //Service Rt: /login, Method: get, Requires: Nothing, Returns: render(login)
 router.get("/login",function(req,res){
@@ -253,13 +348,10 @@ router.get('/video', function(req, res) {
     //console.log("/video started");
 
     res.writeHead(200, {
-        // 'Connection': 'keep-alive',
-        // 'Content-Type': 'text/event-stream; charset=utf-8',
         'Transfer-Encoding': 'chunked',
         'Content-Type': 'image/png;base64',
         'Content-Transfer-Encoding': 'BASE64'
     });
-
     Page.startScreencast({
         format: 'jpeg',
         quality: 50,
@@ -267,31 +359,30 @@ router.get('/video', function(req, res) {
     });
 
     var frameRate = 8;
-    const myInt = setInterval(sendBlock, 1000/frameRate);
+    const myInt = setInterval(sendBlock, 1000 / frameRate);
     var sendCount = 0;
-    function sendBlock(){
+
+    function sendBlock() {
         var endDate = new Date();
         var totalSeconds = (endDate - totalStartDate) / 1000;
         sendCount++;
 
         //After 30s recycle the vid stream
-        if(sendCount > (30 * frameRate) || clientDisconnectFlag){
+        if (sendCount > (30 * frameRate) || clientDisconnectFlag) {
             clearInterval(myInt);
 
             //console.log('stopping ' + frameCount.toString());
-
-            //Page.stopScreencast();
             frameCount = 0;
             res.end();
             totalStartDate = new Date();
             //console.log('stopped ' + totalSeconds.toString() + " seconds" );
-        }else{
+        } else {
             //only send if frame has changed
-            if(currentFrame.data !== lastFrame.data){
-                res.write(JSON.stringify(currentFrame)+'<-->');
+            if (currentFrame.data !== lastFrame.data) {
+                res.write(JSON.stringify(currentFrame) + '<-->');
                 lastFrame = currentFrame;
                 //console.log('sent: ' + frameCount.toString());
-            }else{
+            } else {
                 //console.log('skip: ' + frameCount.toString());
             }
         }
@@ -508,7 +599,7 @@ function searchComponentProperties(AttributesArray){
                                         if(!foundObj.hasOwnProperty(ancestors[idx])){
                                             foundObj[ancestors[idx]] = {};
                                             foundObj[ancestors[idx]].id = ancestors[idx];
-                                            foundObj[ancestors[idx]].text = SystemsJSON[ancestors[idx]].text;
+                                            foundObj[ancestors[idx]].text = SystemsJSON[ancestors[idx]].name;
                                             foundObj[ancestors[idx]].type = getType(ancestors[idx]);
                                             foundObj[ancestors[idx]].comType = SystemsJSON[ancestors[idx]].comType;
                                             foundObj[ancestors[idx]].sort = SystemsJSON[ancestors[idx]].sort;
@@ -529,7 +620,7 @@ function searchComponentProperties(AttributesArray){
                             x++;
                             foundObj[key] = {};
                             foundObj[key].id = key;
-                            foundObj[key].text = SystemsJSON[key].text;
+                            foundObj[key].text = SystemsJSON[key].name;
                             foundObj[key].comType = SystemsJSON[key].comType;
                             foundObj[key].sort = SystemsJSON[key].sort;
                             foundObj[key].type = getType(key);
@@ -630,9 +721,8 @@ router.get("/mouseMove",function(req,res){
 });
 
 router.get("/keySend",function(req,res){
-    // var reqObj = JSON.parse();
     var KeyObj = req.query.KeyObj;
-    console.log( KeyObj );
+    //console.log( KeyObj );
         (async function (KeyObj) {
             var modifiers=0; //Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
 
@@ -1076,7 +1166,7 @@ router.get("/BuildCodeLib",function(req,res){
 
 //Global to store the library that the user is currently using
 var currentPickedLib = '';
-//Service Rt: /getLib, Method: get, Requires: pickedLib file name string | id = '#' for all components or id for one component, Returns:  one or all components in json string array
+//Service Rt: /getLib, Method: get, Requires: pickedLib file name string | id = '#' for all components or id for one component, Returns:  one or all components in jstree string array
 router.get("/getLib",function(req,res) {
     const pickedLib = req.query.pickedLib;
     currentPickedLib = pickedLib;
@@ -1747,7 +1837,7 @@ router.post("/copy",function(req,res){
 
                 //update parent id map
                 idMap[fromId] = id;
-                var newParentId = idMap[SystemsJSON[fromId].parent]
+                var newParentId = idMap[SystemsJSON[fromId].parent];
                 //console.log('move to:'+SystemsJSON[newParentId].name);
 
                 //initial history json

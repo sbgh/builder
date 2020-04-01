@@ -616,8 +616,6 @@
                                 var iconHTML = '<img id="dashSystemIcon" class="dashSystemIcon" src='+urlString+'></img>';
 
                                 dropDownListHtml += "<div><a class='dropdown-item dashSystemDropdownItem' href='#' data-id='"+ thisSysId +"' data-sysName='"+ thisSysName +"'>"+ iconHTML+" " + thisSysName +"</a></div>"
-
-
                             }
                         }
                         $("#dashSystemsDropdownMenu")[0].innerHTML = dropDownListHtml;
@@ -634,18 +632,6 @@
 
                             localStorage['dashSystemDropItemClicked'] = JSON.stringify({ id:id, sysName:sysName }) ;
                         });
-
-//                        $("#dashboardList")[0].innerHTML = pCompHtml;
-
-
-//                        // Add slideDn animation to Bootstrap dropdown when opening.
-//                        $('.dashSystemsDropdownMenu').on('show.bs.dropdown', function() {
-//                            $(this).find('.dropdown-menu').first().stop(true, true).slideDown();
-//                        });
-//                        // Add slideUp animation to Bootstrap dropdown when collapsing.
-//                        $('.dashSystemsDropdownMenu').on('hide.bs.dropdown', function() {
-//                            $(this).find('.dropdown-menu').first().stop(true, true).slideUp();
-//                        });
 
                     },
                     error : function(error) {
@@ -3526,13 +3512,13 @@
                 setStyle(pickedStyle);
             });
 
-            //settings - set time out button event
+            //settings - set time out button event in settings
             $('#set_timeout').on('click', function(){
                 const timeout = $("#timeout").val();
-                setTimeout(timeout);
+                setShutdownTimeout(timeout);
             });
 
-            function setTimeout(timeout){
+            function setShutdownTimeout(timeout){
                 var mydata = {};
                 mydata.timeout = timeout;
                 $.ajax({
@@ -4131,13 +4117,16 @@
                     }
                 }).done(function (e) {
                     //console.log("startStream Done -> restart");
-                    startStream();
+                    //startStream();
+                    setTimeout(startStream, 1000);
                 }).fail(function (e) {
 
-                    console.log("startStream Fail"  );
+                    setTimeout(startStream, 5000);
+                    console.log("startStream Fail"  )
                 });
             };
-            startStream()
+//            startStream();
+            setTimeout(startStream, 5000);
 
 
             function navigate(url){
@@ -4176,7 +4165,6 @@
             var vidHoverFlag=false;
 
             var currentVideoScroll = 0;
-            //var lastVideoScroll;
 
             function setCanvasUIEvents(){
 
@@ -4587,9 +4575,12 @@
                 var csX = e.deltaX
                 var csY = e.deltaY;
                 if(Math.abs(csX) > Math.abs(csY)){
-                    e.preventDefault();
-//                   console.log({scrollLeft:currentVideoScrollX});
-                    setWindowWidth(JSON.parse(localStorage['locTreeWidth']).width - csX/2, container);
+
+                    if(componentDetailsHoverFlag){
+                        e.preventDefault();
+                        setWindowWidth(JSON.parse(localStorage['locTreeWidth']).width - csX/2, container);
+                    }
+
                 }
             }, {passive: false}) //https://github.com/inuyaksa/jquery.nicescroll/issues/799#issuecomment-522275951
 
@@ -4603,6 +4594,9 @@
                 setWindowWidth( te - $("#leftLibCol").width(), container);
             });
 
+            var componentDetailsHoverFlag = false;
+            $("#Component_Details").mouseenter( function(e){componentDetailsHoverFlag=true});
+            $("#Component_Details").mouseleave( function(e){componentDetailsHoverFlag=false});
 
 
 

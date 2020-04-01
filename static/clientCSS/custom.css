@@ -1250,12 +1250,13 @@ th.col-1, td.col-1{
    max-height: 37px;
    overflow:hidden
 }
-.dashListRowClicked .ql-editor {
+#jobForm .ql-editor {
 
    transition: max-height .5s;
-   max-height: 130px;
+   max-height: 300px;
    overflow:auto
 }
+
 
 .jstree-default .jstree-wholerow-clicked {
    /*background: #dcdcdc;*/
