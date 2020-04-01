@@ -3627,7 +3627,7 @@ router.get("/getVars",function(req,res){
     })
 });
 
-//Service Rt: /upload to upoad file and attach to specified id, Method: post, Requires: form including id = component ID | uploads = file list , Returns: array of files attached to component format {name:file} or Error String
+//Service Rt: /upload to up;oad file and attach to specified id, Method: post, Requires: form including id = component ID | uploads = file list , Returns: array of files attached to component format {name:file} or Error String
 router.post("/upload",function(req,res){ //https://coligo.io/building-ajax-file-uploader-with-node/
 
     // create an incoming form object using formidable;
@@ -3640,34 +3640,40 @@ router.post("/upload",function(req,res){ //https://coligo.io/building-ajax-file-
         }
 
         var id = fields.id;
-        //if id exists check ./uploads/[id] file path. Create if not. Save files. Build return array.
+        //if id exists check ./uploads/[buildId] file path. Create if not. Save files. Build return array.
         if (SystemsJSON.hasOwnProperty(id)){
-            if (!fs.existsSync(filesPath +id)) {
-                fs.mkdirSync(filesPath +id);
-            }
-            var myFiles = files['uploads[]'];
-            if(Array.isArray(myFiles)){
-                myFiles.forEach(function(file){
-                    fs.renameSync(file.path, filesPath + id + '/' + file.name)
+            var buildId = SystemsJSON[id].buildCode.linkArr[0];
+            if(BuildCode.hasOwnProperty(buildId)){
+                if (!fs.existsSync(filesPath +buildId)) {
+                    fs.mkdirSync(filesPath +buildId);
+                }
+                var myFiles = files['uploads[]'];
+                if(Array.isArray(myFiles)){
+                    myFiles.forEach(function(file){
+                        fs.renameSync(file.path, filesPath + buildId + '/' + file.name)
+                    })
+                }else{
+                    fs.renameSync(myFiles.path,  filesPath + buildId + '/' + myFiles.name)
+                }
+                fs.readdir(filesPath + buildId + '/' , function(err, files){
+                    if(err){
+                        res.end(err)
+                    }else{
+                        var returnArr = [];
+                        files.forEach(function(file){
+                            returnArr.push({name:file})
+                        });
+                        //Return list of files that were successfully saved.
+                        res.end(JSON.stringify(returnArr))
+                    }
+
                 })
             }else{
-                fs.renameSync(myFiles.path,  filesPath + id + '/' + myFiles.name)
+                res.end("/upload error: id not found in BuildCode: " + id)
             }
-            fs.readdir(filesPath + id + '/' , function(err, files){
-                if(err){
-                    res.end(err)
-                }else{
-                    var returnArr = [];
-                    files.forEach(function(file){
-                        returnArr.push({name:file})
-                    });
-                    //Return list of files that were successfully saved.
-                    res.end(JSON.stringify(returnArr))
-                }
 
-            })
         }else{
-            res.end("/upload error: id not found in buildCode: " + id)
+            res.end("/upload error: id not found in SystemsJSON: " + id)
         }
     });
     form.multiples = true;

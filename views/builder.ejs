@@ -3434,7 +3434,7 @@
                 var files = $(this).get(0).files;
                 if (files.length > 0){
                     var formData = new FormData();
-                    formData.append('id', $('#buildCode').val());
+                    formData.append('id', $('#id').val());
 
                     for (var i = 0; i < files.length; i++) {
                         var file = files[i];
