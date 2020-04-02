@@ -714,9 +714,16 @@ input:checked + .slider:before {
    text-align: center;
 }
 
+.dashTableNameButtonRow{
+   white-space: nowrap;
+}
 
-.dashListRowClicked{
+.dashListRowClicked .dashTableNameButtonRow, .dashListRowClicked  .dashTableOpenButton{
+   display: inline;
+}
 
+.dashListRowNotClicked .dashTableNameButtonRow, .dashListRowNotClicked  .dashTableOpenButton{
+   display: none;
 }
 
 .dashListRowClicked > td.dashTableNameItem{
@@ -1234,7 +1241,10 @@ th.col-1, td.col-1{
 }
 
 
-
+.dashTableDescriptionItem{
+   padding-top: 5px;
+   padding-bottom: 5px;
+}
 
 .dashTableDescriptionItem > .ql-container{
    border: 0px solid;
@@ -1249,6 +1259,13 @@ th.col-1, td.col-1{
    transition: max-height .5s;
    max-height: 37px;
    overflow:hidden
+}
+
+.dashListRowClicked .ql-editor {
+
+   transition: max-height .5s;
+   max-height: 200px;
+   overflow:auto
 }
 #jobForm .ql-editor {
 
@@ -1600,5 +1617,13 @@ tbody.buildCodeTbody{
 
 .dashVideoCol #videoCanvas{
    max-width: 440px;
+}
+
+.dashTableOpenButton{
+   width:30px;
+   margin-right: 10px;
+}
+.dashTableBuildButton {
+   width:30px;
 }
 

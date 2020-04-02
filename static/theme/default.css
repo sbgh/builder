@@ -433,11 +433,11 @@ input:not(:checked) + .slider.round:before{
 
 .dashTableBuildButton{
     transition: color 0.5s;
-    color: #367ae0;
+    color: #000000;
 }
 .dashTableOpenButton{
     transition: color 0.5s;
-    color: #367ae0;
+    color: #000000;
 }
 
 .stylePickTop, .buildCodeFilter{

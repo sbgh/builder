@@ -581,11 +581,11 @@ input:focus + .slider {
 
 .dashTableBuildButton{
     transition: color 0.5s;
-    color: #79bdf3;
+    color: #ececec;
 }
 .dashTableOpenButton{
     transition: color 0.5s;
-    color: #79bdf3;
+    color: #ececec;
 }
 
 .stylePickTop, .buildCodeFilter{
