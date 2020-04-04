@@ -3763,7 +3763,7 @@
 
                 $("#welcome-nav-Syst").on("click",function(evt){
                     $("#dashBtn").click();
-                    $(".dashSystemDropdownButton").dropdown("toggle");
+                    $("#dropdownMenuButton").dropdown("toggle");
                     $("#dashSystemsDropdownMenu").css("border","14px dashed #E91E63");
                     $("#dashSystemsDropdownMenu").animate({borderWidth : "0px"}, 2000);
                      evt.stopPropagation();
@@ -4580,6 +4580,7 @@
 
             $("#buildCodeForkBtn").on('click', function(evt){
                 $("#buildCode").val("");
+                $("#newBuildCodeName").val("copy of " + $("#newBuildCodeName").val());
             });
 
             document.body.addEventListener('wheel', function(e){
@@ -5356,7 +5357,7 @@
 
             </div>
             <div class="modal-footer">
-                <button type="button" id="buildCodeForkBtn" class="btn btn-default jobFormbtn" data-dismiss="modal">Ok</button>
+                <button type="button" id="serverUnavailableBtn" class="btn btn-default jobFormbtn" data-dismiss="modal">Ok</button>
             </div>
         </nav>
     </div>
