@@ -3372,6 +3372,13 @@ router.post("/run",function(req,res){
                                 isDirective = true;
 
                             } else if
+                            (currentCommand.substr(0, 11) === "restart:") {
+
+                                //request client to restart
+                                message("restart:request client to restart");
+                                isDirective = true;
+
+                            } else if
                             (currentCommand.substr(0, 6) === "abort:") {
 
                                 message('Abort directive called');
@@ -3679,13 +3686,6 @@ router.post("/upload",function(req,res){ //https://coligo.io/building-ajax-file-
     form.multiples = true;
     form.uploadDir = filesPath;
 
-    // form.on('file', function(field, file) {
-    //    // fs.rename(file.path, form.uploadDir +'/' + file.name);
-    // });
-    // form.on('field', function(field, value) {
-    //    // id=value;
-    // });
-
     // log any errors that occur
     form.on('error', function(err) {
         console.log('An error has occured.\n/upload \n' + err);
@@ -3697,7 +3697,7 @@ router.post("/upload",function(req,res){ //https://coligo.io/building-ajax-file-
     });
 });
 
-//Service Rt: /uploads/*", "/library/* to provide access to resources in ./library and ./uploads, Method: get, Requires: nothing , Returns: stream of the file specified in url
+//Service Rt: /uploads/*", "/library/* to provide access to resources in ./library and ./uploads, Method: get, Requires: nothing , Returns: stream of the file specified in req.originalUrl
 router.get(["/uploads/*", "/library/*"],function(req,res){
 
     var link = req.originalUrl;
@@ -3750,7 +3750,7 @@ router.get("/delFiles",function(req,res){
                 }
 
             }
-        })
+        });
         fs.readdir(filesPath + id + '/' , function(err, files){
             if(err){
                 res.end(err)

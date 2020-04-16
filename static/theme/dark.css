@@ -23,7 +23,7 @@ body {
 
 body {
     transition: color 1s;
-    color: #bbbbbb;
+    color: #f2f1f1;
     transition: background-color 0.5s;
     background-color: #3c3f41;
     scrollbar-color: #3b3b3b #2f2f2f;
@@ -703,4 +703,14 @@ input:focus + .slider {
     transition: background-color 0.5s;
     /*background-color: #1a1b1c;*/
     border-bottom: 4px solid #0f6ab4;
+}
+
+#inspectLink.active{
+    transition: color 0.2s;
+    color: #fff;
+}
+
+#videoRefreshLink.active{
+    transition: color 0.2s;
+    color: #fff;
 }

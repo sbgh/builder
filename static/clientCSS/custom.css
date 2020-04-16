@@ -710,6 +710,10 @@ input:checked + .slider:before {
 .dashTableEnableItem{
    text-align: center;
 }
+
+.dashTableEnableItem > i, .dashTableSuccessItem > i{
+   font-size: 20px;
+}
 .dashTableSuccessItem{
    text-align: center;
 }
@@ -726,29 +730,37 @@ input:checked + .slider:before {
    display: none;
 }
 
+.dashTableNameItem{
+   font-size: 14px;
+}
+
 .dashListRowClicked > td.dashTableNameItem{
    font-weight: 900;
-   font-size: 12px;
+   font-size: 14px;
+   font-weight: bold;
 }
 
 div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
-   -moz-transition: max-height 0.2s;
-   -ms-transition: max-height 0.2s;
-   -o-transition: max-height 0.2s;
-   -webkit-transition: max-height 0.2s;
-   transition: max-height 0.2s;
+   -moz-transition: max-width 0.2s;
+   -ms-transition: max-width 0.2s;
+   -o-transition: max-width 0.2s;
+   -webkit-transition: max-width 0.2s;
+   transition: max-width 0.2s;
    overflow: hidden;
-   max-height:0px;
+   max-width:0px;
+
+   vertical-align: middle;
+   display: inline-block;
 
 }
 .dashListRowClicked > td.dashTableNameItem > div.dashTableNameButtonRow, .dashListRowClicked > td.dashTableEnableItem > div.dashTableEnabledButtonRow{
    -moz-transition: max-height 0.2s;
-   -ms-transition: max-height 0.2s;
-   -o-transition: max-height 0.2s;
-   -webkit-transition: max-height 0.2s;
-   transition: max-height 0.2s;
+   -ms-transition: max-width 0.2s;
+   -o-transition: max-width 0.2s;
+   -webkit-transition: max-width 0.2s;
+   transition: max-width 0.2s;
    overflow: hidden;
-   max-height: 20px;
+   max-width: 50px;
 }
 
 /*.DashListRowPass{*/
@@ -1137,7 +1149,7 @@ tr {
 .dashTbody > tr > td{
    border-top: 0px solid;
    border-bottom: 0px solid;
-   margin-top: 0.5rem;
+   margin-top: 0.2rem;
    padding: 0.5rem;
 }
 
@@ -1321,7 +1333,6 @@ tbody.varTbody{
 /*}*/
 
 .varRow{
-   cursor: pointer;
    white-space: nowrap;
 }
 
@@ -1410,9 +1421,6 @@ tbody.varTbody{
    /*padding-left:15px;*/
 }
 
-.inspectLink.active{
-   font-weight: 800;
-}
 
 .inspectMaximize{
    /*padding-right:40px;*/
@@ -1444,9 +1452,10 @@ tbody.varTbody{
 }
 
 #componentLinks{
-   text-align: center;
    font-size: small;
    font-weight: 700;
+   display: inline-block;
+   font-size: 15px;
 }
 
 .matchLink{
@@ -1564,6 +1573,11 @@ tbody.buildCodeTbody{
    white-space:nowrap;
    display:inline-block;
 }
+
+button#vidMenuMatch {
+   padding-left: 15px;
+}
+
 .matchLinkCol{
    /*max-height: 250px;*/
    /*max-width: 300px;*/
@@ -1625,5 +1639,9 @@ tbody.buildCodeTbody{
 }
 .dashTableBuildButton {
    width:30px;
+}
+
+.compVarEditValButton, .compVarEditButton, .compVarDelButton , .buildCodePickButton, .compFocusButton{
+   cursor: pointer;
 }
 

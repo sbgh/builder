@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>ezStack builder</title>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <!--<script src="//https://ajax.googleapis.com/ajax/libs/d3js/5.12.0/d3.min.js"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.3/jstree.min.js"></script>
@@ -2063,6 +2062,11 @@
 //                                    localStorage['lastSreenShot'] = imageLink;
 //                                    $("#screenShotImageDashboard").show();
 //                                    $("#screenShotImage").show();
+                                }
+                                else if(row.substr(0,16) === 'message:restart:'){
+
+                                    //restart client in 5 seconds
+                                    setTimeout(function(){location.reload(true)} , 5000);
                                 }
                                 else{
                                     $("#results_html").append(row + '<br>');
@@ -4146,8 +4150,13 @@
                 $.get('/navigate', {url:url}, function(data) {});
             }
             $("#inspectLink").on('click', function(e){
-                $(".inspectLink").addClass('active');
+                $("#inspectLink").addClass('active');
                 $.get("/inspect")
+            })
+            $("#videoRefreshLink").on('click', function(e){
+                $.get("/endChrome");
+                $("#videoRefreshLink").addClass('active');
+                setTimeout(function(){ $.get("/startChrome");$("#videoRefreshLink").removeClass('active'); }, 3000)
             })
             $("#inspectMaximizeLink").on('click', function(e){
                 $('#videoModal').modal('show');
@@ -4221,7 +4230,7 @@
                         sendVideoMouseClick(xVideo2/width ,yVideo2/height, e.ctrlKey);
                         //consol.log(xVideo1 + ',' + yVideo1 + ',' +xVideo2 + ',' +yVideo2);
 
-                        $(".inspectLink").removeClass('active');
+                        $("#inspectLink").removeClass('active');
                     }
                 });
 
@@ -4368,7 +4377,7 @@
 
                         $("#componentLinks").html(idHtml);
 
-                        if(inspectDomObjDesc.substr(0,5) === "input"){
+                        if(inspectDomObjDesc.substr(0,5) === "input" || inspectDomObjDesc.substr(0,8) === "textarea"){
                             // if the clicked element is an input try to raise mobile kb
                             $("#fakeInput").focus();
                         }
@@ -4379,9 +4388,10 @@
                         $('#matchLink_jstree_div').jstree(true).refresh();
 
                         if(currectMatchTreeObjArr.length < 1){
-                            $("#vidMenuMatchNum").html(" (0)")
+//                            $("#vidMenuMatchNum").html(" (0)");
+                            $('#vidMenuMatch').hide();
                         }else{
-                            $('.matchLinkCol').show();
+                            $('#vidMenuMatch').show();
                             $("#vidMenuMatchNum").html(" ("+ matchingComponentsCount.toString() +")")
                         }
                     }
@@ -4389,8 +4399,8 @@
             }
             $("#HtmlLabel").hide();
             $("#AttributesLabel").hide();
-            //$('.matchLinkCol').hide();
-            $("#vidMenuMatchNum").html(" (0)")
+            $('#vidMenuMatch').hide();
+//            $("#vidMenuMatchNum").html(" (0)");
 
             //user picks build code. Show modal. Load build code table
             $("#buildCodePickButton").click(function(evt){
@@ -4839,27 +4849,28 @@
                                 <div class="col videoCol">
                                     <div id="screenShotLink" class="videoMenuItemLeft"></div>
                                     <div class="videoMenu">
-                                        <!--<button id="vidMenuMatch" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Match<div id="vidMenuMatchNum"></div></a></button>-->
 
+                                        <!--<button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
+                                            <!--<i class="fa fa-search fa-fw"></i>Match<div id="vidMenuMatchNum"></div>-->
+                                        <!--</button>-->
+                                        <!--<div id="vidMenuMatchOverlay" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="vidMenuMatch">-->
+                                            <!--<div class="col matchLinkCol"><div id="matchLink_jstree_div"></div></div>-->
+                                        <!--</div>-->
 
-                                        <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fa fa-search fa-fw"></i>Match<div id="vidMenuMatchNum"></div>
-                                        </button>
-                                        <div id="vidMenuMatchOverlay" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="vidMenuMatch">
-                                            <!--<div><a class="dropdown-item" href="#">Action</a></div>-->
-                                            <div class="col matchLinkCol">
-                                                <div id="matchLink_jstree_div"></div>
-                                            </div>
-                                        </div>
-
+                                        <a id='videoRefreshLink' href='#'><i class='fa fa-refresh fa-fw videoMenuItemRight'></i></a>
                                         <a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw videoMenuItemRight'></i></a>
                                         <a id='inspectMaximizeLink' href='#' class='screenShotLink'><i class='fa fa-expand fa-fw videoMenuItemRight'></i></a>
 
-                                        <!--<a href="#"><div id="vidMenuMatch">Match</div><div id="vidMenuMatchNum"></div></a>-->
                                     </div>
                                     <div><canvas id="videoCanvas"></canvas></div>
-
-                                    <div id="componentLinks"></div>
+                                    <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fa fa-search fa-fw"></i><div id="componentLinks"></div><div id="vidMenuMatchNum"></div>
+                                    </button>
+                                    <div id="vidMenuMatchOverlay" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="vidMenuMatch">
+                                        <div class="col matchLinkCol">
+                                            <div id="matchLink_jstree_div"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
