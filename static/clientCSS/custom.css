@@ -1574,7 +1574,7 @@ tbody.buildCodeTbody{
    display:inline-block;
 }
 
-button#vidMenuMatch {
+button#vidMenuMatch, #vidMenuDesc {
    padding-left: 15px;
 }
 

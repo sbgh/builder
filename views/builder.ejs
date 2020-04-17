@@ -4373,7 +4373,7 @@
                         var inspectDomObjDesc = respObj.domData.object.description
                         var matchingComponents = respObj.matchingComponents;
                         var matchingComponentsCount = respObj.matchingComponentsCount;
-                        var idHtml =  '<div id="codeInspectLabel" class="code">' + inspectDomObjDesc+ '</div>';
+                        var idHtml =  '<div id="codeInspectLabel" class="codeInspectLabel">' + inspectDomObjDesc+ '</div>';
 
                         $("#componentLinks").html(idHtml);
 
@@ -4390,8 +4390,10 @@
                         if(currectMatchTreeObjArr.length < 1){
 //                            $("#vidMenuMatchNum").html(" (0)");
                             $('#vidMenuMatch').hide();
+                            $("#vidMenuDesc").html(inspectDomObjDesc);
                         }else{
                             $('#vidMenuMatch').show();
+                            $("#vidMenuDesc").html("");
                             $("#vidMenuMatchNum").html(" ("+ matchingComponentsCount.toString() +")")
                         }
                     }
@@ -4863,8 +4865,9 @@
 
                                     </div>
                                     <div><canvas id="videoCanvas"></canvas></div>
+                                    <div id="vidMenuDesc"></div>
                                     <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fa fa-search fa-fw"></i><div id="componentLinks"></div><div id="vidMenuMatchNum"></div>
+                                        <div id="componentLinks"></div><div id="vidMenuMatchNum"></div>
                                     </button>
                                     <div id="vidMenuMatchOverlay" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="vidMenuMatch">
                                         <div class="col matchLinkCol">
