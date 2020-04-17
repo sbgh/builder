@@ -36,7 +36,7 @@ done
 mkdir builder;
 
 curl https://codeload.github.com/sbgh/builder/zip/master > builder.zip;
-unzip -q builder.zip;
+unzip -oq builder.zip;
 yes | cp -fr ./builder-master/* ./builder/;
 rm -fr ./builder-master/;
 chmod 700 ./builder/setup/setup.sh;

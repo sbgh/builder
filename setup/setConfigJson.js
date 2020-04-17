@@ -22,6 +22,7 @@ configJSON.session_name='connectec2.sid';
 configJSON.currentStyle="default";
 configJSON.timeout=30000;
 configJSON.noClientTimeout="10";
+configJSON.clientMode="";
 configJSON.username=username.trim();
 
 fs.writeFile('./config.json', JSON.stringify(configJSON), function (err) {

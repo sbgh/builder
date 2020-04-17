@@ -36,7 +36,7 @@ mkdir ./results;
 
 echo
 echo 'Creating upload folder'
-unzip -q ./uploads/uploads.zip -d ./uploads
+unzip -oq ./uploads/uploads.zip -d ./uploads
 
 echo
 echo 'Creating library folders and files'
@@ -53,7 +53,7 @@ echo "{}" > ./library/private/library/SystemsJSON.json
 echo "{}" > ./library/private/library/BuildCode.json
 
 echo
-echo 'Creating library folders and files'
+echo 'Creating backup folder'
 mkdir ./backup;
 
 echo

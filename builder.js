@@ -771,6 +771,12 @@ router.get("/VideoScroll",function(req,res){
 
 //Service Rt: /* [All], Method: get, Requires: none, Returns:  if auth then next() else redirect(rd)
 router.get("/*",function(req,res,next) {
+    if(config.hasOwnProperty('clientMode')){
+        if(config.clientMode === "demo"){
+            next();
+        }
+    }
+
     var sess = req.session; //Check if authenticated
     if (!sess.authenticated) {
         //console.log("/login?rd=" + encodeURIComponent(req.url));
@@ -2631,12 +2637,24 @@ router.post("/run",function(req,res){
             flushMessQueue();
             res.end("status:Scripts Aborted\n");
         }else{
-            conn.connect({
+            var conOptions = {
                 host: connectHost ,
                 port: getSystemVarVal(jobId, 'port'),
                 username: username,
                 privateKey: runKey
-            });
+            };
+
+            if(config.hasOwnProperty('clientMode')){
+                if(config.clientMode === "demo"){
+                    conOptions = {
+                        host: "localhost" ,
+                        port: '22',
+                        username: 'ec2-user',
+                        privateKey: fs.readFileSync('/home/ec2-user/.ssh/id_rsa')
+                    }
+                }
+            }
+            conn.connect(conOptions);
         }
     }
 
