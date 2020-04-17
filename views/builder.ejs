@@ -2013,9 +2013,9 @@
                                 if(row.substr(0,4) === 'key:' &&  $("#results_html").html().split("<br>").join("") === "") {
                                     localKey += row.substr(4) + '\n';
                                 }
-                                else if(row.substr(0,7) === 'access:' &&  $("#results_html").html().split("<br>").join("") === "") {
-                                    localAccess += row.substr(7) + '\n';
-                                }
+//                                else if(row.substr(0,7) === 'access:' &&  $("#results_html").html().split("<br>").join("") === "") {
+//                                    localAccess += row.substr(7) + '\n';
+//                                }
                                 else if(row.substr(0,12) === 'message:url:'){
                                     updateScreenShotLink(row.slice(12))
 
@@ -2083,14 +2083,14 @@
                             localStorage['key_' + sys] = localKey
                         }
                     }
-                    if(localAccess !== ''  && !localStorage['access'] ){
-                        if($('#localStoreAccessCb').is(':checked')) {
-                            localStorage['access'] = localAccess
-                        }
-                    }
+//                    if(localAccess !== ''  && !localStorage['access'] ){
+//                        if($('#localStoreAccessCb').is(':checked')) {
+//                            localStorage['access'] = localAccess
+//                        }
+//                    }
 
                     localKey = "";
-                    localAccess = "";
+//                    localAccess = "";
 
                     updateResultsList(selectedNode);
                     loadDashboard();
@@ -2112,13 +2112,13 @@
                             localStorage['key_' + sys] = localKey
                         }
                     }
-                    if(localAccess !== ''  && !localStorage['access'] ){
-                        if($('#localStoreAccessCb').is(':checked')) {
-                            localStorage['access'] = localAccess
-                        }
-                    }
+//                    if(localAccess !== ''  && !localStorage['access'] ){
+//                        if($('#localStoreAccessCb').is(':checked')) {
+//                            localStorage['access'] = localAccess
+//                        }
+//                    }
                     localKey = "";
-                    localAccess = "";
+//                    localAccess = "";
                 });
 
                 $('#runModal').modal('toggle');
