@@ -17,7 +17,7 @@ while (username.trim().length < 5){
 
 var configJSON = {};
 configJSON.session_secret=secret;
-configJSON.session_name='connectec2.sid'; 
+configJSON.session_name='connectec2.sid';
 
 configJSON.currentStyle="default";
 configJSON.timeout=30000;

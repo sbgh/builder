@@ -771,19 +771,24 @@ router.get("/VideoScroll",function(req,res){
 
 //Service Rt: /* [All], Method: get, Requires: none, Returns:  if auth then next() else redirect(rd)
 router.get("/*",function(req,res,next) {
+    var mode = "";
     if(config.hasOwnProperty('clientMode')){
         if(config.clientMode === "demo"){
+            mode = "demo";
             next();
         }
     }
 
-    var sess = req.session; //Check if authenticated
-    if (!sess.authenticated) {
-        //console.log("/login?rd=" + encodeURIComponent(req.url));
-        res.redirect("/login?rd=" + encodeURIComponent(req.url));
-    }else{
-        next();
+    if(mode !== "demo"){
+        var sess = req.session; //Check if authenticated
+        if (!sess.authenticated) {
+            //console.log("/login?rd=" + encodeURIComponent(req.url));
+            res.redirect("/login?rd=" + encodeURIComponent(req.url));
+        }else{
+            next();
+        }
     }
+
 });
 
 //Service Rt: /logout, Method: get, Requires: none, Returns: cleared session then redirect(/)
