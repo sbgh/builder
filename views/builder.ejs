@@ -1923,15 +1923,15 @@
 
                 }
 
-                if($('#localStoreAccessCb').is(':checked')){
-                    formData.append('storeLocalAccess', 'yes');
-                    formData.append('localStoredAccess',localStorage['access']);
-                    //console.log("key:"+localStorage['key_' + sys]);
-                }else{
-                    formData.append('storeLocalAccess', 'no');
-                    localStorage['access'] = '';
-                    localStorage['accessName' ]='';
-                }
+//                if($('#localStoreAccessCb').is(':checked')){
+//                    formData.append('storeLocalAccess', 'yes');
+//                    formData.append('localStoredAccess',localStorage['access']);
+//                    //console.log("key:"+localStorage['key_' + sys]);
+//                }else{
+//                    formData.append('storeLocalAccess', 'no');
+//                    localStorage['access'] = '';
+//                    localStorage['accessName' ]='';
+//                }
 
                 var files;
                 files = $('#upload-key').get(0).files
@@ -1945,19 +1945,19 @@
                     $('#upload-key').val("");
                 }
 
-                files = $('#upload-access').get(0).files
-                if( files.length === 1) {
-                    var file = files[0];
-                    // add the files to formData object for the data payload
-                    formData.append('access', file, file.name);
-                    if($('#localStoreAccessCb').is(':checked')) {
-                        localStorage['accessName'] = file.name;
-                    }
-                    $('#upload-access').val("");
-                }
+//                files = $('#upload-access').get(0).files
+//                if( files.length === 1) {
+//                    var file = files[0];
+//                    // add the files to formData object for the data payload
+//                    formData.append('access', file, file.name);
+//                    if($('#localStoreAccessCb').is(':checked')) {
+//                        localStorage['accessName'] = file.name;
+//                    }
+//                    $('#upload-access').val("");
+//                }
 
                 var localKey="";
-                var localAccess="";
+//                var localAccess="";
 
                 $('.runningJob').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
                 $('.runningJobCompleteSuccess').removeClass('runningJob').removeClass('runningJobCompleteFail').removeClass("runningJobCompleteSuccess");
@@ -3511,14 +3511,14 @@
             });
 
             //csv Key file management
-            $('#newAccessButton').on('click', function(){
-                $('#upload-access').click();
-            });
-            $('#upload-access').on('change', function() {
-                if($(this)[0].files[0].name !== ""){
-                    $('#accessList').html($(this)[0].files[0].name);
-                }
-            });
+//            $('#newAccessButton').on('click', function(){
+//                $('#upload-access').click();
+//            });
+//            $('#upload-access').on('change', function() {
+//                if($(this)[0].files[0].name !== ""){
+//                    $('#accessList').html($(this)[0].files[0].name);
+//                }
+//            });
 
             //settings Style Top Page Pick event
             $('.stylePickTop').on('click', function(evt){

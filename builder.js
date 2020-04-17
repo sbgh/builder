@@ -2369,14 +2369,14 @@ router.post("/run",function(req,res){
 
     var job;
     var jobIndex;
-    var ids; //list of component ids send from client separated by ; and children need to follow parernts
+    var ids; //list of component ids send from client separated by ; and children need to follow parents
     var storeLocal;
     var runRerunnableCh;
     var storeLocalAccess;
     var runKey="";
     var newKey=false;
-    var runAccess="";
-    var newAccess=false;
+    // var runAccess="";
+    // var newAccess=false;
 
     //users remote ip
     var remoteIP = req.connection.remoteAddress.toString();
@@ -2450,28 +2450,28 @@ router.post("/run",function(req,res){
             }
 
             //storeLocalAccess holds val of 'store access key in browser' checkbox
-            storeLocalAccess = fields.storeLocalAccess;
-            if(files.hasOwnProperty('access')   ){
-                var myFiles = files['access'];
-
-                //if runAccess file is attached
-                if (myFiles.hasOwnProperty('path')) {
-                    runAccess = fs.readFileSync(myFiles.path);
-                    runAccess = runAccess.toString().split('\n')[1];
-                    newAccess = true;
-                    fs.unlink(myFiles.path,function(err){
-                        if(err) console.log('Error: unable to delete uploaded access file')
-                    });
-                    //console.log('access file: ' + runAccess);
-                }
-            }else{
-                if(storeLocalAccess === 'yes'){
-                    if(fields.hasOwnProperty('localStoredAccess')){
-                        runAccess = fields.localStoredAccess;
-                        //console.log('access file: ' + runAccess);
-                    }
-                }
-            }
+            // storeLocalAccess = fields.storeLocalAccess;
+            // if(files.hasOwnProperty('access')   ){
+            //     var myFiles = files['access'];
+            //
+            //     //if runAccess file is attached
+            //     if (myFiles.hasOwnProperty('path')) {
+            //         runAccess = fs.readFileSync(myFiles.path);
+            //         runAccess = runAccess.toString().split('\n')[1];
+            //         newAccess = true;
+            //         fs.unlink(myFiles.path,function(err){
+            //             if(err) console.log('Error: unable to delete uploaded access file')
+            //         });
+            //         //console.log('access file: ' + runAccess);
+            //     }
+            // }else{
+            //     if(storeLocalAccess === 'yes'){
+            //         if(fields.hasOwnProperty('localStoredAccess')){
+            //             runAccess = fields.localStoredAccess;
+            //             //console.log('access file: ' + runAccess);
+            //         }
+            //     }
+            // }
         }
     });
 
@@ -2497,47 +2497,47 @@ router.post("/run",function(req,res){
             res.write("\n");
         }
 
-        if(runAccess.toString() !== '' ){
-
-            var trimmedAccess = runAccess.toString().split('\n');
-            var find = '\r';
-            var re = new RegExp(find, 'g');
-            trimmedAccess = trimmedAccess.toString().replace(re, '');
-            if( newAccess === true &&  storeLocalAccess === "yes"){
-                res.write("\n");
-                res.write("access:"+ trimmedAccess.toString());
-                res.write("\n");
-            };
-
-            //console.log("trimmedAccess: "+trimmedAccess);
-            const accessParaCount = trimmedAccess.toString().split(',').length;
-            var accessCode = {};
-            if(accessParaCount > 1){
-                if(accessParaCount === 2 || accessParaCount === 3){
-                    accessCode =  { "accessKeyId": trimmedAccess.toString().split(',')[0], "secretAccessKey": trimmedAccess.toString().split(',')[1] };
-                    saveAccessConfig()
-                }else if(accessParaCount === 5 || accessParaCount === 6){
-                    accessCode =  { "accessKeyId": trimmedAccess.toString().split(',')[2], "secretAccessKey": trimmedAccess.toString().split(',')[3] };
-                    saveAccessConfig()
-                }else{
-                    console.log('Error: Unable to parse provided access file, accessParaCount = ' + accessParaCount.toString());
-                    console.log(trimmedAccess.toString());
-                }
-                //console.log('accessCode: ' + accessCode);
-                function saveAccessConfig(){
-                    fs.writeFile( homedir + "/accessConfig.json", JSON.stringify(accessCode), function (err) {
-                        if (err) {
-                            console.log('There has been an error saving your access json: ./accessConfig.json');
-                            console.log(err.message);
-                            return;
-                        }
-                    })
-                }
-
-            }else{
-                console.log('Error: Unable to parse provided access file, accessParaCount = ' + accessParaCount.toString());
-            }
-        }
+        // if(runAccess.toString() !== '' ){
+        //
+        //     var trimmedAccess = runAccess.toString().split('\n');
+        //     var find = '\r';
+        //     var re = new RegExp(find, 'g');
+        //     trimmedAccess = trimmedAccess.toString().replace(re, '');
+        //     if( newAccess === true &&  storeLocalAccess === "yes"){
+        //         res.write("\n");
+        //         res.write("access:"+ trimmedAccess.toString());
+        //         res.write("\n");
+        //     };
+        //
+        //     //console.log("trimmedAccess: "+trimmedAccess);
+        //     const accessParaCount = trimmedAccess.toString().split(',').length;
+        //     var accessCode = {};
+        //     if(accessParaCount > 1){
+        //         if(accessParaCount === 2 || accessParaCount === 3){
+        //             accessCode =  { "accessKeyId": trimmedAccess.toString().split(',')[0], "secretAccessKey": trimmedAccess.toString().split(',')[1] };
+        //             saveAccessConfig()
+        //         }else if(accessParaCount === 5 || accessParaCount === 6){
+        //             accessCode =  { "accessKeyId": trimmedAccess.toString().split(',')[2], "secretAccessKey": trimmedAccess.toString().split(',')[3] };
+        //             saveAccessConfig()
+        //         }else{
+        //             console.log('Error: Unable to parse provided access file, accessParaCount = ' + accessParaCount.toString());
+        //             console.log(trimmedAccess.toString());
+        //         }
+        //         //console.log('accessCode: ' + accessCode);
+        //         function saveAccessConfig(){
+        //             fs.writeFile( homedir + "/accessConfig.json", JSON.stringify(accessCode), function (err) {
+        //                 if (err) {
+        //                     console.log('There has been an error saving your access json: ./accessConfig.json');
+        //                     console.log(err.message);
+        //                     return;
+        //                 }
+        //             })
+        //         }
+        //
+        //     }else{
+        //         console.log('Error: Unable to parse provided access file, accessParaCount = ' + accessParaCount.toString());
+        //     }
+        // }
 
         //loop through ids and build 'disabled ids' list
         var disabledIds = [];
