@@ -1637,6 +1637,11 @@ button#vidMenuMatch, #vidMenuDesc {
    width:30px;
    margin-right: 10px;
 }
+
+td.col-1.dashTableBuildItem {
+   text-align: center;
+}
+
 .dashTableBuildButton {
    width:30px;
 }

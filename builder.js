@@ -2380,8 +2380,7 @@ router.post("/run",function(req,res){
     var storeLocalAccess;
     var runKey="";
     var newKey=false;
-    // var runAccess="";
-    // var newAccess=false;
+
 
     //users remote ip
     var remoteIP = req.connection.remoteAddress.toString();
@@ -3313,9 +3312,24 @@ router.post("/run",function(req,res){
                                 var url = currentCommand.replace('snap:','').trim();
                                 //console.log('url: ' + url);
                                 aSyncInProgress++;
+
+                                //Send url to client
                                 message('url:' + url);
 
-                                SystemsJSON[ids[0]].lastBuild.url=url;
+                                //add url tag to current comp and to nearest promoted ancestor
+                                SystemsJSON[jobId].lastBuild.url=url;
+                                var anArr = job.ft.replace('#/', '').split('/');
+                                var nearestPromotedAn = "";
+                                anArr.forEach(function (an) {
+                                    if (SystemsJSON[an].hasOwnProperty("promoted")){
+                                        if (SystemsJSON[an].promoted === 1){
+                                            nearestPromotedAn = an;
+                                        }
+                                    }
+                                });
+                                if(nearestPromotedAn !== ""){
+                                    SystemsJSON[nearestPromotedAn].lastBuild.url=url;
+                                }
 
                                 (async function () {
 
@@ -3353,9 +3367,24 @@ router.post("/run",function(req,res){
                                 var url = currentCommand.replace('navigate:','').trim();
                                 //console.log('url: ' + url);
                                 aSyncInProgress++;
+
+                                //Send url to client
                                 message('url:' + url);
 
-                                SystemsJSON[ids[0]].lastBuild.url=url;
+                                //add url tag to current comp and to nearest promoted ancestor
+                                SystemsJSON[jobId].lastBuild.url=url;
+                                var anArr = job.ft.replace('#/', '').split('/');
+                                var nearestPromotedAn = "";
+                                anArr.forEach(function (an) {
+                                    if (SystemsJSON[an].hasOwnProperty("promoted")){
+                                        if (SystemsJSON[an].promoted === 1){
+                                            nearestPromotedAn = an;
+                                        }
+                                    }
+                                });
+                                if(nearestPromotedAn !== ""){
+                                    SystemsJSON[nearestPromotedAn].lastBuild.url=url;
+                                }
 
                                 (async function () {
 
