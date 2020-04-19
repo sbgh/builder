@@ -4623,7 +4623,7 @@
             var currentSettings = {};
             $.ajax({
                 type: 'get',
-                data: mydata,
+                data: {},
                 dataType : "text",
                 headers: {
                     "content-type": "application/json"
@@ -4638,7 +4638,7 @@
             });
             //redirect user to ezstack when demo finishes
             $('#serverUnavailableModal').on('hidden.bs.modal', function() {
-                if (currentSettings.hasOwnProperty("clientMode")){ 
+                if (currentSettings.hasOwnProperty("clientMode")){
                     if (currentSettings.clientMode === "demo"){
                         window.location.replace("https://ezstack.systems?demo=done");
                     }
