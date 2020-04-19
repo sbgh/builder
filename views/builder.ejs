@@ -4620,31 +4620,29 @@
             $("#Component_Details").mouseenter( function(e){componentDetailsHoverFlag=true});
             $("#Component_Details").mouseleave( function(e){componentDetailsHoverFlag=false});
 
+            var currentSettings = {};
+            $.ajax({
+                type: 'get',
+                data: mydata,
+                dataType : "text",
+                headers: {
+                    "content-type": "application/json"
+                },
+                url: '/settings',
+                success : function(data) {
+                    currentSettings = JSON.parse(data);
+                },
+                error : function(error) {
+                    console.log(error)
+                }
+            });
             //redirect user to ezstack when demo finishes
             $('#serverUnavailableModal').on('hidden.bs.modal', function() {
-
-                $.ajax({
-                    type: 'get',
-                    data: mydata,
-                    dataType : "text",
-                    headers: {
-                        "content-type": "application/json"
-                    },
-                    url: '/settings',
-                    success : function(data) {
-
-                        const respJson = JSON.parse(data);
-
-                        if (respJson.clientMode === "demo"){
-
-                            window.location.replace("https://ezstack.systems?demo=done");
-                        }
-                    },
-                    error : function(error) {
-                        console.log(error)
+                if (currentSettings.hasOwnProperty("clientMode")){ 
+                    if (currentSettings.clientMode === "demo"){
+                        window.location.replace("https://ezstack.systems?demo=done");
                     }
-                });
-
+                }
             });
 
 
