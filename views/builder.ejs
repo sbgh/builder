@@ -489,6 +489,9 @@
                     selectedNode = data.selected[0];
                     selectedTree = 'working'
 
+                    //hide all popovers
+                    $('.popover').popover('hide');
+
                     //deselect Lib tree
                     $('#jslibtree_div').jstree("deselect_all");
 
@@ -1838,7 +1841,7 @@
 
                     //add value col
                     pCompHtml += "<td class='col-6 varValTd'>" +
-                        "<span id = 'varValTd" + idn + "'></span>" +
+                        "<span tabindex='0' id = 'varValTd" + idn + "'></span>" +
                         "</td>";
 
                     pCompHtml += "</tr>";
@@ -1850,7 +1853,15 @@
                         valText = variables[varName].value === "" ? "" : "************"
                     }
                     if(valText.length >40){
-                        valText = valText.substring(0, 37)+"..."
+                        valText = valText.substring(0, 37)+"...";
+                        var valTextPop = variables[varName].value;
+                        const options = {
+                            animation: true,
+                            content: valTextPop,
+                            delay: { "show": 500, "hide": 50 },
+                            trigger: 'click'
+                        }
+                        $("#varValTd" + idn).popover(options);
                     }
                     $("#varValTd" + idn).text(valText);
                 }
@@ -3056,6 +3067,12 @@
                 mydata.comType = "system";
                 createNode(mydata);
             });
+            $(".newSys").popover({
+                animation: true,
+                content: "Click to create a new system",
+                delay: { "show": 500, "hide": 100 },
+                trigger: 'hover'
+            });
 
             //new custom template
             $('.newCust').on('click', function(){
@@ -4152,24 +4169,43 @@
             $("#inspectLink").on('click', function(e){
                 $("#inspectLink").addClass('active');
                 $.get("/inspect")
-            })
+            });
+            $("#inspectLink").popover({
+                animation: true,
+                content: "Click to enable inspect mode then click element to inspect",
+                delay: { "show": 500, "hide": 100 },
+                trigger: 'hover'
+            });
+
+
             $("#videoRefreshLink").on('click', function(e){
                 $.get("/endChrome");
                 $("#videoRefreshLink").addClass('active');
                 setTimeout(function(){ $.get("/startChrome");$("#videoRefreshLink").removeClass('active'); }, 3000)
-            })
+            });
+            $("#videoRefreshLink").popover({
+                animation: true,
+                content: "Click to kill and restart Chrome",
+                delay: { "show": 500, "hide": 100 },
+                trigger: 'hover'
+            });
+
             $("#inspectMaximizeLink").on('click', function(e){
                 $('#videoModal').modal('show');
                 $("#videoScreen").detach().appendTo('#videoBody');
                 $("#inspectMaximizeLink").hide()
             });
+            $("#inspectMaximizeLink").popover({
+                animation: true,
+                content: "Click to expand Chrome window",
+                delay: { "show": 500, "hide": 100 },
+                trigger: 'hover'
+            });
+
             function updateScreenShotLink(url){
-//                var inspectLink = "<a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw inspectLink'></i></a>"
                 var urlText = url.length > 50 ? url.subString(0, 47)+'...' : url
                 var appLink = "<a href='" + url +"' target='_new'><i class='fa  fa-external-link fa-fw '></i>" + urlText + "</a>"
-              //  var maxLink = "<a id='inspectMaximizeLink' href='#'><i class='fa fa-expand fa-fw inspectMaximize'></i></a>"
                 $("#screenShotLink").html( appLink);
-
             }
 
             if(localStorage['appLink']){

@@ -1597,7 +1597,8 @@ button#vidMenuMatch, #vidMenuDesc {
 }
 .videoMenuItemRight{
    text-align: right;
-   padding-left: 15px;
+   padding-left: 10px; 
+   width: 25px;
    display: inline-block;
 }
 
@@ -1648,5 +1649,10 @@ td.col-1.dashTableBuildItem {
 
 .compVarEditValButton, .compVarEditButton, .compVarDelButton , .buildCodePickButton, .compFocusButton{
    cursor: pointer;
+}
+
+.popover-body{
+   max-height: 70vh;
+   overflow: auto;
 }
 

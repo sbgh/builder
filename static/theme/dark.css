@@ -38,11 +38,44 @@ body {
     border-color: #313335;
 }
 
-.panel-default>.panel-heading {
+.panel-default>.panel-heading , .popover-body{
     color: #adadad;
     transition: background-color 0.5s;
     background-color: #3c3f41;;
     border-color: #555555;
+}
+
+/*.popover.right> .arrow::after {*/
+    /*border-right-color: #555555;*/
+    /*!*border-left-color: #555555;*!*/
+    /*!*border-top-color: #555555;*!*/
+    /*!*border-bottom-color: #555555;*!*/
+/*}*/
+/*.popover.left> .arrow::after {*/
+    /*!*border-right-color: #555555;*!*/
+    /*border-left-color: #555555;*/
+    /*!*border-top-color: #555555;*!*/
+    /*!*border-bottom-color: #555555;*!*/
+/*}*/
+
+.bs-popover-top .arrow::after,
+.bs-popover-auto[x-placement^="top"] .arrow::after {
+    border-top-color: #555555;
+}
+
+.bs-popover-left .arrow::after,
+.bs-popover-auto[x-placement^="left"] .arrow::after {
+    border-left-color: #555555;
+}
+
+.bs-popover-right .arrow::after,
+.bs-popover-auto[x-placement^="right"] .arrow::after {
+    border-right-color: #555555;
+}
+
+.bs-popover-bottom .arrow::after,
+.bs-popover-auto[x-placement^="bottom"] .arrow::after {
+    border-bottom-color: #555555;
 }
 
 .var_Table {
