@@ -888,7 +888,7 @@
             }
 
             serverStats();
-            var serverStatsInterval = setInterval(serverStats, 5000);
+            //var serverStatsInterval = setInterval(serverStats, 5000);
             function serverStats(){
                 var mydata = {};
                 $.ajax({
@@ -899,6 +899,7 @@
                         "content-type": "application/json"
                     },
                     url: '/getCPUStats',
+                    timeout: 5000,
                     success : function(data) {
                         const statsJson = JSON.parse(data);
                         if(statsJson.hasOwnProperty("last10")){
@@ -907,11 +908,14 @@
                                 $("#osFMValue")[0].innerHTML = (statsJson.freeMem/1024/1024/1024).toFixed(2).toString()+" GB"
                             }
                         }
+                        setTimeout(serverStats, 5000)
                     },
                     error : function(error) {
-                        console.log(error);
-                        clearInterval(serverStatsInterval);
-                        $('#serverUnavailableModal').modal('show');
+                        // clearInterval(serverStatsInterval);
+                        if(currentSettings.clientMode == "demo"){
+                            $('#serverUnavailableDemoModal').modal('show');
+                        }
+                        setTimeout(serverStats, 5000);
                     }
                 })
             }
@@ -1585,9 +1589,6 @@
                         );
                     };
 
-                    //scriptEditor.session.setValue(data[0].script);
-                    //setAceBuildCodeHeight();
-
                     //load var table
                     var pCompHtml = "";
                     var x = 0;
@@ -1602,7 +1603,7 @@
                     loadVarTable(data[0].variables, false);
 
                     $("#compVariables").val(data[0].variables);
-//                    $("#templateType").val(data[0].templateType);
+
                     $("#text").val(data[0].text);
                     //$('#resourceFiles').val(data[0].resourceFiles);
                     $("#ft").val(data[0].ft);
@@ -3728,7 +3729,31 @@
                 });
 
                 function firstRunTasks(result){
-                    $("#welcomeModal").modal();
+
+                    //open either welcome modal or demo welcome modal
+                    var mydata = {};
+                    $.ajax({
+                        type: 'get',
+                        data: mydata,
+                        dataType : "text",
+                        headers: {
+                            "content-type": "application/json"
+                        },
+                        url: '/settings',
+                        success : function(data) {
+                            const respJson = JSON.parse(data);
+                            if(respJson.hasOwnProperty("clientMode")){
+                                if (respJson.clientMode === "demo"){
+                                    $("#demoWelcomeModal").modal();
+                                }else{
+                                    $("#welcomeModal").modal();
+                                }
+                            }
+                        },
+                        error : function(error) {
+                            console.log(error)
+                        }
+                    })
 
                     $("#sysScreen").hide(200);
                     $("#jobScreen").hide(200);
@@ -3757,7 +3782,7 @@
 
                 }
 
-                //Things to do after welcome modal
+                //Things to do after welcome modal... currently nothing
                 function afterWelcomeModal(){
 
                 }
@@ -4383,17 +4408,6 @@
                     $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
                 });
 
-//            const fakeInput = document.createElement('input');
-//            fakeInput.setAttribute('type', 'text');
-//            fakeInput.setAttribute('id', 'fakeInput');
-//            fakeInput.style.position = 'absolute';
-//            fakeInput.style.opacity = 0;
-//            fakeInput.style.height = 0;
-//            fakeInput.style.fontSize = '16px'; // disable auto zoom
-//
-//            $("#screenShotLink").append(fakeInput);
-////            document.body.prepend(fakeInput);
-
             function sendVideoMouseClick(x ,y, ctrlKey){
                 $.get("/VideoClick",{x:x, y:y, ctrlKey:ctrlKey},function(resp){
 
@@ -4422,7 +4436,6 @@
                         $('#matchLink_jstree_div').jstree(true).refresh();
 
                         if(currectMatchTreeObjArr.length < 1){
-//                            $("#vidMenuMatchNum").html(" (0)");
                             $('#vidMenuMatch').hide();
                             $("#vidMenuDesc").html(inspectDomObjDesc);
                         }else{
@@ -4436,7 +4449,6 @@
             $("#HtmlLabel").hide();
             $("#AttributesLabel").hide();
             $('#vidMenuMatch').hide();
-//            $("#vidMenuMatchNum").html(" (0)");
 
             //user picks build code. Show modal. Load build code table
             $("#buildCodePickButton").click(function(evt){
@@ -4673,7 +4685,7 @@
                 }
             });
             //redirect user to ezstack when demo finishes
-            $('#serverUnavailableModal').on('hidden.bs.modal', function() {
+            $('#serverUnavailableDemoModal').on('hidden.bs.modal', function() {
                 if (currentSettings.hasOwnProperty("clientMode")){
                     if (currentSettings.clientMode === "demo"){
                         window.location.replace("https://ezstack.systems?demo=done");
@@ -5416,15 +5428,15 @@
         </div>
     </div>
 </body>
-<div id="serverUnavailableModal" class="modal fade" role="dialog">
+<div id="serverUnavailableDemoModal" class="modal fade" role="dialog">
     <div class="modal-dialog serverUnavailable-dialog">
         <nav class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title"><i class="fa fa-server fa-fw"></i><i class="fa fa-exclamation fa-fw"></i>Server Unavailable</h4>
+                <h4 class="modal-title"><i class="fa fa-server fa-fw"></i>ezStack Builder Demo Server</h4>
             </div>
             <div class="modal-body">
 
-                <p>The ezStack builder server is not available.</p>
+                <p>The ezStack builder server has stopped. Thank you for trying the demo. Please let me know what you think.</p>
 
 
             </div>
@@ -5930,6 +5942,28 @@
                     <li>Once primed you can start building. Any change made to a component record or build code record will not be reflected on a web server until the next build.</li>
                 </ol>
 
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Close</button>
+            </div>
+        </nav>
+    </div>
+
+</div>
+<div id="demoWelcomeModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-welcome">
+
+        <nav class="modal-content welcome-modal-content">
+            <div id='demoWelcomeBody' class="modal-body welcome-modal-body">
+                <br/>
+                <h2>Welcome to ezStack Builder Demo</h2>
+                <hr class="welcome-hr">
+                <p>ezStack Builder can connect to any linux server to build and configure it for you. For demonstration purposes authentication is not requited and the target server (host variable) is the same as this ezStack Builder demo server (localhost).
+                </p>
+                <p>
+                    In this demo you will build a web software stack and deploy some applications. This ezStack Builder server will end in 15 minutes.
+                </p>
 
             </div>
             <div class="modal-footer">

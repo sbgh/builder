@@ -352,11 +352,18 @@ router.get('/video', function(req, res) {
         'Content-Type': 'image/png;base64',
         'Content-Transfer-Encoding': 'BASE64'
     });
-    Page.startScreencast({
-        format: 'jpeg',
-        quality: 50,
-        everyNthFrame: 5
-    });
+    try{
+        Page.startScreencast({
+            format: 'jpeg',
+            quality: 50,
+            everyNthFrame: 5
+        });
+    }catch(err){
+        endChrome();
+        console.log("Restarting Chrome");
+        setTimeout(startChrome,5000)
+    }
+
 
     var frameRate = 8;
     const myInt = setInterval(sendBlock, 1000 / frameRate);
