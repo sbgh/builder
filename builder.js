@@ -51,7 +51,7 @@ app.use(express.static('static'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
-//Captur location of the current uses home folder
+//Capture location of the current uses home folder
 const homedir = require('os').homedir();
 
 //Define required globals
@@ -62,88 +62,15 @@ const BuildCodeContents = fs.readFileSync('BuildCode.json');
 global.BuildCode = JSON.parse(BuildCodeContents);
 
 //-----------headless chrome-------------
-global.chrome='';
-global.Page = '';
-global.Runtime = '';
-global.pageInput = '';
-global.protocol='';
-global.chrome='';
-global.Overlay='';
-global.DOM='';
+var chrome='';
+var Page = '';
+var Runtime = '';
+var PageInput = '';
+// var protocol='';
+var chrome='';
+var Overlay='';
+var DOM='';
 const viewport = [1280,720];
-
-//Launch headless Chrome
-// (async function () {
-//     async function launchChrome() {
-//         return await chromeLauncher.launch({
-//             chromeFlags: ["--disable-gpu", "--headless",  "--no-sandbox", "--allow-insecure-localhost"] //"--enable-logging",, "--enable-low-end-device-mode" , '--window-size=800,600', --force-device-scale-factor=1.5
-//         });
-//     }
-//     chrome = await launchChrome();
-//     console.log('Chrome debugging port running on ' + chrome.port);
-//
-//     const viewport = [1280,720];
-//
-//     protocol = await CDP({
-//         port: chrome.port
-//     });
-//
-//     Page = protocol.Page;
-//     PageInput = protocol.Input;
-//     Overlay = protocol.Overlay;
-//     DOM = protocol.DOM;
-//     Runtime = protocol.Runtime
-//     const {Emulation} = protocol;
-//     await Promise.all([Page.enable(), Runtime.enable(), DOM.enable(), Overlay.enable()]);
-//
-//     //Event when inspected element is clicked after Overlay.setInspectMode is turned on.
-//     Overlay.inspectNodeRequested(backendNodeId => {
-//         (async function (backendNodeId) {
-//             //A backend ID is returned but we are not using it currently.
-//             //const id = backendNodeId.backendNodeId;
-//
-//             await Overlay.setInspectMode({"mode":"none", "highlightConfig":HighlightConfig});
-//         })(backendNodeId)
-//     })
-//
-//     // set viewport and visible size
-//     var device = {
-//         width: viewport[0],
-//         height: viewport[1],
-//         deviceScaleFactor: 1.0,
-//         mobile: false,
-//         fitWindow: true
-//     };
-//     await Emulation.setDeviceMetricsOverride(device);
-//     await Emulation.setVisibleSize({width: viewport[0], height:viewport[1]});
-//
-//     // default url to cast
-//     if(Page.hasOwnProperty("startScreencast")){
-//         Page.navigate({url: "https://ezStack.systems"});
-//
-//         //start screen cast
-//         // Page.startScreencast({
-//         //     format: 'jpeg',
-//         //     quality: 50,
-//         //     everyNthFrame: 5
-//         // });
-//
-//         Page.screencastFrame(image => {
-//
-//             frameCount++;
-//             const {data, metadata, sessionId} = image;
-//             image.frameCount = frameCount;
-//             currentFrame = image;
-//
-//             //console.log('saved frame ' + frameCount.toString());
-//             Page.screencastFrameAck({sessionId: sessionId});
-//         });
-//     }else{
-//         res.end("");
-//         console.log("Page not ready @ startup")
-//     }
-//
-// })();
 
 //Launch headless Chrome and enable stream
 async function startChrome() {
@@ -157,7 +84,7 @@ async function startChrome() {
 
     const viewport = [1280,720];
 
-    protocol = await CDP({
+    var protocol = await CDP({
         port: chrome.port
     });
 
@@ -165,7 +92,7 @@ async function startChrome() {
     PageInput = protocol.Input;
     Overlay = protocol.Overlay;
     DOM = protocol.DOM;
-    Runtime = protocol.Runtime
+    Runtime = protocol.Runtime;
     const {Emulation} = protocol;
     await Promise.all([Page.enable(), Runtime.enable(), DOM.enable(), Overlay.enable()]);
 
@@ -265,7 +192,7 @@ resetlastnoClientTimeout();
 function noClientTimeoutProcess(){
     console.log("No client request within timeout: " + noClientTimeout + " minutes. Shutting server down..." );
     execSync('sudo shutdown now');
-};
+}
 
 //Requests to / endpoint are ignored for now
 router.get("/",function(req,res){
@@ -364,7 +291,6 @@ router.get('/video', function(req, res) {
         setTimeout(startChrome,5000)
     }
 
-
     var frameRate = 8;
     const myInt = setInterval(sendBlock, 1000 / frameRate);
     var sendCount = 0;
@@ -394,7 +320,6 @@ router.get('/video', function(req, res) {
             }
         }
     }
-
 });
 
 var HighlightConfig = {
@@ -478,7 +403,7 @@ router.get("/VideoClick",function(req,res){
     var xClick = req.query.x;
     var yClick = req.query.y;
 
-    var ctrlKey = req.query.ctrlKey; //not used
+    // var ctrlKey = req.query.ctrlKey; //not used
 
     if(xClick && yClick){
         (async function (res) {
@@ -647,8 +572,7 @@ function searchComponentProperties(AttributesArray){
     }
     var returnObj = {count:x, foundObjArr:foundObjArr};
     return(returnObj)
-};
-
+}
 function setRowDataClasses(rowdata, searchResultsClassToAdd){
     //Set searchModClass to a class name to set color of jstree row
     var searchModClass = searchResultsClassToAdd;
@@ -716,8 +640,8 @@ router.get("/mouseMove",function(req,res){
             var x = parseInt(parseFloat(xHover) * viewport[0]);
             var y = parseInt(parseFloat(yHover) * viewport[1]);
 
-            lastHoverX = x;
-            lastHoverY = y;
+            // lastHoverX = x;
+            // lastHoverY = y;
 
             await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount });
 
@@ -750,7 +674,7 @@ router.get("/keySend",function(req,res){
 });
 
 router.get("/VideoScroll",function(req,res){
-    delta = req.query.delta;
+    const delta = req.query.delta;
 
     if(delta){
         (async function () {
@@ -765,8 +689,6 @@ router.get("/VideoScroll",function(req,res){
             var deltaY = parseInt(delta);
 
             //mouse wheel moved!
-            //await PageInput.dispatchMouseEvent({ type,,, button, modifiers, , delta });
-            //console.log("scrolled: " + deltaY.toString())
             await PageInput.dispatchMouseEvent({ type, x, y, button, modifiers, clickCount, deltaX, deltaY });
 
         })();
@@ -863,8 +785,7 @@ router.get("/JobsTree",function(req,res){
                         });
                         if (!found) { //Add to return array
                             resJSON.push(getTreeFormattedRowData(key, "foundInSearch"));
-                        };
-
+                        }
                         //Add all parents as well if they ane not present or change search classes if they are
                         var parents = SystemsJSON[key].ft.split("/");
 
@@ -872,9 +793,9 @@ router.get("/JobsTree",function(req,res){
                             if (parent !== "#") {
                                 if (SystemsJSON.hasOwnProperty(parent)) {
 
-                                    var foundIndex = resJSON.findIndex(x => x.id == parent);
+                                    var foundIndex = resJSON.findIndex(x => x.id === parent);
 
-                                    if (foundIndex == -1) {
+                                    if (foundIndex === -1) {
                                         resJSON.push(getTreeFormattedRowData(parent,""));
                                     }else{
                                         resJSON[foundIndex] = setRowDataClasses(resJSON[foundIndex], "foundInSearchParent");
@@ -884,8 +805,8 @@ router.get("/JobsTree",function(req,res){
                         })
                     }else{
 
-                        var foundIndex = resJSON.findIndex(x => x.id == key);
-                        if (foundIndex == -1) {
+                        var foundIndex = resJSON.findIndex(x => x.id === key);
+                        if (foundIndex === -1) {
                             resJSON.push(getTreeFormattedRowData(key, "foundNotInSearch"));
                         }
                     }
@@ -1332,7 +1253,7 @@ router.post("/remove",function(req,res){
     res.end('');
 });
 
-//Service Rt: /clear all build history for a system(results files & job.lastBuild), Method: post, Requires: id = the id of syem to be cleared , Returns:  "Completed" or "Error"
+//Service Rt: /clear all build history for a system(results files & job.lastBuild), Method: post, Requires: id = the id of system to be cleared , Returns:  "Completed" or "Error"
 router.post("/clear",function(req,res){
     var reqJSON= req.body;
     var id =reqJSON.ids.split(';')[0];
@@ -1342,7 +1263,7 @@ router.post("/clear",function(req,res){
         // delete results files
         fs.readdir(resultsPath, function(err, files){
             if (err){
-                console.log("clear results files failed: " + resultsFilesPath + mFile);
+                console.log("clear results files failed (readdir): " + resultsFilesPath );
                 console.log(err);
             }else{
                 files.forEach(function(mFile){
@@ -1376,7 +1297,7 @@ router.post("/clear",function(req,res){
                             }
                         }
                     }
-                };
+                }
                 saveAllJSON(true);
             }
         }
@@ -1398,8 +1319,7 @@ function rmDir(dirPath) { //sync remove dir
                 rmDir(filePath);//recursive
         }
     fs.rmdirSync(dirPath);
-};
-
+}
 //Service Rt: /move up or down the current selected component in sort order, Method: get, Requires: id = the id of component to be moved | direction = 'u' or 'd' , Returns: resorted SystemJSON | json string {newPos:[new sort index]}
 router.get("/move",function(req,res){
     //console.log("move...");
@@ -1510,7 +1430,7 @@ router.get("/resultsList",function(req,res){
             //Filter by id part of file name
             var resultsFileArray = [];
             files = files.filter(function (file) {
-                return (file.substr(0, id.length) == id);
+                return (file.substr(0, id.length) === id);
             });
 
             //Sort by the datetime part of each file (DEC)
@@ -1518,7 +1438,7 @@ router.get("/resultsList",function(req,res){
             {
                 var ap = b.split('_')[1];
                 var bp = a.split('_')[1];
-                return ap == bp ? 0 : ap < bp ? -1 : 1;
+                return ap === bp ? 0 : ap < bp ? -1 : 1;
             });//sort dec
             files.forEach(function (file) {
                 //console.log(file);
@@ -1555,7 +1475,7 @@ router.post("/saveId",function(req,res){
                 break;
             }
         }
-    };
+    }
 });
 
 //Service Rt: /save to save the current working or new component to SystemJSON & file save after save button click, Method: post, Requires: id = component ID , Returns: "Password saved" mess or error mess | updated user table (saved)
@@ -1611,7 +1531,7 @@ router.post("/save",function(req,res){
             var newData = {};
             var newBuildCode = {};
 
-            newData.parent = SystemsJSON[id].parent;;
+            newData.parent = SystemsJSON[id].parent;
             newData.ft = SystemsJSON[id].ft;
 
             newData.name = req.body.name;
@@ -1889,11 +1809,13 @@ router.post("/copy",function(req,res){
                     NewRow.variables = {};
                     //copy vars that are not private
                     for(var ind in SystemsJSON[fromId].variables){
-                        if (!fromNode.variables[ind].private) {
-                            NewRow.variables[ind] = fromNode.variables[ind]
-                        }else{
-                            NewRow.variables[ind] = JSON.parse(JSON.stringify(fromNode.variables[ind]))
-                            NewRow.variables[ind].value = "";
+                        if(SystemsJSON[fromId].variables.hasOwnProperty(ind)){
+                            if (!fromNode.variables[ind].private) {
+                                NewRow.variables[ind] = fromNode.variables[ind]
+                            }else{
+                                NewRow.variables[ind] = JSON.parse(JSON.stringify(fromNode.variables[ind]));
+                                NewRow.variables[ind].value = "";
+                            }
                         }
                     }
 
@@ -1935,7 +1857,6 @@ router.post("/copy",function(req,res){
         }
     }else{
         //The source library is not the working (local) lib
-
         //Create error flag
         var error = false;
         var errorID = '';
@@ -1947,8 +1868,8 @@ router.post("/copy",function(req,res){
             console.log("Target ID not found in SystemsJSON: " + errorID);
         }
 
-        //Open and parce the source lib from the file system
-        libJSON = JSON.parse(fs.readFileSync("library/" + lib + "/SystemsJSON.json"));
+        //Open and parse the source lib from the file system
+        const libJSON = JSON.parse(fs.readFileSync("library/" + lib + "/SystemsJSON.json"));
         fromIds.forEach(function(id){
             if (!libJSON.hasOwnProperty(id) && error === false ){
                 error = true;
@@ -2106,8 +2027,8 @@ router.post("/copyToLib",function(req,res){
     }
 
     //Open specified lib from file system
-    libJSON = JSON.parse(fs.readFileSync("library/" + lib + "/SystemsJSON.json"));
-    libBuildCode = JSON.parse(fs.readFileSync("library/" + lib + "/BuildCode.json"));
+    const libJSON = JSON.parse(fs.readFileSync("library/" + lib + "/SystemsJSON.json"));
+    const libBuildCode = JSON.parse(fs.readFileSync("library/" + lib + "/BuildCode.json"));
 
     //create error flag
     var error = false;
@@ -2207,7 +2128,7 @@ router.post("/copyToLib",function(req,res){
             //remove values from private variables
             var varListAr = libJSON[id].variables;
             for(var thisVar in varListAr){
-                if(varListAr[thisVar].private == true){
+                if(varListAr[thisVar].private === true){
                     libJSON[id].variables[thisVar].value = "";
                 }
             }
@@ -2708,7 +2629,7 @@ router.post("/run",function(req,res){
         {
             var ap = b;
             var bp = a;
-            return ap == bp ? 0 : ap < bp ? -1 : 1;
+            return ap === bp ? 0 : ap < bp ? -1 : 1;
         });//sort dec
 
         var lastID = '';
@@ -2915,7 +2836,7 @@ router.post("/run",function(req,res){
                                 if(latestVarCache[id]){
                                     //loop through each var in this job
                                     //if one is systemVar get the value and add/update in in system
-                                    for(varName in latestVarCache[id]){
+                                    for(var varName in latestVarCache[id]){
                                         if(varName === "systemVar"){
                                             var newVar = latestVarCache[id][varName];
                                             SystemsJSON[resultsSystem].variables[newVar.split("=")[0]] = {value:newVar.split("=")[1], private: false, type: "Text"}
@@ -2975,8 +2896,7 @@ router.post("/run",function(req,res){
                                 }
                                 flushMessQueue();
                             }
-                    };
-
+                    }
                     //Function to create response obj to add to results file
                     function writeResponse(newData) {
 
@@ -3001,7 +2921,7 @@ router.post("/run",function(req,res){
                             if (row === prompt) {
                                 atPrompt = true;
                             } else {
-                                if (atPrompt == true) {
+                                if (atPrompt === true) {
                                     resultsArray.push({
                                         t: ds,
                                         x: atPrompt === true ? '' : exportVar,
@@ -3066,7 +2986,7 @@ router.post("/run",function(req,res){
                                 isDirective = true;
                             } else if
                             (currentCommand.substr(0, 15) === "setPromptCodes:") {
-                                promptCodes = currentCommand.substr(currentCommand.indexOf(":") + 1);
+                                var promptCodes = currentCommand.substr(currentCommand.indexOf(":") + 1);
                                 var codesAr = promptCodes.split(" ");
                                 var codePrompt = "";
                                 codesAr.forEach(function (code) {
@@ -3145,7 +3065,7 @@ router.post("/run",function(req,res){
                                                             });
                                                             message('saveTemplate:send complete - ' + aPathFileName);
                                                             var rmResp = execSync("sudo rm -f /tmp/" + aFileName);
-                                                            if(deferredExit == true && aSyncInProgress == 0){
+                                                            if(deferredExit === true && aSyncInProgress === 0){
                                                                 stream.write("exit" + '\n');
                                                                 sshSuccess = true
                                                             }
@@ -3236,7 +3156,7 @@ router.post("/run",function(req,res){
                                                             });
                                                             message('saveVar:send complete - ' + aPathFileName);
                                                             var rmResp = execSync("sudo rm -f /tmp/" + aFileName);
-                                                            if(deferredExit == true && aSyncInProgress == 0){
+                                                            if(deferredExit === true && aSyncInProgress === 0){
                                                                 stream.write("exit" + '\n');
                                                                 sshSuccess = true
                                                             }
@@ -3299,7 +3219,7 @@ router.post("/run",function(req,res){
                                                         sftp.end();
                                                         message('saveFile:send complete - ' + aRemotePath + '/' + aFileName);
                                                         aSyncInProgress--;
-                                                        if(deferredExit == true && aSyncInProgress == 0){
+                                                        if(deferredExit === true && aSyncInProgress === 0){
                                                             stream.write("exit" + '\n');
                                                             sshSuccess = true
                                                         }
@@ -3360,7 +3280,7 @@ router.post("/run",function(req,res){
 
                                     aSyncInProgress--;
                                     //console.log(aSyncInProgress.toString())
-                                    if(deferredExit == true && aSyncInProgress == 0){
+                                    if(deferredExit === true && aSyncInProgress === 0){
                                         stream.write("exit" + '\n');
                                         sshSuccess = true
                                     }
@@ -3403,7 +3323,7 @@ router.post("/run",function(req,res){
                                     //console.log("Page.loadEventFired: " + url)
 
                                     aSyncInProgress--;
-                                    if(deferredExit == true && aSyncInProgress == 0){
+                                    if(deferredExit === true && aSyncInProgress === 0){
                                         stream.write("exit" + '\n');
                                         sshSuccess = true
                                     }
@@ -3422,7 +3342,7 @@ router.post("/run",function(req,res){
 
                                     await Page.reload();
                                     aSyncInProgress--;
-                                    if(deferredExit == true && aSyncInProgress == 0){
+                                    if(deferredExit === true && aSyncInProgress === 0){
                                         stream.write("exit" + '\n');
                                         sshSuccess = true
                                     }
@@ -3465,7 +3385,7 @@ router.post("/run",function(req,res){
                         items.forEach(function (item) {
                             item = item.substr(0, item.indexOf('%>'));
 
-                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 'c.') {
+                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 'c.') {
                                 var targetVarName = item.substr(2);
                                 var pid = job.parent;
                                 var repStr = "<%c." + targetVarName + "%>";
@@ -3473,9 +3393,8 @@ router.post("/run",function(req,res){
                                     var val = job.variables[targetVarName].value;
                                     commandStr = commandStr.replace(repStr, val)
                                 }
-                            }; //look in job for vars
-
-                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 'p.') {
+                            } //look in job for vars
+                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 'p.') {
                                 var targetVarName = item.substr(2);
                                 var pid = job.parent;
                                 var repStr = "<%p." + targetVarName + "%>";
@@ -3485,9 +3404,9 @@ router.post("/run",function(req,res){
                                         commandStr = commandStr.replace(repStr, val)
                                     }
                                 }
-                            }; //look in parent for vars
+                            } //look in parent for vars
 
-                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 'a.') {
+                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 'a.') {
                                 var targetVarName = item.substr(2);
                                 var repStr = "<%a." + targetVarName + "%>";
                                 var anArr = job.ft.replace('#/', '').split('/');
@@ -3499,9 +3418,9 @@ router.post("/run",function(req,res){
                                         }
                                     }
                                 })//reverse the ancestor list so that closer ancestor values are used first.
-                            }; //look in ancestors for vars
+                            } //look in ancestors for vars
 
-                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) == 's.') {
+                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 's.') {
                                 var targetVarName = item.substr(2);
                                 var ft = job.ft;
                                 var repStr = "<%s." + targetVarName + "%>";
@@ -3535,16 +3454,11 @@ router.post("/run",function(req,res){
                                             bestVal = val;
                                         }
                                     }
-                                };
+                                }
                                 if (typeof bestVal !== "undefined"){
                                     commandStr = commandStr.replace(repStr, bestVal);
                                 }
-
-
-
-
-                            }; //look in same system for vars
-
+                            } //look in same system for vars
                             //function to return number of ancestors the current running job has in common with the found var job. Requires: jobFT and foundFT job ID strings separated by "/".
                             function calcRelativeScore(jobFT, foundFT){//how many gr/parents does the current running job have in common with the found var job..
                                 const jobFTArr = jobFT.split('/');
@@ -3554,7 +3468,7 @@ router.post("/run",function(req,res){
                                 while((typeof jobFTArr[x] !== "undefined")&&(typeof foundFTArr[x] !== "undefined")){
                                     if (jobFTArr[x] === foundFTArr[x]){
                                         score++;
-                                    };
+                                    }
                                     x++;
                                 }
                                 return score;
@@ -3613,7 +3527,7 @@ router.get("/getVars",function(req,res){
             {
                 var ap = b;
                 var bp = a;
-                return ap == bp ? 0 : ap < bp ? -1 : 1;
+                return ap === bp ? 0 : ap < bp ? -1 : 1;
             });//sort dec
 
             var lastID = '';
@@ -3651,12 +3565,12 @@ router.get("/getVars",function(req,res){
                     var results = JSON.parse(fs.readFileSync(resultsPath + file));
                     results.forEach(function(row){
                         if ( row.hasOwnProperty('results') && row.results.substr(0,4) === 'var:'){
-                            varName = row.results.split(':')[1];
+                            var varName = row.results.split(':')[1];
                             var trimmedResults= row.results.substr(('var:' + varName + ':').length);
                             insertResultsArr(trimmedResults, varName, listOfVars);
                         }
                         if(row.hasOwnProperty('x') && row.x !== ''){
-                            varName = row.x;
+                            var varName = row.x;
                             var trimmedResults= row.results;
                             insertResultsArr(trimmedResults, varName, listOfVars);
                         }
@@ -3673,7 +3587,7 @@ router.get("/getVars",function(req,res){
             });
 
             listOfVarsIndex = listOfVarsIndex.sort(function(a, b){
-                if(a.path.toUpperCase() == b.path.toUpperCase()){
+                if(a.path.toUpperCase() === b.path.toUpperCase()){
                     return 0
                 }else if(a.path.toUpperCase() < b.path.toUpperCase()){
                     return -1
@@ -4003,7 +3917,7 @@ router.get("/getPromotedSystems",function(req,res){
                 }
             }
         }
-    };
+    }
     res.end(JSON.stringify(rowdata));
 });
 
@@ -4016,7 +3930,7 @@ router.get("/getPromoted",function(req,res){
     var resJSON = [];
     for (var key in SystemsJSON) {
         var allow = false;
-        if(SystemsJSON[key].comType === "job" && SystemsJSON[key].ft.split("/")[1] == systemId){
+        if(SystemsJSON[key].comType === "job" && SystemsJSON[key].ft.split("/")[1] === systemId){
             if (SystemsJSON.hasOwnProperty(key)) {
                 var  hostIP = getSystemVarVal(key, "host");
                 var hasParentRun = false;
@@ -4064,8 +3978,7 @@ router.get("/getPromoted",function(req,res){
                 }
             }
         }
-    };
-
+    }
     //sort all rows by sort property
     resJSON.sort(function(a, b){
         var keyA = a.sortStr,
@@ -4089,8 +4002,7 @@ router.get("/getChildCount",function(req,res){
                 x++
             }
         }
-    };
-
+    }
     var resObj = {count:x}
     res.end(JSON.stringify(resObj));
 });
@@ -4128,7 +4040,7 @@ router.get("/massupdate",function(req,res){
     for (var key in SystemsJSON) {
         //console.log(x++);
         if(SystemsJSON[key].comType === "job"){
-            bc =  SystemsJSON[key].buildCode.linkArr[0];
+            var bc =  SystemsJSON[key].buildCode.linkArr[0];
 
             // console.log("=====");
             // console.log(BuildCode[bc].name );
@@ -4212,9 +4124,7 @@ router.get("/getCPUStats",function(req,res){
         }
         result.freeMem = os.freemem();
         return(result)
-    };
-
-
+    }
     res.end(JSON.stringify(buildCPUStats()));
 
 });
@@ -4223,7 +4133,7 @@ var prevCpus = os.cpus(); //global to hold previous cpu stats
 
 setInterval(sample,1000); //run function 'sample()' every 1000 ms
 function sample() {
-    currCpus = os.cpus();
+    const currCpus = os.cpus();
     for (var i=0,len=currCpus.length;i<len;i++) {
         var prevCpu = prevCpus[i];
         var currCpu = currCpus[i];
@@ -4266,7 +4176,7 @@ function saveAllJSON(backup){
                                     if((x + 20) <  files.length){
                                         //console.log("removing"  + __dirname + "/backup/" + mFile );
                                         fs.unlinkSync(__dirname + "/backup/" + mFile)
-                                    };
+                                    }
                                     x++
                                 }
                             })
@@ -4302,7 +4212,7 @@ function saveAllJSON(backup){
                                     if((x + 30) <  files.length){
                                         //console.log("removing"  + __dirname + "/backup/" + mFile );
                                         fs.unlinkSync(__dirname + "/backup/buildcode/" + mFile)
-                                    };
+                                    }
                                     x++
                                 }
                             })
@@ -4313,8 +4223,7 @@ function saveAllJSON(backup){
             })
         }
     })
-};
-
+}
 function saveAllIdentJSON(){
     fs.writeFile('./identity/identity.json', JSON.stringify(userTableJSON), function (err) {
         if (err) {
@@ -4324,8 +4233,7 @@ function saveAllIdentJSON(){
         }
        // console.log('identity saved successfully.')
     });
-};
-
+}
 function saveSettings(name, value){
     config[name] = value;
 

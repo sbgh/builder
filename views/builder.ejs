@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>ezStack builder</title>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.3/jstree.min.js"></script>
     <script src="https://pagecdn.io/lib/ace/1.4.6/ace.js" integrity="sha256-CVkji/u32aj2TeC+D13f7scFSIfphw2pmu4LaKWMSY8=" crossorigin="anonymous"></script>
@@ -127,7 +127,6 @@
                     },
                     "disabled" : {
                         "icon" : "fa fa-times-circle-o disabledRow",
-                        "li_attr": { class : "  "},
                         "li_attr": { class : "  "}
                     }
                 },
@@ -490,7 +489,7 @@
                     selectedTree = 'working'
 
                     //hide all popovers
-                    $('.popover').popover('hide');
+                    $('.clickPop').popover('hide');
 
                     //deselect Lib tree
                     $('#jslibtree_div').jstree("deselect_all");
@@ -888,7 +887,6 @@
             }
 
             serverStats();
-            //var serverStatsInterval = setInterval(serverStats, 5000);
             function serverStats(){
                 var mydata = {};
                 $.ajax({
@@ -911,7 +909,6 @@
                         setTimeout(serverStats, 5000)
                     },
                     error : function(error) {
-                        // clearInterval(serverStatsInterval);
                         if(currentSettings.clientMode == "demo"){
                             $('#serverUnavailableDemoModal').modal('show');
                         }
@@ -1860,7 +1857,9 @@
                             animation: true,
                             content: valTextPop,
                             delay: { "show": 500, "hide": 50 },
-                            trigger: 'click'
+                            trigger: 'click',
+                            template: '<div class="popover clickPop" role="tooltip"><div class="arrow clickPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+
                         }
                         $("#varValTd" + idn).popover(options);
                     }
@@ -3045,6 +3044,13 @@
                 $('.scroller').scrollTop(e.target.scrollTop);
             });
 
+            $("#sys-form-panel").scroll(function(){
+                resetGhostPos();
+            })
+            $("#job-form-panel").scroll(function(){
+                resetGhostPos();
+            })
+
             $("#new_button, #new_sys_button").on("click",function() {
                 var mydata = {};
                 mydata.id = "NewChild";
@@ -3072,7 +3078,8 @@
                 animation: true,
                 content: "Click to create a new system",
                 delay: { "show": 500, "hide": 100 },
-                trigger: 'hover'
+                trigger: 'hover',
+                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
             });
 
             //new custom template
@@ -3262,6 +3269,9 @@
                         setWindowHeight(container.height() * currentRatio , container, false);
                     }
                     setFormColWidth();
+
+                    resetGhostPos();
+
                 });
 
                 $(document).on('mousemove', function (e) {
@@ -3281,12 +3291,14 @@
                         e.preventDefault();
                         var leftWidth = e.clientX;
                         setLibWindowWidth(leftWidth , container);
+                        resetGhostPos()
                     }
 
                     if(isResizingWidth){
                         e.preventDefault();
                         var leftWidth = e.clientX;
                         setWindowWidth(leftWidth - libTreeWidth - 2, container, false);
+                        resetGhostPos()
                     }
 
 
@@ -3296,6 +3308,23 @@
                     isResizingLibWidth = false;
                 });
             });
+
+            function resetGhostPos(){
+                //incase the window changed during tour
+                if(currentGhostEle !== ""){
+                    var eleJObj = $("#"+currentGhostEle);
+                    var eleObj = document.querySelector("#"+currentGhostEle);
+                    var ghostObj = $("#floatingPopover");
+                    var bounds = getOffset(eleObj)
+
+                    var width = eleJObj.width();
+                    var height = eleJObj.height();
+                    ghostObj.css({'width':width + 'px'});
+                    ghostObj.css({'height':height + 'px'});
+                    ghostObj.css({'top':bounds.top + 'px', 'left':bounds.left + 'px' });
+                    ghostObj.popover("update");
+                }
+            }
 
             //Calling this function will set the height of each element in the view
             function setWindowHeight(topHeight, container, AnimateIt){
@@ -3700,6 +3729,7 @@
             setTopPageStyle();
 
             //Check first run and run firstRunTasks() if required
+            var currentGhostEle = "";
             function checkFirstRun(){
 
 
@@ -3782,10 +3812,258 @@
 
                 }
 
-                //Things to do after welcome modal... currently nothing
-                function afterWelcomeModal(){
+                //Things to do after demo welcome modal
+                function afterDemoWelcomeModal(){
+                    $('.popover').popover('hide');
 
+                    $("#dashBtn").click();
+                    function showFloatDashMenu(){
+                        floatPop("dashBtn",  "The Dashboard provides a high level view of your 'promoted' components and the ability to make quick changes.")
+
+                        $(".floatPopMenuRow").remove();
+                        $(".floatPop").append('<div class = "floatPopMenuRow"><div id="floatPopStop" class="btn btn-default jobFormbtn floatPopMenuItem">stop<i class="fa fa-fw fa-stop "></i></div><div id="floatPopOk" class="btn btn-default jobFormbtn floatPopMenuItem">ok<i class="fa fa-fw fa-check"></i></div></div>')
+
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            showFloatCPU() 
+                        })
+                        $("#floatPopStop").click(function(event){
+                            $('.popover').popover('hide');
+                        })
+                    }
+                    function showFloatCPU(){
+                        $("#dashBtn").click();
+                        floatPop("osCPUValue", "This displays the current CPU load of your private builder server.");
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            showFloatMem()
+                        })
+                    }
+                    function showFloatMem(){
+                        $("#dashBtn").click();
+                        floatPop("osFMValue", "This is the amount of free memory available for builder to use.");
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            showFloatStatus()
+                        })
+                    }
+                    function showFloatStatus(){
+                        $("#dashBtn").click();
+                        floatPop("resultsStatus", "When components are being built the status of each build is displayed here.");
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            showFloatSys()
+                        })
+                    }
+                    function showFloatSys(){
+                        $("#dashBtn").click();
+                        floatPop("dropdownMenuButton", "The systems (servers) you have setup are listed here. Each system can host as many applications as you would like.");
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            showFloatDesc()
+                        })
+                    }
+                    function showFloatDesc(){
+                        $("#dashBtn").click();
+                        floatPop("dashSystemDetails", "The systems description is displayed here.");
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            showFloatDashTable()
+                        })
+                    }
+                    function showFloatDashTable(){
+                        $("#dashBtn").click();
+                        floatPop("dashListCol","This table displays promoted components that have been built or are ready to be built for the specified system.")
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            $(".dashTableRow")[0].click();
+                            showFloatDashCompOpen();
+                        })
+                    }
+                    function showFloatDashCompOpen(){
+                        $("#dashBtn").click();
+                        floatPop("DashOpenMenu","This button is used to exit the dashboard and open this component in the components view.")
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            showFloatDashCompBuild();
+                        })
+                    }
+                    function showFloatDashCompBuild(){
+                        $("#dashBtn").click();
+                        floatPop("DashBuildMenu","Clicking this button will open a prompt to build the component.")
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            showFloatVideo();
+                        })
+                    }
+                    function showFloatVideo(){
+                        $("#dashBtn").click();
+                        floatPop("videoCanvas", "ezStack Builder provides a live instance of headless-chrome to aid in building your web sites. You can interact with this instance in the browser window. " +
+                            "Headless-chrome gives you a live view of your apps being built. You can scroll and click the browser window like a real browser. " +
+                            "You can also find components by clicking on the displayed web page elements. When browsing components, elements will be highlighted when a component, that created it, is selected.")
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            showFloatStyle()
+                        })
+                    }
+                    function showFloatStyle(){
+                        $("#dashBtn").click();
+                        floatPop("stylePickMenu", "Both light and dark styles are available.");
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            showFloatUser()
+                        })
+                    }
+                    function showFloatUser(){
+                        $("#dashBtn").click();
+                        $("#userMenuDrop").addClass('show');
+                        floatPop("userMenuDrop", "The user menu contains personal preferences.");
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            $("#userMenuDrop").removeClass('show');
+                            showFloatCompMenu()
+                        })
+                    }
+
+                    function showFloatCompMenu(){
+                        $("#dashBtn").click();
+                        floatPop("componentsBtn",  "The Components screen allows you to dive deeper into the code by providing a tree view of all components that are installed.")
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            $("#componentsBtn").click();
+                            $('#jstree_div').jstree(true).open_node("local", false);
+                            setTimeout(function(){
+                                showFloatCompTree()
+                            }, 500);
+                        })
+                    }
+                    function showFloatCompTree(){
+                        floatPop("local",  "In the Components screen is a tree that allows you to browse all installed systems and components.")
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            $("#componentsBtn").click();
+                            setTimeout(function(){
+                                showFloatCompTreeSys()
+                            }, 500);
+                        })
+                    }
+                    function showFloatCompTreeSys(){
+                        var childrens = $("#jstree_div").jstree("get_children_dom","local");
+
+                        $('#jstree_div').jstree("deselect_all");
+                        $("#jstree_div").jstree("select_node", childrens[0].id);
+
+                        setTimeout(function(){
+                            floatPop(childrens[0].attributes.id.value,  "The first level of the tree are the systems.")
+                        }, 500);
+
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            $("#componentsBtn").click();
+                            showFloatCompSysTitle(childrens[0].attributes.id.value)
+                        })
+                    }
+                    function showFloatCompSysTitle(){
+
+                        floatPop("sysName",  "Systems have a title ...");
+
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            $("#componentsBtn").click();
+                            showFloatCompSysDesc()
+                        })
+                    }
+                    function showFloatCompSysDesc(){
+
+                        floatPop("sysDescription",  "... and a description.");
+
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            $("#componentsBtn").click();
+                            showFloatCompSysVari()
+                        })
+                    }
+                    function showFloatCompSysVari(){
+
+                        floatPop("sysVariablesForm",  "System variables define important system wide settings. Host, username and port are needed to connect to the target server.");
+
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            $("#componentsBtn").click();
+                            showFloatCompTreeComp()
+                        })
+                    }
+                    function showFloatCompTreeComp(){
+                        $("#componentsBtn").click();
+                        var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
+                        var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
+                        $("#jstree_div").jstree("open_node", sysId, false, true);
+                        $('#jstree_div').jstree("deselect_all");
+
+                        setTimeout(function(){
+                            var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
+                            var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
+                            floatPop(childrens[0].id,  "Under the systems are the components.");
+                            $("#jstree_div").jstree("select_node", childrens[0]);
+                        },500)
+                        $("#floatPopOk").unbind();
+                        $("#floatPopOk").click(function(event){
+                            $("#componentsBtn").click();
+                            showFloatCompTreeComp();
+                        })
+                    }
+
+                    showFloatDashMenu();
                 }
+
+                $("#osCPUValue").click(function(evt){
+                    afterDemoWelcomeModal();
+                })
+
+                function floatPop(ele, text){
+                    var ghost = document.querySelector("#floatingPopover");
+                    var eleObj = document.querySelector("#"+ele);
+                    var eleJObj = $("#"+ele);
+                    var bounds = getOffset(eleObj)
+                    var ghostObj = $("#floatingPopover");
+
+                    var popObj = $(".floatPop");
+                    var popEle = document.querySelector(".floatPop");
+
+                    var options = {
+                        container: "#floatingPopoverField",
+                        boundary: "viewport",
+                        animation: true,
+                        content: text,
+                        delay: { "show": 500, "hide": 50 },
+                        offset: "0,0",
+                        trigger: 'manual',
+                        template: '<div class="popover floatPop" role="tooltip"><div class="arrow floatPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                    }
+
+                    currentGhostEle = ele;
+                    if(popObj.length > 0){
+                        ghostObj.css({'top':bounds.top + 'px', 'left':bounds.left + 'px' });
+                        ghostObj.data('bs.popover').config.content = text;
+                        var width = eleJObj.width();
+                        var height = eleJObj.height();
+                        ghostObj.css({'width':width + 'px'});
+                        ghostObj.css({'height':height + 'px'});
+                        popObj.css({'transition': 'transform 1.0s ease-out' });
+                        ghostObj.popover("show");
+                        ghostObj.popover("update");
+                    }else{
+                        var width = eleJObj.width();
+                        var height = eleJObj.height();
+                        ghostObj.css({'width':width + 'px'});
+                        ghostObj.css({'height':height + 'px'});
+                        ghostObj.css({'top':bounds.top + 'px', 'left':bounds.left + 'px' });
+                        ghostObj.popover(options);
+                        ghostObj.data('bs.popover').config.content = text;
+                        ghostObj.popover("show");
+                    }
+                }
+
 
                 $("#welcome-nav-Comp").on("click",function(evt){
                     $("#componentsBtn").click();
@@ -3815,6 +4093,9 @@
                      evt.stopPropagation();
                 })
 
+
+
+
                 //Tell server to set firstRun flag for admin user settings
                 function setFirstRun(){  //signal server to set 'firstRun' flag in settings
                     $.ajax({
@@ -3837,12 +4118,19 @@
 
 
                 //Welcome modal close event will run afterWelcomeModal()
-                $('#welcomeModal').on('hidden.bs.modal', function() {
-                    afterWelcomeModal();
+                $('#demoWelcomeModal').on('hidden.bs.modal', function() {
+                    afterDemoWelcomeModal();
                 });
 
             };
 
+            function getOffset(el) {
+                const rect = el.getBoundingClientRect();
+                return {
+                    left: rect.left + window.scrollX,
+                    top: rect.top + window.scrollY
+                };
+            }
             checkFirstRun()
 
             $("#search-icon").on("click",function(){
@@ -4199,7 +4487,8 @@
                 animation: true,
                 content: "Click to enable inspect mode then click element to inspect",
                 delay: { "show": 500, "hide": 100 },
-                trigger: 'hover'
+                trigger: 'hover',
+                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
             });
 
 
@@ -4212,7 +4501,8 @@
                 animation: true,
                 content: "Click to kill and restart Chrome",
                 delay: { "show": 500, "hide": 100 },
-                trigger: 'hover'
+                trigger: 'hover',
+                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
             });
 
             $("#inspectMaximizeLink").on('click', function(e){
@@ -4224,7 +4514,8 @@
                 animation: true,
                 content: "Click to expand Chrome window",
                 delay: { "show": 500, "hide": 100 },
-                trigger: 'hover'
+                trigger: 'hover',
+                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
             });
 
             function updateScreenShotLink(url){
@@ -4378,7 +4669,6 @@
                     },
                     "disabled" : {
                         "icon" : "fa fa-times-circle-o disabledRow",
-                        "li_attr": { class : "  "},
                         "li_attr": { class : "  "}
                     }
                 },
@@ -4649,6 +4939,7 @@
                     if(componentDetailsHoverFlag){
                         e.preventDefault();
                         setWindowWidth(JSON.parse(localStorage['locTreeWidth']).width - csX/2, container);
+                        resetGhostPos();
                     }
 
                 }
@@ -4855,6 +5146,10 @@
     </defs>
 </svg>
 <input type="text" id="fakeInput" style="position: absolute; opacity: 0; height: 0px; font-size: 16px; right: 25%; top: 25%;">
+<div id="floatingPopoverField"  width="100%" height="100%" style="position: absolute">
+
+    <div id="floatingPopover"></div>
+</div>
 
 <div id="rowContainer" class="container-fluid container-fluid-custom">
         <%- include topMenu.ejs %>
@@ -5074,7 +5369,7 @@
 
                                             <div class="row">
                                                 <div class="col-lg-12" style="padding: 0px">
-                                                <div class="form-group">
+                                                <div id="sysVariablesForm" class="form-group">
                                                     <label class="build-label">System Variables</label>
                                                     <a class="newSysVarBtn" href="#" style=""><i class="fa fa-plus fa-fw"></i></a>
                                                     <table class="table varTable">
@@ -5195,7 +5490,7 @@
                                                             <!--<textarea rows="4" class="form-control form-custom" placeholder="Enter description of this component" id="description"></textarea>-->
                                                             <div id="description" class=""></div>
                                                         </div>
-                                                        <div class="form-group">
+                                                        <div id="compVariablesForm" class="form-group">
                                                             <label class="build-label">Component Variables</label><a class="newCompVarBtn" href="#"><i class="fa fa-plus fa-fw"></i></a>
                                                             <a href="#" id='varHelp' data-toggle="modal" data-target="#varHelpModal"><i class="fa fa-question fa-fw"></i></a>
                                                             <!--<textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="compVariables"></textarea>-->

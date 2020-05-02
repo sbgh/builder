@@ -314,7 +314,7 @@ input:not(:checked) + .slider.round:before{
 
 .slider {
     transition: background-color 0.5s;
-    background-color: #dcdcdc;
+    background-color: #b6b6b6;
 }
 
 .systemRow{
@@ -514,3 +514,35 @@ input:not(:checked) + .slider.round:before{
     transition: color 0.2s;
     color: #000000;
 }
+
+.floatPop, .hoverPop, .clickPop {
+    transition: background 0.2s;
+    background: #f8f8f8;
+    border: 2px solid #367ae0;
+    box-shadow: 3px 5px 9px 1px rgba(51, 51, 51, 0.78);
+}
+
+.clickPop .popover-body, .hoverPop .popover-body, .floatPop .popover-body {
+    color: #000000;
+}
+
+.bs-popover-top .arrow::after,
+.bs-popover-auto[x-placement^="top"] .arrow::after {
+    border-top-color: #367ae0;
+}
+
+.bs-popover-left .arrow::after,
+.bs-popover-auto[x-placement^="left"] .arrow::after {
+    border-left-color: #367ae0;
+}
+
+.bs-popover-right .arrow::after,
+.bs-popover-auto[x-placement^="right"] .arrow::after {
+    border-right-color: #367ae0;
+}
+
+.bs-popover-bottom .arrow::after,
+.bs-popover-auto[x-placement^="bottom"] .arrow::after {
+    border-bottom-color: #367ae0;
+}
+
