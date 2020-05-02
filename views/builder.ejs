@@ -910,6 +910,8 @@
                     },
                     error : function(error) {
                         if(currentSettings.clientMode == "demo"){
+                            //hide all popovers
+                            $('.popover').popover('hide');
                             $('#serverUnavailableDemoModal').modal('show');
                         }
                         setTimeout(serverStats, 5000);
@@ -3818,65 +3820,89 @@
 
                     $("#dashBtn").click();
                     function showFloatDashMenu(){
+
                         floatPop("dashBtn",  "The Dashboard provides a high level view of your 'promoted' components and the ability to make quick changes.")
 
                         $(".floatPopMenuRow").remove();
-                        $(".floatPop").append('<div class = "floatPopMenuRow"><div id="floatPopStop" class="btn btn-default jobFormbtn floatPopMenuItem">stop<i class="fa fa-fw fa-stop "></i></div><div id="floatPopOk" class="btn btn-default jobFormbtn floatPopMenuItem">ok<i class="fa fa-fw fa-check"></i></div></div>')
+                        $(".floatPop").append('<div class = "floatPopMenuRow"><button id="floatPopStop" class="btn btn-default jobFormbtn floatPopMenuItem">stop<i class="fa fa-fw fa-stop "></i></button><button id="floatPopOk" class="btn btn-default jobFormbtn floatPopMenuItem">ok<i class="fa fa-fw fa-check"></i></button></div>')
 
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        
                         $("#floatPopOk").click(function(event){
-                            showFloatCPU() 
+                            clearTimeout(floatPopOkTimeout);
+                            showFloatCPU()
                         })
                         $("#floatPopStop").click(function(event){
                             $('.popover').popover('hide');
                         })
+
                     }
                     function showFloatCPU(){
                         $("#dashBtn").click();
                         floatPop("osCPUValue", "This displays the current CPU load of your private builder server.");
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            showFloatMem()
+                            clearTimeout(floatPopOkTimeout);
+                            
+showFloatMem()
                         })
                     }
                     function showFloatMem(){
                         $("#dashBtn").click();
                         floatPop("osFMValue", "This is the amount of free memory available for builder to use.");
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            showFloatStatus()
+                            clearTimeout(floatPopOkTimeout);
+                            
+showFloatStatus()
                         })
                     }
                     function showFloatStatus(){
                         $("#dashBtn").click();
                         floatPop("resultsStatus", "When components are being built the status of each build is displayed here.");
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+
                         $("#floatPopOk").click(function(event){
-                            showFloatSys()
+                            clearTimeout(floatPopOkTimeout);
+                            
+showFloatSys()
                         })
                     }
                     function showFloatSys(){
                         $("#dashBtn").click();
                         floatPop("dropdownMenuButton", "The systems (servers) you have setup are listed here. Each system can host as many applications as you would like.");
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            showFloatDesc()
+                            clearTimeout(floatPopOkTimeout);
+                            
+showFloatDesc()
                         })
                     }
                     function showFloatDesc(){
                         $("#dashBtn").click();
                         floatPop("dashSystemDetails", "The systems description is displayed here.");
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            showFloatDashTable()
+                            clearTimeout(floatPopOkTimeout);
+                            
+showFloatDashTable()
                         })
                     }
                     function showFloatDashTable(){
                         $("#dashBtn").click();
                         floatPop("dashListCol","This table displays promoted components that have been built or are ready to be built for the specified system.")
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            $(".dashTableRow")[0].click();
+                            clearTimeout(floatPopOkTimeout);
+                            
+$(".dashTableRow")[0].click();
                             showFloatDashCompOpen();
                         })
                     }
@@ -3884,16 +3910,22 @@
                         $("#dashBtn").click();
                         floatPop("DashOpenMenu","This button is used to exit the dashboard and open this component in the components view.")
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            showFloatDashCompBuild();
+                            clearTimeout(floatPopOkTimeout);
+                            
+showFloatDashCompBuild();
                         })
                     }
                     function showFloatDashCompBuild(){
                         $("#dashBtn").click();
                         floatPop("DashBuildMenu","Clicking this button will open a prompt to build the component.")
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            showFloatVideo();
+                            clearTimeout(floatPopOkTimeout);
+                            
+showFloatVideo();
                         })
                     }
                     function showFloatVideo(){
@@ -3902,16 +3934,22 @@
                             "Headless-chrome gives you a live view of your apps being built. You can scroll and click the browser window like a real browser. " +
                             "You can also find components by clicking on the displayed web page elements. When browsing components, elements will be highlighted when a component, that created it, is selected.")
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            showFloatStyle()
+                            clearTimeout(floatPopOkTimeout);
+                            
+showFloatStyle()
                         })
                     }
                     function showFloatStyle(){
                         $("#dashBtn").click();
                         floatPop("stylePickMenu", "Both light and dark styles are available.");
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            showFloatUser()
+                            clearTimeout(floatPopOkTimeout);
+                            
+showFloatUser()
                         })
                     }
                     function showFloatUser(){
@@ -3919,8 +3957,11 @@
                         $("#userMenuDrop").addClass('show');
                         floatPop("userMenuDrop", "The user menu contains personal preferences.");
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            $("#userMenuDrop").removeClass('show');
+                            clearTimeout(floatPopOkTimeout);
+                            
+$("#userMenuDrop").removeClass('show');
                             showFloatCompMenu()
                         })
                     }
@@ -3929,10 +3970,14 @@
                         $("#dashBtn").click();
                         floatPop("componentsBtn",  "The Components screen allows you to dive deeper into the code by providing a tree view of all components that are installed.")
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            $("#componentsBtn").click();
-                            $('#jstree_div').jstree(true).open_node("local", false);
+                            clearTimeout(floatPopOkTimeout);
+                            
+$("#componentsBtn").click();
                             setTimeout(function(){
+                                $("#jstree_div").jstree("close_all", '#');
+                                $('#jstree_div').jstree(true).open_node("local", false);
                                 showFloatCompTree()
                             }, 500);
                         })
@@ -3940,8 +3985,11 @@
                     function showFloatCompTree(){
                         floatPop("local",  "In the Components screen is a tree that allows you to browse all installed systems and components.")
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            $("#componentsBtn").click();
+                            clearTimeout(floatPopOkTimeout);
+                            
+$("#componentsBtn").click();
                             setTimeout(function(){
                                 showFloatCompTreeSys()
                             }, 500);
@@ -3951,15 +3999,19 @@
                         var childrens = $("#jstree_div").jstree("get_children_dom","local");
 
                         $('#jstree_div').jstree("deselect_all");
-                        $("#jstree_div").jstree("select_node", childrens[0].id);
+                        $("#jstree_div").jstree("select_node", childrens[1].id);
 
                         setTimeout(function(){
-                            floatPop(childrens[0].attributes.id.value,  "The first level of the tree are the systems.")
+                            var childrens = $("#jstree_div").jstree("get_children_dom","local");
+                            floatPop(childrens[1].attributes.id.value,  "The first level of the tree are the systems.")
                         }, 500);
 
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            $("#componentsBtn").click();
+                            clearTimeout(floatPopOkTimeout);
+                            
+$("#componentsBtn").click();
                             showFloatCompSysTitle(childrens[0].attributes.id.value)
                         })
                     }
@@ -3968,8 +4020,11 @@
                         floatPop("sysName",  "Systems have a title ...");
 
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            $("#componentsBtn").click();
+                            clearTimeout(floatPopOkTimeout);
+                            
+$("#componentsBtn").click();
                             showFloatCompSysDesc()
                         })
                     }
@@ -3978,8 +4033,11 @@
                         floatPop("sysDescription",  "... and a description.");
 
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            $("#componentsBtn").click();
+                            clearTimeout(floatPopOkTimeout);
+                            
+$("#componentsBtn").click();
                             showFloatCompSysVari()
                         })
                     }
@@ -3988,13 +4046,45 @@
                         floatPop("sysVariablesForm",  "System variables define important system wide settings. Host, username and port are needed to connect to the target server.");
 
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
-                            $("#componentsBtn").click();
+                            clearTimeout(floatPopOkTimeout);
+                            
+$("#componentsBtn").click();
                             showFloatCompTreeComp()
                         })
                     }
                     function showFloatCompTreeComp(){
                         $("#componentsBtn").click();
+                        $('#jstree_div').jstree("deselect_all");
+//                        $("#jstree_div").jstree("close_all", '#');
+                        $("#jstree_div").jstree("open_node", "local", false, true);
+                        var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
+                        var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
+                        $("#jstree_div").jstree("open_node", sysId, false, true);
+
+                        setTimeout(function(){
+
+                            var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
+                            var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
+                            $("#jstree_div").jstree("select_node", childrens[1]);
+
+                            floatPop(childrens[1].attributes.id.value,  "Under the systems are the components.");
+                        },1000)
+                        $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        $("#floatPopOk").click(function(event){
+                            clearTimeout(floatPopOkTimeout);
+
+                            $("#componentsBtn").click();
+                            showFloatCompTreeComp2();
+                        })
+                    }
+
+                    function showFloatCompTreeComp2(){
+                        $("#componentsBtn").click();
+//                        $("#jstree_div").jstree("close_all", '#');
+                        $("#jstree_div").jstree("open_node", "local", false, true);
                         var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
                         var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
                         $("#jstree_div").jstree("open_node", sysId, false, true);
@@ -4003,13 +4093,17 @@
                         setTimeout(function(){
                             var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
                             var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
-                            floatPop(childrens[0].id,  "Under the systems are the components.");
-                            $("#jstree_div").jstree("select_node", childrens[0]);
-                        },500)
+                            floatPop(childrens[1].attributes.id.value,  "Components connected to a system can be built on that system.");
+                            $("#jstree_div").jstree("select_node", childrens[1]);
+                            $("#jstree_div").jstree("open_node", childrens[1], false, true);
+                        },1000)
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
+                            clearTimeout(floatPopOkTimeout);
+
                             $("#componentsBtn").click();
-                            showFloatCompTreeComp();
+//                            showFloatCompTreeComp();
                         })
                     }
 
@@ -4020,9 +4114,11 @@
                     afterDemoWelcomeModal();
                 })
 
+                var floatPopOkTimeout;
                 function floatPop(ele, text){
                     var ghost = document.querySelector("#floatingPopover");
-                    var eleObj = document.querySelector("#"+ele);
+                   // var eleObj = document.querySelector("#"+ele);
+                    var eleObj = document.getElementById(ele);
                     var eleJObj = $("#"+ele);
                     var bounds = getOffset(eleObj)
                     var ghostObj = $("#floatingPopover");
@@ -4041,6 +4137,11 @@
                         template: '<div class="popover floatPop" role="tooltip"><div class="arrow floatPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
                     }
 
+                    setTimeout(function(){
+                        $("#floatPopOk").focus();
+                    },500)
+
+
                     currentGhostEle = ele;
                     if(popObj.length > 0){
                         ghostObj.css({'top':bounds.top + 'px', 'left':bounds.left + 'px' });
@@ -4051,7 +4152,7 @@
                         ghostObj.css({'height':height + 'px'});
                         popObj.css({'transition': 'transform 1.0s ease-out' });
                         ghostObj.popover("show");
-                        ghostObj.popover("update");
+                        ghostObj.popover("update")
                     }else{
                         var width = eleJObj.width();
                         var height = eleJObj.height();
@@ -4060,7 +4161,7 @@
                         ghostObj.css({'top':bounds.top + 'px', 'left':bounds.left + 'px' });
                         ghostObj.popover(options);
                         ghostObj.data('bs.popover').config.content = text;
-                        ghostObj.popover("show");
+                        ghostObj.popover("show");;
                     }
                 }
 
@@ -4120,6 +4221,11 @@
                 //Welcome modal close event will run afterWelcomeModal()
                 $('#demoWelcomeModal').on('hidden.bs.modal', function() {
                     afterDemoWelcomeModal();
+                });
+
+
+                $('#demoWelcomeModal').on('shown.bs.modal', function() {
+                    $('.popover').popover('hide');
                 });
 
             };
@@ -4394,6 +4500,13 @@
                 }
                 //console.log({vidHoverFlag})
 
+                var popObj = $(".floatPop");
+                if(popObj.length > 0){
+                    if(KeyObj.key === "Enter"){
+//                        $("#floatPopOk").click();
+                    }
+                }
+
             });
 
 
@@ -4470,9 +4583,7 @@
                     console.log("startStream Fail"  )
                 });
             };
-//            startStream();
             setTimeout(startStream, 5000);
-
 
             function navigate(url){
                 updateScreenShotLink(url);
@@ -4702,7 +4813,6 @@
                 $.get("/VideoClick",{x:x, y:y, ctrlKey:ctrlKey},function(resp){
 
                     var respObj = JSON.parse(resp);
-//                    var matchLinksHtml = "";
                     if(!respObj.hasOwnProperty('attributes')) {
 
                     }else{

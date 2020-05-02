@@ -162,6 +162,13 @@ div.grippie {
     background-color: #ececec;
 }
 
+.welcome-modal-content{
+    color: black;
+    transition: background 0.2s;
+    background: white;
+    border: 2px solid #367ae0;
+}
+
 .form-control::-webkit-input-placeholder { color: #a3a3a3; }  /* WebKit, Blink, Edge */
 .form-control:-moz-placeholder { color: #a3a3a3; }  /* Mozilla Firefox 4 to 18 */
 .form-control::-moz-placeholder { color: #a3a3a3; }  /* Mozilla Firefox 19+ */

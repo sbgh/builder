@@ -244,7 +244,7 @@ padding-left: 0px;
 }
 .buttonRow {
    padding-left: 40px;
-   padding-top: 5px;
+   padding-top: 3px;
    display: inline-block;
    white-space: nowrap;
 }
@@ -854,6 +854,7 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
 .dashboardDetailsDescription{
    margin-left: 20px;
    margin-top: 20px;
+   border-radius: .25rem;
 }
 
 .dashboardDetailsSysName{
@@ -907,7 +908,8 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
 
 .modal-dialog-welcome{
    width:50vw;
-   min-width: 100px;
+    min-width: 300px;
+    max-width: 650px;
 }
 .modal-dialog-var{
    width:50vw;
@@ -1237,6 +1239,11 @@ th.col-1, td.col-1{
 
 #dashSystemDescription{
    border: 0px solid;
+   border-radius: .25rem;
+}
+#description{
+   border: 0px solid;
+   border-radius: .25rem;
 }
 
  .ql-toolbar{
@@ -1692,12 +1699,17 @@ div#floatingPopover {
 }
 
 .floatPopMenuItem{
-   font-size: 9px;
-   font-weight: 700;
-   width: 50px;
-   padding: 0px;
-   margin: 2px;
-   cursor: pointer;
+    font-size: 9px;
+    font-weight: 700;
+    width: 50px;
+    padding: 0px;
+    margin: 2px;
+    cursor: pointer;
 }
 
-
+.welcome-modal-content{
+    font-size: 1.0rem;
+    font-weight: 400;
+    line-height: 1.2;
+    text-align: center;
+}
