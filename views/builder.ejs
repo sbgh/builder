@@ -4241,10 +4241,10 @@ $("#componentsBtn").click();
                         $("#jstree_div").jstree("open_node", childrens[1]);
                         $("#codeCollapse").addClass("show");
 
-                        $("#edit_button").click();
-
+                        setTimeout(function(){
+                            $("#edit_button").click();
                             $('#job-form-panel').animate({ scrollTop: $("#buildCodeSwitches").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 100);
-//                        },500);
+                        },500);
                         setTimeout(function(){
                             preferedPopPos = "left"
                             floatPop("buildCodeSwitches",  "In edit mode a developer can define how the build code will be executed.");
