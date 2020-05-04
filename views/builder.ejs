@@ -3827,7 +3827,7 @@
                         $(".floatPop").append('<div class = "floatPopMenuRow"><button id="floatPopStop" class="btn btn-default jobFormbtn floatPopMenuItem">stop<i class="fa fa-fw fa-stop "></i></button><button id="floatPopOk" class="btn btn-default jobFormbtn floatPopMenuItem">ok<i class="fa fa-fw fa-check"></i></button></div>')
 
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                         
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
@@ -3842,7 +3842,7 @@
                         $("#dashBtn").click();
                         floatPop("osCPUValue", "This displays the current CPU load of your private builder server.");
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             
@@ -3851,9 +3851,9 @@ showFloatMem()
                     }
                     function showFloatMem(){
                         $("#dashBtn").click();
-                        floatPop("osFMValue", "This is the amount of free memory available for builder to use.");
+                        floatPop("osFMValue", "This shows the amount of free memory available for builder to use.");
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             
@@ -3864,7 +3864,7 @@ showFloatStatus()
                         $("#dashBtn").click();
                         floatPop("resultsStatus", "When components are being built the status of each build is displayed here.");
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
 
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
@@ -3874,9 +3874,9 @@ showFloatSys()
                     }
                     function showFloatSys(){
                         $("#dashBtn").click();
-                        floatPop("dropdownMenuButton", "The systems (servers) you have setup are listed here. Each system can host as many applications as you would like.");
+                        floatPop("dropdownMenuButton", "The systems (servers) you have setup are listed here. Each system can host many applications.");
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             
@@ -3887,7 +3887,7 @@ showFloatDesc()
                         $("#dashBtn").click();
                         floatPop("dashSystemDetails", "The systems description is displayed here.");
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             
@@ -3899,7 +3899,7 @@ showFloatDashTable()
                         preferedPopPos = "top";
                         floatPop("dashListCol","This table displays promoted components that have been built or are ready to be built for the specified system.");
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},9000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             
@@ -3912,7 +3912,7 @@ $(".dashTableRow")[0].click();
                         preferedPopPos = "bottom";
                         floatPop("DashOpenMenu","This button is used to exit the dashboard and open this component in the components view.")
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             
@@ -3924,7 +3924,7 @@ showFloatDashCompBuild();
                         preferedPopPos = "bottom";
                         floatPop("DashBuildMenu","Clicking this button will open a prompt to build the component.")
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             
@@ -3938,7 +3938,7 @@ showFloatVideo();
                             "Headless-chrome gives you a live view of your apps being built. You can scroll and click the browser window like a real browser. " +
                             "You can also find components by clicking on the displayed web page elements. When browsing components, elements will be highlighted when a component, that created it, is selected.")
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},20000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             
@@ -3949,7 +3949,7 @@ showFloatStyle()
                         $("#dashBtn").click();
                         floatPop("stylePickMenu", "Both light and dark styles are available.");
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},5000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             
@@ -3961,7 +3961,7 @@ showFloatUser()
                         $("#userMenuDrop").addClass('show');
                         floatPop("userMenuDrop", "The user menu contains personal preferences.");
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},5000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             
@@ -3992,7 +3992,7 @@ $("#userMenuDrop").removeClass('show');
                             floatPop("local",  "In the Components screen is a tree that allows you to browse all installed systems and components.")
                         }, 500);
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                         $("#floatPopOk").click(function(event){
                             $("#componentsBtn").click();
                             clearTimeout(floatPopOkTimeout);
@@ -4016,7 +4016,7 @@ $("#componentsBtn").click();
 
                         preferedPopPos = "right";
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},5000);
                         $("#floatPopOk").click(function(event){
                             $("#componentsBtn").click();
                             clearTimeout(floatPopOkTimeout);
@@ -4027,10 +4027,10 @@ $("#componentsBtn").click();
                     }
                     function showFloatCompSysTitle(){
 
-                        floatPop("sysName",  "Systems have a title ...");
+                        floatPop("sysName",  "Systems have a name ...");
 
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},4000);
                         $("#floatPopOk").click(function(event){
 
                             clearTimeout(floatPopOkTimeout);
@@ -4044,7 +4044,7 @@ $("#componentsBtn").click();
                         floatPop("sysDescription",  "... and a description.");
 
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},3000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             
@@ -4057,7 +4057,7 @@ $("#componentsBtn").click();
                         floatPop("sysVariablesForm",  "System variables define important system wide settings. Host, username and port are needed to connect to the target server.");
 
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             
@@ -4083,7 +4083,7 @@ $("#componentsBtn").click();
                         },500);
                         preferedPopPos = "right";
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},4000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
@@ -4093,7 +4093,7 @@ $("#componentsBtn").click();
                     }
 
                     function showFloatCompTreeComp2(){
-                        $("#componentsBtn").click();
+//                        $("#componentsBtn").click();
                         $("#jstree_div").jstree("open_node", "local", false, true);
                         var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
                         var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
@@ -4108,7 +4108,7 @@ $("#componentsBtn").click();
                         },500);
                         preferedPopPos = "right";
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},6000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
@@ -4131,7 +4131,7 @@ $("#componentsBtn").click();
                             floatPop("name",  "Each components has a name ...");
                         },500);
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},4000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
@@ -4154,7 +4154,7 @@ $("#componentsBtn").click();
                             floatPop("description",  "... and a description.");
                         },500);
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},3000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
@@ -4172,11 +4172,11 @@ $("#componentsBtn").click();
                         $("#jstree_div").jstree("select_node", childrens[1]);
 
                         setTimeout(function(){
-                            $('#job-form-panel').animate({ scrollTop: $("#compVariables").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 100);
+                            $('#job-form-panel').animate({ scrollTop: $("#compVariables").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
                             floatPop("compVariables",  "Developers define component variables that allow you to control component builds from a high level.");
                         },500);
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
@@ -4196,11 +4196,11 @@ $("#componentsBtn").click();
 
                         setTimeout(function(){
 
-                            $('#job-form-panel').animate({ scrollTop: $("#codeHeading").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 100);
+                            $('#job-form-panel').animate({ scrollTop: $("#codeHeading").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
                             floatPop("codeHeading",  "The code that builds each component is stored here.");
                         },500);
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},6000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
@@ -4222,7 +4222,7 @@ $("#componentsBtn").click();
                             floatPop("buildCodeNameRead",  "A build code record is a seperate record and is shared by components.");
                         },500);
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},5000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
@@ -4243,14 +4243,14 @@ $("#componentsBtn").click();
 
                         setTimeout(function(){
                             $("#edit_button").click();
-                            $('#job-form-panel').animate({ scrollTop: $("#buildCodeSwitches").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 100);
+                            $('#job-form-panel').animate({ scrollTop: $("#buildCodeSwitches").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
                         },500);
                         setTimeout(function(){
                             preferedPopPos = "left"
                             floatPop("buildCodeSwitches",  "In edit mode a developer can define how the build code will be executed.");
                         },500);
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
@@ -4267,7 +4267,7 @@ $("#componentsBtn").click();
                         $("#jstree_div").jstree("select_node", chChildrens[0]);
                         $("#codeCollapse").addClass("show");
 
-                        $('#job-form-panel').animate({ scrollTop: $("#script").offset().top + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.3) }, 300);
+                        $('#job-form-panel').animate({ scrollTop: $("#script").offset().top + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.3) }, 1000);
                         setTimeout(function(){
 //                            $("#edit_button").click();
                             preferedPopPos = "left"
@@ -4293,7 +4293,7 @@ $("#componentsBtn").click();
                         $("#codeCollapse").addClass("show");
 
                         setTimeout(function(){
-                            $('#job-form-panel').animate({ scrollTop: $("#templateCard0").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 300);
+                            $('#job-form-panel').animate({ scrollTop: $("#templateCard0").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
 
                             $("#edit_button").click();
                             preferedPopPos = "left"
@@ -4301,7 +4301,7 @@ $("#componentsBtn").click();
                         },500);
 
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
@@ -4320,13 +4320,13 @@ $("#componentsBtn").click();
                         $("#codeCollapse").removeClass("show");
 
                         setTimeout(function(){
-                            $('#job-form-panel').animate({ scrollTop: $("#resHeading").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 300);
+                            $('#job-form-panel').animate({ scrollTop: $("#resHeading").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
 //                          preferedPopPos = "top";
                             floatPop("resHeading",  "Resource file attachment can be added to a build code record.");
                         },300);
 
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             showFloatCompBuildCodeTest()
@@ -4343,13 +4343,13 @@ $("#componentsBtn").click();
                         $("#codeCollapse").removeClass("show");
 
                         setTimeout(function(){
-                            $('#job-form-panel').animate({ scrollTop: $("#testHeading").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 300);
+                            $('#job-form-panel').animate({ scrollTop: $("#testHeading").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
 //                          preferedPopPos = "top";
                             floatPop("testHeading",  "Test scripts are stored here.");
                         },300);
 
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},5000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             showFloatCompBuildCodeMeta();
@@ -4366,20 +4366,21 @@ $("#componentsBtn").click();
                         $("#codeCollapse").removeClass("show");
 
                         setTimeout(function(){
-                            $('#job-form-panel').animate({ scrollTop: $("#metaHeading").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 300);
+                            $('#job-form-panel').animate({ scrollTop: $("#metaHeading").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
 //                          preferedPopPos = "top";
                             floatPop("metaHeading",  "This section contains meta data on the component like history etc.");
                         },300);
 
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},5000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             showFloatEnd();
                         })
                     }
                     function showFloatEnd(){
-                        $("#dashBtn").click();
+                        $("#dashBtn").click(); 
+                        $("#DemoDoneModal").modal('show');
 
                         $("#floatPopOk").unbind();
                         $('.popover').popover('hide');
@@ -4388,9 +4389,9 @@ $("#componentsBtn").click();
                     showFloatDashMenu();
                 }
 
-                $("#osCPUValue").click(function(evt){
-                    afterDemoWelcomeModal();
-                })
+//                $("#osCPUValue").click(function(evt){
+//                    afterDemoWelcomeModal();
+//                })
 
                 var floatPopOkTimeout;
                 var preferedPopPos = "";
@@ -6121,6 +6122,23 @@ $("#componentsBtn").click();
         </div>
     </div>
 </body>
+<div id="DemoDoneModal" class="modal fade" role="dialog">
+    <div class="modal-dialog serverUnavailable-dialog">
+        <nav class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"><i class="fa fa-trophy fa-fw"></i>ezStack Builder Tour</h4>
+            </div>
+            <div class="modal-body">
+
+                <p>Congratulations! The guided tour is complete and you are now a full stack web developer.
+                    How does it feel? Let us know back at <a href =”https://ezStack.systems” target=”_new”>https://ezStack.systems</a> in the contact section or fill out the quick survey. </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="demoDoneBtn" class="btn btn-default jobFormbtn" data-dismiss="modal">Ok</button>
+            </div>
+        </nav>
+    </div>
+</div>
 <div id="serverUnavailableDemoModal" class="modal fade" role="dialog">
     <div class="modal-dialog serverUnavailable-dialog">
         <nav class="modal-content">
