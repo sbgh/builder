@@ -4032,7 +4032,7 @@ $("#componentsBtn").click();
 
                         $('#jstree_div').jstree("deselect_all");
                         $("#jstree_div").jstree("select_node", childrens[0].id);
-                        
+
                         floatPop("sysName",  "Systems have a name ...");
 
                         $("#floatPopOk").unbind();
@@ -4304,7 +4304,7 @@ $("#componentsBtn").click();
                         },500);
 
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
@@ -4375,7 +4375,7 @@ $("#componentsBtn").click();
                         },300);
 
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},5000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             showFloatEnd();
