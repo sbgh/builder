@@ -3912,7 +3912,7 @@ showFloatDashCompBuild();
                         preferedPopPos = "bottom";
                         floatPop("DashBuildMenu","Clicking this button will open a prompt to build the component.<br><br><b class='red'>Task:</b> click this build button and then click 'build' in the dialog to prime this server.")
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},2*60*1000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},1*60*1000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
@@ -3987,7 +3987,7 @@ $("#userMenuDrop").removeClass('show');
                         })
                     }
                     function showFloatCompTree(){
-                        $("#jstree_div").jstree("close_all", '#');
+//                        $("#jstree_div").jstree("close_all", '#');
                         $('#jstree_div').jstree(true).open_node("local", false);
                         setTimeout(function(){
                             floatPop("local",  "In the Components screen is a tree that allows you to browse all installed systems and components.")
@@ -4005,6 +4005,7 @@ $("#componentsBtn").click();
                         })
                     }
                     function showFloatCompTreeSys(){
+                        $('#jstree_div').jstree(true).open_node("local", false);
                         var childrens = $("#jstree_div").jstree("get_children_dom","local");
 
                         $('#jstree_div').jstree("deselect_all");
@@ -4027,7 +4028,11 @@ $("#componentsBtn").click();
                         })
                     }
                     function showFloatCompSysTitle(){
+                        var childrens = $("#jstree_div").jstree("get_children_dom","local");
 
+                        $('#jstree_div').jstree("deselect_all");
+                        $("#jstree_div").jstree("select_node", childrens[0].id);
+                        
                         floatPop("sysName",  "Systems have a name ...");
 
                         $("#floatPopOk").unbind();
@@ -4286,7 +4291,7 @@ $("#componentsBtn").click();
                         $("#componentsBtn").click();
                         var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
                         var childrens = $("#jstree_div").jstree("get_children_dom",sysId)[1];
-                        var chChildrens = $("#jstree_div").jstree("get_children_dom",childrens); 
+                        var chChildrens = $("#jstree_div").jstree("get_children_dom",childrens);
                         $('#jstree_div').jstree("deselect_all");
                         $("#jstree_div").jstree("select_node", chChildrens[0]);
                         $("#codeCollapse").addClass("show");
