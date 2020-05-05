@@ -3912,7 +3912,7 @@ showFloatDashCompBuild();
                         preferedPopPos = "bottom";
                         floatPop("DashBuildMenu","Clicking this button will open a prompt to build the component.<br><br><b class='red'>Task:</b> click this build button and then click 'build' in the dialog to prime this server.")
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},1*60*1000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},30*1000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
