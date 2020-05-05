@@ -3856,19 +3856,7 @@ showFloatMem()
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-                            
-showFloatStatus()
-                        })
-                    }
-                    function showFloatStatus(){
-                        $("#dashBtn").click();
-                        floatPop("resultsStatus", "When components are being built the status of each build is displayed here.");
-                        $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
 
-                        $("#floatPopOk").click(function(event){
-                            clearTimeout(floatPopOkTimeout);
-                            
 showFloatSys()
                         })
                     }
@@ -3922,13 +3910,26 @@ showFloatDashCompBuild();
                     function showFloatDashCompBuild(){
                         $("#dashBtn").click();
                         preferedPopPos = "bottom";
-                        floatPop("DashBuildMenu","Clicking this button will open a prompt to build the component.")
+                        floatPop("DashBuildMenu","Clicking this button will open a prompt to build the component.<br><br><b class='red'>Task:</b> click this build button and then click 'build' in the dialog to prime this server.")
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},2*60*1000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-                            
-showFloatVideo();
+
+showFloatStatus();
+                        })
+                    }
+
+                    function showFloatStatus(){
+                        $("#dashBtn").click();
+                        floatPop("resultsStatus", "When components are being built the status of each build is displayed here.");
+                        $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
+
+                        $("#floatPopOk").click(function(event){
+                            clearTimeout(floatPopOkTimeout);
+
+                            showFloatVideo()
                         })
                     }
                     function showFloatVideo(){
@@ -4232,7 +4233,6 @@ $("#componentsBtn").click();
                     }
                     function showFloatCompBuildCodeSwitches(){
                         $("#componentsBtn").click();
-                        $("#jstree_div").jstree("open_node", "local", false, true);
                         var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
                         var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
                         $("#jstree_div").jstree("open_node", sysId, false, true);
@@ -4244,8 +4244,6 @@ $("#componentsBtn").click();
                         setTimeout(function(){
                             $("#edit_button").click();
                             $('#job-form-panel').animate({ scrollTop: $("#buildCodeSwitches").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
-                        },500);
-                        setTimeout(function(){
                             preferedPopPos = "left"
                             floatPop("buildCodeSwitches",  "In edit mode a developer can define how the build code will be executed.");
                         },500);
@@ -4260,6 +4258,7 @@ $("#componentsBtn").click();
                     }
                     function showFloatCompBuildCodeScript(){
                         $("#componentsBtn").click();
+                        $("#jstree_div").jstree("open_node", "local", false, true);
                         var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
                         var childrens = $("#jstree_div").jstree("get_children_dom",sysId)[1];
                         var chChildrens = $("#jstree_div").jstree("get_children_dom",childrens);
@@ -4267,9 +4266,9 @@ $("#componentsBtn").click();
                         $("#jstree_div").jstree("select_node", chChildrens[0]);
                         $("#codeCollapse").addClass("show");
 
-                        $('#job-form-panel').animate({ scrollTop: $("#script").offset().top + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.3) }, 1000);
                         setTimeout(function(){
-//                            $("#edit_button").click();
+                            $("#edit_button").click();
+                            $('#job-form-panel').animate({ scrollTop: $("#script").offset().top + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.3) }, 1000);
                             preferedPopPos = "left"
                             floatPop("script",  "Build code script is executed on the system line by line. Inserting variables allows the developer to integrate each component.");
                         },500);
@@ -4287,15 +4286,14 @@ $("#componentsBtn").click();
                         $("#componentsBtn").click();
                         var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
                         var childrens = $("#jstree_div").jstree("get_children_dom",sysId)[1];
-                        var chChildrens = $("#jstree_div").jstree("get_children_dom",childrens);
+                        var chChildrens = $("#jstree_div").jstree("get_children_dom",childrens); 
                         $('#jstree_div').jstree("deselect_all");
                         $("#jstree_div").jstree("select_node", chChildrens[0]);
                         $("#codeCollapse").addClass("show");
 
                         setTimeout(function(){
-                            $('#job-form-panel').animate({ scrollTop: $("#templateCard0").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
-
                             $("#edit_button").click();
+                            $('#job-form-panel').animate({ scrollTop: $("#templateCard0").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
                             preferedPopPos = "left"
                             floatPop("templateCard0",  "Developers can attach code that can be moved to the system and altered by the build script.");
                         },500);
@@ -4444,6 +4442,7 @@ $("#componentsBtn").click();
                     popObj.css({'transition': 'transform 1.0s ease-out' });
 
                     if(popObj.length > 0){
+                        ghostObj.data('bs.popover').config.html=true;
                         ghostObj.data('bs.popover').config.content = text;
                         ghostObj.popover("show");
                         ghostObj.popover("update");
@@ -6146,10 +6145,7 @@ $("#componentsBtn").click();
                 <h4 class="modal-title"><i class="fa fa-server fa-fw"></i>ezStack Builder Demo Server</h4>
             </div>
             <div class="modal-body">
-
-                <p>The ezStack builder server has stopped. Thank you for trying the demo. Please let me know what you think.</p>
-
-
+                <p>The ezStack builder server has stopped. Thank you for trying the demo. Click Ok to return to <a href="https://ezstack.systems?demo=done">ezStack.systems</a></p>
             </div>
             <div class="modal-footer">
                 <button type="button" id="serverUnavailableBtn" class="btn btn-default jobFormbtn" data-dismiss="modal">Ok</button>
@@ -6612,7 +6608,7 @@ $("#componentsBtn").click();
                 <br/>
                 <h2>Welcome to ezStack Builder</h2>
                 <hr class="welcome-hr">
-                <p>ezStack Builder can connect to any linux server to build and configure it for you.
+                <p>ezStack Builder can connect to any Linux server to build and configure it for you.
                     In ezStack Builder a 'system' represents the infrastructure of your web server. A 'component' record is arranged on a tree and is the user's implementation of a seperate 'build code' record. The build code record holds the code and resources and are shared by the components.
                     If you provide a system with a host or ip address it can connect and configure the server as specified by the components and how they are arranged.
                     As a non-technical high level user you can modify a web server's look and functionality by changing variables and rearranging components.
@@ -6670,7 +6666,7 @@ $("#componentsBtn").click();
                 <br/>
                 <h2>Welcome to ezStack Builder Demo</h2>
                 <hr class="welcome-hr">
-                <p>ezStack Builder can connect to any linux server to build and configure it for you. For demonstration purposes authentication is not requited and the target server (host variable) is the same as this ezStack Builder demo server (localhost).
+                <p>For demonstration purposes authentication is not requited and the target server is the same as this ezStack Builder demo server (localhost).
                 </p>
                 <p>
                     In this demo you will build a web software stack and deploy some applications. This ezStack Builder server will end in 15 minutes.

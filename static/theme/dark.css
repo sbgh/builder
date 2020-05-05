@@ -751,3 +751,7 @@ input:focus + .slider {
 .bs-popover-auto[x-placement^="bottom"] .arrow::after {
     border-bottom-color: #79bdf3;
 }
+
+.red{
+    color: red
+}
