@@ -66,7 +66,7 @@ var chrome='';
 var Page = '';
 var Runtime = '';
 var PageInput = '';
-// var protocol='';
+var protocol='';
 var chrome='';
 var Overlay='';
 var DOM='';
@@ -84,7 +84,7 @@ async function startChrome() {
 
     const viewport = [1280,720];
 
-    var protocol = await CDP({
+    protocol = await CDP({
         port: chrome.port
     });
 
