@@ -3934,10 +3934,8 @@ showFloatStatus();
                         $("#dashBtn").click();
                         $(".dashTableRow")[1].click();
 
-                     //   setTimeout(function(){
-                            preferedPopPos = "bottom";
-                            floatPop("dashTableBuildButton_1","Apps is a project that contains several web applications and services.<br><br><b class='floatPopTaskLabel'>Task:</b> Click this build button and then click 'build' in the dialog to install 'Apps' on this server.")
-                     //   },300);
+                        preferedPopPos = "bottom";
+                        floatPop("dashTableBuildButton_1","Apps is a project that contains several web applications and services.<br><br><b class='floatPopTaskLabel'>Task:</b> If the prime build is complete, click this build button and then click 'build' in the dialog to install 'Apps' on this server.")
 
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},60*1000);
@@ -4001,7 +3999,7 @@ $("#userMenuDrop").removeClass('show');
                         })
                     }
                     function showFloatCompTree(){
-//                        $("#jstree_div").jstree("close_all", '#');
+                        $("#jstree_div").jstree("close_all", '#');
                         $('#jstree_div').jstree(true).open_node("local", false);
                         setTimeout(function(){
                             floatPop("local",  "In the Components screen is a tree that allows you to browse all installed systems and components.")
@@ -5107,9 +5105,11 @@ $("#componentsBtn").click();
                     if( ! $("#componentsBtn").hasClass('active')){
                         $("#componentsBtn").click();
                     }
-                    $('#jstree_div').jstree("deselect_all");
-                    $('#jstree_div').jstree('select_node', selectedNode);
-                    $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
+                    setTimeout(function(){
+                        $('#jstree_div').jstree("deselect_all");
+                        $('#jstree_div').jstree('select_node', selectedNode);
+                        $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
+                    }, 500);
                 });
 
             function sendVideoMouseClick(x ,y, ctrlKey){
