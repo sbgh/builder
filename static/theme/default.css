@@ -553,7 +553,7 @@ input:not(:checked) + .slider.round:before{
     border-bottom-color: #367ae0;
 }
 
-.red{
+.floatPopTaskLabel{
     color: red
 }
 

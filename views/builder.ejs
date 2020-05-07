@@ -518,8 +518,6 @@
                                 $("#"+dataObj.id+"_anchor").next().addClass("jstree-codeBlock");
                             })
 
-                            //loadBuildCodeModalList();
-
                             $.get('/highlight', { id: selectedNode }, function(data) {});
                             $("#comType").val('Job');
 
@@ -723,7 +721,7 @@
                             pCompHtml += "<td style="+thisStyle+" class='col-2 dashTableNameItem'>  " + thisNameColHtml + "</td>";
 
                             var thisBuildColHtml = "<div class='dashTableNameButtonRow' >";
-                            thisBuildColHtml += "<button id='DashBuildMenu' " + display + " class='btn btn-default jobFormbtn dashTableBuildButton'><i class='fa  fa-play fa-fw  '></i></button></div>  ";
+                            thisBuildColHtml += "<button id='dashTableBuildButton_"+x+"' " + display + " class='btn btn-default jobFormbtn dashTableBuildButton'><i class='fa  fa-play fa-fw  '></i></button></div>  ";
                             pCompHtml += "<td class='col-1 dashTableBuildItem'>" + thisBuildColHtml +  "</td>";
 
 
@@ -3889,14 +3887,13 @@ showFloatDashTable()
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},9000);
                         $("#floatPopOk").click(function(event){
-                            clearTimeout(floatPopOkTimeout);
-                            
-$(".dashTableRow")[0].click();
+                            clearTimeout(floatPopOkTimeout)
                             showFloatDashCompOpen();
                         })
                     }
                     function showFloatDashCompOpen(){
                         $("#dashBtn").click();
+                        $(".dashTableRow")[0].click();
                         preferedPopPos = "bottom";
                         floatPop("DashOpenMenu","This button is used to exit the dashboard and open this component in the components view.")
                         $("#floatPopOk").unbind();
@@ -3909,8 +3906,9 @@ showFloatDashCompBuild();
                     }
                     function showFloatDashCompBuild(){
                         $("#dashBtn").click();
+                        $(".dashTableRow")[0].click();
                         preferedPopPos = "bottom";
-                        floatPop("DashBuildMenu","Clicking this button will open a prompt to build the component.<br><br><b class='red'>Task:</b> click this build button and then click 'build' in the dialog to prime this server.")
+                        floatPop("dashTableBuildButton_0","Clicking this button will open a prompt to build the 'prime' components. These components will install various system tools to help with building.<br><br><b class='floatPopTaskLabel'>Task:</b> Click this build button and then click 'build' in the dialog to prime this server.")
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},30*1000);
                         $("#floatPopOk").click(function(event){
@@ -3929,7 +3927,23 @@ showFloatStatus();
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
-                            showFloatVideo()
+                            showFloatDashCompBuildApps()
+                        })
+                    }
+                    function showFloatDashCompBuildApps(){
+                        $("#dashBtn").click();
+                        $(".dashTableRow")[1].click();
+
+                     //   setTimeout(function(){
+                            preferedPopPos = "bottom";
+                            floatPop("dashTableBuildButton_1","Apps is a project that contains several web applications and services.<br><br><b class='floatPopTaskLabel'>Task:</b> Click this build button and then click 'build' in the dialog to install 'Apps' on this server.")
+                     //   },300);
+
+                        $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},60*1000);
+                        $("#floatPopOk").click(function(event){
+                            clearTimeout(floatPopOkTimeout);
+                            showFloatVideo();
                         })
                     }
                     function showFloatVideo(){
@@ -4185,8 +4199,6 @@ $("#componentsBtn").click();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-
-                            $("#componentsBtn").click();
                             showFloatCompBuildCode();
                         })
                     }
@@ -4307,8 +4319,6 @@ $("#componentsBtn").click();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-
-//                            $("#script").click();
                             showFloatCompBuildCodeRes();
                         })
                     }

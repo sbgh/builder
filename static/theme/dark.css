@@ -752,6 +752,6 @@ input:focus + .slider {
     border-bottom-color: #79bdf3;
 }
 
-.red{
+.floatPopTaskLabel{
     color: red
 }
