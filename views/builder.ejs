@@ -3833,6 +3833,7 @@
                         })
                         $("#floatPopStop").click(function(event){
                             $('.popover').popover('hide');
+                            clearTimeout(floatPopOkTimeout);
                         })
 
                     }
@@ -3908,7 +3909,7 @@ showFloatDashCompBuild();
                         $("#dashBtn").click();
                         $(".dashTableRow")[0].click();
                         preferedPopPos = "bottom";
-                        floatPop("dashTableBuildButton_0","Clicking this button will open a prompt to build the 'prime' components. These components will install various system tools to help with building.<br><br><b class='floatPopTaskLabel'>Task:</b> Click this build button and then click 'build' in the dialog to prime this server.")
+                        floatPop("dashTableBuildButton_0","Clicking this button will open a prompt to build the 'prime' components. These components will install various system tools to help with building.<br><br><b class='floatPopTaskLabel'>Practise:</b> Click this build button and then click 'build' in the dialog to prime this server.")
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},30*1000);
                         $("#floatPopOk").click(function(event){
@@ -3935,7 +3936,7 @@ showFloatStatus();
                         $(".dashTableRow")[1].click();
 
                         preferedPopPos = "bottom";
-                        floatPop("dashTableBuildButton_1","Apps is a project that contains several web applications and services.<br><br><b class='floatPopTaskLabel'>Task:</b> If the prime build is complete, click this build button and then click 'build' in the dialog to install 'Apps' on this server.")
+                        floatPop("dashTableBuildButton_1","Apps is a project that contains several web applications and services.<br><br><b class='floatPopTaskLabel'>Practise:</b> If the prime build is complete, click this build button and then click 'build' in the dialog to install 'Apps' on this server.")
 
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},60*1000);
@@ -4146,7 +4147,7 @@ $("#componentsBtn").click();
                             var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
                             var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
                             $("#jstree_div").jstree("select_node", childrens[1]);
-                            floatPop("name",  "Each components has a name ...");
+                            floatPop("name",  "Each component has a name ...");
                         },500);
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},4000);
@@ -4461,6 +4462,8 @@ $("#componentsBtn").click();
                         ghostObj.popover("update");
                     }else{
                         ghostObj.popover(options);
+                        ghostObj.data('bs.popover').config.html=true;
+                        ghostObj.data('bs.popover').config.content = text;
                         ghostObj.popover("show");
                     }
 

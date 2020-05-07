@@ -1654,7 +1654,7 @@ td.col-1.dashTableBuildItem {
 
 
 .floatPop, .hoverPop, .clickPop {
-   margin-top: 3px;
+
 }
 
 .clickPop .popover-body{
@@ -1713,3 +1713,17 @@ div#floatingPopover {
     line-height: 1.2;
     text-align: center;
 }
+
+.floatPop[x-placement^="bottom"]{
+   border-top-width: 10px;
+}
+.floatPop[x-placement^="top"]{
+   border-bottom-width: 10px;
+}
+.floatPop[x-placement^="right"]{
+   border-left-width: 10px;
+}
+.floatPop[x-placement^="left"]{
+   border-right-width: 10px;
+}
+

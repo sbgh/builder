@@ -734,22 +734,22 @@ input:focus + .slider {
 
 .bs-popover-top .arrow::after,
 .bs-popover-auto[x-placement^="top"] .arrow::after {
-    border-top-color: #79bdf3;
+    border-top-color: #2f2f2f;
 }
 
 .bs-popover-left .arrow::after,
 .bs-popover-auto[x-placement^="left"] .arrow::after {
-    border-left-color: #79bdf3;
+    border-left-color: #2f2f2f;
 }
 
 .bs-popover-right .arrow::after,
 .bs-popover-auto[x-placement^="right"] .arrow::after {
-    border-right-color: #79bdf3;
+    border-right-color: #2f2f2f;
 }
 
 .bs-popover-bottom .arrow::after,
 .bs-popover-auto[x-placement^="bottom"] .arrow::after {
-    border-bottom-color: #79bdf3;
+    border-bottom-color: #2f2f2f;
 }
 
 .floatPopTaskLabel{
