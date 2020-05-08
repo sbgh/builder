@@ -59,8 +59,12 @@
                     'check_callback': function(operation, node, node_parent, node_position, more) {
                         if (operation === "copy_node") {
 
-                            const targetNodeId = $(".jstree-hovered")[0].id;
+
+                            //const targetNodeId = $(".jstree-hovered")[0].id;
+                            const targetNodeId = node_parent.id;
+                            const pos = node_position;
                             const targetNode =  $('#jstree_div').jstree(true).get_node(targetNodeId);
+                            $('#copyModal_newPosition').val(pos);
                             if(targetNode.id === "#") {
                                 return false;
                             }else{
@@ -238,6 +242,7 @@
                 var mydata = {};
                 mydata.ids = $('#copyModal_listOfIds').val();
                 mydata.parent = $('#copyModal_newParent').val();
+                mydata.pos = $('#copyModal_newPosition').val();
                 mydata.lib = $('#copyModal_lib').val();
 
                 if(!$('#copyChildrenCb').is(':checked')){
@@ -6382,7 +6387,10 @@ $("#componentsBtn").click();
                 </form>
                 <br/>
 
-                <input type="hidden" id="copyModal_listOfIds"><input type="hidden" id="copyModal_newParent"><input type="hidden" id="copyModal_lib">
+                <input type="hidden" id="copyModal_listOfIds">
+                <input type="hidden" id="copyModal_newParent">
+                <input type="hidden" id="copyModal_newPosition">
+                <input type="hidden" id="copyModal_lib">
             </div>
             <div class="modal-footer">
                 <button type="button" id="copyConfirmButton" class="btn btn-default jobFormbtn">Copy</button>

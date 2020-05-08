@@ -1334,11 +1334,13 @@ router.get("/move",function(req,res){
 
     var parent = SystemsJSON[id].parent;
 
+    fixChildsSort(parent);
+
     var beforeId = '';
     var afterId = '';
 
     //get all siblings
-    var siblings = []
+    var siblings = [];
     for (var key in SystemsJSON) {
         if(SystemsJSON.hasOwnProperty(key)){
             if (parent === SystemsJSON[key].parent) {
@@ -1349,12 +1351,12 @@ router.get("/move",function(req,res){
     }
 
     //sort
-    siblings.sort((a, b) => (SystemsJSON[a].sort > SystemsJSON[b].sort) ? 1 : -1)
+    siblings.sort((a, b) => (SystemsJSON[a].sort > SystemsJSON[b].sort) ? 1 : -1);
 
     //re-apply sort # because there could be dups or gaps
     var x = 0;
     for (var key in siblings) {
-        SystemsJSON[siblings[key]].sort = x
+        SystemsJSON[siblings[key]].sort = x;
         x++
     }
 
@@ -1393,6 +1395,28 @@ router.get("/move",function(req,res){
     res.end(JSON.stringify({newPos:newPos, oldPos:oldPos, otherId:otherId}));
 
 });
+
+function fixChildsSort(parentId){
+    //get all siblings
+    var siblings = [];
+    for (var key in SystemsJSON) {
+        if(SystemsJSON.hasOwnProperty(key)){
+            if (parentId === SystemsJSON[key].parent) {
+                siblings.push(key);
+            }
+        }
+    }
+
+    //sort
+    siblings.sort((a, b) => (SystemsJSON[a].sort > SystemsJSON[b].sort) ? 1 : -1);
+
+    //re-apply sort # because there could be dups or gaps
+    var x = 0;
+    for (var key in siblings) {
+        SystemsJSON[siblings[key]].sort = x;
+        x++
+    }
+}
 
 //Service Rt: /getResults get last result file of the current component, Method: get, Requires: id = the id of component to be returning results of , Returns: the string contents of the last result file
 router.get("/getResults",function(req,res) {
@@ -1730,9 +1754,10 @@ router.post("/copy",function(req,res){
 
     var fromIds =reqJSON.ids.split(';');
     var targetId = reqJSON.parent;
+    var position = reqJSON.pos;
     var lib = reqJSON.lib;
 
-    //If the specified source library is 'local' (ie the working library) varify each id exists then process each id
+    //If the specified source library is 'local' (ie the working library) verify each id exists then process each id
     if(lib === 'local'){
         var error = false;
         var errorID = '';
@@ -1761,12 +1786,12 @@ router.post("/copy",function(req,res){
             idMap[SystemsJSON[fromIds[0]].parent] = targetId;
 
             //count target siblings and give new sort number to 1st node
-            var x =0;
-            for (var key in SystemsJSON) {
-                if (SystemsJSON[key].parent === targetId) {
-                    x++;
-                }
-            }
+            // var x =0;
+            // for (var key in SystemsJSON) {
+            //     if (SystemsJSON[key].parent === targetId) {
+            //         x++;
+            //     }
+            // }
 
             //loop through all fromIds and copy
             fromIds.forEach(function(fromId) {
@@ -1840,7 +1865,16 @@ router.post("/copy",function(req,res){
             });
 
             //add new sort order value to the 1st id
-            SystemsJSON[idMap[fromIds[0]]].sort = x;
+            var posInt = parseInt(position, 10);
+            for (var key in SystemsJSON) {
+                if (SystemsJSON[key].parent === targetId)  {
+                    if(SystemsJSON[key].sort >= posInt){
+                        SystemsJSON[key].sort = SystemsJSON[key].sort + 1;
+                    }
+                }
+            }
+            SystemsJSON[idMap[fromIds[0]]].sort = posInt;
+            fixChildsSort(targetId);
 
             //Save SystemsJSON and backup
             saveAllJSON(true);
@@ -1970,7 +2004,16 @@ router.post("/copy",function(req,res){
             });
 
             //add new sort order value to the 1st id
-            SystemsJSON[idMap[fromIds[0]]].sort = x;
+            var posInt = parseInt(position, 10);
+            for (var key in SystemsJSON) {
+                if (SystemsJSON[key].parent === targetId)  {
+                    if(SystemsJSON[key].sort >= posInt){
+                        SystemsJSON[key].sort = SystemsJSON[key].sort + 1;
+                    }
+                }
+            }
+            SystemsJSON[idMap[fromIds[0]]].sort = posInt;
+            fixChildsSort(targetId);
 
             //copy build code
             let bcJSON = JSON.parse(fs.readFileSync("library/" + lib + "/BuildCode.json"));
