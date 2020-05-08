@@ -486,7 +486,7 @@
             //tree click
             $('#jstree_div').on("select_node.jstree", function (e, data) {
 
-                if(refreshFlag){
+                if(refreshFlag || ($("#edit_button").is(":visible") && selectedNode === data.selected[0])){
                     refreshFlag = false;
                 }else{
 
