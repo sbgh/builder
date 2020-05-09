@@ -3055,10 +3055,10 @@
             });
 
             $("#sys-form-panel").scroll(function(){
-                resetGhostPos();
+                updateAllPopovers();
             })
             $("#job-form-panel").scroll(function(){
-                resetGhostPos();
+                updateAllPopovers();
             })
 
             $("#new_button, #new_sys_button").on("click",function() {
@@ -3280,7 +3280,7 @@
                     }
                     setFormColWidth();
 
-                    resetGhostPos();
+                    updateAllPopovers();
 
                 });
 
@@ -3301,14 +3301,14 @@
                         e.preventDefault();
                         var leftWidth = e.clientX;
                         setLibWindowWidth(leftWidth , container);
-                        resetGhostPos()
+                        updateAllPopovers()
                     }
 
                     if(isResizingWidth){
                         e.preventDefault();
                         var leftWidth = e.clientX;
                         setWindowWidth(leftWidth - libTreeWidth - 2, container, false);
-                        resetGhostPos()
+                        updateAllPopovers()
                     }
 
 
@@ -3319,7 +3319,7 @@
                 });
             });
 
-            function resetGhostPos(){
+            function updateAllPopovers(){
                 //incase the window changed during tour
                 if(currentGhostEle !== ""){
                     var eleJObj = $("#"+currentGhostEle);
@@ -3332,8 +3332,9 @@
                     ghostObj.css({'width':width + 'px'});
                     ghostObj.css({'height':height + 'px'});
                     ghostObj.css({'top':bounds.top + 'px', 'left':bounds.left + 'px' });
-                    ghostObj.popover("update");
                 }
+                //update all popovers because why not
+                $(".popover").popover("update");
             }
 
             //Calling this function will set the height of each element in the view
@@ -5358,16 +5359,15 @@ $("#componentsBtn").click();
             });
 
             document.body.addEventListener('wheel', function(e){
-                var csX = e.deltaX
+                var csX = e.deltaX;
                 var csY = e.deltaY;
                 if(Math.abs(csX) > Math.abs(csY)){
 
                     if(componentDetailsHoverFlag){
                         e.preventDefault();
                         setWindowWidth(JSON.parse(localStorage['locTreeWidth']).width - csX/2, container);
-                        resetGhostPos();
+                        updateAllPopovers();
                     }
-
                 }
             }, {passive: false}) //https://github.com/inuyaksa/jquery.nicescroll/issues/799#issuecomment-522275951
 
