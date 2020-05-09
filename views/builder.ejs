@@ -2014,7 +2014,7 @@
                             newLines.pop();
 
                             newLines.forEach(function(row){
-                                console.log(row);
+                                //console.log(row); 
                                 if(row.substr(0,17) === 'message:Building:'){$("#resultsStatus").html( "<div>" + " <img src='/images/throbber.gif'> " + row.slice(17) + "</div>"  );}
                                 else if(row.substr(0,28) === 'status:All scripts completed'){
                                     $("#resultsStatus").html( "<b>All scripts completed</b>");
