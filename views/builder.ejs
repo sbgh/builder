@@ -2007,14 +2007,15 @@
                             var sys = $("#sysToBeRun").val();
 
                             rTextNew.split('<br>').forEach(function(row){
-
-                                if(row.substr(0,17) === 'message:Building:'){
-                                    $("#resultsStatus").html( "<div>" + row.slice(17) + " <img src='/images/throbber.gif'></div>");
-                                }else if(row.substr(0,28) === 'status:All scripts completed'){
+                                console.log(row);
+                                if(row.substr(0,17) === 'message:Building:'){$("#resultsStatus").html( "<div>" + " <img src='/images/throbber.gif'> " + row.slice(17) + "</div>"  );}
+                                else if(row.substr(0,28) === 'status:All scripts completed'){
                                     $("#resultsStatus").html( "<b>All scripts completed</b>");
-                                }else if(row.substr(0,22) === 'status:Scripts Aborted'){
+                                }
+                                else if(row.substr(0,22) === 'status:Scripts Aborted'){
                                     $("#resultsStatus").append( "Scripts aborted");
-                                }else if(row.substr(0,26) === 'message:CompletionSuccess:'){
+                                }
+                                else if(row.substr(0,26) === 'message:CompletionSuccess:'){
                                     if(row.slice(26) === 'true'){
 //                                        $("#resultsStatus").append( "<i class='fa  fa-check fa-fw DashListRowPass'></i>");
                                         $("#resultsStatus").html(  $("#resultsStatus").html().replace('<img src="/images/throbber.gif">',"<i class='fa  fa-check fa-fw DashListRowPass'></i>"));
@@ -2025,19 +2026,15 @@
                                         CompletionSuccess = false;
                                     }
                                 }
-
-                                if(row.substr(0,4) === 'key:' &&  $("#results_html").html().split("<br>").join("") === "") {
+                                else if(row.substr(0,4) === 'key:' &&  $("#results_html").html().split("<br>").join("") === "") {
                                     localKey += row.substr(4) + '\n';
                                 }
-//                                else if(row.substr(0,7) === 'access:' &&  $("#results_html").html().split("<br>").join("") === "") {
-//                                    localAccess += row.substr(7) + '\n';
-//                                }
                                 else if(row.substr(0,12) === 'message:url:'){
                                     updateScreenShotLink(row.slice(12))
 
                                 }
-                                else if(row.substr(0,16) === 'message:BuildID:'){ 
-                                    console.log(row);
+                                else if(row.substr(0,16) === 'message:BuildID:'){
+
                                     buildIDRunning = row.substring(
                                         row.lastIndexOf("[") + 1,
                                         row.lastIndexOf("]")
