@@ -2036,7 +2036,8 @@
                                     updateScreenShotLink(row.slice(12))
 
                                 }
-                                else if(row.substr(0,16) === 'message:BuildID:'){
+                                else if(row.substr(0,16) === 'message:BuildID:'){ 
+                                    console.log(row);
                                     buildIDRunning = row.substring(
                                         row.lastIndexOf("[") + 1,
                                         row.lastIndexOf("]")
