@@ -1981,6 +1981,7 @@
 
                 var closedNodeList = [];
                 var CompletionSuccess = false;
+                var remainder = "";
 
                 $("#results_html").html(""); //if there is a new key/access file then it needs to be the first thing in this element. 'key:......'
                 $.ajax({
@@ -2002,11 +2003,17 @@
 
                             var rTextNew = rText.substr(currentRespText.length)
                             currentRespText = rText;
-                            var rTextNew = ansi_up.ansi_to_html(rTextNew).replace(/(?:\r\n|\r|\n)/g, '<br>');
+                            var rTextNew = remainder + ansi_up.ansi_to_html(rTextNew).replace(/(?:\r\n|\r|\n)/g, '<br>');
 
                             var sys = $("#sysToBeRun").val();
 
-                            rTextNew.split('<br>').forEach(function(row){
+                            var newLines = rTextNew.split('<br>');
+
+                            //Anything past the last <br> is probably an incomplete row. Lets remove it and tack it on to beginning of next response.
+                            remainder = newLines[newLines.length - 1];
+                            newLines.pop();
+
+                            newLines.forEach(function(row){
                                 console.log(row);
                                 if(row.substr(0,17) === 'message:Building:'){$("#resultsStatus").html( "<div>" + " <img src='/images/throbber.gif'> " + row.slice(17) + "</div>"  );}
                                 else if(row.substr(0,28) === 'status:All scripts completed'){
@@ -2084,9 +2091,9 @@
                                 }
                                 else{
                                     $("#results_html").append(row + '<br>');
+                                    $('#results_html').animate({scrollTop: $('#results_html').get(0).scrollHeight}, 50);
                                 }
                             })
-                            $('#results_html').animate({scrollTop: $('#results_html').get(0).scrollHeight}, 50);
                         };
 
                         return xhr;
