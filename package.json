@@ -17,7 +17,7 @@
     "formidable": "^1.1.1",
     "getuid": "0.0.1",
     "password-hash": "^1.2.2",
-    "session-file-store": "^1.0.0", 
+    "session-file-store": "^1.0.0",
     "ssh2": "^0.5.4"
   }
 }

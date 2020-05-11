@@ -1654,7 +1654,8 @@ td.col-1.dashTableBuildItem {
 
 
 .floatPop, .hoverPop, .clickPop {
-
+   border-radius: 20px;
+   transition: all 0.5s;
 }
 
 .clickPop .popover-body{
@@ -1725,5 +1726,9 @@ div#floatingPopover {
 }
 .popover[x-placement^="left"]{
    border-right-width: 10px;
+}
+
+.popover .arrow  {
+   transition: all 0.5s;
 }
 
