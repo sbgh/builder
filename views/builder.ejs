@@ -2052,6 +2052,8 @@
                                     if(buildIDRunning !== ''){
                                         $('#' + buildIDRunning + '_anchor').removeClass('runningJobCompleteSuccess').removeClass('runningJobCompleteFail').addClass("runningJob");
                                         if(buildIDRunningPrev !== ''){
+                                            $('#results_html').animate({scrollTop: $('#results_html').get(0).scrollHeight}, 200);
+
                                             $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteFail').addClass("runningJobCompleteSuccess");
                                         }
                                         buildIDRunningPrev = buildIDRunning;
@@ -2089,12 +2091,11 @@
                                 }
                                 else if(row.substr(0,16) === 'message:restart:'){
 
-                                    //restart client in 5 seconds
-                                    setTimeout(function(){location.reload(true)} , 5000);
+                                    //restart client in 3 seconds
+                                    setTimeout(function(){location.reload(true)} , 3000);
                                 }
                                 else{
                                     $("#results_html").append(row + '<br>');
-                                    $('#results_html').animate({scrollTop: $('#results_html').get(0).scrollHeight}, 50);
                                 }
                             })
                         };
@@ -2129,6 +2130,7 @@
 
                     $('#jstree_div').jstree(true).refresh(true);
 
+
                 }).fail(function (e) {
 
                     if(localKey !== '' && sys.length !== 0 && !localStorage['key_' + sys]  ){
@@ -2160,7 +2162,6 @@
             $('#runClosestAn').on('change', function(){
                 if(this.checked) {
                     //call checkRerunnable to get rerunnable ancestor and update ui accordingly
-          //          checkRerunnable($("#idToBeRun").val(),  $("#sysToBeRun").val())
                     checkRerunnable($("#idToBeRun").val())
                 }else{
                     //enable run button hide warning
@@ -2181,11 +2182,9 @@
             });
 
             function checkRerunnable(id){
-               // $.get('/ClosestRerunnableAn', { id: id, sys: sys }, function(data) {
                     $.get('/ClosestRerunnableAn', { id: id }, function(data) {
 
-                    //data is expected to be json;
-                    //{id : the id str of the ancestor that if found or '', ClosestRerunnableAn : An object containing the found ancestor}
+                    //data is expected to be json
                     const dataObj = JSON.parse(data);
 
                     //Place id in ClosestRerunnableAn input
