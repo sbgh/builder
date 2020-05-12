@@ -4408,9 +4408,9 @@ $("#componentsBtn").click();
                     function showFloatEnd(){
                         $("#dashBtn").click();
                         $("#DemoDoneModal").modal('show');
-                        setTimeout(function(){
-                            $("#demoDoneBtn").focus();
-                        },300);
+//                        setTimeout(function(){
+//                            $("#demoDoneBtn").focus();
+//                        },300);
 
                         $("#floatPopOk").unbind();
                         $('.popover').popover('hide');
@@ -5410,7 +5410,9 @@ $("#componentsBtn").click();
                 }
             });
 
-
+            $('.modal').on('shown.bs.modal', function() {
+                $(this).find('[autofocus]').focus();
+            });
         });
 
 
@@ -6161,7 +6163,7 @@ $("#componentsBtn").click();
                     How does it feel? Let us know back at <a href="https://ezStack.systems" target="_new">ezStack.systems</a> in the contact section or fill out the quick survey. </p>
             </div>
             <div class="modal-footer">
-                <button type="button" id="demoDoneBtn" class="btn btn-default jobFormbtn" data-dismiss="modal">Ok</button>
+                <button type="button" id="demoDoneBtn" class="btn btn-default jobFormbtn" data-dismiss="modal" autofocus>Ok</button>
             </div>
         </nav>
     </div>
@@ -6708,7 +6710,7 @@ $("#componentsBtn").click();
                 </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Start Tour</button>
+                <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal" autofocus>Start Tour</button>
             </div>
         </nav>
     </div>
