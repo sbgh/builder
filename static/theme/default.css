@@ -557,3 +557,7 @@ input:not(:checked) + .slider.round:before{
     color: red
 }
 
+btn:focus {
+    outline: 3px solid #367ae0;
+}
+

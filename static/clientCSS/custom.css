@@ -1702,13 +1702,17 @@ div#floatingPopover {
    justify-content: space-evenly;
 }
 
-.floatPopMenuItem{
-    font-size: 9px;
-    font-weight: 700;
-    width: 50px;
-    padding: 0px;
-    margin: 2px;
-    cursor: pointer;
+button.floatPopMenuItem{
+   font-size: 11px;
+   font-weight: 700;
+   width: 50px;
+   padding: 0px;
+   margin: 2px;
+   cursor: pointer;
+}
+button:focus floatPopMenuItem{
+   font-size: 10px;
+   font-weight: 700;
 }
 
 .welcome-modal-content{ 
@@ -1737,6 +1741,7 @@ div#floatingPopover {
 
 .btn:focus{
    border:2;
+   text-decoration: underline;
    /*border-radius: 15px 50px 30px 5px;*/
 }
 

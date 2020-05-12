@@ -709,7 +709,7 @@ input:focus + .slider {
     color: #cfcdcd;
     transition: background-color 0.5s;
     /*background-color: #1a1b1c;*/
-    border-bottom: 4px solid #0f6ab4;
+    border-bottom: 4px solid #79bdf3;
 }
 
 #inspectLink.active{
@@ -754,4 +754,8 @@ input:focus + .slider {
 
 .floatPopTaskLabel{
     color: red
+}
+
+btn:focus {
+    outline: 3px solid #79bdf3;
 }

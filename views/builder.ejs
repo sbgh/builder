@@ -4408,6 +4408,9 @@ $("#componentsBtn").click();
                     function showFloatEnd(){
                         $("#dashBtn").click();
                         $("#DemoDoneModal").modal('show');
+                        setTimeout(function(){
+                            $("#demoDoneBtn").focus();
+                        },300);
 
                         $("#floatPopOk").unbind();
                         $('.popover').popover('hide');
