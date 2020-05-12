@@ -111,7 +111,7 @@
                 },
                 "types" : {
                     "system" : {
-                        "icon" : "fa fa-desktop ",
+                        "icon" : "fa fa-server ",
                         "a_attr": { class : " systemRow "}
                     },
                     "job" : {
@@ -126,8 +126,8 @@
                         "icon" : "fa fa-repeat rerunnableRow",
                         "a_attr": { class : " rerunnableRow "}
                     },
-                    "dashboard" : {
-                        "icon" : "fa fa-server"
+                    "root" : {
+                        "icon" : "fa fa-folder"
                     },
                     "disabled" : {
                         "icon" : "fa fa-times-circle-o disabledRow",
@@ -202,7 +202,7 @@
                 },
                 "types" : {
                     "system" : {
-                        "icon" : "fa fa-desktop ",
+                        "icon" : "fa fa-server ",
                         "a_attr": { class : " systemRow "}
                     },
                     "job" : {
@@ -210,8 +210,11 @@
                     },
                     "rerunnable" : {
                         "icon" : "fa fa-repeat rerunnableRow",
-                        "a_attr": { class : " rerunnableRow "}
+                        "a_attr": { class : " rerunnableRow "}},
+                    "root" : {
+                        "icon" : "fa fa-folder"
                     },
+
                     "disabled" : {
                         "icon" : "fa fa-times-circle-o disabledRow",
                         "li_attr": { class : "  "}
@@ -3833,7 +3836,7 @@
                         floatPop("dashBtn",  "This is the Dashboard. The Dashboard provides a high level view of your 'promoted' components and the ability to make quick changes.")
 
                         $(".floatPopMenuRow").remove();
-                        $(".floatPop").append('<div class = "floatPopMenuRow"><button id="floatPopStop" class="btn btn-default jobFormbtn floatPopMenuItem">stop<i class="fa fa-fw fa-stop "></i></button><button id="floatPopOk" class="btn btn-default jobFormbtn floatPopMenuItem">ok<i class="fa fa-fw fa-check"></i></button></div>')
+                        $(".floatPop").append('<div class = "floatPopMenuRow"><button id="floatPopStop" class="btn btn-default jobFormbtn floatPopMenuItem">stop<i class="fa fa-fw fa-stop "></i></button><button id="floatPopOk" class="btn btn-default jobFormbtn floatPopMenuItem">next<i class="fa fa-fw fa-fast-forward"></i></button></div>')
 
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
@@ -3984,6 +3987,7 @@ showFloatUser()
                     function showFloatUser(){
                         $("#dashBtn").click();
                         $("#userMenuDrop").addClass('show');
+                        preferedPopPos = "left";
                         floatPop("userMenuDrop", "The user menu contains personal preferences.");
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},5000);
@@ -4815,13 +4819,6 @@ $("#componentsBtn").click();
                 }
                 //console.log({vidHoverFlag})
 
-                var popObj = $(".floatPop");
-                if(popObj.length > 0){
-                    if(KeyObj.key === "Enter"){
-//                        $("#floatPopOk").click();
-                    }
-                }
-
             });
 
 
@@ -5075,7 +5072,7 @@ $("#componentsBtn").click();
                 },
                 "types" : {
                     "system" : {
-                        "icon" : "fa fa-desktop ",
+                        "icon" : "fa fa-server ",
                         "a_attr": { class : " systemRow "}
                     },
                     "job" : {
@@ -5090,7 +5087,7 @@ $("#componentsBtn").click();
                         "icon" : "fa fa-repeat rerunnableRow",
                         "a_attr": { class : " rerunnableRow "}
                     },
-                    "dashboard" : {
+                    "root" : {
                         "icon" : "fa fa-server"
                     },
                     "disabled" : {

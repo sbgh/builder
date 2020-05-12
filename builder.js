@@ -761,7 +761,7 @@ router.get("/JobsTree",function(req,res){
         rowdata.name = "local";
         rowdata.text = "Working";
         rowdata.sort = 0;
-        rowdata.type = "dashboard";
+        rowdata.type = "root";
         rowdata.parent = '#';
         resJSON.push(rowdata);
 
