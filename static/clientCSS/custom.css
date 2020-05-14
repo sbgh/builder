@@ -1745,3 +1745,14 @@ button:focus floatPopMenuItem{
    /*border-radius: 15px 50px 30px 5px;*/
 }
 
+.modal{
+   opacity: .75;
+   transition: backdrop-filter .5s;
+   backdrop-filter: blur(3px);
+}
+
+.fade:not(.show) {
+   transition: backdrop-filter .2s;
+   backdrop-filter: blur(0px);
+}
+

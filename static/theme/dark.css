@@ -181,18 +181,6 @@ div.grippie {
 
 
 
-.modal-content {
-    color: #bbbbbb;
-    transition: background-color 0.5s;
-    background-color: #3c3e3f;
-}
-
-.welcome-modal-content{
-    color: white;
-    transition: background 0.2s;
-    background: black;
-    border: 2px solid #79bdf3;
-}
 
 
 .form-control::-webkit-input-placeholder { color: #555555; }  /* WebKit, Blink, Edge */
@@ -729,6 +717,7 @@ input:focus + .slider {
 }
 
 .clickPop .popover-body, .hoverPop .popover-body, .floatPop .popover-body {
+    transition: color 0.5s;
     color: white;
 }
 
@@ -759,3 +748,15 @@ input:focus + .slider {
 btn:focus {
     outline: 3px solid #79bdf3;
 }
+
+
+
+.modal-content {
+    color: white;
+    transition: background 0.2s;
+    background: black;
+    border: 2px solid #79bdf3;
+}
+
+
+

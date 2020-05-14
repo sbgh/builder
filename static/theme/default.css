@@ -156,19 +156,6 @@ div.grippie {
 
 
 
-.modal-content {
-    color: #3c3e3f;
-    transition: background-color 1s;
-    background-color: #ececec;
-}
-
-.welcome-modal-content{
-    color: black;
-    transition: background 0.2s;
-    background: white;
-    border: 2px solid #367ae0;
-}
-
 .form-control::-webkit-input-placeholder { color: #a3a3a3; }  /* WebKit, Blink, Edge */
 .form-control:-moz-placeholder { color: #a3a3a3; }  /* Mozilla Firefox 4 to 18 */
 .form-control::-moz-placeholder { color: #a3a3a3; }  /* Mozilla Firefox 19+ */
@@ -530,6 +517,7 @@ input:not(:checked) + .slider.round:before{
 }
 
 .clickPop .popover-body, .hoverPop .popover-body, .floatPop .popover-body {
+    transition: color 0.5s;
     color: #000000;
 }
 
@@ -561,3 +549,19 @@ btn:focus {
     outline: 3px solid #367ae0;
 }
 
+.modal{
+    opacity: .95;
+}
+
+.modal-content {
+    /*color: #3c3e3f;*/
+    /*transition: background-color 1s;*/
+    /*background-color: ececec;*/
+    color: black;
+    transition: background 0.2s;
+    background: white;
+    border: 2px solid #367ae0;
+}
+
+.welcome-modal-content{
+}
