@@ -1746,6 +1746,8 @@ button:focus floatPopMenuItem{
 }
 
 .modal{
+   backface-visibility: hidden; 
+   transform: translateZ(0);
    opacity: .75;
    transition: backdrop-filter .5s;
    backdrop-filter: blur(3px);
