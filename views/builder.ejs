@@ -892,6 +892,7 @@
                 })
             }
 
+            var serverFailedCount = 0;
             serverStats();
             function serverStats(){
                 var mydata = {};
@@ -916,9 +917,12 @@
                     },
                     error : function(error) {
                         if(currentSettings.clientMode == "demo"){
-                            //hide all popovers
-                            $('.popover').popover('hide');
-                            $('#serverUnavailableDemoModal').modal('show');
+                            serverFailedCount++; //show serverUnavailableDemoModal after get has failed at least a couple times.
+                            if(serverFailedCount > 1){
+                                //hide all popovers
+                                $('.popover').popover('hide');
+                                $('#serverUnavailableDemoModal').modal('show');
+                            }
                         }
                         setTimeout(serverStats, 5000);
                     }
