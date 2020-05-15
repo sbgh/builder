@@ -1742,12 +1742,13 @@ button:focus floatPopMenuItem{
 .btn:focus{
    border:2;
    text-decoration: underline;
-   /*border-radius: 15px 50px 30px 5px;*/
 }
 
 .modal{
+   /*added to increase perf in chrome*/
    backface-visibility: hidden;
    transform: translateZ(0);
+
    opacity: .75;
    transition: backdrop-filter .5s;
    backdrop-filter: blur(3px);

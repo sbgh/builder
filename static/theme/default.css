@@ -237,7 +237,8 @@ div.grippie {
 }
 
 .jobRow{
-    color: #2b2b2b;
+    transition: background-color 0.5s;
+    color: #009b23;
 }
 
 .sys-form-panel{
