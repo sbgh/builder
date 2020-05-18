@@ -3062,10 +3062,14 @@
 
             $("#sys-form-panel").scroll(function(){
                 updateAllPopovers();
-            })
+            });
             $("#job-form-panel").scroll(function(){
                 updateAllPopovers();
-            })
+            });
+            $("#dashboard").scroll(function(){
+                updateAllPopovers();
+            });
+
 
             $("#new_button, #new_sys_button").on("click",function() {
                 var mydata = {};
@@ -3831,6 +3835,7 @@
 
                 //Things to do after demo welcome modal
                 function afterDemoWelcomeModal(){
+                    var preferedPopPos = "";
                     $('.popover').popover('hide');
 
                     $("#dashBtn").click();
@@ -3861,7 +3866,6 @@
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-                            
 showFloatMem()
                         })
                     }
@@ -3969,7 +3973,7 @@ showFloatStatus();
                             "Headless-chrome gives you a live view of your apps being built. You can scroll and click the browser window like a real browser. " +
                             "You can also find components by clicking on the displayed web page elements. When browsing components, elements will be highlighted when a component, that created it, is selected.")
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},20000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},30000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             
@@ -4130,7 +4134,6 @@ $("#componentsBtn").click();
                     }
 
                     function showFloatCompTreeComp2(){
-//                        $("#componentsBtn").click();
                         $("#jstree_div").jstree("open_node", "local", false, true);
                         var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
                         var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
@@ -4148,7 +4151,7 @@ $("#componentsBtn").click();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},6000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-
+                            preferedPopPos = "";
                             $("#componentsBtn").click();
                             showFloatCompName();
                         })
@@ -4162,6 +4165,8 @@ $("#componentsBtn").click();
                         $('#jstree_div').jstree("deselect_all");
 
                         setTimeout(function(){
+                            $('#job-form-panel').animate({ scrollTop: $("#name").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
+
                             var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
                             var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
                             $("#jstree_div").jstree("select_node", childrens[1]);
@@ -4311,8 +4316,6 @@ $("#componentsBtn").click();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-
-//                            $("#script").click();
                             showFloatCompBuildCodeTemplates();
                         })
                     }
@@ -4327,9 +4330,9 @@ $("#componentsBtn").click();
 
                         setTimeout(function(){
                             $("#edit_button").click();
-                            $('#job-form-panel').animate({ scrollTop: $("#templateCard0").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
-                            preferedPopPos = "left"
-                            floatPop("templateCard0",  "Developers can attach code that can be moved to the system and altered by the build script.");
+                            $('#job-form-panel').animate({ scrollTop: $("#custTemplates").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 500);
+                            preferedPopPos = "left";
+                            floatPop("custTemplates",  "Developers can attach code that can be moved to the system and altered by the build script.");
                         },500);
 
                         $("#floatPopOk").unbind();
@@ -4405,18 +4408,139 @@ $("#componentsBtn").click();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-                            showFloatEnd();
+                            showFloatCompMenu2();
                         })
                     }
-                    function showFloatEnd(){
-                        $("#dashBtn").click();
-                        $("#DemoDoneModal").modal('show');
-//                        setTimeout(function(){
-//                            $("#demoDoneBtn").focus();
-//                        },300);
+                    function showFloatCompMenu2(){
+                        $("#componentsBtn").click();
 
                         $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+
+                        setTimeout(function(){
+                            $('#job-form-panel').animate({ scrollTop: 0 }, 1000);
+                            preferedPopPos = "bottom";
+                            floatPop("dashBtn",  "Back at the dashboard...");
+                        },500);
+
+                        setTimeout(function(){
+                            $("#dashBtn").click();
+                        },5000);
+
+                        $("#floatPopOk").click(function(event){
+                            clearTimeout(floatPopOkTimeout);
+                            $("#showFloatCompTree").click();
+                            showFloatVideoClick();
+                        })
+                    }
+                    function showFloatVideoClick(){
+                        $("#dashBtn").click();
+                        $("#videoCanvas").parent().append('<div id="vidMiddle" style="position:absolute"></div>');
+                        var eleJObj = $("#vidMiddle");
+                        var width = $("#videoCanvas").width();
+                        var height = $("#videoCanvas").height();
+                        eleJObj.css({'top':(height/2 + 10) + 'px', 'left':width/3 + 'px'});
+
+                        $.get('/highlight', { id: "description-p" }, function(data) {});
+
+                        preferedPopPos = "left";
+                        floatPop("vidMiddle", "You can find components by clicking on elements in the browser window.<br><br><b class='floatPopTaskLabel'>Practise:</b> Click on the paragraph to find the component that built it.")
+                        $("#floatPopOk").unbind();
+
+                        vidMiddleTimeout = setTimeout(function(){
+                            sendVideoMouseClick(width*.5/width ,height*.20/height, false);
+                        },5000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                        $("#floatPopOk").click(function(event){
+                            clearTimeout(vidMiddleTimeout);
+                            clearTimeout(floatPopOkTimeout);
+                            sendVideoMouseClick(width*.5/width ,height*.20/height, false);
+
+                            showFloatVideoClickResults()
+                        })
+                    }
+                    function showFloatVideoClickResults(){
+                        $("#dashBtn").click();
+
+                        preferedPopPos = "left";
+                        $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+
+                        setTimeout(function(){
+                            floatPop("codeInspectLabel", "All components that have a matching ID are listed here.")
+                        },500);
+
+                        matchTimeout = setTimeout(function(){
+                            $("#vidMenuMatch").dropdown('toggle');
+                        },3000);
+
+                        $("#floatPopOk").click(function(event){
+                            clearTimeout(matchTimeout);
+                            clearTimeout(floatPopOkTimeout);
+
+                            showFloatVideoMatchClick()
+                        })
+                    }
+                    function showFloatVideoMatchClick(){
+                        $("#dashBtn").click();
+//
+                        preferedPopPos = "left";
+                        $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+
+                        setTimeout(function(){
+                            $("#vidMenuMatch").dropdown('toggle');
+                        },300);
+
+                        setTimeout(function(){
+                            floatPop($(".matchTreeA-found").first().attr('id'), "Clicking on the matched row will open the component in the components view.")
+                        },500);
+
+                        $("#floatPopOk").click(function(event){
+                            clearTimeout(floatPopOkTimeout);
+                            $(".matchTreeA-found").first().click();
+
+                            showFloatFoundComp()
+                        })
+                    }
+                    function showFloatFoundComp(){
+                        $("#componentsBtn").click();
+
+                        $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},5000);
+                        setTimeout(function(){
+                            preferedPopPos = "right";
+                            floatPop("name", "This is the matching component.")
+                        },500);
+
+                        $("#floatPopOk").click(function(event){
+                            clearTimeout(floatPopOkTimeout);
+
+                            showFloatFoundCompVar()
+                        })
+                    }
+                    function showFloatFoundCompVar(){
+                        $("#componentsBtn").click();
+                        $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
+                        setTimeout(function(){
+                            preferedPopPos = "top";
+                            floatPop("compVariables", "The text of the paragraph can be edited here.")
+                        },500);
+
+                        $("#floatPopOk").click(function(event){
+                            clearTimeout(floatPopOkTimeout);
+
+                            showFloatEnd()
+                        })
+                    }
+
+
+                    function showFloatEnd(){
                         $('.popover').popover('hide');
+                        $("#dashBtn").click();
+                        $("#DemoDoneModal").modal('show');
+                        $("#floatPopOk").unbind();
                     }
 
                     showFloatDashMenu();

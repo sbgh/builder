@@ -352,10 +352,15 @@ router.get("/highlight",function(req,res){
 
     //obtain value of id component variable if it exists
     var possibleJsId = "";
-    if(SystemsJSON[compId].hasOwnProperty("variables")){
-        if(SystemsJSON[compId].variables.hasOwnProperty("id")){
-            possibleJsId = SystemsJSON[compId].variables.id.value;
+    if(SystemsJSON.hasOwnProperty(compId)){
+        if(SystemsJSON[compId].hasOwnProperty("variables")){
+            if(SystemsJSON[compId].variables.hasOwnProperty("id")){
+                possibleJsId = SystemsJSON[compId].variables.id.value;
+            }
         }
+    }else{
+        //If not then the id is an element id and not a component id
+        possibleJsId = compId;
     }
     if(possibleJsId !== ""){
         (async function () {
