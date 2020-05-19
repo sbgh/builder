@@ -3749,10 +3749,10 @@
             };
             setTopPageStyle();
 
+            var preferedPopPos = "";
             //Check first run and run firstRunTasks() if required
             var currentGhostEle = "";
             function checkFirstRun(){
-
 
                 //query server for first run setting
                 var mydata = {};
@@ -3835,7 +3835,6 @@
 
                 //Things to do after demo welcome modal
                 function afterDemoWelcomeModal(){
-                    var preferedPopPos = "";
                     $('.popover').popover('hide');
 
                     $("#dashBtn").click();
@@ -3982,9 +3981,9 @@ showFloatStyle()
                     }
                     function showFloatStyle(){
                         $("#dashBtn").click();
-                        floatPop("stylePickMenu", "Both light and dark styles are available.");
+                        floatPop("stylePickMenu", "Both light and dark themes are available.<br><br><b class='floatPopTaskLabel'>Practise:</b> Change to dark theme if that is your preference.  ");
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},5000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             
@@ -3997,8 +3996,9 @@ showFloatUser()
                         preferedPopPos = "left";
                         floatPop("userMenuDrop", "The user menu contains personal preferences.");
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},5000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                         $("#floatPopOk").click(function(event){
+                            preferedPopPos = "";
                             clearTimeout(floatPopOkTimeout);
                             
 $("#userMenuDrop").removeClass('show');
