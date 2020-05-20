@@ -3866,6 +3866,7 @@
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 showFloatMem()
+//showFloatVideoClick()
                         })
                     }
                     function showFloatMem(){
@@ -4354,7 +4355,7 @@ $("#componentsBtn").click();
 
                         setTimeout(function(){
                             $('#job-form-panel').animate({ scrollTop: $("#resHeading").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
-//                          preferedPopPos = "top";
+                            preferedPopPos = "left";
                             floatPop("resHeading",  "Resource file attachment can be added to a build code record.");
                         },300);
 
@@ -4377,7 +4378,7 @@ $("#componentsBtn").click();
 
                         setTimeout(function(){
                             $('#job-form-panel').animate({ scrollTop: $("#testHeading").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
-//                          preferedPopPos = "top";
+                            preferedPopPos = "left";
                             floatPop("testHeading",  "Test scripts are stored here.");
                         },300);
 
@@ -4400,7 +4401,7 @@ $("#componentsBtn").click();
 
                         setTimeout(function(){
                             $('#job-form-panel').animate({ scrollTop: $("#metaHeading").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
-//                          preferedPopPos = "top";
+                            preferedPopPos = "left";
                             floatPop("metaHeading",  "This section contains meta data on the component like history etc.");
                         },300);
 
@@ -4439,12 +4440,15 @@ $("#componentsBtn").click();
                         var eleJObj = $("#vidMiddle");
                         var width = $("#videoCanvas").width();
                         var height = $("#videoCanvas").height();
-                        eleJObj.css({'top':(height/2 + 10) + 'px', 'left':width/3 + 'px'});
+                        eleJObj.css({'top':(height/4+30) + 'px', 'left':width/3 + 'px'});
 
                         $.get('/highlight', { id: "description-p" }, function(data) {});
 
-                        preferedPopPos = "left";
-                        floatPop("vidMiddle", "You can find components by clicking on elements in the browser window.<br><br><b class='floatPopTaskLabel'>Practise:</b> Click on the paragraph to find the component that built it.")
+                        setTimeout(function(){
+                            preferedPopPos = "left";
+                            floatPop("vidMiddle", "You can find components by clicking on elements in the browser window.<br><br><b class='floatPopTaskLabel'>Practise:</b> Click on the highlighted paragraph to find the component that built it.")
+                        },500);
+
                         $("#floatPopOk").unbind();
 
                         vidMiddleTimeout = setTimeout(function(){
