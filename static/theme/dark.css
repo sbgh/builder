@@ -742,19 +742,20 @@ input:focus + .slider {
 }
 
 .floatPopTaskLabel{
-    color: red
+    color: #4dff4b
 }
 
 btn:focus {
     outline: 3px solid #79bdf3;
 }
 
-
-
+.modal{
+    background-color: rgba(0,0,0,.2);
+}
 .modal-content {
     color: white;
     transition: background 0.2s;
-    background: black;
+    background-color: rgba(0,0,0,.5);
     border: 2px solid #79bdf3;
 }
 

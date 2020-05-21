@@ -154,6 +154,11 @@ div.grippie {
     color: #367ae0;
 }
 
+.modal-footer > .jobFormbtn{
+    background-color: #367ae0;
+    color: #d4d4d4;
+}
+
 
 
 .form-control::-webkit-input-placeholder { color: #a3a3a3; }  /* WebKit, Blink, Edge */
@@ -543,7 +548,7 @@ input:not(:checked) + .slider.round:before{
 }
 
 .floatPopTaskLabel{
-    color: red
+    color: #009b23
 }
 
 btn:focus {
@@ -551,16 +556,14 @@ btn:focus {
 }
 
 .modal{
-    opacity: .95;
+    transition: background-color 0.2s;
+    background-color: rgba(255,255,255,.2);
 }
 
 .modal-content {
-    /*color: #3c3e3f;*/
-    /*transition: background-color 1s;*/
-    /*background-color: ececec;*/
     color: black;
-    transition: background 0.2s;
-    background: white;
+    transition: background-color 0.2s;
+    background-color: rgba(255,255,255,.6);
     border: 2px solid #367ae0;
 }
 

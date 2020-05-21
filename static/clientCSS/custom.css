@@ -324,6 +324,16 @@ padding-left: 0px;
    text-align: center;
 }
 
+.modal{
+   /*added to increase perf in chrome*/
+   backface-visibility: hidden;
+   transform: translateZ(0);
+
+   /*opacity: .75;*/
+   transition: backdrop-filter .5s;
+   backdrop-filter: blur(3px);
+}
+
 .modal-dialog {
    max-width: 70vw;
 }
@@ -1742,16 +1752,6 @@ button:focus floatPopMenuItem{
 .btn:focus{
    border:2;
    text-decoration: underline;
-}
-
-.modal{
-   /*added to increase perf in chrome*/
-   backface-visibility: hidden;
-   transform: translateZ(0);
-
-   opacity: .75;
-   transition: backdrop-filter .5s;
-   backdrop-filter: blur(3px);
 }
 
 .fade:not(.show) {
