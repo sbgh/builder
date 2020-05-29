@@ -10,9 +10,10 @@ body {
     color: #555555;
 }
 
-.rightCol {
+#rightCol {
      transition: background-color 1s;
-     background-color: #dcdcdc;
+    background-color: #ececec;
+    border-color: #ececec;
  }
 
 body {
@@ -351,7 +352,7 @@ input:not(:checked) + .slider.round:before{
 
 
 .navbar-default .navbar-nav > li > a {
-    color: #49494b;
+    color: #367ae0;
 }
 
 .dashPanel{
@@ -360,7 +361,7 @@ input:not(:checked) + .slider.round:before{
 }
 
 .navbar-default{
-    color: #3c3e3f;
+    /*color: #3c3e3f;*/
     transition: background-color 1s;
     background-color: #ffffff;
 }
@@ -418,7 +419,7 @@ input:not(:checked) + .slider.round:before{
 
 .dashTbody > tr > td{
     transition: background-color 1s;
-    background-color: rgba(80, 80, 80, 0.3);
+    background-color: rgba(206, 206, 206, 0.13);
 }
 
 .dashTbody > tr:hover > td {
@@ -444,6 +445,11 @@ input:not(:checked) + .slider.round:before{
     transition: color 0.5s;
     color: #367ae0
 }
+
+.dashTableRow:nth-child(2n+1) {
+    background: #ececec
+}
+
 
 .DashListRowPass{
     transition: color 0.5s;
@@ -478,7 +484,7 @@ input:not(:checked) + .slider.round:before{
     color: #367ae0;
 }
 
-.searchCycleBtn, .search-icon, .icon-EZStack{
+.searchCycleBtn, .search-icon{
     transition: color 2.5s;
     color: #367ae0;
 }
@@ -568,4 +574,45 @@ btn:focus {
 }
 
 .welcome-modal-content{
+}
+
+.sidebar{
+    /*transition: background-color 0.2s;*/
+    background-color: #367ae0;
+    box-shadow: 3px 5px 9px 1px rgba(51, 51, 51, 0.88);
+    z-index: 1000;
+}
+.sidebar ul li a.nav-link {
+    color: #ffffff;
+    /*transition: background-color 0.2s;*/
+    /*background-color: #ffff;*/
+}
+.sidebar ul li a.active {
+    /*transition: background-color 0.2s;*/
+    /*background-color: #ececec;*/
+}
+
+.navbar-brand{
+    transition: color 2.5s;
+    color: #ffffff;
+}
+
+
+.nav-text-muted{
+    transition: color 2.5s;
+    color: #bbbbbb;
+}
+
+a#dashBtn i {
+    color: #00C3E3;
+}
+a#componentsBtn i {
+    color: #00DDB7;
+}
+a#buildCodeBtn i {
+    color: #8BF088;
+}
+
+.nav-link .fa-book {
+    color: #bbbbbb;
 }

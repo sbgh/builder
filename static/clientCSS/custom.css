@@ -24,6 +24,12 @@ body {
 .row {
    margin-right: 5px;
    margin-left: 5px;
+
+}
+
+#mainRow{
+   flex-wrap: nowrap;
+   margin-left: 0px;
 }
 
 .top-row{
@@ -44,7 +50,7 @@ body {
    width:100%;
    overflow-y: auto;
    overflow-x: auto;
-   margin-bottom: 2px;
+   /*margin-bottom: 2px;*/
 }
 
 #jslibtree_div{
@@ -68,7 +74,7 @@ topLib-col-fixed-240{
 
 .top-col-fixed-240{
    width:250px;
-   position:absolute;
+   /*position:absolute;*/
    z-index:1;
 }
 
@@ -81,15 +87,19 @@ topLib-col-fixed-240{
 }
 
 .col-fixed-240{
-   width:243px;
-   position:absolute;
-   z-index:1;
-   padding-left: 0px;
+   /*width:245px;*/
+   /*position:absolute;*/
+   /*z-index:1;*/
+   /*padding-left: 0px;*/
+   min-width: 250px;
 }
+
 
 .treePanelHandle{
    float: right;
    width: 3px;
+   margin-left: 3px;
+   margin-right: 3px;
    height: 100%;
    cursor: w-resize;
 }
@@ -97,9 +107,9 @@ topLib-col-fixed-240{
 
 
 .col-offset-240{
-   padding-left:250px;
-   padding-right: 0px;
-   z-index:0;
+   /*padding-left:250px;*/
+   /*padding-right: 0px;*/
+   /*z-index:0;*/
 }
 
 
@@ -114,7 +124,10 @@ topLib-col-fixed-240{
    z-index:0;
 }
 
-
+#consoleDiv{
+   width:100%;
+   padding-left: 3px;
+}
 #terminal-container .terminal {
 
 }
@@ -212,7 +225,7 @@ topLib-col-fixed-240{
       height: calc(var(--vh, 1vh) * 100 - 30px);
    }
    tbody.dashTbody {
-      height: calc(var(--vh, 1vh) * 100 - 400px);
+      height: calc(var(--vh, 1vh) * 100 - 380px);
       position: absolute;
       overflow-y: auto;
    }
@@ -274,7 +287,8 @@ padding-left: 0px;
 }
 
 .cust-panel-heading {
-   padding: 1px 1px;
+   padding: 1px;
+   padding-left: 10px;
    min-width: 185px;
 }
 
@@ -673,9 +687,20 @@ input:checked + .slider:before {
    border-radius: 15px 50px 30px 5px;
 }
 
-.rightCol{
+.nav-link {
+   white-space: nowrap;
+}
+
+#leftCol{
+   width: min-content;
+   display: inline-block;
+}
+#rightCol{
    padding:0px;
    padding-top: 1px;
+   padding-left: 0px;
+   display: inline-block;
+   width: 100%;
 }
 
 .build-label{
@@ -836,7 +861,7 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
 
 .launchPadPanel{
    margin-bottom: 20px;
-   border: 1px solid #0f6ab4;
+   /*border: 1px solid #0f6ab4;*/
 }
 
 .launchPadBody{
@@ -914,6 +939,9 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
 
 .locTree-panel-body {
    margin-top: 1px;
+   margin-bottom: 3px;
+   padding-left: 0px;
+   width: calc(100% - 5px);
 }
 
 .modal-dialog-welcome{
@@ -1022,7 +1050,7 @@ a.foundInSearchParent{
 
 .icon-EZStack {
    width: 2em;
-   height: 1.8em;
+   height: 1.4em;
    stroke-width: 0;
    stroke: currentColor;
    fill: currentColor;
@@ -1031,11 +1059,11 @@ a.foundInSearchParent{
 .nav > li > a {
    position: relative;
    /*display: block;*/
-   #padding: 10px 15px;
+   padding: 10px 2px;
 }
 
 .navbar-nav > li{
-   text-align: center;
+   /*text-align: center;*/
 }
 
 .navbar-nav > li > a {
@@ -1063,6 +1091,7 @@ a.foundInSearchParent{
    margin-right: 20px;
    margin-left: 20px;
 }
+
 
 .builder_dash_btn{
    margin-left: 30px;
@@ -1181,6 +1210,7 @@ tr {
 .navbar-fixed-top{
    padding-bottom: 0px;
    padding-top: 0px;
+   height: 40px;
 }
 
 .jobCard{
@@ -1669,6 +1699,8 @@ td.col-1.dashTableBuildItem {
 .floatPop {
    border-radius: 20px;
    transition: all 0.5s;
+   min-width: 250px;
+
 }
 
 .clickPop .popover-body{
@@ -1692,8 +1724,8 @@ td.col-1.dashTableBuildItem {
 
 
 div#floatingPopoverField{
-   width: 100vh;
-   height: 100vw;
+   /*width: 100vh;*/
+   /*height: 100vw;*/
 }
 
 div#floatingPopover {
@@ -1759,4 +1791,96 @@ button:focus floatPopMenuItem{
    backdrop-filter: blur(0px);
 }
 
+main.mainCol{
+   padding-left: 220px;
+   padding-right: 0;
+   width: 100%;
+}
+
+.sidebar {
+   /*position: fixed;*/
+   /*top: 0;*/
+   /*bottom: 0;*/
+   left: 0;
+   /*z-index: 100; !* Behind the navbar *!*/
+   /*padding: 48px 0 0; !* Height of navbar *!*/
+   box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+   min-width: 170px;
+   max-width: 220px;
+   padding-right: 0px;
+   padding-left: 0px;
+
+   /*transition: left 0.3s;*/
+}
+
+
+
+.sidebar-sticky {
+   /*position: relative;*/
+   top: 0;
+   height: calc(100vh - 48px);
+   padding-top: .5rem;
+   overflow-x: hidden;
+   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+   padding-right: 15px;
+   padding-left: 15px;
+}
+
+a#sidebarBtn {
+   padding-left: 20px;
+}
+
+@supports ((position: -webkit-sticky) or (position: sticky)) {
+   .sidebar-sticky {
+      /*position: -webkit-sticky;*/
+      /*position: sticky;*/
+   }
+}
+
+.sidebar ul li a.active {
+   /*transition: background 0.2s;*/
+   /*background-color: #46484a;*/
+   font-weight: 600;
+}
+
+.navbar-collapse {
+   position: absolute;
+   /*top: 54px;*/
+   left: -100%;
+   width: 100%;
+   transition: all 0.4s ease;
+   display: block;
+   opacity: 0.8;
+}
+.navbar-collapse.collapsing {
+   height: auto !important;
+   left: -100%;
+   margin-left: 1px;
+   transition: all 0.2s ease;
+   opacity: 0.9;
+}
+.navbar-collapse.show {
+   margin-left: 100%;
+   transition: all 0.2s ease;
+   opacity: 1;
+}
+
+.wrapper {
+   display: flex;
+   align-items: stretch;
+}
+
+/*@media (max-width: 600px) {*/
+   /*.sidebar {*/
+      /*display: none;*/
+   /*}*/
+   /*.sidebarBtn {*/
+      /*display: block;*/
+   /*}*/
+/*}*/
+
+div#navLeftIcon {
+   background-color: black;
+   margin: 5px;
+}
 

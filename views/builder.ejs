@@ -11,7 +11,7 @@
     <script src="/tinymce/js/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
 
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/theme/startbootstrap-sb-admin-2-gh-pages/dist/css/sb-admin-2.min.css">
+    <!--<link rel="stylesheet" href="/theme/startbootstrap-sb-admin-2-gh-pages/dist/css/sb-admin-2.min.css">-->
     <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
     <!--Quill-->
@@ -367,7 +367,7 @@
                 //activaTab('Component_Details');
                 $('#componentTabs').hide();
                 $("#introCol").hide();
-                $("#screenShotCol").hide();
+//                $("#screenShotCol").hide();
 
                 selectedNode = data.selected[0];
                 selectedTree = 'lib'
@@ -2998,7 +2998,7 @@
                         }else{
                             html += "               <i class='fa  fa-times fa-fw'></i>"  ;
                         }
-                        html += "               <span class='pull-right text-muted small'><em>" + formattedTimeStr + "</em>";
+                        html += "               <span class='pull-right  small'><em>" + formattedTimeStr + "</em>";
                         html += "               </span>";
                         html += "               </a>";
                     });
@@ -3173,8 +3173,8 @@
             $('.codes_btn_min').on('click', function(){
                 var container = $('#rowContainer');
                 bottomMinimizedFlag = true;
-                setWindowHeight(container.height()- 33 , container, true);
-                currentHeight = container.height()- 33
+                setWindowHeight(container.height()- 28 , container, true);
+                currentHeight = container.height()- 28
                 currentRatio = currentHeight / container.height();
             });
 
@@ -3318,7 +3318,13 @@
                     if(isResizingWidth){
                         e.preventDefault();
                         var leftWidth = e.clientX;
-                        setWindowWidth(leftWidth - libTreeWidth - 2, container, false);
+//                        setWindowWidth(leftWidth - libTreeWidth - 2, container, false);
+                        if($( "#sidebar" ).hasClass( "show" )){
+                            setWindowWidth(leftWidth - $("#sidebar").width() - 2, container, false);
+                        }else{
+                            setWindowWidth(leftWidth - 2, container, false);
+                        }
+
                         updateAllPopovers()
                     }
 
@@ -3353,15 +3359,22 @@
                 var heightAniDuration = 0 ;
                 if(AnimateIt){heightAniDuration = 300}
 
-                var topRowHeight = $("#dashBoardTopRow").height();
+                var mainSysPanel = document.getElementById("sysPanel");
+                var heightOffsetSys  =  mainSysPanel.getBoundingClientRect().top;
+
+                var mainJobPanel = document.getElementById("mainJobPanel");
+                var heightOffsetJob  =  mainJobPanel.getBoundingClientRect().top;
+
+                var leftCol = document.getElementById("jstree_div");
+                var leftHeightOffset  =  leftCol.getBoundingClientRect().top;
 
                 if(bottomMinimizedFlag == true){
-                    topHeight = currentHeight = container.height()- 33
+                    topHeight = currentHeight = container.height()- 28
                 }
 
                 if(!bottomHiddenFlag){
-                    if (topHeight > (container.height() - 33) && isResizingHeight){
-                        topHeight = container.height() - 33;
+                    if (topHeight > (container.height() - 32) ){
+                        topHeight = container.height() - 32;
                         bottomMinimizedFlag = true;
                     }
 
@@ -3369,32 +3382,27 @@
                         topHeight = container.height() * .2
                     }
 
-                    //would be nice to include jquery-ui libs...
-                    $("#jstree_div").animate({height: (topHeight - (28 + 30))},heightAniDuration);
-                    $("#jslibtree_div").animate({height: (topHeight - (28 + 29))},heightAniDuration);
+                    $("#jstree_div").animate({height: (topHeight - leftHeightOffset )},heightAniDuration);
+//                    $("#jslibtree_div").animate({height: (topHeight - leftHeightOffset)},heightAniDuration);
 
-                    $("#treePanelHandle").animate({height: (topHeight - 28)},heightAniDuration);
-                    $("#libTreePanelHandle").animate({height: (topHeight - 28)},heightAniDuration);
+//                    $("#treePanelHandle").animate({height: (topHeight )},heightAniDuration);
+//                    $("#libTreePanelHandle").animate({height: (topHeight - heightOffset)},heightAniDuration);
 
-                    $("#job-form-panel").animate({height: (topHeight - (56 + 3 + 24))},heightAniDuration);
-                    $("#sys-form-panel").animate({height: (topHeight - (56 + 40 + 24))},heightAniDuration);
+                    $("#job-form-panel").animate({height: (topHeight - heightOffsetJob)},heightAniDuration);
+//                    $("#sys-form-panel").animate({height: (topHeight - heightOffsetJob)},heightAniDuration);
+
                     $("#leftResultsCol").animate({height: (topHeight - (15 + 33 + 38))},heightAniDuration);
                     $("#build-results-row").animate({height: (topHeight - (15 + 33 + 21))},heightAniDuration);
 
-
                     $('#results_html').animate({height: container.height() - topHeight - (34 + 15)},heightAniDuration);
-                    $('#results_codes').animate({height: container.height() - topHeight - (34 + 15)},heightAniDuration);
+//                    $('#results_codes').animate({height: container.height() - topHeight - (34 + 15)},heightAniDuration);
                     $('#results-group').animate({height: container.height() - topHeight - (34 + 15)},heightAniDuration);
                 }else{
 
-                    $("#jstree_div").height(topHeight -26);
-                    $("#jslibtree_div").height(topHeight -26 );
+                    var winHeight = $(window).height();
+                    $("#jstree_div").height(winHeight - leftHeightOffset);
 
-                    $("#treePanelHandle").height(topHeight +30 );
-                    $("#libTreePanelHandle").height(topHeight +30);
-
-                    $("#job-form-panel").height(topHeight -84 );
-                    $("#sys-form-panel").height(topHeight -84 );
+                    $("#job-form-panel").height(winHeight -heightOffsetSys );
                 }
             }
 
@@ -3403,7 +3411,7 @@
                     libTreeWidth = leftWidth;
 
                     $("#leftLibCol").css('width',leftWidth  - 2);
-                    $("#leftCol").css('left',libTreeWidth );
+//                    $("#leftCol").css('left',libTreeWidth );
                     $("#libTreePanel").css('width',leftWidth - 7);
 
                     setFormColWidth();
@@ -3412,12 +3420,10 @@
             setLibWindowWidth(20, container);
 
             function setWindowWidth(leftWidth, container){
-                if (leftWidth < (container.width() * .8) && leftWidth > 128 ){
+//                console.log(leftWidth);
+                if (leftWidth < (container.width() * .5) && leftWidth > 0 ){
                     treeWidth = leftWidth;
-                    $("#leftCol").css('width',treeWidth - 2 );
-                    $("#treePanel").css('width',treeWidth - 7);
-
-                    setFormColWidth();
+                    $("#treePanel").css('width',treeWidth -3);
                     localStorage['locTreeWidth'] = JSON.stringify({width:leftWidth});
                 }
             }
@@ -3427,9 +3433,11 @@
             setWindowWidth(JSON.parse(localStorage['locTreeWidth']).width, container);
 
             function setFormColWidth(){
-                $("#rightCol").css("left", treeWidth + libTreeWidth + 0);
-                $("#screenShotCol").css("left", treeWidth + libTreeWidth + 1);
-                $("#rightCol").css('width',$(window).width() - (treeWidth + libTreeWidth) -5 );
+//                $("#rightCol").css("left", treeWidth + libTreeWidth + 0);
+//                $("#rightCol").css("left", treeWidth  + 0);
+//                $("#screenShotCol").css("left", treeWidth + libTreeWidth + 1);
+//                $("#rightCol").css('width',$(window).width() - (treeWidth + libTreeWidth) -5 );
+//                $("#rightCol").css('width',$(window).width() - ($("#sidebar").width() + treeWidth ) -5 );
             }
 
             //Resource file management
@@ -3841,7 +3849,8 @@
                     $("#dashBtn").click();
                     function showFloatDashMenu(){
 
-                        floatPop("dashBtn",  "This is the Dashboard. The Dashboard provides a high level view of your 'promoted' components and the ability to make quick changes.")
+                        preferedPopPos = "left";
+                        floatPop("dashBoardTopRow",  "This is the Dashboard. The Dashboard provides a high level view of your 'promoted' components and the ability to make quick changes.")
 
                         $(".floatPopMenuRow").remove();
                         $(".floatPop").append('<div class = "floatPopMenuRow"><button id="floatPopStop" class="btn btn-default jobFormbtn floatPopMenuItem">stop<i class="fa fa-fw fa-stop "></i></button><button id="floatPopOk" class="btn btn-default jobFormbtn floatPopMenuItem">next<i class="fa fa-fw fa-fast-forward"></i></button></div>')
@@ -5510,12 +5519,15 @@ $("#componentsBtn").click();
 
             $("#treePanelHandle").bind('touchmove', function(e) {
                 var te = e.originalEvent.changedTouches[0].clientX;
-                setWindowWidth( te - $("#leftLibCol").width(), container);
+//                setWindowWidth( te - $("#leftLibCol").width(), container);
+                setWindowWidth( te , container);
             });
 
             var componentDetailsHoverFlag = false;
-            $("#Component_Details").mouseenter( function(e){componentDetailsHoverFlag=true});
-            $("#Component_Details").mouseleave( function(e){componentDetailsHoverFlag=false});
+            $("#rightCol").mouseenter( function(e){
+                componentDetailsHoverFlag=true
+            });
+            $("#rightCol").mouseleave( function(e){componentDetailsHoverFlag=false});
 
             var currentSettings = {};
             $.ajax({
@@ -5544,6 +5556,19 @@ $("#componentsBtn").click();
 
             $('.modal').on('shown.bs.modal', function() {
                 $(this).find('[autofocus]').focus();
+            });
+
+            $('.navbar-collapse').on('shown.bs.collapse', function() {
+
+                var main = $("main")
+                main.css({'transition': 'padding-left 0.2s ease-out', 'padding-left':'220px' });
+            });
+
+            $('.navbar-collapse').on('hide.bs.collapse', function() {
+
+                var main = $("main")
+                main.css({'transition': 'padding-left 0.2s ease-in', 'padding-left':'0px' });
+
             });
         });
 
@@ -5694,9 +5719,9 @@ $("#componentsBtn").click();
 </head>
 
 <body>
-<svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <defs>
-        <symbol id="icon-EZStack" viewBox="0 0 26 32">
+        <symbol id="icon-EZStack" viewBox="0 0 10 40">
             <title>EZStack</title>
             <path d="M26.438 14.385l-13.152-7.046-13.152 7.046 13.152 7.046zM13.285 9.677l8.786 4.708-8.786 4.708-8.786-4.708zM13.285 26.715v0l-13.152-7.046 2.635-1.411 10.518 5.635c0 0 0-9.132 0 2.822zM23.803 23.543l2.635 1.411-13.152 7.046-13.152-7.046 2.635-1.411 10.518 5.635z"></path>
             <path d="M0.133 14.385h3.288v5.284h-3.288v-5.284z"></path>
@@ -5705,187 +5730,205 @@ $("#componentsBtn").click();
         </symbol>
     </defs>
 </svg>
-<input type="text" id="fakeInput" style="position: absolute; opacity: 0; height: 0px; font-size: 16px; right: 25%; top: 25%;">
-<div id="floatingPopoverField"  width="100%" height="100%" style="position: absolute">
+    <input type="text" id="fakeInput" style="position: absolute; opacity: 0; height: 0px; font-size: 16px; right: 25%; top: 25%;">
+    <div id="floatingPopoverField"  width="100%" height="100%" style="position: absolute">
+        <div id="floatingPopover"></div>
+    </div>
 
-    <div id="floatingPopover"></div>
-</div>
+    <div id="rowContainer" class="container-fluid container-fluid-custom">
 
-<div id="rowContainer" class="container-fluid container-fluid-custom">
-        <%- include topMenu.ejs %>
+        <div id="mainRow" class="wrapper">
+            <nav id="sidebar" class=" col-sm-2 sidebar navbar-collapse show">
+                <div id="navLeftIcon">
+                    <a href="#" class="navbar-brand col-sm-3 col-md-2 mr-0" data-toggle="modal" data-target="#demoWelcomeModal"><svg id="ezStackTopIcon" class="icon icon-EZStack"><use xlink:href="#icon-EZStack"></use></svg> ezStack</a>
+                </div>
 
-        <div id="dashRow" class="row top-row">
-            <div class="panel panel-default dashboardPanel" id="dashboard">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
 
-                <input name="dashId" id="dashId" type="hidden" />
-                <input name="dashSys" id="dashSys" type="hidden" />
-                <!--<input name="dashSysName" id="dashSysName" type="hidden" />-->
+                        <li class="nav-item">
+                            <a id="dashBtn" class="nav-link active" href="#">
+                                <i class="fa fa-home fa-fw"></i>
+                                Dashboard <span class="sr-only">(current)</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="componentsBtn" class="nav-link" href="#">
+                                <i class="fa fa-th-large fa-fw"></i>
+                                Components
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="buildCodeBtn" class="nav-link" href="#">
+                                <i class="fa fa-code fa-fw"></i>
+                                Build Code
+                            </a>
+                        </li>
+                    </ul>
 
-                <div class='panel-body dashboardPanelBody'>
+                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 nav-text-muted">
+                        <span>Libraries</span>
+                        <a id="LibDropDownPick" class="d-flex align-items-center nav-text-muted" href="#">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus-circle"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                        </a>
+                    </h6>
+                    <ul class="nav flex-column mb-2">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fa fa-book fa-fw"></i>
+                                myLib1
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
 
-                    <div id = "dashBoardTopRow" class="row dashBoardTopRow">
-                        <div class="col-md-6 dash-panel-column" >
+            <main role="main" class="  mainCol">
+                <%- include topMenu.ejs %>
+                <div id="dashRow" class="row top-row">
+                    <div class="panel panel-default dashboardPanel" id="dashboard">
 
-                            <div class="row">
-                                <div class="os-panel-column firstCol" >
-                                    <div class='panel dashPanel os-panel'>
-                                        <div class='panel-body dashPanelBody os-panel-body'>
-                                            <div class="dashboardLabel" >CPU Load</div>
-                                            <div class="osValue" id="osCPUValue" >%</div>
+                        <input name="dashId" id="dashId" type="hidden" />
+                        <input name="dashSys" id="dashSys" type="hidden" />
+                        <!--<input name="dashSysName" id="dashSysName" type="hidden" />-->
+
+                        <div class='panel-body dashboardPanelBody'>
+
+                            <div id = "dashBoardTopRow" class="row dashBoardTopRow">
+                                <div class="col-md-6 dash-panel-column" >
+
+                                    <div class="row">
+                                        <div class="os-panel-column firstCol" >
+                                            <div class='panel dashPanel os-panel'>
+                                                <div class='panel-body dashPanelBody os-panel-body'>
+                                                    <div class="dashboardLabel" >CPU Load</div>
+                                                    <div class="osValue" id="osCPUValue" >%</div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="os-panel-column" >
+                                            <div class='panel dashPanel os-panel'>
+                                                <div class='panel-body dashPanelBody os-panel-body'>
+                                                    <div class="dashboardLabel" >Free Mem</div>
+                                                    <div class="osValue" id="osFMValue" >GB</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col lastCol" >
+                                            <div class='panel dashPanel currentBuildStatusPanel'>
+                                                <div class='panel-body dashPanelBody status-panel-body'>
+                                                    <div class="dashboardLabel" >Status</div>
+                                                    <div class="resultsStatus" id="resultsStatus"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="panel dashPanel systemDetailPanel">
+                                            <div class="dashboardLabel">System</div>
+                                            <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                Pick...
+                                            </button>
+                                            <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
+                                                <div><a class="dropdown-item" href="#">Action</a></div>
+                                            </div>
+
+                                            <div id="dashSystemDetails" class="dashSystemDetails"></div>
                                         </div>
                                     </div>
 
                                 </div>
-                                <div class="os-panel-column" >
-                                    <div class='panel dashPanel os-panel'>
-                                        <div class='panel-body dashPanelBody os-panel-body'>
-                                            <div class="dashboardLabel" >Free Mem</div>
-                                            <div class="osValue" id="osFMValue" >GB</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col lastCol" >
-                                    <div class='panel dashPanel currentBuildStatusPanel'>
-                                        <div class='panel-body dashPanelBody status-panel-body'>
-                                            <div class="dashboardLabel" >Status</div>
-                                            <div class="resultsStatus" id="resultsStatus"></div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <div id='screenshot-panel-body' class="col-md-6 dashVideoCol" >
+                                    <div id="videoScreen">
 
+                                        <div class="col videoCol">
+                                            <div id="screenShotLink" class="videoMenuItemLeft"></div>
+                                            <div class="videoMenu">
+
+                                                <!--<button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
+                                                <!--<i class="fa fa-search fa-fw"></i>Match<div id="vidMenuMatchNum"></div>-->
+                                                <!--</button>-->
+                                                <!--<div id="vidMenuMatchOverlay" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="vidMenuMatch">-->
+                                                <!--<div class="col matchLinkCol"><div id="matchLink_jstree_div"></div></div>-->
+                                                <!--</div>-->
+
+                                                <a id='videoRefreshLink' href='#'><i class='fa fa-refresh fa-fw videoMenuItemRight'></i></a>
+                                                <a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw videoMenuItemRight'></i></a>
+                                                <a id='inspectMaximizeLink' href='#' class='screenShotLink'><i class='fa fa-expand fa-fw videoMenuItemRight'></i></a>
+
+                                            </div>
+                                            <div><canvas id="videoCanvas"></canvas></div>
+                                            <div id="vidMenuDesc"></div>
+                                            <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <div id="componentLinks"></div><div id="vidMenuMatchNum"></div>
+                                            </button>
+                                            <div id="vidMenuMatchOverlay" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="vidMenuMatch">
+                                                <div class="col matchLinkCol">
+                                                    <div id="matchLink_jstree_div"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center dashBoardBottomRow">
+                                <div id="dashListCol" class="col-md-12 dashListCol">
+                                    <table class="table dashTable">
+                                        <thead>
+                                        <tr class="d-flex">
+                                            <th class="col-2 dashboardLabel">Name</th>
+                                            <th class="col-1 dashboardLabel center">Build</th>
+                                            <th class="col-1 dashboardLabel center">Enabled</th>
+                                            <th class="col-1 dashboardLabel center">Last Build</th>
+                                            <th class="col-7 dashboardLabel">Description</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="dashTable" class="dashTbody"></tbody>
+                                    </table>
+
+                                </div>
                             </div>
 
-                            <div class="row">
-                                <div class="panel dashPanel systemDetailPanel">
-                                    <div class="dashboardLabel">System</div>
-                                    <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        Pick...
-                                    </button>
-                                    <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
-                                        <div><a class="dropdown-item" href="#">Action</a></div>
-                                    </div>
+                            <!--<div id="dashboardList" class="row launchPadBody ">-->
 
-                                    <div id="dashSystemDetails" class="dashSystemDetails"></div>
+                            <!--</div>-->
+                        </div>
+                    </div>
+                </div>
+                <div id="componentsRow" class="d-flex justify-content-between nowrap  ">
+
+                    <!--username kept showing up in search input so https://stackoverflow.com/questions/17781077/autocomplete-off-is-not-working-on-firefox/29852908#29852908-->
+                    <input type="password" hidden />
+
+                    <div id="leftCol" class="d-flex justify-content-between nowrap top-col-fixed-240" >
+                        <div id="treePanel" class='panel panel-default cust-panel locTree-panel-body' style="float: left;"  >
+                            <div class='panel-heading treePanelHeading '>
+                                <div class="cust-panel-heading">
+                                    Systems <a class='newSys' href='#'><i class="fa fa-plus fa-fw"></i></a>
+
+                                    <!--<a href="#" data-toggle="modal" data-target="#welcomeModal">  <i class="fa fa-question fa-fw"></i></a>-->
+
+                                    <i id="search-icon" class="fa fa-search  fa-fw search-icon"></i>
+                                    <span id="searchCycleDiv"><i id="searchCycleUp" class="fa fa-chevron-up fa-fw searchCycleBtn"></i><i  id="searchCycleDown" class="fa fa-chevron-down fa-fw searchCycleBtn"></i></span>
+                                    <span id="compSearch" class="form-group search-group">
+                                    <input class="form-control form-custom searchInput" placeholder="" id="searchInput" >
+                                </span>
                                 </div>
                             </div>
 
-                        </div>
-                        <div id='screenshot-panel-body' class="col-md-6 dashVideoCol" >
-                            <div id="videoScreen">
-
-                                <div class="col videoCol">
-                                    <div id="screenShotLink" class="videoMenuItemLeft"></div>
-                                    <div class="videoMenu">
-
-                                        <!--<button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
-                                            <!--<i class="fa fa-search fa-fw"></i>Match<div id="vidMenuMatchNum"></div>-->
-                                        <!--</button>-->
-                                        <!--<div id="vidMenuMatchOverlay" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="vidMenuMatch">-->
-                                            <!--<div class="col matchLinkCol"><div id="matchLink_jstree_div"></div></div>-->
-                                        <!--</div>-->
-
-                                        <a id='videoRefreshLink' href='#'><i class='fa fa-refresh fa-fw videoMenuItemRight'></i></a>
-                                        <a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw videoMenuItemRight'></i></a>
-                                        <a id='inspectMaximizeLink' href='#' class='screenShotLink'><i class='fa fa-expand fa-fw videoMenuItemRight'></i></a>
-
-                                    </div>
-                                    <div><canvas id="videoCanvas"></canvas></div>
-                                    <div id="vidMenuDesc"></div>
-                                    <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <div id="componentLinks"></div><div id="vidMenuMatchNum"></div>
-                                    </button>
-                                    <div id="vidMenuMatchOverlay" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="vidMenuMatch">
-                                        <div class="col matchLinkCol">
-                                            <div id="matchLink_jstree_div"></div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class='panel-body tree-panel-body'>
+                                <div id="jstree_div" class="SysTree"></div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row justify-content-center dashBoardBottomRow">
-                        <div id="dashListCol" class="col-md-12 dashListCol">
-                            <table class="table dashTable">
-                                <thead>
-                                <tr class="d-flex">
-                                    <th class="col-2 dashboardLabel">Name</th>
-                                    <th class="col-1 dashboardLabel center">Build</th>
-                                    <th class="col-1 dashboardLabel center">Enabled</th>
-                                    <th class="col-1 dashboardLabel center">Last Build</th>
-                                    <th class="col-7 dashboardLabel">Description</th>
-                                </tr>
-                                </thead>
-                                <tbody id="dashTable" class="dashTbody"></tbody>
-                            </table>
-
-                        </div>
+                        <div id = "treePanelHandle" class = "treePanelHandle"></div>
                     </div>
 
-                    <!--<div id="dashboardList" class="row launchPadBody ">-->
+                    <div id="rightCol" class="" >
 
-                    <!--</div>-->
-                </div>
-            </div>
-        </div>
-        <div id="componentsRow" class="row top-row">
-
-
-
-            <div id="leftLibCol" class="topLib-col-fixed-240" >
-                <div id="libTreePanel" class='panel panel-default cust-panel' style="float: left;"  >
-                    <div class='panel-heading cust-panel-heading' style="white-space: nowrap;"><i class='fa  fa-book' id="LibDropDownPickIcon"></i> Library
-                        <a href="#" id="LibDropDownPick"><i class="fa fa-plus fa-fw"></i></a>
-                        <a href="#" id="treeCollapse">[<]</a>
-                    </div>
-
-                    <div class="dropdown show" id="libDropDown">
-                        <!--<a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="LibDropDownPick" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
-                            <!--Pick:-->
-                        <!--</a>-->
-
-                        <div class="dropdown-menu customLibDropBox" aria-labelledby="LibDropDownPick" id="LibDropDownList"></div>
-                    </div>
-
-                    <div class='panel-body tree-panel-body libTree-panel-body'>
-                        <div id="jslibtree_div" class="SysTree"></div>
-                    </div>
-                </div>
-                <div id = "libTreePanelHandle" class = "treePanelHandle"></div>
-            </div>
-
-            <!--username kept showing up in search input so https://stackoverflow.com/questions/17781077/autocomplete-off-is-not-working-on-firefox/29852908#29852908-->
-            <input type="password" hidden />
-
-            <div id="leftCol" class="top-col-fixed-240" >
-                <div id="treePanel" class='panel panel-default cust-panel locTree-panel-body' style="float: left;"  >
-                    <div class='panel-heading treePanelHeading '>
-                        <div class="cust-panel-heading">
-                            Systems <a class='newSys' href='#'><i class="fa fa-plus fa-fw"></i></a>
-
-                            <!--<a href="#" data-toggle="modal" data-target="#welcomeModal">  <i class="fa fa-question fa-fw"></i></a>-->
-
-                            <i id="search-icon" class="fa fa-search  fa-fw search-icon"></i>
-                            <span id="searchCycleDiv"><i id="searchCycleUp" class="fa fa-chevron-up fa-fw searchCycleBtn"></i><i  id="searchCycleDown" class="fa fa-chevron-down fa-fw searchCycleBtn"></i></span>
-                            <span id="compSearch" class="form-group search-group">
-                                <input class="form-control form-custom searchInput" placeholder="" id="searchInput" >
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class='panel-body tree-panel-body'>
-                        <div id="jstree_div" class="SysTree"></div>
-                    </div>
-                </div>
-                <div id = "treePanelHandle" class = "treePanelHandle"></div>
-            </div>
-
-            <div id="rightCol" class="col-lg-12 top-col-offset-240 rightCol" >
-
-                <icon class="fa fa-th-large"></icon> Component Details
-
-                <div class="tab-content">
-                    <div role="tabpanel"  class="tab-pane fade show active" id="Component_Details">
-
+                        <!--<icon class="fa fa-th-large"></icon> Component Details-->
                         <div id="sysScreen">
                             <div class="buttonRow">
                                 <button id = "edit_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
@@ -5896,7 +5939,7 @@ $("#componentsBtn").click();
                                 <button id = "remove_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
                                 <button id = "clear_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-history fa-fw"></i>Clear History</button>
                             </div>
-                            <div class="panel panel-default sysPanel">
+                            <div id="sysPanel" class="panel panel-default sysPanel">
                                 <div class="panel-body sys-form-panel"  id="sys-form-panel">
                                     <form id="sysForm">
                                         <div class="col-lg-12">
@@ -5908,10 +5951,10 @@ $("#componentsBtn").click();
                                                     </div>
                                                 </div>
                                                 <!--<div class="col-lg-1 ">-->
-                                                    <!--<div class="form-group">-->
-                                                        <!--<label>Version</label>-->
-                                                        <!--<div id="sysVersion" class="statusBox"></div>-->
-                                                    <!--</div>-->
+                                                <!--<div class="form-group">-->
+                                                <!--<label>Version</label>-->
+                                                <!--<div id="sysVersion" class="statusBox"></div>-->
+                                                <!--</div>-->
                                                 <!--</div>-->
                                                 <!--<div class="col-lg-8 "></div>-->
                                             </div>
@@ -5929,21 +5972,21 @@ $("#componentsBtn").click();
 
                                             <div class="row">
                                                 <div class="col-lg-12" style="padding: 0px">
-                                                <div id="sysVariablesForm" class="form-group">
-                                                    <label class="build-label">System Variables</label>
-                                                    <a class="newSysVarBtn" href="#" style=""><i class="fa fa-plus fa-fw"></i></a>
-                                                    <table class="table varTable">
-                                                        <thead>
-                                                        <tr class="d-flex">
-                                                            <th class="col-3 dashboardLabel">Name</th>
-                                                            <th class="col-1 dashboardLabel center">Private</th>
-                                                            <!--<th class="col-2 dashboardLabel center">Type</th>-->
-                                                            <th class="col-6 dashboardLabel">Value</th>
-                                                        </tr>
-                                                        </thead>
-                                                        <tbody id="sysVariables" class="varTbody"></tbody>
-                                                    </table>
-                                                </div>
+                                                    <div id="sysVariablesForm" class="form-group">
+                                                        <label class="build-label">System Variables</label>
+                                                        <a class="newSysVarBtn" href="#" style=""><i class="fa fa-plus fa-fw"></i></a>
+                                                        <table class="table varTable">
+                                                            <thead>
+                                                            <tr class="d-flex">
+                                                                <th class="col-3 dashboardLabel">Name</th>
+                                                                <th class="col-1 dashboardLabel center">Private</th>
+                                                                <!--<th class="col-2 dashboardLabel center">Type</th>-->
+                                                                <th class="col-6 dashboardLabel">Value</th>
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody id="sysVariables" class="varTbody"></tbody>
+                                                        </table>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="row">
@@ -5962,11 +6005,11 @@ $("#componentsBtn").click();
 
 
                                             <!--TESTING-->
-                                            <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-                                            <div class="form-group">
-                                                <label class="build-label">nodeData</label>
-                                                <textarea type="disabled" class="form-control form-custom code" rows="25" id="sysNodeData"></textarea>
-                                            </div>
+                                            <!--<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>-->
+                                            <!--<div class="form-group">-->
+                                            <!--<label class="build-label">nodeData</label>-->
+                                            <!--<textarea type="disabled" class="form-control form-custom code" rows="25" id="sysNodeData"></textarea>-->
+                                            <!--</div>-->
 
 
                                         </div>
@@ -5987,7 +6030,7 @@ $("#componentsBtn").click();
                                 <button id = "remove_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
 
                             </div>
-                            <div class="panel panel-default jobPanel">
+                            <div id="mainJobPanel" class="panel panel-default jobPanel">
                                 <!--<input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="comType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >-->
                                 <input type="hidden" id="buildCode" ><input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="comType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >
 
@@ -6007,10 +6050,10 @@ $("#componentsBtn").click();
                                                     </div>
 
                                                     <!--<div class="col-sm-2 switchCol">-->
-                                                        <!--<div class="form-group">-->
-                                                            <!--<label class="build-label">Version</label>-->
-                                                            <!--<div id="version" class="statusBox"></div>-->
-                                                        <!--</div>-->
+                                                    <!--<div class="form-group">-->
+                                                    <!--<label class="build-label">Version</label>-->
+                                                    <!--<div id="version" class="statusBox"></div>-->
+                                                    <!--</div>-->
                                                     <!--</div>-->
                                                     <div class="col-sm-2 switchCol">
                                                         <div class="form-group">
@@ -6080,12 +6123,12 @@ $("#componentsBtn").click();
                                                         <div class="card-header buildCodeHeader" id="codeHeading" data-toggle="collapse" data-target="#codeCollapse" aria-expanded="true" aria-controls="codeCollapse">
                                                             <span class="cardLable"><i class="fa fa-tasks fa-fw"></i>Build Code</span>
                                                             <span id="buildCodeNameEdit" class="newBuildCodeName">
-                                                                <input id="newBuildCodeName" class="form-control" type="text">
-                                                                <i id="buildCodePickButton" class="fa fa-list fa-fw buildCodeButton"></i>
-                                                                <i id="buildCodeForkButton" class="fa fa-code-fork fa-fw buildCodeButton"></i>
-                                                                <i id="buildCodeCopyButton" class="fa fa-copy fa-fw buildCodeButton"></i>
-                                                                <i id="buildCodePasteButton" class="fa fa-paste fa-fw buildCodeButton"></i>
-                                                            </span>
+                                                                    <input id="newBuildCodeName" class="form-control" type="text">
+                                                                    <i id="buildCodePickButton" class="fa fa-list fa-fw buildCodeButton"></i>
+                                                                    <i id="buildCodeForkButton" class="fa fa-code-fork fa-fw buildCodeButton"></i>
+                                                                    <i id="buildCodeCopyButton" class="fa fa-copy fa-fw buildCodeButton"></i>
+                                                                    <i id="buildCodePasteButton" class="fa fa-paste fa-fw buildCodeButton"></i>
+                                                                </span>
                                                             <span id="buildCodeNameRead" class="buildCodeNameRead"></span>
                                                         </div>
 
@@ -6218,7 +6261,14 @@ $("#componentsBtn").click();
                                                                     <div class="form-group"><label class="build-label">ID: </label><input class="form-control form-custom" id="idDisp"></div>
                                                                     <div class="form-group"><label class="build-label">Price: </label><input class="form-control form-custom" id="price"></div>
                                                                 </div>
-
+                                                                <!--TESTING-->
+                                                                <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+                                                                <div class="form-group">
+                                                                    <label class="build-label">nodeData</label>
+                                                                    <textarea type="disabled" class="form-control form-custom code" rows="25" id="nodeData"></textarea>
+                                                                    <hr>
+                                                                    <textarea type="disabled" class="form-control form-custom code" rows="25" id="buildCodeData"></textarea>
+                                                                </div>
 
                                                             </div>
                                                         </div>
@@ -6226,14 +6276,7 @@ $("#componentsBtn").click();
                                                 </div>
 
 
-                                                <!--TESTING-->
-                                                <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-                                                <div class="form-group">
-                                                    <label class="build-label">nodeData</label>
-                                                    <textarea type="disabled" class="form-control form-custom code" rows="25" id="nodeData"></textarea>
-                                                    <hr>
-                                                    <textarea type="disabled" class="form-control form-custom code" rows="25" id="buildCodeData"></textarea>
-                                                </div>
+
 
                                             </div>
                                         </div>
@@ -6241,46 +6284,56 @@ $("#componentsBtn").click();
                                 </div>
                             </div>
                         </div>
+                        <!--<div class="tab-content">-->
+                            <!--<div role="tabpanel"  class="tab-pane fade show active" id="Component_Details">-->
+
+                                <!---->
+
+                            <!--</div>-->
+                        <!--</div>-->
 
                     </div>
                 </div>
 
-            </div>
-        </div>
-        <div id='bottomRow'  style="display: none" class="row">
-            <div id="rowHandle"></div>
-            <div class="col-fixed-240 bottom-row" >
-                <div id="results-list" class="results-list" >
-                    <div class='panel panel-default cust-panel'>
-                        <div class='panel-heading cust-panel-heading'><i class='fa  fa-calendar fa-fw'></i>Build History</div>
-                        <div class='panel-body'>
-                            <div id='results-group' class='list-group'></div>
+                <div id='bottomRow'  style="display: none" class="d-flex  nowrap   ">
+                    <div id="rowHandle"></div>
+                    <div class="col-fixed-240 bottom-row" >
+                        <div id="results-list" class="results-list" >
+                            <div class='panel panel-default cust-panel'>
+                                <div class='panel-heading cust-panel-heading'><i class='fa  fa-calendar fa-fw'></i>Build History</div>
+                                <div class='panel-body'>
+                                    <div id='results-group' class='list-group'></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="consoleDiv" class="bottom-row">
+                        <div class='panel panel-default cust-panel'>
+                            <div class='panel-heading cust-panel-heading'><i class='fa  fa-tv  fa-fw'></i>Console<i class='fa  fa-fw'></i><span id="messageSpan"></span>
+
+                                <i class='fa fa-fw navbar-right'></i>
+                                <a href="#"><i id="codes_btn_max" class='codes_btn_max fa fa-window-maximize fa-fw navbar-right'></i></a>
+                                <a href="#"><i id="codes_btn_min" class='codes_btn_min fa fa-window-minimize fa-fw navbar-right'></i></a>
+                                <a href="#"><i id="codes_btn" class='codes_btn fa  fa-hashtag fa-fw navbar-right'></i></a>
+                                <i class='fa fa-fw navbar-right'></i>
+
+                            </div>
+
+                            <div class='panel-body term-panel-body'>
+                                <div id="terminal-container" >
+                                    <div id="results_html" contentEditable="false" class='scroller'></div>
+                                    <div id="results_codes" class='scroller'></div>
+                                    <!--<div id="console_connect" class='' contentEditable="true">jnkjn,kjn.kb.bhb,j</div>-->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-lg-12 col-offset-240 bottom-row">
-                <div class='panel panel-default cust-panel'>
-                    <div class='panel-heading cust-panel-heading'><i class='fa  fa-tv  fa-fw'></i>Console<i class='fa  fa-fw'></i><span id="messageSpan"></span>
+            </main>
 
-                        <i class='fa fa-fw navbar-right'></i>
-                        <a href="#"><i id="codes_btn_max" class='codes_btn_max fa fa-window-maximize fa-fw navbar-right'></i></a>
-                        <a href="#"><i id="codes_btn_min" class='codes_btn_min fa fa-window-minimize fa-fw navbar-right'></i></a>
-                        <a href="#"><i id="codes_btn" class='codes_btn fa  fa-hashtag fa-fw navbar-right'></i></a>
-                        <i class='fa fa-fw navbar-right'></i>
-
-                    </div>
-
-                    <div class='panel-body term-panel-body'>
-                        <div id="terminal-container" >
-                            <div id="results_html" contentEditable="false" class='scroller'></div>
-                            <div id="results_codes" class='scroller'></div>
-                            <!--<div id="console_connect" class='' contentEditable="true">jnkjn,kjn.kb.bhb,j</div>-->
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
+
+
     </div>
 </body>
 <div id="DemoDoneModal" class="modal fade" role="dialog">
