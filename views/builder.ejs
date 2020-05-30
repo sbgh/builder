@@ -4738,7 +4738,11 @@ $("#componentsBtn").click();
                 $("#dashRow").hide(200, function(){
                     $("#dashBtn").removeClass("active");
                     $("#componentsBtn").addClass("active");
-                    if(!bottomHiddenFlag){showBottom()};
+                    if(!bottomHiddenFlag){
+                        showBottom()
+                    }else{
+                        setWindowHeight($(window).height(), container, false)
+                    };
 //                    bottomHiddenFlag=false;
 
                     //move video screen to components ui
