@@ -3849,8 +3849,9 @@
                     $("#dashBtn").click();
                     function showFloatDashMenu(){
 
+                        setWindowWidth(300, container);
                         preferedPopPos = "left";
-                        floatPop("dashBoardTopRow",  "This is the Dashboard. The Dashboard provides a high level view of your 'promoted' components and the ability to make quick changes.")
+                        floatPop("dashBtn",  "This is the Dashboard. The Dashboard provides a high level view of your 'promoted' components and the ability to make quick changes.")
 
                         $(".floatPopMenuRow").remove();
                         $(".floatPop").append('<div class = "floatPopMenuRow"><button id="floatPopStop" class="btn btn-default jobFormbtn floatPopMenuItem">stop<i class="fa fa-fw fa-stop "></i></button><button id="floatPopOk" class="btn btn-default jobFormbtn floatPopMenuItem">next<i class="fa fa-fw fa-fast-forward"></i></button></div>')

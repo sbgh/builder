@@ -749,6 +749,7 @@ input:checked + .slider:before {
    cursor: pointer;
    font-size: 12px;
    margin-top: 2px;
+   position: relative;
 }
 
 .dashTableRow td > * {

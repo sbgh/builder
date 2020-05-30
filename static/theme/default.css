@@ -412,6 +412,10 @@ input:not(:checked) + .slider.round:before{
     border-color: #1a1b1c ;
 }
 
+.dashTbody > tr.dashListRowClicked{
+    box-shadow: 3px 5px 9px 1px rgba(112, 108, 108, 0.58);
+    z-index: 1000;
+}
 
 .dashTbody > tr.dashListRowClicked > td.dashTableNameItem{
 
@@ -436,7 +440,8 @@ input:not(:checked) + .slider.round:before{
 
 .dashTbody > tr.dashListRowClicked > td{
     transition: background-color 1s;
-    background-color: rgba(40, 40, 40, 0.1);
+    background-color: rgba(0, 0, 0, 0.29);
+
 }
 
 .dashTableBuildButton{
