@@ -740,6 +740,7 @@ input:checked + .slider:before {
 .dashTableRow{
    cursor: pointer;
    font-size: 12px;
+   margin-top: 2px;
 }
 
 .dashTableEnableItem{
@@ -1190,8 +1191,9 @@ tr {
 .dashTbody > tr > td{
    border-top: 0px solid;
    border-bottom: 0px solid;
-   margin-top: 0.2rem;
-   padding: 0.5rem;
+   margin-top: 0;
+   margin-bottom: 0;
+   padding: 0;
 }
 
 
@@ -1879,8 +1881,4 @@ a#sidebarBtn {
    /*}*/
 /*}*/
 
-div#navLeftIcon {
-   background-color: black;
-   margin: 5px;
-}
 

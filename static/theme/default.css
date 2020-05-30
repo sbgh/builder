@@ -38,9 +38,9 @@ body {
     border-color: #d0d0d0;
 }
 
-a {
-    color: #367ae0;
-}
+/*a {*/
+    /*color: #367ae0;*/
+/*}*/
 .form-control[readonly], fieldset[disabled] .form-control {
 
     transition: background-color 1s;
@@ -592,10 +592,10 @@ btn:focus {
     /*background-color: #ececec;*/
 }
 
-.navbar-brand{
-    transition: color 2.5s;
-    color: #ffffff;
-}
+/*.navbar-brand{*/
+    /*transition: color 2.5s;*/
+    /*color: #367ae0;*/
+/*}*/
 
 
 .nav-text-muted{
@@ -615,4 +615,19 @@ a#buildCodeBtn i {
 
 .nav-link .fa-book {
     color: #bbbbbb;
+}
+
+#sidebar > #navLeftIcon {
+    background-color: black;
+    margin: 5px;
+}
+#sidebar > #navLeftIcon > a {
+    color: white;
+}
+#navTopIcon > #navLeftIcon {
+    background-color: inherit;
+    /*margin: 5px;*/
+}
+#navTopIcon > #navLeftIcon > a {
+    color: #367ae0;
 }

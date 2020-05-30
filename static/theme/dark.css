@@ -779,8 +779,43 @@ btn:focus {
     /*background-color: #46484a;*/
 }
 
-.navbar-brand{
+/*.navbar-brand{*/
+    /*transition: color 2.5s;*/
+    /*color: #79bdf3;*/
+/*}*/
+
+.nav-text-muted{
     transition: color 2.5s;
+    color: #bbbbbb;
+}
+
+a#dashBtn i {
+    color: #00C3E3;
+}
+a#componentsBtn i {
+    color: #00DDB7;
+}
+a#buildCodeBtn i {
+    color: #8BF088;
+}
+
+.nav-link .fa-book {
+    color: #bbbbbb;
+}
+
+
+#sidebar > #navLeftIcon {
+    background-color: black;
+    margin: 5px;
+}
+#sidebar > #navLeftIcon > a {
+    color: white;
+}
+#navTopIcon > #navLeftIcon {
+    background-color: inherit;
+    /*margin: 5px;*/
+}
+#navTopIcon > #navLeftIcon > a {
     color: #79bdf3;
 }
 

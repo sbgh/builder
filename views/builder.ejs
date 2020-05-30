@@ -5566,13 +5566,16 @@ $("#componentsBtn").click();
 
                 var main = $("main")
                 main.css({'transition': 'padding-left 0.2s ease-out', 'padding-left':'220px' });
+                $("#navLeftIcon").detach().prependTo('#sidebar');
             });
 
+            $('.navbar-collapse').on('hidden.bs.collapse', function() {
+                $("#navLeftIcon").detach().appendTo('#navTopIcon');
+            });
             $('.navbar-collapse').on('hide.bs.collapse', function() {
 
                 var main = $("main")
                 main.css({'transition': 'padding-left 0.2s ease-in', 'padding-left':'0px' });
-
             });
         });
 
