@@ -9,9 +9,17 @@ html, body {
 body {
     transform: scaleX(0.0);
 }
+
 .jobScreen{
    overflow-x: hidden;
+   /*padding-bottom: 3px;*/
 }
+.sysScreen{
+   overflow-x: hidden;
+   /*padding-bottom: 3px;*/
+}
+
+
 .container-fluid {
     padding-right: 0px;
     padding-left: 0px;
@@ -193,7 +201,7 @@ topLib-col-fixed-240{
 }
 
 .jobPanel{
-   margin-bottom: 2px;
+   /*margin-bottom: 2px;*/
 }
 .sysPanel{
 
@@ -743,6 +751,9 @@ input:checked + .slider:before {
    margin-top: 2px;
 }
 
+.dashTableRow td > * {
+   vertical-align : middle;
+}
 .dashTableEnableItem{
    text-align: center;
 }

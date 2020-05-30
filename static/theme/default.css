@@ -10,10 +10,17 @@ body {
     color: #555555;
 }
 
+.jobScreen{
+    background-color: #ececec;
+}
+.sysScreen{
+    background-color: #ececec;
+}
+
 #rightCol {
      transition: background-color 1s;
-    background-color: #ececec;
-    border-color: #ececec;
+    /*background-color: #ececec;*/
+    /*border-color: #ececec;*/
  }
 
 body {
