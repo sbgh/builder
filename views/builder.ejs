@@ -2022,7 +2022,7 @@
                             newLines.pop();
 
                             newLines.forEach(function(row){
-                                //console.log(row); 
+                                //console.log(row);
                                 if(row.substr(0,17) === 'message:Building:'){$("#resultsStatus").html( "<div>" + " <img src='/images/throbber.gif'> " + row.slice(17) + "</div>"  );}
                                 else if(row.substr(0,28) === 'status:All scripts completed'){
                                     $("#resultsStatus").html( "<b>All scripts completed</b>");
@@ -3849,7 +3849,7 @@
                     $("#dashBtn").click();
                     function showFloatDashMenu(){
 
-                        setWindowWidth(300, container);
+                        setWindowWidth(400, container);
                         preferedPopPos = "left";
                         floatPop("dashBtn",  "This is the Dashboard. The Dashboard provides a high level view of your 'promoted' components and the ability to make quick changes.")
 
@@ -3858,7 +3858,7 @@
 
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
-                        
+
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             showFloatCPU();
@@ -3898,7 +3898,7 @@ showFloatSys()
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-                            
+
 showFloatDesc()
                         })
                     }
@@ -3909,7 +3909,7 @@ showFloatDesc()
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-                            
+
 showFloatDashTable()
                         })
                     }
@@ -3933,7 +3933,7 @@ showFloatDashTable()
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-                            
+
 showFloatDashCompBuild();
                         })
                     }
@@ -3987,7 +3987,7 @@ showFloatStatus();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},30000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-                            
+
 showFloatStyle()
                         })
                     }
@@ -3998,7 +3998,7 @@ showFloatStyle()
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-                            
+
 showFloatUser()
                         })
                     }
@@ -4012,7 +4012,7 @@ showFloatUser()
                         $("#floatPopOk").click(function(event){
                             preferedPopPos = "";
                             clearTimeout(floatPopOkTimeout);
-                            
+
 $("#userMenuDrop").removeClass('show');
                             showFloatCompMenu()
                         })
@@ -4025,7 +4025,7 @@ $("#userMenuDrop").removeClass('show');
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-                            
+
                             $("#showFloatCompTree").click();
                             setTimeout(function(){
                                 $("#componentsBtn").click();
@@ -4044,7 +4044,7 @@ $("#userMenuDrop").removeClass('show');
                         $("#floatPopOk").click(function(event){
                             $("#componentsBtn").click();
                             clearTimeout(floatPopOkTimeout);
-                            
+
 $("#componentsBtn").click();
                             setTimeout(function(){
                                 showFloatCompTreeSys()
@@ -4069,7 +4069,7 @@ $("#componentsBtn").click();
                         $("#floatPopOk").click(function(event){
                             $("#componentsBtn").click();
                             clearTimeout(floatPopOkTimeout);
-                            
+
 $("#componentsBtn").click();
                             showFloatCompSysTitle()
                         })
@@ -4087,7 +4087,7 @@ $("#componentsBtn").click();
                         $("#floatPopOk").click(function(event){
 
                             clearTimeout(floatPopOkTimeout);
-                            
+
 $("#componentsBtn").click();
                             showFloatCompSysDesc()
                         })
@@ -4100,7 +4100,7 @@ $("#componentsBtn").click();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},3000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-                            
+
 $("#componentsBtn").click();
                             showFloatCompSysVari()
                         })
@@ -4113,7 +4113,7 @@ $("#componentsBtn").click();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-                            
+
 $("#componentsBtn").click();
                             showFloatCompTreeComp()
                         })
@@ -4483,7 +4483,7 @@ $("#componentsBtn").click();
 
                         setTimeout(function(){
                             floatPop("codeInspectLabel", "All components that have a matching ID are listed here.")
-                        },500);
+                        },1000);
 
                         matchTimeout = setTimeout(function(){
                             $("#vidMenuMatch").dropdown('toggle');
@@ -6487,7 +6487,7 @@ $("#componentsBtn").click();
             </div>
             <div class="modal-body">
                 <div>
-                    No command prompt time out (ms): 
+                    No command prompt time out (ms):
                     <div class="form-group">
                         <input class="form-control form-custom-meta" placeholder="(ms)" id="timeout" style="width:75px"> <button id = "set_timeout" class="btn btn-default jobFormbtn jobSetFormbtn">Set</button> <span id="set_timeout_results"></span>
                     </div>
