@@ -4523,9 +4523,13 @@ $("#componentsBtn").click();
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},5000);
                         setTimeout(function(){
-                            preferedPopPos = "right";
-                            floatPop("name", "This is the matching component.")
+                            $("#name").focus();
                         },500);
+                        setTimeout(function(){
+                            preferedPopPos = "right";
+                            floatPop("name", "This is the matching component.");
+
+                        },1000);
 
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
