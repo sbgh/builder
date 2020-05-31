@@ -365,7 +365,7 @@
             $('#jslibtree_div').on("select_node.jstree", function (e, data) {
                 $("#rightCol").show();
                 //activaTab('Component_Details');
-                $('#componentTabs').hide();
+//                $('#componentTabs').hide();
                 $("#introCol").hide();
 //                $("#screenShotCol").hide();
 
@@ -532,9 +532,12 @@
                             $("#sysScreen").hide();
                             $("#jobScreen").show();
                             showBottom();
-                            bottomHiddenFlag = false;
-                            $('#componentTabs').show();
 
+
+                            bottomHiddenFlag = false;
+//                            $('#componentTabs').show();
+
+                            setWindowHeight(currentHeight, container, false);
                             updateResultsList(selectedNode);
 
                             const targetNode =  $('#jstree_div').jstree(true).get_node(data.node.id);
@@ -552,7 +555,7 @@
                             }
 
                         }else{
-                            $('#componentTabs').hide()
+//                            $('#componentTabs').hide()
                             $("#sysScreen").show();
                             $("#jobScreen").hide();
                             hideBottom();
@@ -934,14 +937,14 @@
                 $("#bottomRow").hide(function(){
                     var container = $('#rowContainer');
                     //bottomHiddenFlag = true;
-                    setWindowHeight(container.height(), container, false);
+//                    setWindowHeight(container.height(), container, false);
                 });
             }
             function showBottom(){
                 $("#bottomRow").show(function(){
                     var container = $('#rowContainer');
                     //bottomHiddenFlag = false;
-                    setWindowHeight(currentHeight, container, false);
+//                    setWindowHeight(currentHeight, container, false);
                 });
             }
             //hideBottom();
@@ -3356,6 +3359,7 @@
 
             //Calling this function will set the height of each element in the view
             function setWindowHeight(topHeight, container, AnimateIt){
+                console.log(topHeight);
                 var heightAniDuration = 0 ;
                 if(AnimateIt){heightAniDuration = 300}
 
@@ -4725,11 +4729,13 @@ $("#componentsBtn").click();
             $("#dashBtn").on("click",function(){
                 localStorage["topMenuViewSelected"] = "Dashboard"
                 loadDashboard();
+                hideBottom();
                 $("#componentsRow").hide(200);
                 $("#dashRow").show(200, function(){
                     $("#dashBtn").addClass("active");
                     $("#componentsBtn").removeClass("active");
-                    hideBottom();
+
+                    setWindowHeight(currentHeight, container, false);
 
                     //move video screen to dash
                     $("#videoScreen").detach().appendTo('#screenshot-panel-body');
@@ -4738,6 +4744,7 @@ $("#componentsBtn").click();
             });
 
             $("#componentsBtn").on("click",function(){
+//                setWindowHeight($(window).height(), container, false);
                 localStorage["topMenuViewSelected"] = "Components"
                 $("#componentsRow").show(200);
                 $("#dashRow").hide(200, function(){
@@ -4745,9 +4752,10 @@ $("#componentsBtn").click();
                     $("#componentsBtn").addClass("active");
                     if(!bottomHiddenFlag){
                         showBottom()
-                    }else{
-                        setWindowHeight($(window).height(), container, false)
-                    };
+                    }
+//                    else{
+                        setWindowHeight($(window).height(), container, false);
+//                    };
 //                    bottomHiddenFlag=false;
 
                     //move video screen to components ui
