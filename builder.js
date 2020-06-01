@@ -3833,35 +3833,47 @@ router.get("/getStyle",function(req,res){
 });
 
 //Service Rt: /ClosestRerunnableAn to return object containing the closest ancestor that is rerunnable, Method: get, Requires: id = id of the component to search for ancestor, Returns: id of closest rerunnable ansester and the SytemsJSON row of the same. format {id:ClosestRerunnableAnID, ClosestRerunnableAn:ClosestRerunnableAn}
-//Note that this service requires improvments to return current component if it is rerunnable.
 router.get("/ClosestRerunnableAn",function(req,res){
     var id = req.query.id;
 
     var ClosestRerunnableAn = {};
     var ClosestRerunnableAnID = "";
     if (SystemsJSON.hasOwnProperty(id) ){
-        if(BuildCode[SystemsJSON[id].buildCode.linkArr[0]].rerunnable !== 1){
-            var parentID = SystemsJSON[id].parent;
-            var x = 0;
-            //loop through parent > parent > parent etc (max 100 times) and capture component that is rerunnable.
-            //if none found when reached system set return id to self
-            while ((parentID !== "#") && (ClosestRerunnableAnID === "") && (x < 100)){
 
-                if (SystemsJSON.hasOwnProperty(parentID) ){
-                    if(SystemsJSON[parentID].comType !== "system"){
-                        if(BuildCode[SystemsJSON[parentID].buildCode.linkArr[0]].rerunnable === 1){
-                            ClosestRerunnableAn = SystemsJSON[parentID];
-                            ClosestRerunnableAnID = parentID
+        if(SystemsJSON[id].buildCode.linkArr.length > 0){
+
+            if(BuildCode.hasOwnProperty(SystemsJSON[id].buildCode.linkArr[0])){
+                if(BuildCode[SystemsJSON[id].buildCode.linkArr[0]].rerunnable !== 1){
+                    var parentID = SystemsJSON[id].parent;
+                    var x = 0;
+                    //loop through parent > parent > parent etc (max 100 times) and capture component that is rerunnable.
+                    //if none found when reached system set return id to self
+                    while ((parentID !== "#") && (ClosestRerunnableAnID === "") && (x < 100)){
+
+                        if (SystemsJSON.hasOwnProperty(parentID) ){
+                            if(SystemsJSON[parentID].comType !== "system"){
+                                if(BuildCode[SystemsJSON[parentID].buildCode.linkArr[0]].rerunnable === 1){
+                                    ClosestRerunnableAn = SystemsJSON[parentID];
+                                    ClosestRerunnableAnID = parentID
+                                }
+                            }else{
+                                //no rerunnable in parents chain. Set return id to query id
+                                ClosestRerunnableAn = SystemsJSON[id];
+                                ClosestRerunnableAnID = id
+                            }
                         }
-                    }else{
-                        //no rerunnable in parents chain. Set return id to query id
-                        ClosestRerunnableAn = SystemsJSON[id];
-                        ClosestRerunnableAnID = id
+                        parentID = SystemsJSON[parentID].parent;
+                        x++
                     }
+                }else{
+                    ClosestRerunnableAn = SystemsJSON[id];
+                    ClosestRerunnableAnID = id
                 }
-                parentID = SystemsJSON[parentID].parent;
-                x++
+            }else{
+                ClosestRerunnableAn = SystemsJSON[id];
+                ClosestRerunnableAnID = id
             }
+
         }else{
             ClosestRerunnableAn = SystemsJSON[id];
             ClosestRerunnableAnID = id

@@ -59,52 +59,13 @@
                     'check_callback': function(operation, node, node_parent, node_position, more) {
                         if (operation === "copy_node") {
 
-
-                            //const targetNodeId = $(".jstree-hovered")[0].id;
                             const targetNodeId = node_parent.id;
                             const pos = node_position;
                             const targetNode =  $('#jstree_div').jstree(true).get_node(targetNodeId);
                             $('#copyModal_newPosition').val(pos);
-                            if(targetNode.id === "#") {
-                                return false;
-                            }else{
-                                $('#copyModal_listOfIds').val(node.original.id);
 
-                                var fromTree;
-                                if(node.parents[node.parents.length - 2] === 'lib'){
-                                    fromTree = $('#jslibtree_div');
-                                    $('#copyModal_lib').val(pickedLib)
-                                }else{
-                                    fromTree = $('#jstree_div');
-                                    $('#copyModal_lib').val('local')
-                                }
-                                const treeNode = fromTree.jstree(true).get_node(node.original.id);
+                            return showCopyModal(node, targetNodeId,targetNode );
 
-                                var childs = treeNode.children_d;
-                                var listOfIds = [node.original.id];
-                                $("#copyInfoText").html("<b>"+node.original.text + "</b> will be copied to <b>" + targetNode.text+"</b>");
-
-                                if (childs.length > 0 ){
-                                    listOfIds += ';' + childs.join(';');
-                                    $('#copyModal_listOfIds').val(listOfIds);
-                                    $('#copyModalForm').show()
-                                }else{
-                                    $('#copyModalForm').hide()
-                                }
-
-                                if(targetNode.id === "local"){
-                                    $('#copyModal_newParent').val('#')
-                                }else{
-                                    $('#copyModal_newParent').val(targetNode.id );  //targetId
-                                }
-
-
-
-                                $('#copyModal').modal('show');
-                                $('#copyChildrenCb').prop('checked', false);
-
-                                return false;
-                            }
                         }
                         return true;  //allow all other operations
                     }
@@ -150,6 +111,49 @@
             }).on(  'create_node.jstree', function(e, data) {
                 //console.log('saved');
             }  );
+
+
+            function showCopyModal(node, targetNodeId,targetNode ){
+
+                if(targetNode.id === "#") {
+                    return false;
+                }else{
+                    $('#copyModal_listOfIds').val(node.original.id);
+
+                    var fromTree;
+                    if(node.parents[node.parents.length - 2] === 'lib'){
+                        fromTree = $('#jslibtree_div');
+                        $('#copyModal_lib').val(pickedLib)
+                    }else{
+                        fromTree = $('#jstree_div');
+                        $('#copyModal_lib').val('local')
+                    }
+                    const treeNode = fromTree.jstree(true).get_node(node.original.id);
+
+                    var childs = treeNode.children_d;
+                    var listOfIds = [node.original.id];
+                    $("#copyInfoText").html("<b>"+node.original.text + "</b> will be copied to <b>" + targetNode.text+"</b>");
+
+                    if (childs.length > 0 ){
+                        listOfIds += ';' + childs.join(';');
+                        $('#copyModal_listOfIds').val(listOfIds);
+                        $('#copyModalForm').show()
+                    }else{
+                        $('#copyModalForm').hide()
+                    }
+
+                    if(targetNode.id === "local"){
+                        $('#copyModal_newParent').val('#')
+                    }else{
+                        $('#copyModal_newParent').val(targetNode.id );  //targetId
+                    }
+
+                    $('#copyModal').modal('show');
+                    $('#copyChildrenCb').prop('checked', false);
+
+                    return false;
+                }
+            }
 
             //Create Lib Tree
             $("#jslibtree_div").jstree({
@@ -240,6 +244,7 @@
             $("#treeCollapse").on("click",function(){
                 setLibWindowWidth(20, container);
             });
+
 
             $("#copyConfirmButton").on("click",function() {
                 var mydata = {};
@@ -533,9 +538,7 @@
                             $("#jobScreen").show();
                             showBottom();
 
-
                             bottomHiddenFlag = false;
-//                            $('#componentTabs').show();
 
                             setWindowHeight(currentHeight, container, false);
                             updateResultsList(selectedNode);
@@ -555,7 +558,6 @@
                             }
 
                         }else{
-//                            $('#componentTabs').hide()
                             $("#sysScreen").show();
                             $("#jobScreen").hide();
                             hideBottom();
@@ -1114,7 +1116,6 @@
                     $("#newCompVarValue"+idn).val( tinymce.activeEditor.getContent() )
                 });
             }
-
 
             function createSysVarEditHtml(currentRowCntStr){
                 var newHtml = '<tr id="new_row'+currentRowCntStr+'" class="d-flex varRow newVarRow">'
@@ -3087,6 +3088,29 @@
                 createNode(mydata);
             });
 
+            var currentCopyObj = {};
+            $("#paste_button").hide();
+            $("#copy_button").on("click",function() {
+                    currentCopyObj = {"id":$("#id").val(), "lib":"working", "name": $("#text").val()};
+                    $("#paste_button").show();
+                    $("#paste_button").popover({
+                        animation: true,
+                        content: currentCopyObj.lib + " : " + $("#text").val(),
+                        delay: { "show": 500, "hide": 100 },
+                        trigger: 'hover',
+                        template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                    });
+            });
+            $("#paste_button").on("click",function() {
+                const targetNodeId = $("#id").val();
+                const pos = 1;
+                const targetNode =  $('#jstree_div').jstree(true).get_node(targetNodeId);
+                const fromNode =  $('#jstree_div').jstree(true).get_node(currentCopyObj.id);
+                $('#copyModal_newPosition').val(pos);
+
+                showCopyModal(fromNode, targetNodeId,targetNode );
+            });
+
             $('.newSys').on('click', function(){
                 var mydata = {};
                 mydata.id = "NewSys";
@@ -3359,7 +3383,7 @@
 
             //Calling this function will set the height of each element in the view
             function setWindowHeight(topHeight, container, AnimateIt){
-                console.log(topHeight);
+//                console.log(topHeight);
                 var heightAniDuration = 0 ;
                 if(AnimateIt){heightAniDuration = 300}
 
@@ -4744,7 +4768,6 @@ $("#componentsBtn").click();
             });
 
             $("#componentsBtn").on("click",function(){
-//                setWindowHeight($(window).height(), container, false);
                 localStorage["topMenuViewSelected"] = "Components"
                 $("#componentsRow").show(200);
                 $("#dashRow").hide(200, function(){
@@ -4753,10 +4776,8 @@ $("#componentsBtn").click();
                     if(!bottomHiddenFlag){
                         showBottom()
                     }
-//                    else{
-                        setWindowHeight($(window).height(), container, false);
-//                    };
-//                    bottomHiddenFlag=false;
+
+                    setWindowHeight($(window).height(), container, false);
 
                     //move video screen to components ui
                     $("#videoScreen").detach().appendTo('#screenShotImageHolder');
@@ -4965,8 +4986,6 @@ $("#componentsBtn").click();
 
                 }
 
-                //$("#fakeInput").val("");
-
                 if(vidHoverFlag){
                     if(KeyObj.key === "Enter"){
                         $("#fakeInput").blur();
@@ -5048,7 +5067,6 @@ $("#componentsBtn").click();
                     }
                 }).done(function (e) {
                     //console.log("startStream Done -> restart");
-                    //startStream();
                     setTimeout(startStream, 1000);
                 }).fail(function (e) {
 
@@ -5970,20 +5988,11 @@ $("#componentsBtn").click();
                                                         <input class="form-control form-custom" placeholder="Enter system name" id="sysName">
                                                     </div>
                                                 </div>
-                                                <!--<div class="col-lg-1 ">-->
-                                                <!--<div class="form-group">-->
-                                                <!--<label>Version</label>-->
-                                                <!--<div id="sysVersion" class="statusBox"></div>-->
-                                                <!--</div>-->
-                                                <!--</div>-->
-                                                <!--<div class="col-lg-8 "></div>-->
                                             </div>
                                             <div class="row">
                                                 <div class="col-lg-12" style="padding: 0px">
                                                     <div class="form-group">
                                                         <label class="build-label">System Description</label>
-                                                        <!--<textarea rows="4" class="form-control form-custom" placeholder="Enter description of this system" id="sysDescription"></textarea>-->
-
                                                         <div id="sysDescription" class=""></div>
 
                                                     </div>
@@ -6048,13 +6057,13 @@ $("#componentsBtn").click();
                                 <button id = "moveDn_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-down fa-fw"></i>Move Down</button>
                                 <button id = "new_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Child</button>
                                 <button id = "remove_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
+                                <button id = "copy_button" class="btn btn-default jobFormbtn"><i class="fa fa-copy fa-fw"></i>Copy</button>
+                                <button id = "paste_button" class="btn btn-default jobFormbtn"><i class="fa fa-paste fa-fw"></i>Paste</button>
 
                             </div>
                             <div id="mainJobPanel" class="panel panel-default jobPanel">
                                 <!--<input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="comType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >-->
                                 <input type="hidden" id="buildCode" ><input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="comType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >
-
-
 
                                 <div class="panel-body job-form-panel" id="job-form-panel">
                                     <form id="jobForm">
@@ -6304,13 +6313,6 @@ $("#componentsBtn").click();
                                 </div>
                             </div>
                         </div>
-                        <!--<div class="tab-content">-->
-                            <!--<div role="tabpanel"  class="tab-pane fade show active" id="Component_Details">-->
-
-                                <!---->
-
-                            <!--</div>-->
-                        <!--</div>-->
 
                     </div>
                 </div>
@@ -6352,7 +6354,6 @@ $("#componentsBtn").click();
             </main>
 
         </div>
-
 
     </div>
 </body>
