@@ -261,7 +261,7 @@ padding-left: 0px;
    padding: 1px 2px;
    font-size: 12px;
    font-weight: 400;
-   width:90px;
+   width:95px;
 }
 .buttonRow {
    padding-left: 40px;
@@ -354,6 +354,7 @@ padding-left: 0px;
    /*opacity: .75;*/
    transition: backdrop-filter .5s;
    backdrop-filter: blur(3px);
+   z-index: 2000;
 }
 
 .modal-dialog {

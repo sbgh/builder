@@ -3877,7 +3877,7 @@
                     $("#dashBtn").click();
                     function showFloatDashMenu(){
 
-                        setWindowWidth(400, container);
+                        setWindowWidth(260, container);
                         preferedPopPos = "left";
                         floatPop("dashBtn",  "This is the Dashboard. The Dashboard provides a high level view of your 'promoted' components and the ability to make quick changes.")
 
@@ -5554,8 +5554,13 @@ $("#componentsBtn").click();
 
             $("#treePanelHandle").bind('touchmove', function(e) {
                 var te = e.originalEvent.changedTouches[0].clientX;
+                if($( "#sidebar" ).hasClass( "show" )){
+                    setWindowWidth(te - $("#sidebar").width() - 2, container, false);
+                }else{
+                    setWindowWidth(te - 2, container, false);
+                }
 //                setWindowWidth( te - $("#leftLibCol").width(), container);
-                setWindowWidth( te , container);
+                //setWindowWidth( te , container);
             });
 
             var componentDetailsHoverFlag = false;
