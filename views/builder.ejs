@@ -39,6 +39,11 @@
             $('#jobForm').on('submit', function(e){ e.preventDefault()});
             $('#sysForm').on('submit', function(e){ e.preventDefault()});
 
+            var currentSysId = "";
+            if (typeof localStorage['dashSystemDropItemClicked'] !== 'undefined'  ){
+                currentSysId = JSON.parse(localStorage['dashSystemDropItemClicked']).id ;
+            };
+
             //create main tree
             $("#jstree_div").jstree({
                 "core" : {
@@ -51,7 +56,7 @@
                         'url' : function (node) {
                                 var searchText = $("#searchInput").val();
                                 return node.id === '#' ?
-                                    'jobsTree?searchSt='+searchText :
+                                    'jobsTree?searchSt='+searchText + "&currentSysId="+currentSysId :
                                     'jobsTree';
                             },
                         'data' : function (node) {return { 'id' : node.id };}
@@ -643,6 +648,7 @@
                             loadDashSystemDetails(id);
 
                             localStorage['dashSystemDropItemClicked'] = JSON.stringify({ id:id, sysName:sysName }) ;
+                            currentSysId = id;
                         });
 
                     },
@@ -3789,6 +3795,7 @@
             var preferedPopPos = "";
             //Check first run and run firstRunTasks() if required
             var currentGhostEle = "";
+
             function checkFirstRun(){
 
                 //query server for first run setting
@@ -3862,6 +3869,7 @@
                             loadDashSystemDetails(id);
 
                             localStorage['dashSystemDropItemClicked'] = JSON.stringify({ id:id, sysName:sysName }) ;
+                            currentSysId = id;
                         }
 
                     });

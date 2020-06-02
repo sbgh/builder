@@ -743,6 +743,7 @@ router.get("/JobsTree",function(req,res){
     //console.log("url: " + req.url);
     var id = req.query.id;
     var searchSt = req.query.searchSt;
+    var currentSysId = req.query.currentSysId;
     //console.log("jobs:" + id+":");
     res.writeHead(200, {"Content-Type": "application/json"});
     var respTxt = "";
@@ -776,43 +777,55 @@ router.get("/JobsTree",function(req,res){
 
         //Loop through all SystemJSON and filter if search term is present.
         for (var key in SystemsJSON) {
+
+
+
             if (SystemsJSON.hasOwnProperty(key)) {
 
-                //filter by search string
-                if (searchSt.length === 0) { //If no search then simply add row
-                    resJSON.push(getTreeFormattedRowData(key, ""));
-                } else { //if there is filter spcified, use isFound function to flag rows that match
-                    if(isFoundIn(key, searchSt)){ //Component matches
+                if(currentSysId === ""){
+                    if(SystemsJSON[key].comType === "system"){
+                        currentSysId = key
+                    }else{
+                        currentSysId = SystemsJSON[key].ft.split("/")[1]
+                    }
+                }
+                if( currentSysId === SystemsJSON[key].ft.split("/")[1] || currentSysId === key){
+                    //filter by search string
+                    if (searchSt.length === 0) { //If no search then simply add row
+                        resJSON.push(getTreeFormattedRowData(key, ""));
+                    } else { //if there is filter spcified, use isFound function to flag rows that match
+                        if(isFoundIn(key, searchSt)){ //Component matches
 
-                        searchFoundList.push(key)
-                        var found = resJSON.find(function (row) {
-                            return row.id === key;  //Add a prop ID to hold component ID
-                        });
-                        if (!found) { //Add to return array
-                            resJSON.push(getTreeFormattedRowData(key, "foundInSearch"));
-                        }
-                        //Add all parents as well if they ane not present or change search classes if they are
-                        var parents = SystemsJSON[key].ft.split("/");
+                            searchFoundList.push(key)
+                            var found = resJSON.find(function (row) {
+                                return row.id === key;  //Add a prop ID to hold component ID
+                            });
+                            if (!found) { //Add to return array
+                                resJSON.push(getTreeFormattedRowData(key, "foundInSearch"));
+                            }
+                            //Add all parents as well if they ane not present or change search classes if they are
+                            var parents = SystemsJSON[key].ft.split("/");
 
-                        parents.forEach(function (parent) {
-                            if (parent !== "#") {
-                                if (SystemsJSON.hasOwnProperty(parent)) {
+                            parents.forEach(function (parent) {
+                                if (parent !== "#") {
+                                    if (SystemsJSON.hasOwnProperty(parent)) {
 
-                                    var foundIndex = resJSON.findIndex(x => x.id === parent);
+                                        var foundIndex = resJSON.findIndex(x => x.id === parent);
 
-                                    if (foundIndex === -1) {
-                                        resJSON.push(getTreeFormattedRowData(parent,""));
-                                    }else{
-                                        resJSON[foundIndex] = setRowDataClasses(resJSON[foundIndex], "foundInSearchParent");
+                                        if (foundIndex === -1) {
+                                            resJSON.push(getTreeFormattedRowData(parent,""));
+                                        }else{
+                                            resJSON[foundIndex] = setRowDataClasses(resJSON[foundIndex], "foundInSearchParent");
+                                        }
                                     }
                                 }
-                            }
-                        })
-                    }else{
+                            })
+                        }else{
 
-                        var foundIndex = resJSON.findIndex(x => x.id === key);
-                        if (foundIndex === -1) {
-                            resJSON.push(getTreeFormattedRowData(key, "foundNotInSearch"));
+                            var foundIndex = resJSON.findIndex(x => x.id === key);
+                            if (foundIndex === -1) {
+                                resJSON.push(getTreeFormattedRowData(key, "foundNotInSearch"));
+                            }
                         }
                     }
                 }
@@ -4007,8 +4020,10 @@ router.get("/getPromoted",function(req,res){
 
                     allow = true;
                 }
-                if(BuildCode[SystemsJSON[key].buildCode.linkArr[0]].systemFunction === 1){
-                    allow = true;
+                if(SystemsJSON[key].buildCode.linkArr.length > 0){
+                    if(BuildCode[SystemsJSON[key].buildCode.linkArr[0]].systemFunction === 1){
+                        allow = true;
+                    }
                 }
 
                 if(allow){
