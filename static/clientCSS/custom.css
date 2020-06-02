@@ -862,6 +862,7 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
    overflow-y: hidden;
    overflow-x: hidden;
    text-align: left;
+   white-space: nowrap; 
 }
 
 .launchPadHeading{
