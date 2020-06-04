@@ -2033,7 +2033,7 @@
 
                             newLines.forEach(function(row){
                                 //console.log(row);
-                                if(row.substr(0,17) === 'message:Building:'){$("#resultsStatus").html( "<div>" + " <img src='/images/throbber.gif'> " + row.slice(17) + "</div>"  );}
+                                if(row.substr(0,17) === 'message:Building:'){$("#resultsStatus").html(  " <img src='/images/throbber.gif'> " + row.slice(17)   );}
                                 else if(row.substr(0,28) === 'status:All scripts completed'){
                                     $("#resultsStatus").html( "<b>All scripts completed</b>");
                                 }
@@ -2073,14 +2073,16 @@
                                         }
                                         buildIDRunningPrev = buildIDRunning;
 
-                                        //save a list of all closed nodes that were opened
-                                        if($('#jstree_div li#'+buildIDRunning+'.jstree-open').length !== 1){
-                                            closedNodeList.push(buildIDRunning)
-                                        }
+                                        if($("#componentsBtn").hasClass('active')) {
+                                            //save a list of all closed nodes that were opened
+                                            if ($('#jstree_div li#' + buildIDRunning + '.jstree-open').length !== 1) {
+                                                closedNodeList.push(buildIDRunning)
+                                            }
 
-                                        var runningNode =  $('#jstree_div').jstree(true).get_node(buildIDRunning, true);
-                                        $("#jstree_div").jstree("open_node", buildIDRunning);
-                                        runningNode.children('.jstree-anchor').focus();
+                                            var runningNode = $('#jstree_div').jstree(true).get_node(buildIDRunning, true);
+                                            $("#jstree_div").jstree("open_node", buildIDRunning);
+                                            runningNode.children('.jstree-anchor').focus();
+                                        }
                                     }
                                 }
                                 else if(row.substr(0,28) === 'status:All scripts completed'){
@@ -2136,16 +2138,15 @@
                     loadDashboard();
 
                     if(CompletionSuccess){
-                        //close all nodes that were opened
-                        for(var x in closedNodeList){
-                            $("#jstree_div").jstree("close_node", closedNodeList[x]);
+                        if($("#componentsBtn").hasClass('active')){
+                            //close all nodes that were opened
+                            for(var x in closedNodeList){
+                                $("#jstree_div").jstree("close_node", closedNodeList[x]);
+                            }
+                            $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
                         }
-                        $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
+                        $('#jstree_div').jstree(true).refresh(true);
                     }
-
-                    $('#jstree_div').jstree(true).refresh(true);
-
-
                 }).fail(function (e) {
 
                     if(localKey !== '' && sys.length !== 0 && !localStorage['key_' + sys]  ){
@@ -5848,34 +5849,6 @@ $("#componentsBtn").click();
                             <div id = "dashBoardTopRow" class="row dashBoardTopRow">
                                 <div class="col-md-6 dash-panel-column" >
 
-                                    <div class="row">
-                                        <div class="os-panel-column firstCol" >
-                                            <div class='panel dashPanel os-panel'>
-                                                <div class='panel-body dashPanelBody os-panel-body'>
-                                                    <div class="dashboardLabel" >CPU Load</div>
-                                                    <div class="osValue" id="osCPUValue" >%</div>
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                        <div class="os-panel-column" >
-                                            <div class='panel dashPanel os-panel'>
-                                                <div class='panel-body dashPanelBody os-panel-body'>
-                                                    <div class="dashboardLabel" >Free Mem</div>
-                                                    <div class="osValue" id="osFMValue" >GB</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col lastCol" >
-                                            <div class='panel dashPanel currentBuildStatusPanel'>
-                                                <div class='panel-body dashPanelBody status-panel-body'>
-                                                    <div class="dashboardLabel" >Status</div>
-                                                    <div class="resultsStatus" id="resultsStatus"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                    </div>
 
                                     <div class="row">
                                         <div class="panel dashPanel systemDetailPanel">
@@ -5888,6 +5861,16 @@ $("#componentsBtn").click();
                                             </div>
 
                                             <div id="dashSystemDetails" class="dashSystemDetails"></div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col lastCol" >
+                                            <div class='panel dashPanel currentBuildStatusPanel'>
+                                                <div class='panel-body dashPanelBody status-panel-body'>
+                                                    <span class="dashboardLabel" >Build Status: </span>
+                                                    <span class="resultsStatus" id="resultsStatus">Idle</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
