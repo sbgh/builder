@@ -132,8 +132,20 @@ topLib-col-fixed-240{
    z-index:0;
 }
 
+
+
+#bottom-row{
+   flex-flow: row wrap;
+   align-items: stretch;
+}
+
 #consoleDiv{
    width:100%;
+   padding-left: 3px;
+   flex-grow: 2;
+}
+#resultsDiv{
+   /*width:100%;*/
    padding-left: 3px;
 }
 #terminal-container .terminal {
@@ -1898,5 +1910,8 @@ a#sidebarBtn {
       /*display: block;*/
    /*}*/
 /*}*/
+
+
+
 
 
