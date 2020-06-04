@@ -2067,7 +2067,8 @@
                                     if(buildIDRunning !== ''){
                                         $('#' + buildIDRunning + '_anchor').removeClass('runningJobCompleteSuccess').removeClass('runningJobCompleteFail').addClass("runningJob");
                                         if(buildIDRunningPrev !== ''){
-                                            $('#results_html').animate({scrollTop: $('#results_html').get(0).scrollHeight}, 200);
+                                          //  $('#results_html').animate({scrollTop: $('#results_html').get(0).scrollHeight}, 200);
+                                            $('#results_html').scrollTop($('#results_html').get(0).scrollHeight);
 
                                             $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteFail').addClass("runningJobCompleteSuccess");
                                         }
@@ -2089,6 +2090,7 @@
 
                                     refreshFlag=true;
                                //     $('#jstree_div').jstree(true).refresh(true);
+                                    $('#results_html').scrollTop($('#results_html').get(0).scrollHeight); 
 
                                 }
                                 else if(row.substr(0,22) === 'status:Scripts Aborted'){
