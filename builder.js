@@ -789,11 +789,13 @@ router.get("/JobsTree",function(req,res){
                         currentSysId = SystemsJSON[key].ft.split("/")[1]
                     }
                 }
-                if( currentSysId === SystemsJSON[key].ft.split("/")[1] || currentSysId === key){
+
+                //for now let all systems through
+                if( 1 === 1 || currentSysId === SystemsJSON[key].ft.split("/")[1] || currentSysId === key){
                     //filter by search string
                     if (searchSt.length === 0) { //If no search then simply add row
                         resJSON.push(getTreeFormattedRowData(key, ""));
-                    } else { //if there is filter spcified, use isFound function to flag rows that match
+                    } else { //if there is filter specified, use isFoundIn function to flag rows that match
                         if(isFoundIn(key, searchSt)){ //Component matches
 
                             searchFoundList.push(key)
@@ -901,26 +903,31 @@ router.get("/JobsTree",function(req,res){
         }
 
         if(SystemsJSON[key].hasOwnProperty("buildCode")){
-            if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].hasOwnProperty("script")) {
-                if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].script.includes(searchSt)) {
-                    filter = true
-                }
-            }
-            if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].hasOwnProperty("templates")) {
-                BuildCode[SystemsJSON[key].buildCode.linkArr[0]].templates.tempArr.forEach(function(row){
-                    // console.log(JSON.stringify(row));
-                    if(row.hasOwnProperty("c")){
-                        if (row.c.includes(searchSt)) {
-                            filter = true
-                        }
-                    }
-                })
 
-            }
-            if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].hasOwnProperty("name")) {
-                if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].name.includes(searchSt)) {
-                    filter = true
+            if (BuildCode.hasOwnProperty(SystemsJSON[key].buildCode.linkArr[0])){
+                if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].hasOwnProperty("script")) {
+                    if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].script.includes(searchSt)) {
+                        filter = true
+                    }
                 }
+                if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].hasOwnProperty("templates")) {
+                    BuildCode[SystemsJSON[key].buildCode.linkArr[0]].templates.tempArr.forEach(function(row){
+                        // console.log(JSON.stringify(row));
+                        if(row.hasOwnProperty("c")){
+                            if (row.c.includes(searchSt)) {
+                                filter = true
+                            }
+                        }
+                    })
+
+                }
+                if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].hasOwnProperty("name")) {
+                    if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].name.includes(searchSt)) {
+                        filter = true
+                    }
+                }
+            }else{
+                //console.log("build code not found:" + SystemsJSON[key].name)
             }
         }
 
