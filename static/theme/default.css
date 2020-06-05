@@ -603,6 +603,7 @@ btn:focus {
 .sidebar ul li a.active {
     /*transition: background-color 0.2s;*/
     /*background-color: #ececec;*/
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 /*.navbar-brand{*/

@@ -342,6 +342,11 @@ padding-left: 0px;
    min-height: 0px;
 }
 
+.navbar-brand {
+   /*padding-top: 0rem;*/
+   display: inline;
+}
+
 .navbar {
    position: relative;
    min-height: 0px;
