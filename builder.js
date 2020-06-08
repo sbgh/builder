@@ -4113,7 +4113,7 @@ router.get("/getTempTypes",function(req,res){
 });
 
 router.get("/massupdate",function(req,res){
-//mass updates
+//mass updates and fix build codes
 
     res.write("<html><body>");
 
@@ -4128,7 +4128,7 @@ router.get("/massupdate",function(req,res){
             // console.log(BuildCode[bc].name );
 
 
-            var scriptC = BuildCode[bc].script.length
+            var scriptC = BuildCode[bc].script.length;
 
             var tempObjArr = BuildCode[bc].templates.tempArr;
 
@@ -4213,7 +4213,7 @@ router.get("/getCPUStats",function(req,res){
 var samples = []; //global to store cpu stats
 var prevCpus = os.cpus(); //global to hold previous cpu stats
 
-setInterval(sample,1000); //run function 'sample()' every 1000 ms
+setTimeout(sample,1000); //run function 'sample()' every 1000 ms
 function sample() {
     const currCpus = os.cpus();
     for (var i=0,len=currCpus.length;i<len;i++) {
@@ -4227,7 +4227,8 @@ function sample() {
     }
     prevCpus = currCpus;
     samples.push(deltas);
-    if (samples.length>100) samples.shift()
+    if (samples.length>100) samples.shift();
+    setTimeout(sample,1000); //run function 'sample()' every 1000 ms
 }
 
 function saveAllJSON(backup){

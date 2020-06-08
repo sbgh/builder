@@ -1751,6 +1751,9 @@ td.col-1.dashTableBuildItem {
    line-height: 1.0;
    text-transform: uppercase;
 }
+.hoverPop {
+   z-index: 10000;
+}
 
 #floatingPopoverField .floatPop .popover-body {
    font-size: 1.0rem;
