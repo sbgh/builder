@@ -403,7 +403,7 @@ router.get("/navigate",function(req,res){
     res.end();
 });
 
-//Service Rt: /VideoClick to send  chromium page a mouse click, Method: get, Requires: x & y reletive position, Returns:  nothing
+//Service Rt: /VideoClick to send  chromium page a mouse click, Method: get, Requires: x & y relative position, Returns:  nothing
 router.get("/VideoClick",function(req,res){
     var xClick = req.query.x;
     var yClick = req.query.y;
@@ -578,30 +578,31 @@ function searchComponentProperties(AttributesArray){
     var returnObj = {count:x, foundObjArr:foundObjArr};
     return(returnObj)
 }
-function setRowDataClasses(rowdata, searchResultsClassToAdd){
-    //Set searchModClass to a class name to set color of jstree row
-    var searchModClass = searchResultsClassToAdd;
 
-    if (rowdata.comType === "job") {
-        if (SystemsJSON[rowdata.id].hasOwnProperty("lastBuild")) {
-            if (SystemsJSON[rowdata.id].lastBuild.pass === 1) {
-                rowdata.li_attr = {"class": "runningJobCompleteSuccess " + searchModClass};
-                rowdata.a_attr = {"class": "runningJobCompleteSuccess " + searchModClass}
-            } else if (SystemsJSON[rowdata.id].lastBuild.pass === 0) {
-                rowdata.li_attr = {"class": "runningJobCompleteFail " + searchModClass};
-                rowdata.a_attr = {"class": "runningJobCompleteFail " + searchModClass}
-            }
-        } else {
-            rowdata.li_attr = {"class": "newJobRow"};
-            rowdata.a_attr = {"class": searchModClass}
-        }
-
-    } else {
-        rowdata.li_attr = {"class": "newJobRow"};
-        rowdata.a_attr = {"class": searchModClass}
-    }
-    return rowdata;
-}
+// function setRowDataClasses(rowdata, searchResultsClassToAdd){
+//     //Set searchModClass to a class name to set color of jstree row
+//     var searchModClass = searchResultsClassToAdd;
+//
+//     if (rowdata.comType === "job") {
+//         if (SystemsJSON[rowdata.id].hasOwnProperty("lastBuild")) {
+//             if (SystemsJSON[rowdata.id].lastBuild.pass === 1) {
+//                 rowdata.li_attr = {"class": "runningJobCompleteSuccess " + searchModClass};
+//                 rowdata.a_attr = {"class": "runningJobCompleteSuccess " + searchModClass}
+//             } else if (SystemsJSON[rowdata.id].lastBuild.pass === 0) {
+//                 rowdata.li_attr = {"class": "runningJobCompleteFail " + searchModClass};
+//                 rowdata.a_attr = {"class": "runningJobCompleteFail " + searchModClass}
+//             }
+//         } else {
+//             rowdata.li_attr = {"class": "newJobRow"};
+//             rowdata.a_attr = {"class": searchModClass}
+//         }
+//
+//     } else {
+//         rowdata.li_attr = {"class": "newJobRow"};
+//         rowdata.a_attr = {"class": searchModClass}
+//     }
+//     return rowdata;
+// }
 
 function getType(key){
     //calculate and return the type string that the jstree type plug-in can use based of various properties of the provided SystemJSON id
@@ -626,6 +627,67 @@ function getType(key){
     }
     return type
 }
+
+// function toTree(arr, item) {
+//
+//     if (!item) {
+//         item = arr.find(item => item.parent === null)
+//     }
+//
+//     let parent = {...item};
+//     parent.children =
+//         arr.filter(x => x.parent === item.id)
+//             .sort((a, b) => a.id - b.id)
+//             .map(y => toTree(arr, y));
+//
+//     return parent
+// }
+
+// function toTree(data, node) {
+//     var temp = {},
+//         parents = [];
+//
+//     var
+//     Object.keys(data).forEach(o => {
+//         o.children = temp[o.id] && temp[o.id].children;
+//         temp[o.id] = o;
+//         if (!o.parent_ids) {
+//             parents.push(o.id);
+//             return;
+//         }
+//         o.parent_ids.forEach(id => {
+//             temp[id] = temp[id] || {};
+//             temp[id].children = temp[id].children || [];
+//             temp[id].children.push(o);
+//         });
+//     });
+//     var wholeTree =  parents.map(id => temp[id]);
+//     Object.keys(wholeTree).forEach(o => {
+//        if(o.id === node){
+//            return o;
+//        }
+//     });
+//     return undefined; // no match found
+// }
+
+// function traverse(branch, node) {
+//
+//     for (var i = 0; i < branch.length; i++) {
+//         if (branch[i].id == node.id) {
+//             return branch;
+//         }
+//     }
+//
+//     for (var j = 0; j < branch.length; j++) {
+//         var result = traverse(branch[j].children);
+//         if (result !== undefined) {
+//             return result;
+//         }
+//     }
+//
+//     return undefined; // no match found
+//
+// }
 
 //Service Rt: /VideoMove to send chromium page a mouse position, Method: get, Requires: x & y reletive position, Returns:  nothing
 var currentBackendNodeId;
@@ -2373,7 +2435,7 @@ router.post("/run",function(req,res){
     var ids; //list of component ids send from client separated by ; and children need to follow parents
     var storeLocal;
     var runRerunnableCh;
-    var storeLocalAccess;
+    // var storeLocalAccess;
     var runKey="";
     var newKey=false;
 
@@ -2419,59 +2481,93 @@ router.post("/run",function(req,res){
         if(err){
             console.log(err);
             //message(err);
-        }else{
+        }else {
 
-            //set list of ids into ids array
-            ids = fields.ids.split(';');
+            //set id into ids array
+            ids = [fields.ids.split(';')[0]];
+            // fields.ids.split(';');
 
-            //set flag to run promoted children
-            runRerunnableCh = fields.runRerunnableCh;
 
-            //storeLocal holds val of 'store key in browser' checkbox
-            storeLocal = fields.storeLocal;
-            //if key-pair file is attached
-            if(files.hasOwnProperty('key')   ){
-                //capture the key-pair in runKey and delete the attached file
-                var myFiles = files['key'];
-                if (myFiles.hasOwnProperty('path')) {
-                    runKey = fs.readFileSync(myFiles.path);
-                    newKey = true;
-                    fs.unlink(myFiles.path,function(err){
-                        if(err) console.log('Error: unable to delete uploaded key file')
-                    });
-                }
-            }else{
-                if(storeLocal === 'yes'){
-                    if(fields.hasOwnProperty('localStoredKey')){
-                        runKey = fields.localStoredKey;
-                        //console.log('runKey local: ' + runKey);
+            if (fields.runChildren === 'true') {
+                //find all children and add to ids arr
+                var childList = {};
+                childList[ids[0]] = true;
+                for (var key in SystemsJSON) {
+
+                    if (childList.hasOwnProperty(SystemsJSON[key].parent)) {
+                        childList[key] = true;
+                        ids.push(key)
                     }
                 }
-            }
+                ids.sort(function (a, b) {
+                    var compA = "";
+                    var compB = "";
 
-            //storeLocalAccess holds val of 'store access key in browser' checkbox
-            // storeLocalAccess = fields.storeLocalAccess;
-            // if(files.hasOwnProperty('access')   ){
-            //     var myFiles = files['access'];
-            //
-            //     //if runAccess file is attached
-            //     if (myFiles.hasOwnProperty('path')) {
-            //         runAccess = fs.readFileSync(myFiles.path);
-            //         runAccess = runAccess.toString().split('\n')[1];
-            //         newAccess = true;
-            //         fs.unlink(myFiles.path,function(err){
-            //             if(err) console.log('Error: unable to delete uploaded access file')
-            //         });
-            //         //console.log('access file: ' + runAccess);
-            //     }
-            // }else{
-            //     if(storeLocalAccess === 'yes'){
-            //         if(fields.hasOwnProperty('localStoredAccess')){
-            //             runAccess = fields.localStoredAccess;
-            //             //console.log('access file: ' + runAccess);
-            //         }
-            //     }
-            // }
+                    SystemsJSON[a].ft.split("/").forEach(function(id){
+                        compA += id === "#" ? "0/" : SystemsJSON[id].sort + "/"
+                    });
+                    compA += SystemsJSON[a].sort;
+                    SystemsJSON[b].ft.split("/").forEach(function(id){
+                        compB += id === "#" ? "0/" : SystemsJSON[id].sort + "/"
+                    });
+                    compB += SystemsJSON[b].sort;
+
+                    if(compA > compB){
+                        return 1
+                    }else{
+                        return -1
+                    }
+                });
+
+                //set flag to run promoted children
+                runRerunnableCh = fields.runRerunnableCh;
+
+                //storeLocal holds val of 'store key in browser' checkbox
+                storeLocal = fields.storeLocal;
+                //if key-pair file is attached
+                if (files.hasOwnProperty('key')) {
+                    //capture the key-pair in runKey and delete the attached file
+                    var myFiles = files['key'];
+                    if (myFiles.hasOwnProperty('path')) {
+                        runKey = fs.readFileSync(myFiles.path);
+                        newKey = true;
+                        fs.unlink(myFiles.path, function (err) {
+                            if (err) console.log('Error: unable to delete uploaded key file')
+                        });
+                    }
+                } else {
+                    if (storeLocal === 'yes') {
+                        if (fields.hasOwnProperty('localStoredKey')) {
+                            runKey = fields.localStoredKey;
+                            //console.log('runKey local: ' + runKey);
+                        }
+                    }
+                }
+
+                //storeLocalAccess holds val of 'store access key in browser' checkbox
+                // storeLocalAccess = fields.storeLocalAccess;
+                // if(files.hasOwnProperty('access')   ){
+                //     var myFiles = files['access'];
+                //
+                //     //if runAccess file is attached
+                //     if (myFiles.hasOwnProperty('path')) {
+                //         runAccess = fs.readFileSync(myFiles.path);
+                //         runAccess = runAccess.toString().split('\n')[1];
+                //         newAccess = true;
+                //         fs.unlink(myFiles.path,function(err){
+                //             if(err) console.log('Error: unable to delete uploaded access file')
+                //         });
+                //         //console.log('access file: ' + runAccess);
+                //     }
+                // }else{
+                //     if(storeLocalAccess === 'yes'){
+                //         if(fields.hasOwnProperty('localStoredAccess')){
+                //             runAccess = fields.localStoredAccess;
+                //             //console.log('access file: ' + runAccess);
+                //         }
+                //     }
+                // }
+            }
         }
     });
 

@@ -310,73 +310,84 @@
             });
 
             //Library pick
-            $("#LibDropDownPick").on('click', function(){
-                libDropDown();
-            });
-            $("#LibDropDownPickIcon").on('click', function(){
-                libDropDown();
-            });
-            function libDropDown(){
-                if (!$("#libDropDown").hasClass( "open" )) {
+//            $("#LibDropDownPick").on('click', function(){
+//                libDropDown();
+//            });
+//            $("#LibDropDownPickIcon").on('click', function(){
+//                libDropDown();
+//            });
+            function getLibs(){
 
-                    $('#LibDropDownList').show();
-                    var mydata = {};
+                $.ajax({
+                    type: 'get',
+                    data: "",
+                    dataType: "text",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    url: '/libraryList',
+                    success: function (data) {
+                        const dataObj = JSON.parse(data);
+                        const priArr = dataObj.pri;
+                        const pubArr = dataObj.pub;
 
-                    $.ajax({
-                        type: 'get',
-                        data: mydata,
-                        dataType: "text",
-                        headers: {
-                            "content-type": "application/json"
-                        },
-                        url: '/libraryList',
-                        success: function (data) {
-                            const dataObj = JSON.parse(data);
-                            const priArr = dataObj.pri;
-                            const pubArr = dataObj.pub;
-
-                            const LibDropDownListDiv = $("#LibDropDownList")[0];
-                            var libListHTML = '<button type="button" class="close" id="closeLibListHTML">×</button><br>';
-                            priArr.forEach(function (dir) {
-                                libListHTML += '<a class="dropdown-item libListRow" data-id="private/' + dir + '" href="#">private/' + dir + '</a>';
-                            })
-                            pubArr.forEach(function (dir) {
-                                libListHTML += '<a class="dropdown-item libListRow" data-id="public/' + dir + '" href="#">public/' + dir + '</a>';
-                            })
-                            LibDropDownListDiv.innerHTML = libListHTML
-
-                            //Add click events to new row
-                            $('.libListRow').on('click', function(){
-                                var pickedDir = $(this).attr('data-ID');
-                                pickedLib = pickedDir;
-                                $('#LibDropDownList').hide();
-                                $('#jslibtree_div').jstree(true).refresh();
+//                        const LibDropDownListDiv = $("#LibDropDownList")[0];
+                        var libListHTML = '';
+                        priArr.forEach(function (dir) {
 
 
-                                setLibWindowWidth(250, container)
+//                            <li class="nav-item">
+//                                <a class="nav-link" href="#">
+//                                <i class="fa fa-book fa-fw"></i>
+//                            myLib1
+//                            </a>
+//                            </li>
 
-                            });
+                            libListHTML += '<li class="nav-item"><a class="nav-link libListRow" data-id="private/' + dir + '" href="#"><i class="fa fa-book fa-fw"></i>private/' + dir + '</a></li>';
+                        })
+                        pubArr.forEach(function (dir) {
+//                            libListHTML += '<a class="dropdown-item libListRow" data-id="public/' + dir + '" href="#">public/' + dir + '</a>';
+                            libListHTML += '<li class="nav-item"><a class="nav-link libListRow" data-id="public/' + dir + '" href="#"><i class="fa fa-book fa-fw"></i>public/' + dir + '</a></li>';
 
-                            $('#closeLibListHTML').on('click', function(){
-                                $('#LibDropDownList').hide();
-                            });
+                        })
+//                        LibDropDownListDiv.innerHTML = libListHTML
 
-                        },
-                        error: function (error) {
-                            console.log(error)
-                        }
-                    })
-                }else{
-                    $('#LibDropDownList').hide();
-                }
+                        $("#LibListNav").html(libListHTML)
+
+
+
+                        //Add click events to new row
+                        $('.libListRow').on('click', function(){
+                            var pickedDir = $(this).attr('data-ID');
+                            pickedLib = pickedDir;
+
+                            $('#jslibtree_div').jstree(true).refresh();
+                            $('#jstree_div').hide();
+                            $('#jslibtree_div').show();
+                            $(".nav-link").removeClass("active");
+                            $(this).addClass("active");
+
+                            hideBottom()
+                            setWindowHeight($(window).height(), container, false);
+
+                        });
+
+                    },
+                    error: function (error) {
+                        console.log(error)
+                    }
+                })
             }
+
+            //populate library list in sidebar
+            getLibs();
 
             //Lib tree click
             $('#jslibtree_div').on("select_node.jstree", function (e, data) {
                 $("#rightCol").show();
                 //activaTab('Component_Details');
 //                $('#componentTabs').hide();
-                $("#introCol").hide();
+//                $("#introCol").hide();
 //                $("#screenShotCol").hide();
 
                 selectedNode = data.selected[0];
@@ -397,7 +408,8 @@
                         readModeLibJob();
                         $('#jstree_div').jstree("deselect_all");
 
-
+                        $("#dashRow").hide();
+                        $("#componentsRow").show();
                         $("#sysScreen").hide();
                         $("#jobScreen").show();
                         $("#comType").val('Job');
@@ -406,6 +418,8 @@
                     else if (data.instance.get_node(data.node.id).type === "system") {
                         readModeLibSys();
                         $('#jstree_div').jstree("deselect_all");
+                        $("#dashRow").hide();
+                        $("#componentsRow").show();
                         $("#sysScreen").show();
                         $("#jobScreen").hide();
                         $("#comType").val('system');
@@ -1932,11 +1946,14 @@
 
                 //build list of ids
                 if($('#runChildrenCb').is(':checked')){
-                    var selectedNodes = $("#jstree_div").jstree(true).get_json(ids, { flat: true }); //returns parent and all children objs
-                    var selectedNodesArr = selectedNodes.map(a => a.id); //extract ids into arr
-                    if (selectedNodesArr.length > 0 ){
-                        ids = selectedNodesArr.join(';');
-                    }
+//                    var selectedNodes = $("#jstree_div").jstree(true).get_json(ids, { flat: true }); //returns parent and all children objs
+//                    var selectedNodesArr = selectedNodes.map(a => a.id); //extract ids into arr
+//                    if (selectedNodesArr.length > 0 ){
+//                        ids = selectedNodesArr.join(';');
+//                    }
+                    formData.append('runChildren', 'true');
+                }else{
+                    formData.append('runChildren', 'false');
                 }
 
                 $("#results_codes").html('');
@@ -4767,8 +4784,10 @@ $("#componentsBtn").click();
                 hideBottom();
                 $("#componentsRow").hide(200);
                 $("#dashRow").show(200, function(){
+                    $(".nav-link").removeClass("active");
                     $("#dashBtn").addClass("active");
-                    $("#componentsBtn").removeClass("active");
+                    $('#jslibtree_div').hide();
+                    $('#jstree_div').show();
 
                     setWindowHeight(currentHeight, container, false);
 
@@ -4780,10 +4799,18 @@ $("#componentsBtn").click();
 
             $("#componentsBtn").on("click",function(){
                 localStorage["topMenuViewSelected"] = "Components"
-                $("#componentsRow").show(200);
-                $("#dashRow").hide(200, function(){
-                    $("#dashBtn").removeClass("active");
+                $("#componentsRow").show();
+                $("#dashRow").hide(function(){
+                    $(".nav-link").removeClass("active");
                     $("#componentsBtn").addClass("active");
+                    $('#jslibtree_div').hide();
+                    $('#jstree_div').show( function(){
+                        selectedNode = $('#jstree_div').jstree('get_selected', true);
+//                        if(selectedNode.length !== 0){
+//                            $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus()
+//                        };
+                    });
+
                     if(!bottomHiddenFlag){
                         showBottom()
                     }
@@ -4793,7 +4820,6 @@ $("#componentsBtn").click();
                     //move video screen to components ui
                     $("#videoScreen").detach().appendTo('#screenShotImageHolder');
 
-                    $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
                 });
             });
 
@@ -5826,14 +5852,7 @@ $("#componentsBtn").click();
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus-circle"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
                         </a>
                     </h6>
-                    <ul class="nav flex-column mb-2">
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <i class="fa fa-book fa-fw"></i>
-                                myLib1
-                            </a>
-                        </li>
-                    </ul>
+                    <ul id="LibListNav" class="nav flex-column mb-2"></ul>
                 </div>
             </nav>
 
@@ -5957,6 +5976,7 @@ $("#componentsBtn").click();
 
                             <div class='panel-body tree-panel-body'>
                                 <div id="jstree_div" class="SysTree"></div>
+                                <div id="jslibtree_div" class="SysTree"></div>
                             </div>
                         </div>
                         <div id = "treePanelHandle" class = "treePanelHandle"></div>
