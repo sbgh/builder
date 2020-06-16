@@ -5,6 +5,10 @@ body {
 
 }
 
+a {
+    color: #367ae0;
+}
+
 .navbar-default .navbar-nav>li>a {
     transition: color 0.5s;
     color: #555555;
@@ -231,7 +235,7 @@ div.grippie {
 
 .jstree-codeBlock{
     transition: border 0.5s;
-    border-left: 4px solid #6c88b9;
+    border-left: 4px solid #367ae0;
 }
 
 .disabledRow{

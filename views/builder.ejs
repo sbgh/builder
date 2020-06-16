@@ -175,36 +175,15 @@
                     'check_callback': function(operation, node, node_parent, node_position, more) {
                         if (operation === "copy_node") {
 
-                            const targetNodeId = $(".jstree-hovered")[0].id;
-                            const targetNode =  $('#jslibtree_div').jstree(true).get_node(targetNodeId);
-                            if(  targetNode.id === "#"){
-                                return false;
-                            }else{
+                            const targetNodeId = node_parent.id;
+                            const pos = node_position;
+                            const targetNode =  $('#jstree_div').jstree(true).get_node(targetNodeId);
+                            $('#copyModal_newPosition').val(pos);
 
-                                var treeNode = $('#jstree_div').jstree(true).get_node(node.original.id);
-                                if(!treeNode || node.original.comType !== "system"){
-                                    alert("Only systems from the working tree can be copied into libraries at this time");
-                                }else{
-                                    $('#copyTiLibModal_listOfIds').val(node.original.id);
-
-                                    var childs = treeNode.children_d;
-                                    var listOfIds = [node.original.id];
-                                    $("#copyToLibInfoText").html("<b>"+node.original.text + "</b> will be copied to <b>" + targetNode.text+"</b>");
-
-                                    listOfIds += ';' + childs.join(';');
-
-                                    $('#copyToLibModal_listOfIds').val(listOfIds);
+                            showLibCopyModal(node, targetNodeId,targetNode )
 
 
-                                    $('#copyToLibModalForm').show()
 
-                                    $('#copyToLibModal_newParent').val(targetNode.id );  //targetId
-
-                                    $('#copyToLibModal').modal('show');
-                                    $('#copyToLibChildrenCb').prop('checked', false);
-                                }
-                                return false;
-                            }
                         }
                         return true;  //allow all other operations
                     }
@@ -244,6 +223,38 @@
             }).on(  'create_node.jstree', function(e, data) {
                 //console.log('saved');
             }  );
+
+            function showLibCopyModal(node, targetNodeId,targetNode ){
+
+                if(  targetNode.id === "#"){
+                    return false;
+                }else{
+
+                    var treeNode = $('#jstree_div').jstree(true).get_node(node.original.id);
+                    if(!treeNode || node.original.comType !== "system"){
+                        alert("Only systems from the working tree can be copied into libraries at this time");
+                    }else{
+                        $('#copyTiLibModal_listOfIds').val(node.original.id);
+
+                        var childs = treeNode.children_d;
+                        var listOfIds = [node.original.id];
+                        $("#copyToLibInfoText").html("<b>"+node.original.text + "</b> will be copied to <b>" + targetNode.text+"</b>");
+
+                        listOfIds += ';' + childs.join(';');
+
+                        $('#copyToLibModal_listOfIds').val(listOfIds);
+
+
+                        $('#copyToLibModalForm').show()
+
+                        $('#copyToLibModal_newParent').val(targetNode.id );  //targetId
+
+                        $('#copyToLibModal').modal('show');
+                        $('#copyToLibChildrenCb').prop('checked', false);
+                    }
+                    return false;
+                }
+            }
 
             //Lib Tree Collapse
             $("#treeCollapse").on("click",function(){
@@ -332,43 +343,38 @@
                         const pubArr = dataObj.pub;
 
 //                        const LibDropDownListDiv = $("#LibDropDownList")[0];
+
                         var libListHTML = '';
                         priArr.forEach(function (dir) {
-
-
-//                            <li class="nav-item">
-//                                <a class="nav-link" href="#">
-//                                <i class="fa fa-book fa-fw"></i>
-//                            myLib1
-//                            </a>
-//                            </li>
 
                             libListHTML += '<li class="nav-item"><a class="nav-link libListRow" data-id="private/' + dir + '" href="#"><i class="fa fa-book fa-fw"></i>private/' + dir + '</a></li>';
                         })
                         pubArr.forEach(function (dir) {
-//                            libListHTML += '<a class="dropdown-item libListRow" data-id="public/' + dir + '" href="#">public/' + dir + '</a>';
                             libListHTML += '<li class="nav-item"><a class="nav-link libListRow" data-id="public/' + dir + '" href="#"><i class="fa fa-book fa-fw"></i>public/' + dir + '</a></li>';
 
                         })
-//                        LibDropDownListDiv.innerHTML = libListHTML
 
                         $("#LibListNav").html(libListHTML)
-
-
 
                         //Add click events to new row
                         $('.libListRow').on('click', function(){
                             var pickedDir = $(this).attr('data-ID');
                             pickedLib = pickedDir;
 
-                            $('#jslibtree_div').jstree(true).refresh();
-                            $('#jstree_div').hide();
-                            $('#jslibtree_div').show();
-                            $(".nav-link").removeClass("active");
-                            $(this).addClass("active");
+                            $("#componentsRow").show();
+                            $("#jobScreen").hide();
+                            $("#sysScreen").hide();
+                            $("#dashRow").hide(function(){
+                                    $('#jslibtree_div').jstree(true).refresh(true);
+                                    $('#jstree_div').hide();
+                                    $('#jslibtree_div').show();
+                                    $(".nav-link").removeClass("active");
+                                    $(this).addClass("active");
 
-                            hideBottom()
-                            setWindowHeight($(window).height(), container, false);
+                                    hideBottom()
+                                    setWindowHeight($(window).height(), container, false);
+                                    $('#jstree_div').jstree('select_node',"lib");
+                            });
 
                         });
 
@@ -398,7 +404,13 @@
                 if (selectedNode ==='lib'){
                     $("#sysScreen").hide();
                     $("#jobScreen").hide();
+                    if(!currentCopySysObj.hasOwnProperty("id")){
+                        $("#paste_sys_lib_button").hide();
+                    }else{
+                        $("#paste_sys_lib_button").show();
+                    }
                 }else {
+                    $("#paste_sys_lib_button").hide();
                     clearJobFields();
                     if (data.instance.get_node(data.node.id).type === "job"
                         || data.instance.get_node(data.node.id).type === "disabled"
@@ -512,11 +524,13 @@
 
             //tree click
             $('#jstree_div').on("select_node.jstree", function (e, data) {
+                $("#paste_sys_lib_button").hide();
 
                 if(refreshFlag || ($("#edit_button").is(":visible") && selectedNode === data.selected[0])){
                     refreshFlag = false;
                 }else{
 
+                    selectedWorkingNode = data.selected[0];
                     selectedNode = data.selected[0];
                     selectedTree = 'working'
 
@@ -535,7 +549,13 @@
                         hideBottom();
                         bottomHiddenFlag = true;
 
+                        if(!currentCopySysObj.hasOwnProperty("id")){
+                            $("#paste_sys_button").hide();
+                        }else{
+                            $("#paste_sys_button").show();
+                        }
                     }else{
+                        $("#paste_sys_button").hide();
                         if (data.instance.get_node(data.node.id).type === "job"
                             || data.instance.get_node(data.node.id).type === "disabled"
                             || data.instance.get_node(data.node.id).type === "needfull"
@@ -3114,20 +3134,35 @@
                 createNode(mydata);
             });
 
+            $("#sysScreen").hide();
+            $("#jobScreen").hide();
+
             var currentCopyObj = {};
-            $("#paste_button").hide();
+            var currentCopySysObj = {};
+            $("#paste_button, #paste_to_sys_button").hide();
+            $("#paste_sys_button").hide();
+            $("#paste_sys_lib_button").hide();
             $("#copy_button").on("click",function() {
-                    currentCopyObj = {"id":$("#id").val(), "lib":"working", "name": $("#text").val()};
-                    $("#paste_button").show();
-                    $("#paste_button").popover({
-                        animation: true,
-                        content: currentCopyObj.lib + " : " + $("#text").val(),
-                        delay: { "show": 500, "hide": 100 },
-                        trigger: 'hover',
-                        template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
-                    });
+                currentCopyObj = {"id":$("#id").val(), "lib":"working", "name": $("#text").val()};
+                $("#paste_button").show();
+                $("#paste_to_sys_button").show();
+                $("#paste_button, #paste_to_sys_button").popover({
+                    animation: true,
+                    content: currentCopyObj.lib + " : " + $("#text").val(),
+                    delay: { "show": 500, "hide": 100 },
+                    trigger: 'hover',
+                    template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                });
+                $(this).popover({
+                    animation: true,
+                    content: "Copied "+currentCopyObj.lib + " : " + $("#text").val(),
+                    delay: { "show": 500, "hide": 100 },
+                    trigger: 'hover',
+                    template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                });
+                $(this).popover("show");
             });
-            $("#paste_button").on("click",function() {
+            $("#paste_button, #paste_to_sys_button").on("click",function() {
                 const targetNodeId = $("#id").val();
                 const pos = 1;
                 const targetNode =  $('#jstree_div').jstree(true).get_node(targetNodeId);
@@ -3135,6 +3170,44 @@
                 $('#copyModal_newPosition').val(pos);
 
                 showCopyModal(fromNode, targetNodeId,targetNode );
+            });
+
+            $("#copy_sys_button").on("click",function() {
+                currentCopySysObj = {"id":$("#id").val(), "lib":"working", "name": $("#text").val()};
+                $("#paste_sys_button, #paste_sys_lib_button").popover({
+                    animation: true,
+                    content: "System : " + $("#text").val(),
+                    delay: { "show": 500, "hide": 100 },
+                    trigger: 'hover',
+                    template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                });
+                $(this).popover({
+                    animation: true,
+                    content: "Copied System : " + $("#text").val(),
+                    delay: { "show": 500, "hide": 100 },
+                    trigger: 'hover',
+                    template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                });
+                $(this).popover("show");
+            });
+            $("#paste_sys_button").on("click",function() {
+                const targetNodeId = "local";
+                const pos = 1;
+                const targetNode =  $('#jstree_div').jstree(true).get_node(targetNodeId);
+                const fromNode =  $('#jstree_div').jstree(true).get_node(currentCopySysObj.id);
+                $('#copyModal_newPosition').val(pos);
+
+                showCopyModal(fromNode, targetNodeId,targetNode );
+            });
+
+            $("#paste_sys_lib_button").on("click",function() {
+                const targetNodeId = "lib";
+                const pos = 1;
+                const targetNode =  $('#jslibtree_div').jstree(true).get_node(targetNodeId);
+                const fromNode =  $('#jstree_div').jstree(true).get_node(currentCopySysObj.id);
+                $('#copyModal_newPosition').val(pos);
+
+                showLibCopyModal(fromNode, targetNodeId,targetNode );
             });
 
             $('.newSys').on('click', function(){
@@ -3260,6 +3333,9 @@
                 $("#results_html").css("overflow-y", "hidden");
             }
             hideCodes();
+
+            //Define the current selected working node for several functions
+            var selectedWorkingNode = "#"; //default Root
 
             //Define the current selected node for several functions
             var selectedNode = "#"; //default Root
@@ -4800,7 +4876,11 @@ $("#componentsBtn").click();
             $("#componentsBtn").on("click",function(){
                 localStorage["topMenuViewSelected"] = "Components"
                 $("#componentsRow").show();
+
                 $("#dashRow").hide(function(){
+
+                    $('#jstree_div').jstree('select_node',selectedWorkingNode);
+
                     $(".nav-link").removeClass("active");
                     $("#componentsBtn").addClass("active");
                     $('#jslibtree_div').hide();
@@ -5327,15 +5407,15 @@ $("#componentsBtn").click();
             })
 
             $('#matchLink_jstree_div').on("select_node.jstree", function (e, data) {
-                    var selectedNode = data.selected[0];
+                    var selectedMatchNode = data.selected[0];
 
                     if( ! $("#componentsBtn").hasClass('active')){
                         $("#componentsBtn").click();
                     }
                     setTimeout(function(){
                         $('#jstree_div').jstree("deselect_all");
-                        $('#jstree_div').jstree('select_node', selectedNode);
-                        $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
+                        $('#jstree_div').jstree('select_node', selectedMatchNode);
+                        $('#jstree_div').jstree(true).get_node(selectedMatchNode, true).children('.jstree-anchor').focus();
                     }, 500);
                 });
 
@@ -5984,6 +6064,8 @@ $("#componentsBtn").click();
 
                     <div id="rightCol" class="" >
 
+                        <button id = "paste_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-paste fa-fw"></i>Paste System</button>
+                        <button id = "paste_sys_lib_button" class="btn btn-default jobFormbtn"><i class="fa fa-paste fa-fw"></i>Paste System</button>
                         <!--<icon class="fa fa-th-large"></icon> Component Details-->
                         <div id="sysScreen">
                             <div class="buttonRow">
@@ -5994,6 +6076,8 @@ $("#componentsBtn").click();
                                 <button id = "new_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Comp</button>
                                 <button id = "remove_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
                                 <button id = "clear_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-history fa-fw"></i>Clear History</button>
+                                <button id = "copy_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-copy fa-fw"></i>Copy</button>
+                                <button id = "paste_to_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-paste fa-fw"></i>Paste</button>
                             </div>
                             <div id="sysPanel" class="panel panel-default sysPanel">
                                 <div class="panel-body sys-form-panel"  id="sys-form-panel">
@@ -6080,7 +6164,6 @@ $("#componentsBtn").click();
 
                             </div>
                             <div id="mainJobPanel" class="panel panel-default jobPanel">
-                                <!--<input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="comType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >-->
                                 <input type="hidden" id="buildCode" ><input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="comType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >
 
                                 <div class="panel-body job-form-panel" id="job-form-panel">
