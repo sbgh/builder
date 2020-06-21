@@ -2504,13 +2504,13 @@ router.post("/run",function(req,res){
                     var compB = "";
 
                     SystemsJSON[a].ft.split("/").forEach(function(id){
-                        compA += id === "#" ? "0/" : SystemsJSON[id].sort + "/"
+                        compA += id === "#" ? "0000000/" : ("0000000" + SystemsJSON[id].sort).slice((SystemsJSON[id].sort).length ) + "/"
                     });
-                    compA += SystemsJSON[a].sort;
+                    compA += ("0000000" + SystemsJSON[a].sort).slice((SystemsJSON[a].sort).length );
                     SystemsJSON[b].ft.split("/").forEach(function(id){
-                        compB += id === "#" ? "0/" : SystemsJSON[id].sort + "/"
+                        compB += id === "#" ? "0000000/" : ("0000000" + SystemsJSON[id].sort).slice((SystemsJSON[id].sort).length ) + "/"
                     });
-                    compB += SystemsJSON[b].sort;
+                    compB += ("0000000" + SystemsJSON[b].sort).slice((SystemsJSON[b].sort).length ); 
 
                     if(compA > compB){
                         return 1

@@ -750,6 +750,10 @@ input:checked + .slider:before {
    line-height: 24px;
 }
 
+.varLabelName{
+    min-width: 180px;
+}
+
 .dashBoardList{
 
 }
@@ -778,7 +782,7 @@ input:checked + .slider:before {
 }
 
 .dashTableEnableItem > i, .dashTableSuccessItem > i{
-   font-size: 20px;
+   font-size: 15px;
 }
 .dashTableSuccessItem{
    text-align: center;
@@ -1421,7 +1425,7 @@ tbody.varTbody{
    font-weight: 500;
    font-size: 14px;
    border: none;
-   padding: 5px;
+   padding: 0px;
 }
 
 .newCompVarPrivateButtonRow, .newSysVarPrivateButtonRow{
@@ -1469,6 +1473,7 @@ tbody.varTbody{
 .varValTd, .varNameTd{
    max-height: 25px;
    overflow: hidden;
+    min-width: 180px;
 }
 
 #pasteIcon{
