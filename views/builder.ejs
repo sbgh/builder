@@ -637,10 +637,51 @@
                     $("#dropdownMenuButton")[0].innerHTML += dashSystemDropItemClickedJson.sysName;
                     loadDashTable(dashSystemDropItemClickedJson.id);
                     loadDashSystemDetails(dashSystemDropItemClickedJson.id);
+                    loadDashSystemFunctions(dashSystemDropItemClickedJson.id);
 
                 }
             }
 
+            function loadDashSystemFunctions(systemId){
+                var mydata = {systemId:systemId};
+                $.ajax({
+                    type: 'get',
+                    data: mydata,
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    url: '/getPromotedSystemFunctions',
+                    success : function(data) {
+
+                        const promoted = JSON.parse(data);
+
+                        let newHtml = "";
+                        for(let row in promoted){
+                            //newHtml += '<div>' + promoted[row].name + '</div>'
+                            newHtml += "<div><a class=' dashSystemFunctionItem' href='#' data-id='"+ promoted[row].id +"'>"+ promoted[row].name +"</a></div>"
+
+
+                        }
+                        $("#systemFunctionsCol").html(newHtml)
+
+                        $(".dashSystemFunctionItem").on('click', function(){
+
+                            var id = $(this).attr('data-Id');
+                            var sys = $("#dashSys").val();
+
+
+               //working    get name somehow         $("#buildModalTitleName").text($("#name").val());
+
+                            runJob(id, sys);
+                        });
+
+                    },
+                    error : function(error) {
+                        console.log(error)
+                    }
+                })
+            }
             function loadDashSystemDropdown(){
                 var mydata = {};
                 $.ajax({
@@ -680,6 +721,7 @@
                             $("#dropdownMenuButton")[0].innerHTML += sysName;
                             loadDashTable(id);
                             loadDashSystemDetails(id);
+                            loadDashSystemFunctions(id);
 
                             localStorage['dashSystemDropItemClicked'] = JSON.stringify({ id:id, sysName:sysName }) ;
                             currentSysId = id;
@@ -1073,18 +1115,23 @@
                 newHtml += '<button class="dropdown-toggle newCompVarTypeButton" type="button" id="newCompVarTypeButton'+currentRowCntStr+'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Text</button>';
                 newHtml += '<div id="newCompVarTypeDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="newCompVarTypeButton'+currentRowCntStr+'" x-placement="bottom-start" >';
 
-                newHtml +=  '<div><a class="dropdown-item newCompVarTypeDropdownItem" data-target="newCompVarTypeButton'+currentRowCntStr+'" data-type="Text" href="#">Text</a></div>' +
-                    '<div><a class="dropdown-item newCompVarTypeDropdownItem" data-target="newCompVarTypeButton'+currentRowCntStr+'" data-type="WYSIWYG" href="#" >WYSIWYG</a></div>' ;
+                newHtml +=  '<div><a class="dropdown-item newCompVarTypeDropdownItem" data-target="'+currentRowCntStr+'" data-type="Text" href="#">Text</a></div>' ;
+                newHtml +=  '<div><a class="dropdown-item newCompVarTypeDropdownItem" data-target="'+currentRowCntStr+'" data-type="WYSIWYG" href="#" >WYSIWYG</a></div>' ;
+                newHtml +=  '<div><a class="dropdown-item newCompVarTypeDropdownItem" data-target="'+currentRowCntStr+'" data-type="Color" href="#" >Color</a></div>' ;
                 newHtml +=  '</div></td>'
 
                 //New component variable value
                 newHtml += '<td class="col-6"><div class="compVarEditValRow">';
                 newHtml += '<input id="newCompVarValue'+currentRowCntStr+'" class="form-control newCompVarValue" type="text">';
-                newHtml += '<a href="#"><i class="fa fa-expand fa-fw compVarEditValButton" data-idn="'+currentRowCntStr+'" style=""></i></a>';
+                newHtml += '<input type="color" class="colorPicker" style="" data-idn='+currentRowCntStr+' id="colorPicker'+currentRowCntStr+'">';
+
+                newHtml += '<a href="#"><i id="compVarEditValButton'+currentRowCntStr+'" class="fa fa-expand fa-fw compVarEditValButton" data-idn="'+currentRowCntStr+'" ></i></a>';
+                newHtml += '<a href="#"><i id="compVarEditColorButton'+currentRowCntStr+'" class="fa fa-tint fa-fw compVarEditColorButton" data-idn="'+currentRowCntStr+' " style="display:none;" ></i></a>';
                 newHtml += '</td></tr>';
 
                 return newHtml;
             }
+
             $('.newCompVarBtn').on('click', function(){
 
                 var currentRowCntStr = Object.keys(currentCompVarObj).length.toString();
@@ -1106,7 +1153,14 @@
                     var type = $(this).attr('data-type');
                     var target = $(this).attr('data-target');
 
-                    $("#"+target).html(type);
+                    $("#newCompVarTypeButton"+target).html(type);
+                    if(type === "Color"){
+                        $("#compVarEditValButton"+target).hide();
+                        $("#compVarEditColorButton"+target).show();
+                    }else{
+                        $("#compVarEditValButton"+target).show();
+                        $("#compVarEditColorButton"+target).hide();
+                    }
                 });
 
                 $('.newCompVarPrivateButton').on('click', function(){
@@ -1143,6 +1197,47 @@
                     }
 
                 });
+
+//                $(".compVarEditValButton").on('click', function(){
+//                    var idn = $(this).attr('data-idn');
+//
+//                    var varName = "";
+//                    var varType = $("#newCompVarTypeButton" + idn).text();
+//                    for(var nm in currentCompVarObj){
+//                        if (currentCompVarObj[nm].idn === idn){
+//                            varName = nm;
+//                        }
+//
+//                    }
+//                    if(varType === "WYSIWYG"){
+//                        $('#varEditWYSIWYGModal').modal('show');
+//
+//                        // Sets the HTML contents of the activeEditor editor
+//                        tinymce.activeEditor.setContent($("#newCompVarValue"+idn).val());
+//
+//                        $("#varEditWYSIWYGModalCutrrentIdn").val(idn);
+//
+//                    }else{
+//                        $('#varEditModal').modal('show');
+//                        $('#varValEditor').val($("#newCompVarValue"+idn).val());
+//                        $("#varEditModalCutrrentIdn").val(idn);
+//                    }
+//
+//                });
+
+                $(".compVarEditColorButton").on('click', function(){
+                    var idn = $(this).attr('data-idn');
+
+                    $("#colorPicker"+idn).click();
+
+                });
+
+
+                $('.colorPicker').on('change', function() {
+                    var idn = $(this).attr('data-idn');
+                    $("#newCompVarValue"+idn).val( $('#colorPicker'+idn).val() )
+
+                })
 
                 //Save value of text area into #newCompVarValue
                 $('#varEditModal').on('hidden.bs.modal', function() {
@@ -1313,6 +1408,15 @@
                         $("#newCompVarTypeButton" + idn).text(thisType);
                         $("#newCompVarValue" + idn).val(currentCompVarObj[varName].value);
                         $("#newCompVarPrivateDisp"+idn).html(currentCompVarObj[varName].private ? 'Yes' : 'No');
+                        
+                        if(thisType === "Color"){
+                            $("#compVarEditValButton"+idn).hide();
+                            $("#compVarEditColorButton"+idn).show();
+                            $('#colorPicker'+idn).val($("#newCompVarValue"+idn).val())  ;
+                        }else{
+                            $("#compVarEditValButton"+idn).show();
+                            $("#compVarEditColorButton"+idn).hide();
+                        }
 
                         currentCompVarObj[varName].changed = idn;
                     });
@@ -1880,7 +1984,7 @@
                     var idn = currentCompVarObj[varName].idn
                     pCompHtml = "<tr id='varRow_" + idn +"'" +  " class='d-flex varRow'>";
 
-                    //add name col
+                    //add name col 3-1-2-6
                     pCompHtml += "<td class='col-3 varNameTd'>";
                     pCompHtml += showTools ? "<i class='fa fa-pencil fa-fw compVarEditButton' data-idn='" + idn +"'></i>" : "";
                     pCompHtml += "<span id = 'varNameTd" + idn + "'></span>";
@@ -2219,20 +2323,21 @@
                     //call checkRerunnable to get rerunnable ancestor and update ui accordingly
                     checkRerunnable($("#idToBeRun").val())
                 }else{
+                    checkRerunnable($("#idToBeRun").val())
                     //enable run button hide warning
-                    $("#runConfirmButton").removeAttr("disabled");
-                    $("#closestAnWarning").text(" ");
-                    $.get('/getChildCount', { id: $("#idToBeRun").val() }, function(data) {
-                        const dataObj = JSON.parse(data);
-                        if(dataObj.count > 0){
-                            $("#runChildrenGroup").show();
-                            $("#runRerunnableChGroup").show();
-                        }else{
-                            $("#runChildrenGroup").hide();
-                            $("#runRerunnableChGroup").hide();
-                        }
-                        $("#buildModalTitleName").text($("#name").val());
-                    });
+//                    $("#runConfirmButton").removeAttr("disabled");
+//                    $("#closestAnWarning").text(" ");
+//                    $.get('/getChildCount', { id: $("#idToBeRun").val() }, function(data) {
+//                        const dataObj = JSON.parse(data);
+//                        if(dataObj.count > 0){
+//                            $("#runChildrenGroup").show();
+//                            $("#runRerunnableChGroup").show();
+//                        }else{
+//                            $("#runChildrenGroup").hide();
+//                            $("#runRerunnableChGroup").hide();
+//                        }
+               //         $("#buildModalTitleName").text($("#name").val());
+//                    });
                 }
             });
 
@@ -2245,12 +2350,33 @@
                     //Place id in ClosestRerunnableAn input
                     //Hide or show warning/disable confirmation button if id is blank or comp is not enabled
                     $("#ClosestRerunnableAn").val(dataObj.id );
-                    if(dataObj.id === id){
-                        $("#runClosestAnGroup").hide()
-                    }else{
-                        $("#runClosestAnGroup").show()
-                    }
+
+                    if($('#runClosestAn').is(':checked')){
                         $("#buildModalTitleName").text(dataObj.ClosestRerunnableAn.name);
+                    }else{
+                        $("#buildModalTitleName").text(dataObj.thisComp.name);
+                    }
+
+
+
+                    if(dataObj.id === id){
+                        $("#runClosestAnGroup").hide();
+                    }else{
+                        $("#runClosestAnGroup").show();
+
+                    }
+
+//                        if(dataObj.systemFunction === 1){
+//                            $('#runClosestAn').prop('checked', false);
+//                            $("#buildModalTitleName").text($("#name").val());
+//                        }
+//                        else{
+//                            $('#runClosestAn').prop('checked', true);
+//
+//                        }
+
+                    //$("#buildModalTitleName").text(dataObj.thisComp.name);
+
                     if (dataObj.id !== "" && dataObj.ClosestRerunnableAn.enabled){
                         $("#runConfirmButton").removeAttr("disabled");
                         $("#closestAnWarning").text(" ");
@@ -2281,6 +2407,9 @@
             }
             function runJob(id, sys){
 
+                $("#idToBeRun").val(id);
+                $("#sysToBeRun").val(sys);
+
                 $('#runModal').modal('show');
 
                 var storedKey ='';
@@ -2298,24 +2427,32 @@
                     }
                 }
 
-                var storedAccess ='';
-                var storedAccessName = '';
-
-                if (sys.length !== 0){
-                    storedAccess = localStorage['access'];
-                    storedAccessName = localStorage['accessName'];
-                    if(storedAccess !== '' && typeof storedAccess !== 'undefined'){
-                        $('#localStoreAccessCb').prop('checked', true);
-                        $('#accessList').html(storedAccessName) ;
-                    }else{
-                        $('#localStoreAccessCb').prop('checked', false);
-                        $('#accessList').html('') ;
-                    }
-                }
-
-                $("#idToBeRun").val(id);
-                $("#sysToBeRun").val(sys);
-
+//                var storedAccess ='';
+//                var storedAccessName = '';
+//                if (sys.length !== 0){
+//                    storedAccess = localStorage['access'];
+//                    storedAccessName = localStorage['accessName'];
+//                    if(storedAccess !== '' && typeof storedAccess !== 'undefined'){
+//                        $('#localStoreAccessCb').prop('checked', true);
+//                        $('#accessList').html(storedAccessName) ;
+//                    }else{
+//                        $('#localStoreAccessCb').prop('checked', false);
+//                        $('#accessList').html('') ;
+//                    }
+//                }
+//                $.get('/BuildCode', { compId: id }, function(data) {
+//
+//                    if(data.length > 0){
+//                        var bcObj = data[0];
+//                        if(bcObj.systemFunction === 1){
+//                            $('#runClosestAn').prop('checked', false);
+//                            $("#buildModalTitleName").text($("#name").val());
+//                        }else{
+//                            $('#runClosestAn').prop('checked', true);
+//
+//                        }
+//                    }
+//                });
                 checkRerunnable(id);
             }
 
@@ -3963,6 +4100,7 @@
                             $("#dropdownMenuButton")[0].innerHTML += sysName;
                             loadDashTable(id);
                             loadDashSystemDetails(id);
+                            loadDashSystemFunctions(id);
 
                             localStorage['dashSystemDropItemClicked'] = JSON.stringify({ id:id, sysName:sysName }) ;
                             currentSysId = id;
@@ -5953,15 +6091,25 @@ $("#componentsBtn").click();
 
                                     <div class="row">
                                         <div class="panel dashPanel systemDetailPanel">
-                                            <div class="dashboardLabel">System</div>
-                                            <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                Pick...
-                                            </button>
-                                            <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
-                                                <div><a class="dropdown-item" href="#">Action</a></div>
-                                            </div>
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="dashboardLabel">System</div>
+                                                    <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        Pick...
+                                                    </button>
+                                                    <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
+                                                        <div><a class="dropdown-item" href="#">Action</a></div>
+                                                    </div>
 
-                                            <div id="dashSystemDetails" class="dashSystemDetails"></div>
+                                                    <div id="dashSystemDetails" class="dashSystemDetails"></div>
+
+                                                </div>
+                                                <div class="col">
+                                                    <div class="dashboardLabel">System Functions</div>
+                                                    <div id = "systemFunctionsCol" class="systemFunctionsCol"></div>
+
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="row">

@@ -1002,7 +1002,7 @@ router.get("/JobsTree",function(req,res){
         let rowdata = {};
         rowdata.id = key;
         rowdata.name = SystemsJSON[key].name;
-        rowdata.text = SystemsJSON[key].name ;
+        rowdata.text = SystemsJSON[key].name; //+ " (" + SystemsJSON[key].sort.toString() + ")" ;
 
         rowdata.sort = SystemsJSON[key].sort > -1 ? SystemsJSON[key].sort : 0;
 
@@ -1094,16 +1094,32 @@ router.get("/Jobs",function(req,res){
     res.end(JSON.stringify(resJSON));
 });
 
-//Service Rt: /BuildCode [components build code], Method: get, Requires: id = build code ID or '#' [all], Returns:   raw BuildCode row(s)
+//Service Rt: /BuildCode [components build code], Method: get, Requires: id = build code ID or component ID (will lookup build id) or '#' [all with optional filter (prop mode = "" | All | thisParent | thisBranch, prop node = id of component to compare)], Returns:  single row from BuildCode + id prop or all raw BuildCode rows filtered by either All buildcodes used in systemJson or all buildcodes used in all comps with same rerunnable ansestor or all comps with same parent.
 router.get("/BuildCode",function(req,res){
-    var id = req.query.id;
+
+    var id = "";
+    var compId = "";
+
+    if(req.query.hasOwnProperty("id")){
+        id = req.query.id
+    }
+    if(req.query.hasOwnProperty("compId")){
+        compId = req.query.compId
+    }
+
     res.writeHead(200, {"Content-Type": "application/json"});
+
     var resJSON = [];
-    var rowdata = {};
+    var rowdata = {id:""};
     if (id !== '#'){
-        if(BuildCode.hasOwnProperty(id)){
+        if(id !== ""){
             rowdata = JSON.parse(JSON.stringify(BuildCode[id]) );
             rowdata.id = id;
+        }else if(compId !== ""){
+            if(BuildCode.hasOwnProperty(SystemsJSON[compId].buildCode.linkArr[0])){
+                rowdata = JSON.parse(JSON.stringify(BuildCode[SystemsJSON[compId].buildCode.linkArr[0]]));
+                rowdata.id = SystemsJSON[compId].buildCode.linkArr[0];
+            }
         }
 
         resJSON.push(rowdata);
@@ -1174,7 +1190,7 @@ router.get("/BuildCode",function(req,res){
     res.end(JSON.stringify(resJSON));
 });
 
-//Service Rt: /BuildCode [components build code], Method: get, Requires: id = component ID, Returns:   raw BuildCode row
+//Service Rt: /BuildCodeLib [components build code], Method: get, Requires: id = component ID, Returns:   raw BuildCode row
 router.get("/BuildCodeLib",function(req,res){
     var id = req.query.id;
     var lib = req.query.lib;
@@ -3948,7 +3964,7 @@ router.get("/getStyle",function(req,res){
 
 });
 
-//Service Rt: /ClosestRerunnableAn to return object containing the closest ancestor that is rerunnable, Method: get, Requires: id = id of the component to search for ancestor, Returns: id of closest rerunnable ansester and the SytemsJSON row of the same. format {id:ClosestRerunnableAnID, ClosestRerunnableAn:ClosestRerunnableAn}
+//Service Rt: /ClosestRerunnableAn to return object containing the closest ancestor that is rerunnable, Method: get, Requires: id = id of the component to search for ancestor, Returns: id of closest rerunnable ancestor and the SystemsJSON row of the same (If comp is systemFunction then return same id). format {id:ClosestRerunnableAnID, ClosestRerunnableAn:ClosestRerunnableAn}
 router.get("/ClosestRerunnableAn",function(req,res){
     var id = req.query.id;
 
@@ -3956,7 +3972,7 @@ router.get("/ClosestRerunnableAn",function(req,res){
     var ClosestRerunnableAnID = "";
     if (SystemsJSON.hasOwnProperty(id) ){
 
-        if(SystemsJSON[id].buildCode.linkArr.length > 0){
+        if(SystemsJSON[id].buildCode.linkArr.length > 0 && BuildCode[SystemsJSON[id].buildCode.linkArr[0]].systemFunction !== 1){
 
             if(BuildCode.hasOwnProperty(SystemsJSON[id].buildCode.linkArr[0])){
                 if(BuildCode[SystemsJSON[id].buildCode.linkArr[0]].rerunnable !== 1){
@@ -3996,7 +4012,7 @@ router.get("/ClosestRerunnableAn",function(req,res){
         }
 
     }
-    res.end(JSON.stringify({id:ClosestRerunnableAnID, ClosestRerunnableAn:ClosestRerunnableAn}));
+    res.end(JSON.stringify({id:ClosestRerunnableAnID, ClosestRerunnableAn:ClosestRerunnableAn, thisCompId:id, thisComp:SystemsJSON[id]}));
 
 });
 
@@ -4076,10 +4092,32 @@ router.post("/firstRun",function(req,res){
     res.end('')
 });
 
+//Service Rt: /getPromotedSystemFunctions to return a array of buildCode rows where promoted === 1 && systemFunction === 1 for the same system id as specified, Method: get, Requires: System Id, Returns: Array of SystemJSON rows
+router.get("/getPromotedSystemFunctions",function(req,res){
+    const systemId = req.query.systemId;
+    let rowdata=[];
+    for (let key in SystemsJSON) {
+        if (SystemsJSON.hasOwnProperty(key)) {
+            if(SystemsJSON[key].promoted === 1){
+                if(SystemsJSON[key].buildCode.linkArr.length > 0){
+                    if(BuildCode[SystemsJSON[key].buildCode.linkArr[0]].systemFunction === 1){
+                        if(SystemsJSON[key].ft.split("/")[1] === systemId){
+
+                            let newObj = JSON.parse(JSON.stringify(SystemsJSON[key]));
+                            newObj.id=key;
+                            rowdata.push(newObj);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    res.end(JSON.stringify(rowdata));
+});
+
 //Service Rt: /getPromotedSystems to return a sorted array of SystemJSON rows where promoted === 1 , Method: get, Requires: none, Returns: Obj of working SystemJSON rows eg. {id:name, id2:name2}
 router.get("/getPromotedSystems",function(req,res){
     var rowdata={};
-    var resJSON = [];
     for (var key in SystemsJSON) {
         if (SystemsJSON.hasOwnProperty(key)) {
             if(SystemsJSON[key].promoted === 1){
@@ -4120,12 +4158,11 @@ router.get("/getPromoted",function(req,res){
                 }
 
                 if((SystemsJSON[key].promoted === 1 && hasParentRun && hostIP !== "")){
-
                     allow = true;
                 }
                 if(SystemsJSON[key].buildCode.linkArr.length > 0){
                     if(BuildCode[SystemsJSON[key].buildCode.linkArr[0]].systemFunction === 1){
-                        allow = true;
+                       // allow = true;
                     }
                 }
 

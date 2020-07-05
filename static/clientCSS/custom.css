@@ -751,7 +751,7 @@ input:checked + .slider:before {
 }
 
 .varLabelName{
-    min-width: 180px;
+    /*min-width: 180px;*/
 }
 
 .dashBoardList{
@@ -1151,7 +1151,7 @@ a.foundInSearchParent{
 
    background: none;
    padding: 0;
-   /*padding-bottom: 15px;*/
+   padding-bottom: 15px;
    border: none;
    font-size: 16px;
 }
@@ -1265,7 +1265,7 @@ tr {
 }
 
 th.col-1, td.col-1{
-   min-width: max-content;
+   /*min-width: max-content;*/
 
 }
 
@@ -1426,6 +1426,7 @@ tbody.varTbody{
    font-size: 14px;
    border: none;
    padding: 0px;
+   min-width: min-content;
 }
 
 .newCompVarPrivateButtonRow, .newSysVarPrivateButtonRow{
@@ -1458,7 +1459,7 @@ tbody.varTbody{
 
 .compVarEditValRow, sysVarEditValRow{
    display:flex;
-    margin-left: -30px;
+    /*margin-left: -30px;*/
 }
 
 .modal-dialog-welcome {
@@ -1473,7 +1474,7 @@ tbody.varTbody{
 .varValTd, .varNameTd{
    max-height: 25px;
    overflow: hidden;
-    min-width: 180px;
+    /*min-width: 180px;*/
 }
 
 #pasteIcon{
@@ -1924,6 +1925,19 @@ a#sidebarBtn {
    /*}*/
 /*}*/
 
+.colorPicker{
+   padding: 0px;
+   margin: 0px;
+   width: 0px;
+   height: 0px;
+   cursor: default;
+   border-width: 1px;
+   border-style: solid;
+   border-color: black;
+   background-color: black;
+   color: black;
+/* display: none;
+}
 
 
 
