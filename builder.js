@@ -2528,11 +2528,8 @@ router.post("/run",function(req,res){
                     });
                     compB += ("0000000" + SystemsJSON[b].sort).slice((SystemsJSON[b].sort).length ); 
 
-                    if(compA > compB){
-                        return 1
-                    }else{
-                        return -1
-                    }
+                   //https://stackoverflow.com/questions/4340227/sort-mixed-alpha-numeric-array
+                    return compA.localeCompare(compB, 'en', { numeric: true });
                 });
 
                 //set flag to run promoted children
