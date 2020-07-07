@@ -2298,9 +2298,9 @@
                             $('#jstree_div').jstree(true).get_node(buildIDRunning, true).children('.jstree-anchor').focus();
                         }
 
-                        $('#jstree_div').jstree(true).refresh(true)
                     }
 
+                    $('#jstree_div').jstree(true).refresh(true)
                 }).fail(function (e) {
 
                     if(localKey !== '' && sys.length !== 0 && !localStorage['key_' + sys]  ){
@@ -5048,9 +5048,6 @@ $("#componentsBtn").click();
 
                     //move video screen to components ui
                     $("#videoScreen").detach().appendTo('#screenShotImageHolder');
-
-                    $('#jstree_div').jstree(true).refresh(true);
-
                 });
 
             });
