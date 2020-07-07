@@ -2491,7 +2491,7 @@ router.post("/run",function(req,res){
     var lastTimeout;
     var exportVar = "";
 
-    //formidable used to parce form
+    //formidable used to parse form
     var form = new formidable.IncomingForm();
     form.parse(req, function(err, fields, files) {
         if(err){
@@ -2501,8 +2501,6 @@ router.post("/run",function(req,res){
 
             //set id into ids array
             ids = [fields.ids.split(';')[0]];
-            // fields.ids.split(';');
-
 
             if (fields.runChildren === 'true') {
                 //find all children and add to ids arr

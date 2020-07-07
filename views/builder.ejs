@@ -2141,8 +2141,9 @@
                 var closedNodeList = [];
                 var CompletionSuccess = false;
                 var remainder = "";
+                var buildIDRunning = '';
 
-                $("#results_html").html(""); //if there is a new key/access file then it needs to be the first thing in this element. 'key:......'
+                $("#results_html").html(""); //if there is a new key file then it needs to be the first thing in this element. 'key:......'
                 $.ajax({
                     url: '/run',
                     processData: false,
@@ -2156,7 +2157,6 @@
                         var xhr = $.ajaxSettings.xhr();
 
                         var buildIDRunningPrev = '';
-                        var buildIDRunning = '';
                         xhr.onprogress = function e() {
                             var rText = xhr.responseText
 
@@ -2179,7 +2179,13 @@
                                     $("#resultsStatus").html( "<b>All scripts completed</b>");
                                 }
                                 else if(row.substr(0,22) === 'status:Scripts Aborted'){
-                                    $("#resultsStatus").append( "Scripts aborted");
+                                    $("#resultsStatus").append( " build error <i id='errorCompOpen' class='fa fa-fw fa-folder-open'>");
+                                    $('#errorCompOpen').on('click', function(){
+                                        $("#componentsBtn").click();
+                                        $('#jstree_div').jstree("deselect_all");
+                                        $('#jstree_div').jstree('select_node',buildIDRunning);
+                                        $('#jstree_div').jstree(true).refresh(true)
+                                    });
                                 }
                                 else if(row.substr(0,26) === 'message:CompletionSuccess:'){
                                     if(row.slice(26) === 'true'){
@@ -2273,23 +2279,28 @@
 //                            localStorage['access'] = localAccess
 //                        }
 //                    }
-
                     localKey = "";
 //                    localAccess = "";
 
                     updateResultsList(selectedNode);
                     loadDashboard();
 
-                    if(CompletionSuccess){
-                        if($("#componentsBtn").hasClass('active')){
-                            //close all nodes that were opened
-                            for(var x in closedNodeList){
-                                $("#jstree_div").jstree("close_node", closedNodeList[x]);
-                            }
-                            $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
+                    if($("#componentsBtn").hasClass('active')){
+                        //close all nodes that were opened
+                        for(var x in closedNodeList){
+                            $("#jstree_div").jstree("close_node", closedNodeList[x]);
                         }
-                        $('#jstree_div').jstree(true).refresh(true);
+                        if(CompletionSuccess){
+                            $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
+                        }else{
+                            $('#jstree_div').jstree("deselect_all");
+                            $('#jstree_div').jstree('select_node',buildIDRunning);
+                            $('#jstree_div').jstree(true).get_node(buildIDRunning, true).children('.jstree-anchor').focus();
+                        }
+
+                        $('#jstree_div').jstree(true).refresh(true)
                     }
+
                 }).fail(function (e) {
 
                     if(localKey !== '' && sys.length !== 0 && !localStorage['key_' + sys]  ){
@@ -5038,7 +5049,10 @@ $("#componentsBtn").click();
                     //move video screen to components ui
                     $("#videoScreen").detach().appendTo('#screenShotImageHolder');
 
+                    $('#jstree_div').jstree(true).refresh(true);
+
                 });
+
             });
 
             if(localStorage["topMenuViewSelected"]){
