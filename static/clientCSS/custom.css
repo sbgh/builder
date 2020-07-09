@@ -24,6 +24,8 @@ body {
     padding-right: 0px;
     padding-left: 0px;
 }
+
+/*noinspection ALL*/
 .container-fluid-custom {
     height : calc(var(--vh, 1vh) * 100);
    /*min-height: 100vh;*/
@@ -52,8 +54,8 @@ body {
    float: left;
 }
 
+/*noinspection ALL*/
 #jstree_div{
-/*calc(var(--vh, 1vh) * 100)*/
    height: calc(var(--vh, 1vh) * 100 - 23px - 22px);
    width:100%;
    overflow-y: auto;
@@ -61,6 +63,7 @@ body {
    /*margin-bottom: 2px;*/
 }
 
+/*noinspection ALL*/
 #jslibtree_div{
    height: calc(var(--vh, 1vh) * 100 - 23px - 22px);
    width:100%;
@@ -195,6 +198,7 @@ topLib-col-fixed-240{
    padding: 3px;
 }
 
+/*noinspection ALL*/
 #job-form-panel {
    padding: 15px;
    height: calc(var(--vh, 1vh) * 100 - 20px - 22px);
@@ -206,6 +210,7 @@ topLib-col-fixed-240{
    min-width: 120px;
 }
 
+/*noinspection ALL*/
 #sys-form-panel {
    padding: 15px;
    height: calc(var(--vh, 1vh) * 100 - 20px - 22px);
@@ -226,6 +231,7 @@ topLib-col-fixed-240{
 
 @media (max-height: 500px) {
 
+   /*noinspection ALL*/
    .dashboardPanel {
       overflow-y: scroll;
       height: calc(var(--vh, 1vh) * 100 - 30px);
@@ -239,11 +245,14 @@ topLib-col-fixed-240{
 }
 @media (min-height: 501px) {
 
+   /*noinspection ALL*/
    .dashboardPanel {
       overflow-y: auto;
       width: 100%;
       height: calc(var(--vh, 1vh) * 100 - 30px);
    }
+
+   /*noinspection ALL*/
    tbody.dashTbody {
       height: calc(var(--vh, 1vh) * 100 - 380px);
       position: absolute;
@@ -560,7 +569,7 @@ padding-left: 0px;
 .switch {
    position: relative;
    display: inline-block;
-   width: 47px;
+   width: 35px;
    height: 17px;
 }
 
@@ -599,9 +608,9 @@ padding-left: 0px;
 
 
 input:checked + .slider:before {
-   -webkit-transform: translateX(26px);
-   -ms-transform: translateX(26px);
-   transform: translateX(26px);
+   -webkit-transform: translateX(14px);
+   -ms-transform: translateX(14px);
+   transform: translateX(14px);
 }
 
 /* Rounded sliders */
@@ -1426,7 +1435,7 @@ tbody.varTbody{
    font-size: 14px;
    border: none;
    padding: 0px;
-   min-width: min-content;
+   /*min-width: min-content;*/
 }
 
 .newCompVarPrivateButtonRow, .newSysVarPrivateButtonRow{
@@ -1435,7 +1444,7 @@ tbody.varTbody{
 }
 
 .privacy-switch{
-   margin-left: -10px;
+   /*margin-left: -10px;*/
 }
 
 .newCompVarTypeButton{
@@ -1454,7 +1463,7 @@ tbody.varTbody{
 }
 
 .newCompVarPrivateDisp, .newSysVarPrivateDisp{
-   padding-left:10px;
+   padding-left:3px;
 }
 
 .compVarEditValRow, sysVarEditValRow{
@@ -1828,7 +1837,7 @@ button:focus floatPopMenuItem{
 }
 
 .btn:focus{
-   border:2;
+   border: 2px;
    text-decoration: underline;
 }
 
@@ -1844,19 +1853,12 @@ main.mainCol{
 }
 
 .sidebar {
-   /*position: fixed;*/
-   /*top: 0;*/
-   /*bottom: 0;*/
    left: 0;
-   /*z-index: 100; !* Behind the navbar *!*/
-   /*padding: 48px 0 0; !* Height of navbar *!*/
    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
    min-width: 170px;
    max-width: 220px;
    padding-right: 0px;
    padding-left: 0px;
-
-   /*transition: left 0.3s;*/
 }
 
 
@@ -1928,15 +1930,27 @@ a#sidebarBtn {
 .colorPicker{
    padding: 0px;
    margin: 0px;
-   width: 0px;
-   height: 0px;
-   cursor: default;
-   border-width: 1px;
+   padding-bottom: 3px;
+   margin-left: -27px;
+   width: 25px;
+   cursor: pointer;
+   border-width: 0px;
    border-style: solid;
    border-color: black;
-   background-color: black;
+   background-color: transparent;
    color: black;
-/* display: none;
+}
+.colorPickerView{
+   padding: 0px;
+   margin: 0px;
+   padding-bottom: 3px;
+   width: 25px;
+   cursor: default;
+   border-width: 0px;
+   border-style: solid;
+   border-color: black;
+   background-color: transparent;
+   color: black;
 }
 
 

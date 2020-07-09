@@ -1105,7 +1105,7 @@
                 newHtml += '<td class="col-3"><input id="newCompVarName'+currentRowCntStr+'" class="form-control newCompVarName" type="text"></td>'
 
                 //New privacy switch
-                newHtml += '<td class="col-1"><div class="newCompVarPrivateButtonRow">';
+                newHtml += '<td class="col-2"><div class="newCompVarPrivateButtonRow">';
                 newHtml += '<label class="switch privacy-switch" ><input id="newCompVarPrivateInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class="success newCompVarPrivateButton"><span class="slider round"></span></label>';
                 newHtml += '<span id="newCompVarPrivateDisp'+currentRowCntStr+'" class="newCompVarPrivateDisp"></span>';
                 newHtml += '</td>';
@@ -1121,12 +1121,15 @@
                 newHtml +=  '</div></td>'
 
                 //New component variable value
-                newHtml += '<td class="col-6"><div class="compVarEditValRow">';
+                newHtml += '<td class="col-5"><div class="compVarEditValRow">';
                 newHtml += '<input id="newCompVarValue'+currentRowCntStr+'" class="form-control newCompVarValue" type="text">';
-                newHtml += '<input type="color" class="colorPicker" style="" data-idn='+currentRowCntStr+' id="colorPicker'+currentRowCntStr+'">';
+//                newHtml += '<input type="color" class="colorPicker" style="" data-idn='+currentRowCntStr+' id="colorPicker'+currentRowCntStr+'">';
 
                 newHtml += '<a href="#"><i id="compVarEditValButton'+currentRowCntStr+'" class="fa fa-expand fa-fw compVarEditValButton" data-idn="'+currentRowCntStr+'" ></i></a>';
-                newHtml += '<a href="#"><i id="compVarEditColorButton'+currentRowCntStr+'" class="fa fa-tint fa-fw compVarEditColorButton" data-idn="'+currentRowCntStr+' " style="display:none;" ></i></a>';
+                newHtml += '<div id="compVarEditColorButton'+currentRowCntStr+'"  data-idn="'+currentRowCntStr+' " style="display:none;">' +
+                    '<input type="color" class="colorPicker" style="" data-idn='+currentRowCntStr+' id="colorPicker'+currentRowCntStr+'">'+
+//                    '<a href="#"><i  class="fa fa-tint fa-fw compVarEditColorButton" ></i></a>' +
+                    '</div>';
                 newHtml += '</td></tr>';
 
                 return newHtml;
@@ -1225,12 +1228,12 @@
 //
 //                });
 
-                $(".compVarEditColorButton").on('click', function(){
-                    var idn = $(this).attr('data-idn');
-
-                    $("#colorPicker"+idn).click();
-
-                });
+//                $(".compVarEditColorButton").on('click', function(){
+//                    var idn = $(this).attr('data-idn');
+//
+//                    $("#colorPicker"+idn).click();
+//
+//                });
 
 
                 $('.colorPicker').on('change', function() {
@@ -1984,7 +1987,7 @@
                     var idn = currentCompVarObj[varName].idn
                     pCompHtml = "<tr id='varRow_" + idn +"'" +  " class='d-flex varRow'>";
 
-                    //add name col 3-1-2-6
+                    //add name col
                     pCompHtml += "<td class='col-3 varNameTd'>";
                     pCompHtml += showTools ? "<i class='fa fa-pencil fa-fw compVarEditButton' data-idn='" + idn +"'></i>" : "";
                     pCompHtml += "<span id = 'varNameTd" + idn + "'></span>";
@@ -1992,16 +1995,21 @@
                     pCompHtml += "</td>";
 
                     //add private col
-                    pCompHtml += "<td class='col-1 center'>" + (variables[varName].private ? "Yes":"No") + "</td>";
+                    pCompHtml += "<td class='col-2 center'>" + (variables[varName].private ? "Yes":"No") + "</td>";
 
                     //add type col
                     var typeTxt = variables[varName].type;
                     pCompHtml += "<td class='col-2 center'>" + (typeTxt === "" ? "Text" : typeTxt) + "</td>";
 
                     //add value col
-                    pCompHtml += "<td class='col-6 varValTd'>" +
-                        "<span tabindex='0' id = 'varValTd" + idn + "'></span>" +
-                        "</td>";
+                    pCompHtml += "<td class='col-5 varValTd'>"
+                    pCompHtml += "<span tabindex='0' id = 'varValTd" + idn + "'></span>"
+                    if(typeTxt === "Color"){
+
+                        pCompHtml += '<input id = "varValColor' + idn + '" type="color" class="colorPickerView" disabled="true" >'
+                    }
+//
+                    pCompHtml += "</td>";
 
                     pCompHtml += "</tr>";
 
@@ -2025,6 +2033,7 @@
                         $("#varValTd" + idn).popover(options);
                     }
                     $("#varValTd" + idn).text(valText);
+                    $("#varValColor" + idn).val(valText);
                 }
             }
 
@@ -6390,9 +6399,9 @@ $("#componentsBtn").click();
                                                                 <thead>
                                                                 <tr class="d-flex">
                                                                     <th class="col-3 varLabel varLabelName">Name</th>
-                                                                    <th class="col-1 varLabel center">Private</th>
+                                                                    <th class="col-2 varLabel center">Private</th>
                                                                     <th class="col-2 varLabel center">Type</th>
-                                                                    <th class="col-6 varLabel">Value</th>
+                                                                    <th class="col-5 varLabel">Value</th>
                                                                 </tr>
                                                                 </thead>
                                                                 <tbody id="compVariables" class="varTbody"></tbody>
