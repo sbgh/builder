@@ -1435,7 +1435,7 @@ tbody.varTbody{
    font-size: 14px;
    border: none;
    padding: 0px;
-   /*min-width: min-content;*/
+   min-width: min-content;
 }
 
 .newCompVarPrivateButtonRow, .newSysVarPrivateButtonRow{
@@ -1951,6 +1951,13 @@ a#sidebarBtn {
    border-color: black;
    background-color: transparent;
    color: black;
+}
+
+.buildCodeMatchRow{
+   font-weight: 500;
+   font-size: 14px;
+   cursor: pointer;
+   white-space: nowrap;
 }
 
 

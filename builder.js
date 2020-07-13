@@ -4157,7 +4157,7 @@ router.get("/getPromoted",function(req,res){
                 }
                 if(SystemsJSON[key].buildCode.linkArr.length > 0){
                     if(BuildCode[SystemsJSON[key].buildCode.linkArr[0]].systemFunction === 1){
-                       // allow = true;
+                        // allow = true;
                     }
                 }
 
@@ -4197,6 +4197,110 @@ router.get("/getPromoted",function(req,res){
         if(keyA < keyB) return -1;
         if(keyA > keyB) return 1;
         return 0;
+    });
+
+    res.end(JSON.stringify(resJSON));
+});
+
+//Service Rt: /ComponentsByBcId to return a sorted array of SystemJSON rows where buidcode === valid buildcode specified in request. Requires: buildcode id, Returns: json Obj with array of working SystemJSON components (compArr) (added id, systemId, systemName properties) plus request ID (reqId).
+router.get("/componentsByBcId",function(req,res){
+
+    let bcId = req.query.id;
+
+    let rowdata={};
+    let resJSON = {};
+    resJSON.compArr = [];
+
+    for (let key in SystemsJSON) {
+
+        if (SystemsJSON.hasOwnProperty(key)) {
+            if (SystemsJSON[key].comType === "job" && SystemsJSON[key].buildCode.linkArr.length > 0) {
+                if (SystemsJSON[key].buildCode.linkArr[0] === bcId) {
+                    rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]));
+                    rowdata.id = key;
+                    rowdata.systemName = SystemsJSON[rowdata.ft.split("/")[1]].name;
+                    rowdata.systemId = rowdata.ft.split("/")[1];
+
+                    //convert family tree+key string to string containing sort values eg ?1?2?1?6?3
+                    var sortStr = " ";
+                    var sArr = rowdata.ft.split('/');
+                    var aNames = [];
+                    sArr.push(key);
+                    sArr.forEach(function (parent_id) {
+                        sortStr += parent_id.length > 20 ? "?" + SystemsJSON[parent_id].sort.toString() : "";
+                        if (SystemsJSON.hasOwnProperty(parent_id)) {
+                            if (SystemsJSON[parent_id].promoted) {
+                                aNames.push(SystemsJSON[parent_id].name)
+                            }
+                        }
+                    });
+
+                    rowdata.sortStr = sortStr;
+                    rowdata.aNames = aNames;
+
+                    resJSON.compArr.push(rowdata);
+                }
+            }
+        }
+    }
+
+    //     if(SystemsJSON[key].ft.split("/")[1] === systemId){
+    //         if (SystemsJSON.hasOwnProperty(key)) {
+    //             var  hostIP = getSystemVarVal(key, "host");
+    //             var hasParentRun = false;
+    //             if((SystemsJSON[SystemsJSON[key].parent].hasOwnProperty("lastBuild") || SystemsJSON[SystemsJSON[key].parent].comType === "system") ){
+    //
+    //                 if (SystemsJSON[SystemsJSON[key].parent].comType === "system"){
+    //                     hasParentRun = true
+    //                 }else if (SystemsJSON[SystemsJSON[key].parent].lastBuild.pass === 1 ){
+    //                     hasParentRun = true
+    //                 }
+    //             }
+    //
+    //             if((SystemsJSON[key].promoted === 1 && hasParentRun && hostIP !== "")){
+    //                 allow = true;
+    //             }
+    //             if(SystemsJSON[key].buildCode.linkArr.length > 0){
+    //                 if(BuildCode[SystemsJSON[key].buildCode.linkArr[0]].systemFunction === 1){
+    //                     // allow = true;
+    //                 }
+    //             }
+    //
+    //             if(allow){
+    //                 rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
+    //                 rowdata.id = key;
+    //                 rowdata.systemName =  SystemsJSON[rowdata.ft.split("/")[1]].name;
+    //                 rowdata.systemId =  rowdata.ft.split("/")[1];
+    //
+    //                 //convert family tree+key string to string containing sort values eg ?1?2?1?6?3
+    //                 var sortStr = " ";
+    //                 var sArr = rowdata.ft.split('/');
+    //                 var aNames = [];
+    //                 sArr.push(key);
+    //                 sArr.forEach(function(parent_id){
+    //                     sortStr += parent_id.length>20 ? "?" + SystemsJSON[parent_id].sort.toString() : "";
+    //                     if(SystemsJSON.hasOwnProperty(parent_id)){
+    //                         if(SystemsJSON[parent_id].promoted){
+    //                             aNames.push(SystemsJSON[parent_id].name)
+    //                         }
+    //                     }
+    //                 });
+    //
+    //                 rowdata.sortStr = sortStr;
+    //                 rowdata.aNames = aNames;
+    //
+    //                 resJSON.push(rowdata);
+    //             }
+    //         }
+    //     // }
+    // }
+    //sort all rows by sort property
+
+    resJSON.compArr.sort(function(a, b){
+        var keyA = a.sortStr,
+            keyB = b.sortStr;
+
+        return keyA.localeCompare(keyB, 'en', { numeric: true });
     });
 
     res.end(JSON.stringify(resJSON));

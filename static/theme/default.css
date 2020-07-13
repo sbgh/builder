@@ -649,3 +649,7 @@ a#buildCodeBtn i {
 #navTopIcon > #navLeftIcon > a {
     color: #367ae0;
 }
+
+.buildCodeMatchRow{
+    color: #367ae0;
+}
