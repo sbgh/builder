@@ -1602,7 +1602,14 @@
                                     x++;
                                 }
                             }
-                            $("#alsoUsedInNum").text(x.toString())
+                            if(x === 0){
+                                $("#alsoUsedInMess").text("Not used in any other component")
+                            }else if(x === 1){
+                                $("#alsoUsedInMess").text("Used in one other component:")
+                            }else{
+                                $("#alsoUsedInMess").text("Used in "+x.toString()+" other components:")
+                            }
+
                             $('.buildCodeMatchRow').on('click', function(){
                                 var id = $(this).attr('data-id');
                                 $('#jstree_div').jstree("deselect_all");
@@ -6499,7 +6506,7 @@ $("#componentsBtn").click();
                                                                     </div>
                                                                     <div class="col-sm-6">
 
-                                                                        <label class="build-label">Also Used In <span id="alsoUsedInNum"></span> other components</label>
+                                                                        <label id="alsoUsedInMess" class="build-label"></label>
                                                                         <div id="buildCodeMatch"></div>
                                                                     </div>
                                                                 </div>
