@@ -1590,6 +1590,7 @@
                             const dataObj = JSON.parse(data);
                             const  buildCodeMatch = dataObj.compArr;
                             const thistId = $("#id").val();
+                            let x=0;
                             for (var key in buildCodeMatch) {
                                 if (buildCodeMatch.hasOwnProperty(key) && thistId !== buildCodeMatch[key].id) {
                                     rowHtml = '<div data-id="'+buildCodeMatch[key].id+'" class="buildCodeMatchRow">';
@@ -1597,9 +1598,11 @@
                                     rowHtml += buildCodeMatch[key].systemName + ' : ';
                                     rowHtml += buildCodeMatch[key].name + '</div>';
 
-                                    $("#buildCodeMatch").append(rowHtml)
+                                    $("#buildCodeMatch").append(rowHtml);
+                                    x++;
                                 }
                             }
+                            $("#alsoUsedInNum").text(x.toString())
                             $('.buildCodeMatchRow').on('click', function(){
                                 var id = $(this).attr('data-id');
                                 $('#jstree_div').jstree("deselect_all");
@@ -6496,7 +6499,7 @@ $("#componentsBtn").click();
                                                                     </div>
                                                                     <div class="col-sm-6">
 
-                                                                        <label class="build-label">Also Used In</label>
+                                                                        <label class="build-label">Also Used In <span id="alsoUsedInNum"></span> other components</label>
                                                                         <div id="buildCodeMatch"></div>
                                                                     </div>
                                                                 </div>

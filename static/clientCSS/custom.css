@@ -1960,6 +1960,14 @@ a#sidebarBtn {
    white-space: nowrap;
 }
 
+div#buildCodeMatch {
+   max-height: 55px;
+   overflow-y: auto;
+   width: min-content;
+   padding: 5px;
+   margin-bottom: 20px;
+}
+
 
 
 
