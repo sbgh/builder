@@ -696,6 +696,10 @@ input:focus + .slider {
     background-color: rgba(43, 43, 43, 0);
 }
 
+.vidMenuMatchOverlay, .dashSystemDropdownItem, .templateTypeDropdownItem{ 
+    background-color: rgba(43, 43, 43, 0.9);
+}
+
 .welcome-hr{
     border-color: #79bdf3;
 }
