@@ -693,7 +693,7 @@ input:focus + .slider {
 .dropdown-menu, .dropdown-toggle:disabled  {
     transition: color 0.5s;
     color: #fff;
-    background-color: rgba(43, 43, 43, 0.8);
+    background-color: rgba(43, 43, 43, 0);
 }
 
 .welcome-hr{
