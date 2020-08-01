@@ -533,7 +533,7 @@ padding-left: 0px;
 
 .screenShotImageHolder{
    /*text-align: center;*/
-   padding-bottom: 40px;
+   padding-bottom: 15px;
    min-width: 410px;
 }
 
@@ -1373,7 +1373,7 @@ th.col-1, td.col-1{
 #jobForm .ql-editor {
 
    transition: max-height .5s;
-   max-height: 300px;
+   max-height: 70px;
    overflow:auto
 }
 

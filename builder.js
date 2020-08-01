@@ -940,8 +940,12 @@ router.get("/JobsTree",function(req,res){
         if (SystemsJSON[key].description.hasOwnProperty("ops")){
             SystemsJSON[key].description.ops.forEach(function(row){
                 if(row.hasOwnProperty("insert")){
-                    if(row.insert.includes(searchSt)) {
-                        filter = true
+                    //console.log(SystemsJSON[key].name + " : " + key );
+                    var rTxt = row.insert;
+                    if(rTxt.hasOwnProperty("includes")){ //could be image
+                        if(rTxt.includes(searchSt)) {
+                            filter = true
+                        }
                     }
                 }
             })

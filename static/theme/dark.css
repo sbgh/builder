@@ -372,7 +372,7 @@ border: 1px solid #adadad;
 }
 
 a.fileListLink {
-    color: #ffffff;
+    color: #79bdf3;
 }
 
 a.libListRow {
@@ -696,7 +696,7 @@ input:focus + .slider {
     background-color: rgba(43, 43, 43, 0);
 }
 
-.vidMenuMatchOverlay, .dashSystemDropdownItem, .templateTypeDropdownItem{ 
+.vidMenuMatchOverlay, .dashSystemDropdownItem, .templateTypeDropdownItem, .topMenuDropdown{
     background-color: rgba(43, 43, 43, 0.9);
 }
 
