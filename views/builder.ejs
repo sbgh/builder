@@ -259,6 +259,7 @@
 
             //Lib Tree Collapse
             $("#treeCollapse").on("click",function(){
+                const container = $('#rowContainer');
                 setLibWindowWidth(20, container);
             });
 
@@ -373,7 +374,7 @@
                                     $(this).addClass("active");
 
                                     hideBottom()
-                                    setWindowHeight($(window).height(), container, false);
+                                    setWindowHeight($(window).height(),  false);
                                     $('#jstree_div').jstree('select_node',"lib");
                             });
 
@@ -547,8 +548,9 @@
                         $("#sysScreen").hide();
                         $("#jobScreen").hide();
                         $(".jstree-children").removeClass("jstree-codeBlock");
-                        hideBottom();
-                        bottomHiddenFlag = true;
+
+            //            hideBottom();
+            //            bottomHiddenFlag = true;
 
                         if(!currentCopySysObj.hasOwnProperty("id")){
                             $("#paste_sys_button").hide();
@@ -580,7 +582,7 @@
 
                             bottomHiddenFlag = false;
 
-                            setWindowHeight(currentHeight, container, false);
+                            setWindowHeight(currentHeight,  false);
                             updateResultsList(selectedNode);
 
                             const targetNode =  $('#jstree_div').jstree(true).get_node(data.node.id);
@@ -600,8 +602,8 @@
                         }else{
                             $("#sysScreen").show();
                             $("#jobScreen").hide();
-                            hideBottom();
-                            bottomHiddenFlag = true;
+//                            hideBottom();
+//                            bottomHiddenFlag = true;
                             $("#comType").val('system');
                             readModeSys();
                             getSysByID(selectedNode);
@@ -1019,20 +1021,11 @@
             }
 
             function hideBottom(){
-                $("#bottomRow").hide(function(){
-                    var container = $('#rowContainer');
-                    //bottomHiddenFlag = true;
-//                    setWindowHeight(container.height(), container, false);
-                });
+//                $("#bottomRow").hide(function(){});
             }
             function showBottom(){
-                $("#bottomRow").show(function(){
-                    var container = $('#rowContainer');
-                    //bottomHiddenFlag = false;
-//                    setWindowHeight(currentHeight, container, false);
-                });
+//                $("#bottomRow").show(function(){});
             }
-            //hideBottom();
 
             function clearJobFields(){
                 $("#id").val('');
@@ -3499,18 +3492,18 @@
 
             //min codes window
             $('.codes_btn_min').on('click', function(){
-                var container = $('#rowContainer');
+                const container = $('#rowContainer');
                 bottomMinimizedFlag = true;
-                setWindowHeight(container.height()- 28 , container, true);
+                setWindowHeight(container.height()- 28 ,  true);
                 currentHeight = container.height()- 28
                 currentRatio = currentHeight / container.height();
             });
 
             //max codes window
             $('.codes_btn_max').on('click', function(){
-                var container = $('#rowContainer');
+                const container = $('#rowContainer');
                 bottomMinimizedFlag = false;
-                setWindowHeight(container.height()/2 , container, true);
+                setWindowHeight(container.height()/2 ,  true);
                 currentHeight = container.height() / 2
                 currentRatio = currentHeight / container.height();
             });
@@ -3583,7 +3576,7 @@
             var isResizingLibWidth = false;
             var treeWidth = 240;
             var libTreeWidth = 240;
-            var container = $('#rowContainer');
+            const container = $('#rowContainer');
             var currentHeight = container.height()- 30   //container.height() * .75; //default height
             currentHeight += currentHeight < 10 ? 10 - currentHeight : 0;
             currentRatio = currentHeight / container.height();
@@ -3593,6 +3586,8 @@
                 var heightHandle = $('#rowHandle');
                 var widthHandle = $('#treePanelHandle');
                 var libWidthHandle = $('#libTreePanelHandle');
+
+
 
                 heightHandle.on('mousedown', function (e) {
                     isResizingHeight = true;
@@ -3613,12 +3608,11 @@
 //                    }, false);
                     $(".container-fluid-custom").height(window.innerHeight);
                     $("#dashboard").height(window.innerHeight - 30);
-
-                    var container = $('#rowContainer');
+                    const container = $('#rowContainer');
                     if(bottomHiddenFlag){
-                        setWindowHeight(container.height() , container, false);
+                        setWindowHeight(container.height() ,  false);
                     }else{
-                        setWindowHeight(container.height() * currentRatio , container, false);
+                        setWindowHeight(container.height() * currentRatio ,  false);
                     }
                     setFormColWidth();
 
@@ -3627,6 +3621,7 @@
                 });
 
                 $(document).on('mousemove', function (e) {
+                    const container = $('#rowContainer');
                     if (!isResizingHeight && !isResizingWidth && !isResizingLibWidth)
                         return;
                     if(isResizingHeight){
@@ -3636,7 +3631,7 @@
                         currentHeight += currentHeight < 10 ? 10 - currentHeight : 0
                         currentRatio = currentHeight / container.height();
                         bottomMinimizedFlag = false;
-                        setWindowHeight(topHeight-5, container, false);
+                        setWindowHeight(topHeight-5, false);
                     }
 
                     if(isResizingLibWidth){
@@ -3649,6 +3644,7 @@
                     if(isResizingWidth){
                         e.preventDefault();
                         var leftWidth = e.clientX;
+                        const container = $('#rowContainer');
 //                        setWindowWidth(leftWidth - libTreeWidth - 2, container, false);
                         if($( "#sidebar" ).hasClass( "show" )){
                             setWindowWidth(leftWidth - $("#sidebar").width() - 2, container, false);
@@ -3686,8 +3682,9 @@
             }
 
             //Calling this function will set the height of each element in the view
-            function setWindowHeight(topHeight, container, AnimateIt){
-//                console.log(topHeight);
+            function setWindowHeight(topHeight, AnimateIt){
+                console.log(topHeight);
+                const container = $('#rowContainer');
                 var heightAniDuration = 0 ;
                 if(AnimateIt){heightAniDuration = 300}
 
@@ -3701,7 +3698,7 @@
                 var leftHeightOffset  =  leftCol.getBoundingClientRect().top;
 
                 if(bottomMinimizedFlag == true){
-                    topHeight = currentHeight = container.height()- 28
+                    topHeight = currentHeight = container.height() - 28;
                 }
 
                 if(!bottomHiddenFlag){
@@ -3715,19 +3712,15 @@
                     }
 
                     $("#jstree_div").animate({height: (topHeight - leftHeightOffset )},heightAniDuration);
-//                    $("#jslibtree_div").animate({height: (topHeight - leftHeightOffset)},heightAniDuration);
-
-//                    $("#treePanelHandle").animate({height: (topHeight )},heightAniDuration);
-//                    $("#libTreePanelHandle").animate({height: (topHeight - heightOffset)},heightAniDuration);
 
                     $("#job-form-panel").animate({height: (topHeight - heightOffsetJob)},heightAniDuration);
-//                    $("#sys-form-panel").animate({height: (topHeight - heightOffsetJob)},heightAniDuration);
 
                     $("#leftResultsCol").animate({height: (topHeight - (15 + 33 + 38))},heightAniDuration);
+
                     $("#build-results-row").animate({height: (topHeight - (15 + 33 + 21))},heightAniDuration);
 
                     $('#results_html').animate({height: container.height() - topHeight - (34 + 15)},heightAniDuration);
-//                    $('#results_codes').animate({height: container.height() - topHeight - (34 + 15)},heightAniDuration);
+
                     $('#results-group').animate({height: container.height() - topHeight - (34 + 15)},heightAniDuration);
                 }else{
 
@@ -5068,7 +5061,7 @@ $("#componentsBtn").click();
                     $('#jslibtree_div').hide();
                     $('#jstree_div').show();
 
-                    setWindowHeight(currentHeight, container, false);
+                    setWindowHeight(currentHeight, false);
 
                     //move video screen to dash
                     $("#videoScreen").detach().appendTo('#screenshot-panel-body');
@@ -5098,7 +5091,7 @@ $("#componentsBtn").click();
                         showBottom()
                     }
 
-                    setWindowHeight($(window).height(), container, false);
+                    setWindowHeight($(window).height(),  false);
 
                     //move video screen to components ui
                     $("#videoScreen").detach().appendTo('#screenShotImageHolder');

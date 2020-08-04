@@ -210,10 +210,19 @@ topLib-col-fixed-240{
    min-width: 120px;
 }
 
+div#sysScreen {
+   height: 100%;
+}
+
+div#sysPanel {
+   height: 100%;
+}
 /*noinspection ALL*/
 #sys-form-panel {
    padding: 15px;
-   height: calc(var(--vh, 1vh) * 100 - 20px - 22px);
+   /*height: calc(var(--vh, 1vh) * 100 - 115px);*/
+   height: 100%;
+
    overflow-y: auto;
 }
 
