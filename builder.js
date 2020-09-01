@@ -3530,6 +3530,13 @@ router.post("/run",function(req,res){
                                 isDirective = true;
 
                             } else if
+                            (currentCommand.substr(0, 7) === "launch:") {
+
+                                message('launching url');
+                                message(currentCommand);
+                                isDirective = true;
+
+                            } else if
                             (currentCommand.substr(0, 11) === "restart:") {
 
                                 //request client to restart

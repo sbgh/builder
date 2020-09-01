@@ -1453,164 +1453,178 @@
                     $("#buildCodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  );
                     // testing ^^^^^^^^^^^^^^^^^^^
 
-                    if(!data[0].hasOwnProperty("id")){
-                        $("#buildCode").val("");
-                        $("#newBuildCodeName").val("New Build Code");
-                        $("#buildCodeNameRead").html("New Build Code");
-                        scriptEditor.session.setValue("");
-                        $('#custTemplates').html("");
+                    if(data[0].hasOwnProperty("id")){
+                        if(data[0].id === ""){
+                            $("#buildCode").val("");
+                            $("#newBuildCodeName").val("New Build Code");
+                            $("#buildCodeNameRead").html("New Build Code");
+                            scriptEditor.session.setValue("");
+                            $('#custTemplates').html("");
 
-                        $('#rerunnable').prop('checked', false);
-                        $('#rerunnableVal').html('No');
-                        $('#sysFunc').prop('checked', false);
-                        $('#sysFuncVal').html('No');
-                        $('#runLoc').prop('checked', false);
-                        $('#runLocVal').html('No');
-
-                    }else{
-                        let thisId = data[0].id
-                        $("#buildCode").val(thisId);
-                        $("#newBuildCodeName").val(data[0].name);
-                        $("#buildCodeNameRead").html(data[0].name);
-
-                        if(data[0].rerunnable === 1){
-                            $('#rerunnable').prop('checked', true);
-                            $('#rerunnableVal').html('Yes');
-                        }else{
                             $('#rerunnable').prop('checked', false);
                             $('#rerunnableVal').html('No');
-                        }
-
-                        if(data[0].systemFunction === 1){
-                            $('#sysFunc').prop('checked', true);
-                            $('#sysFuncVal').html('Yes');
-                        }else{
                             $('#sysFunc').prop('checked', false);
-                            $('#sysFuncVal').html('No')
-                        }
-
-                        if(data[0].runLocal === 1){
-                            $('#runLoc').prop('checked', true);
-                            $('#runLocVal').html('Yes')
-                        }else{
+                            $('#sysFuncVal').html('No');
                             $('#runLoc').prop('checked', false);
                             $('#runLocVal').html('No');
-                        }
 
-                        var curTxtVal = scriptEditor.getValue();
-                        var newTxtVal = data[0].script;
-                        if(curTxtVal !== newTxtVal){
-                            scriptEditor.session.setValue(data[0].script);
-                        }
+                            $("#alsoUsedInMess").text("Not used in any other component")
+                            $("#buildCodeMatch").html("");
+                            $("#buildCodeCopyButton").hide();
+                            $("#buildCodeForkButton").hide();
+                            currentTemplatesArr = [];
+                        }else{
+                            $("#buildCodeCopyButton").show();
+                            $("#buildCodeForkButton").show();
+                            let thisId = data[0].id
+                            $("#buildCode").val(thisId);
+                            $("#newBuildCodeName").val(data[0].name);
+                            $("#buildCodeNameRead").html(data[0].name);
 
-                        //load templates
-                        var x=0;
-                        var tempObjArr = data[0].templates.tempArr;
-
-                        tempObjArr.forEach(function(tempObj){
-
-                            //if there is not an instance to reuse create a new
-                            if(!currentTemplatesArr[x]){
-                                var inHtml = authorTemplateHTML(x, true);
-
-                                $('#custTemplates').append(inHtml);
-
-                                currentTemplatesArr.push(ace.edit("template"+x.toString()));
-
-                                currentTemplatesArr[currentTemplatesArr.length-1].session.setMode("ace/mode/text");
-                                document.getElementById("template"+x.toString()).style.fontSize='14px';
-
-                                currentTemplatesArr[currentTemplatesArr.length-1].renderer.$cursorLayer.element.style.display = "none"
-
-                                loadjobTempTypeDropdown(x);
-                                $("#templateWindowMin"+x.toString()).hide();
-
-                                $("#templateWindowMax"+x.toString()).click( function(){
-                                    var inx = parseInt($(this).attr('data-inx'), 10);
-                                    setTempAceHeight(inx, "max");
-                                    $("#templateWindowMax"+inx.toString()).hide();
-                                    $("#templateWindowMin"+inx.toString()).show()
-                                })
-                                $("#templateWindowMin"+x.toString()).click( function(){
-                                    var inx = parseInt($(this).attr('data-inx'), 10);
-                                    setTempAceHeight(inx, "min");
-                                    $("#templateWindowMax"+inx.toString()).show();
-                                    $("#templateWindowMin"+inx.toString()).hide()
-                                })
+                            if(data[0].rerunnable === 1){
+                                $('#rerunnable').prop('checked', true);
+                                $('#rerunnableVal').html('Yes');
                             }else{
-                                //unhide the old template code to reuse it
-                                $("#templateBlock" + x.toString()).show();
+                                $('#rerunnable').prop('checked', false);
+                                $('#rerunnableVal').html('No');
                             }
 
-                            currentTemplatesArr[x].session.setValue(tempObj.c);
-                            currentTemplatesArr[x].isValid = true;
-                            x++;
-                        });
+                            if(data[0].systemFunction === 1){
+                                $('#sysFunc').prop('checked', true);
+                                $('#sysFuncVal').html('Yes');
+                            }else{
+                                $('#sysFunc').prop('checked', false);
+                                $('#sysFuncVal').html('No')
+                            }
 
-                        //mark the rest if the ace instances as invalid, hide the block and clear the values so they can be recycled
-                        while (x < currentTemplatesArr.length ){
-                            $("#templateBlock" + x.toString()).hide();
-                            currentTemplatesArr[x].session.setValue("");
-                            currentTemplatesArr[x].isValid = false;
-                            x++;
-                        }
+                            if(data[0].runLocal === 1){
+                                $('#runLoc').prop('checked', true);
+                                $('#runLocVal').html('Yes')
+                            }else{
+                                $('#runLoc').prop('checked', false);
+                                $('#runLocVal').html('No');
+                            }
 
-                        //insert the contents of the instances and populate type dropdowns
-                        x=0;
-                        tempObjArr.forEach(function(tempObj){
-                            var tempType =  tempObj.t === "" ? "text" :  tempObj.t;
-                            currentTemplatesArr[x].session.setMode("ace/mode/" + tempType);
-                            $("#templateType" + x.toString()).val(tempType);
-                            $("#dropdownTemplateTypeButton"+x.toString())[0].innerHTML = tempType;
-                            x++;
-                        })
+                            var curTxtVal = scriptEditor.getValue();
+                            var newTxtVal = data[0].script;
+                            if(curTxtVal !== newTxtVal){
+                                scriptEditor.session.setValue(newTxtVal);
+                            }
 
-                        //set the style if eack instance
-                        setAceStyle(currentStyleName);
-                        $(".ace_editor").addClass("aceDisabled");
+                            //load templates
+                            var x=0;
+                            var tempObjArr = data[0].templates.tempArr;
 
-                        //hide the cursor for each instance
-                        for(var inx in currentTemplatesArr){
-                            currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "none";
-                            currentTemplatesArr[inx].setReadOnly(true);
-                        }
+                            tempObjArr.forEach(function(tempObj){
 
-                        $('#resourceFiles').val(data[0].resourceFiles);
-                        populateFileList( $('#resourceFiles').val(), false);
+                                //if there is not an instance to reuse create a new
+                                if(!currentTemplatesArr[x]){
+                                    var inHtml = authorTemplateHTML(x, true);
 
-                        $("#buildCodeMatch").html("");
-                        $.get('/componentsByBcId', { id: data[0].id }, function(data) {
-                            var rowHtml;
-                            const dataObj = JSON.parse(data);
-                            const  buildCodeMatch = dataObj.compArr;
-                            const thistId = $("#id").val();
-                            let x=0;
-                            for (var key in buildCodeMatch) {
-                                if (buildCodeMatch.hasOwnProperty(key) && thistId !== buildCodeMatch[key].id) {
-                                    rowHtml = '<div data-id="'+buildCodeMatch[key].id+'" class="buildCodeMatchRow">';
-                                    rowHtml += '<i class="fa  fa-folder-open fa-fw "></i>';
-                                    rowHtml += buildCodeMatch[key].systemName + ' : ';
-                                    rowHtml += buildCodeMatch[key].name + '</div>';
+                                    $('#custTemplates').append(inHtml);
 
-                                    $("#buildCodeMatch").append(rowHtml);
-                                    x++;
+                                    currentTemplatesArr.push(ace.edit("template"+x.toString()));
+
+                                    currentTemplatesArr[currentTemplatesArr.length-1].session.setMode("ace/mode/text");
+                                    document.getElementById("template"+x.toString()).style.fontSize='14px';
+
+                                    currentTemplatesArr[currentTemplatesArr.length-1].renderer.$cursorLayer.element.style.display = "none"
+
+                                    loadjobTempTypeDropdown(x);
+                                    $("#templateWindowMin"+x.toString()).hide();
+
+                                    $("#templateWindowMax"+x.toString()).click( function(){
+                                        var inx = parseInt($(this).attr('data-inx'), 10);
+                                        setTempAceHeight(inx, "max");
+                                        $("#templateWindowMax"+inx.toString()).hide();
+                                        $("#templateWindowMin"+inx.toString()).show()
+                                    })
+                                    $("#templateWindowMin"+x.toString()).click( function(){
+                                        var inx = parseInt($(this).attr('data-inx'), 10);
+                                        setTempAceHeight(inx, "min");
+                                        $("#templateWindowMax"+inx.toString()).show();
+                                        $("#templateWindowMin"+inx.toString()).hide()
+                                    })
+                                }else{
+                                    //unhide the old template code to reuse it
+                                    $("#templateBlock" + x.toString()).show();
                                 }
-                            }
-                            if(x === 0){
-                                $("#alsoUsedInMess").text("Not used in any other component")
-                            }else if(x === 1){
-                                $("#alsoUsedInMess").text("Used in one other component:")
-                            }else{
-                                $("#alsoUsedInMess").text("Used in "+x.toString()+" other components:")
+
+                                currentTemplatesArr[x].session.setValue(tempObj.c);
+                                currentTemplatesArr[x].isValid = true;
+                                x++;
+                            });
+
+                            //mark the rest if the ace instances as invalid, hide the block and clear the values so they can be recycled
+                            while (x < currentTemplatesArr.length ){
+                                $("#templateBlock" + x.toString()).hide();
+                                currentTemplatesArr[x].session.setValue("");
+                                currentTemplatesArr[x].isValid = false;
+                                x++;
                             }
 
-                            $('.buildCodeMatchRow').on('click', function(){
-                                var id = $(this).attr('data-id');
-                                $('#jstree_div').jstree("deselect_all");
-                                $('#jstree_div').jstree('select_node',id);
-                                $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
-                            });
-                        })
+                            //insert the contents of the instances and populate type dropdowns
+                            x=0;
+                            tempObjArr.forEach(function(tempObj){
+                                var tempType =  tempObj.t === "" ? "text" :  tempObj.t;
+                                currentTemplatesArr[x].session.setMode("ace/mode/" + tempType);
+                                $("#templateType" + x.toString()).val(tempType);
+                                $("#dropdownTemplateTypeButton"+x.toString())[0].innerHTML = tempType;
+                                x++;
+                            })
+
+                            //set the style if eack instance
+                            setAceStyle(currentStyleName);
+                            $(".ace_editor").addClass("aceDisabled");
+
+                            //hide the cursor for each instance
+                            for(var inx in currentTemplatesArr){
+                                currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "none";
+                                currentTemplatesArr[inx].setReadOnly(true);
+                            }
+
+                            $('#resourceFiles').val(data[0].resourceFiles);
+                            populateFileList( $('#resourceFiles').val(), false);
+
+                            $("#buildCodeMatch").html("");
+                            $.get('/componentsByBcId', { id: data[0].id }, function(data) {
+                                var rowHtml;
+                                const dataObj = JSON.parse(data);
+                                const  buildCodeMatch = dataObj.compArr;
+                                const thistId = $("#id").val();
+                                let x=0;
+                                for (var key in buildCodeMatch) {
+                                    if (buildCodeMatch.hasOwnProperty(key) && thistId !== buildCodeMatch[key].id) {
+                                        rowHtml = '<div data-id="'+buildCodeMatch[key].id+'" class="buildCodeMatchRow">';
+                                        rowHtml += '<i class="fa  fa-folder-open fa-fw "></i>';
+                                        rowHtml += buildCodeMatch[key].systemName + ' : ';
+                                        rowHtml += buildCodeMatch[key].name + '</div>';
+
+                                        $("#buildCodeMatch").append(rowHtml);
+                                        x++;
+                                    }
+                                }
+                                if(x === 0){
+                                    $("#alsoUsedInMess").text("Not used in any other component")
+                                }else if(x === 1){
+                                    $("#alsoUsedInMess").text("Used in one other component:")
+                                }else{
+                                    $("#alsoUsedInMess").text("Used in "+x.toString()+" other components:")
+                                }
+
+                                $('.buildCodeMatchRow').on('click', function(){
+                                    var id = $(this).attr('data-id');
+                                    $('#jstree_div').jstree("deselect_all");
+                                    $('#jstree_div').jstree('select_node',id);
+                                    $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
+                                });
+                            })
+                        }
+
+                    }else{
+                        $("#newBuildCodeName").val("Error: ID Property not set");
+                        $("#buildCodeCopyButton").hide();
+                        $("#buildCodeForkButton").hide();
                     }
                 });
             }
@@ -1665,7 +1679,7 @@
                         var curTxtVal = scriptEditor.getValue();
                         var newTxtVal = data[0].script;
                         if(curTxtVal !== newTxtVal){
-                            scriptEditor.session.setValue(data[0].script);
+                            scriptEditor.session.setValue(newTxtVal);
                         }
 
                         //load templates
@@ -2294,6 +2308,12 @@
 
                                     //restart client in 3 seconds
                                     setTimeout(function(){location.reload(true)} , 3000);
+                                }
+                                else if(row.substr(0,15) === 'message:launch:'){
+
+                                   let url = row.replace('message:launch:','');
+                                   //window.open(url, '_blank')
+                                    updateScreenShotLink(url)
                                 }
                                 else{
                                     $("#results_html").append(row + '<br>');
@@ -3683,7 +3703,7 @@
 
             //Calling this function will set the height of each element in the view
             function setWindowHeight(topHeight, AnimateIt){
-                console.log(topHeight);
+                //console.log(topHeight);
                 const container = $('#rowContainer');
                 var heightAniDuration = 0 ;
                 if(AnimateIt){heightAniDuration = 300}
@@ -5072,6 +5092,9 @@ $("#componentsBtn").click();
             $("#componentsBtn").on("click",function(){
                 localStorage["topMenuViewSelected"] = "Components"
                 $("#componentsRow").show();
+                setTimeout(function(){
+                    $('#jstree_div').jstree(true).refresh(true)
+                },1000);
 
                 $("#dashRow").hide(function(){
 
@@ -5432,11 +5455,27 @@ $("#componentsBtn").click();
                 trigger: 'hover',
                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
             });
-
+var launchUrl = "";
             function updateScreenShotLink(url){
-                var urlText = url.length > 50 ? url.subString(0, 47)+'...' : url
-                var appLink = "<a href='" + url +"' target='_new'><i class='fa  fa-external-link fa-fw '></i>" + urlText + "</a>"
+
+                //let urlFixed = url.toString().subString(0, 47);
+                //var urlText = urlFixed.length > 50 ? urlFixed.subString(0, 47)+'...' : urlFixed
+               // var appLink = "<a href='" + url +"' target='_new'><i class='fa  fa-external-link fa-fw '></i>" + '[launch]' + "</a>";
+                var appLink = "<a href='" + url +"' alt='" + url +"' target='_new' ><i class='fa  fa-external-link fa-fw '></i>" + '[launch]' + "</a><i id='screenShotLinkCopy' class='fa  fa-copy fa-fw'>";
                 $("#screenShotLink").html( appLink);
+                launchUrl = url;
+                $("#screenShotLinkCopy").click(function(event){
+//                    var myUrl = new URL(url).toString();
+//                    var myUrl = decodeURIComponent(url);
+                    
+                    $("#screenShotLinkHiddenCopy").val($("<div/>").html(url).text());
+
+                    var copyText = document.getElementById("screenShotLinkHiddenCopy");
+                    copyText.select();
+                    copyText.setSelectionRange(0, 99999);
+                    document.execCommand("copy");
+//                    console.log(copyText.value)
+                });
             }
 
             if(localStorage['appLink']){
@@ -5845,6 +5884,11 @@ $("#componentsBtn").click();
             $("#buildCodeForkBtn").on('click', function(evt){
                 $("#buildCode").val("");
                 $("#newBuildCodeName").val("copy of " + $("#newBuildCodeName").val());
+                $("#alsoUsedInMess").text("Not used in any other component")
+                $("#buildCodeMatch").html("");
+                $("#buildCodeCopyButton").hide();
+                $("#buildCodeForkButton").hide();
+
             });
 
             document.body.addEventListener('wheel', function(e){
@@ -6088,6 +6132,8 @@ $("#componentsBtn").click();
         </symbol>
     </defs>
 </svg>
+
+
     <input type="text" id="fakeInput" style="position: absolute; opacity: 0; height: 0px; font-size: 16px; right: 25%; top: 25%;">
     <div id="floatingPopoverField"  width="100%" height="100%" style="position: absolute">
         <div id="floatingPopover"></div>
@@ -6172,23 +6218,24 @@ $("#componentsBtn").click();
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="col lastCol" >
-                                            <div class='panel dashPanel currentBuildStatusPanel'>
-                                                <div class='panel-body dashPanelBody status-panel-body'>
-                                                    <span class="dashboardLabel" >Build Status: </span>
-                                                    <span class="resultsStatus" id="resultsStatus">Idle</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <!--<div class="row">-->
+                                        <!--<div class="col lastCol" >-->
+                                            <!--<div class='panel dashPanel currentBuildStatusPanel'>-->
+                                                <!--<div class='panel-body dashPanelBody status-panel-body'>-->
+                                                    <!--<span class="dashboardLabel" >Build Status: </span>-->
+                                                    <!--<span class="resultsStatus" id="resultsStatus">Idle</span>-->
+                                                <!--</div>-->
+                                            <!--</div>-->
+                                        <!--</div>-->
+                                    <!--</div>-->
 
                                 </div>
                                 <div id='screenshot-panel-body' class="col-md-6 dashVideoCol" >
                                     <div id="videoScreen">
 
                                         <div class="col videoCol">
-                                            <div id="screenShotLink" class="videoMenuItemLeft"></div>
+
+                                            <input id="screenShotLinkHiddenCopy"><div id="screenShotLink" class="videoMenuItemLeft"></div>
                                             <div class="videoMenu">
 
                                                 <!--<button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
@@ -6334,7 +6381,7 @@ $("#componentsBtn").click();
                                                     <div id="sysIcon"></div>
                                                     <div id="iconPaste">
                                                         <!--<p>Paste icon image: </p>-->
-                                                        <span><input type="text" id="pasteIcon" class="form-control" value="Paste icon image here"></span>
+                                                        <span><input type="text" id="pasteIcon" class="form-control" placeholder="Paste icon image here"></span>
                                                         <div id="resampled"></div>
                                                         <input type="hidden" id="iconURL">
                                                     </div>

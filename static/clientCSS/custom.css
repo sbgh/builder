@@ -867,8 +867,16 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
 .os-panel{
    display: inline-block;
    /*margin-bottom: 20px;*/
-   margin-right: 20px;
+   /*margin-right: 20px;*/
 }
+
+@media (max-width: 1000px) {
+   .navbar-nav > li > a {
+      padding-top: 2px;
+      padding-bottom: 2px;
+   }
+}
+
 .os-panel-body{
    text-align: center;
    /*font-weight: 700;*/
@@ -879,6 +887,10 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
    padding-left: 5px;
    border-radius: 10px;
    width: 140px;
+}
+
+.os-panel-body-status{
+   width: 100%;
 }
 
 /*div.col-sm-2{*/
@@ -909,6 +921,16 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
    white-space: nowrap;
 }
 
+@media (max-width: 1000px) {
+   .dropdown-settings {
+      font-size: small;
+   }
+}
+.dropdown-settings{
+
+}
+
+
 .launchPadHeading{
 
 
@@ -920,7 +942,6 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
 
 .launchPadPanel{
    margin-bottom: 20px;
-   /*border: 1px solid #0f6ab4;*/
 }
 
 .launchPadBody{
@@ -1117,17 +1138,13 @@ a.foundInSearchParent{
 
 .nav > li > a {
    position: relative;
-   /*display: block;*/
    padding: 10px 2px;
 }
 
 .navbar-nav > li{
-   /*text-align: center;*/
 }
 
 .navbar-nav > li > a {
-   #padding-top: 10px;
-   #padding-bottom: 10px;
    line-height: 21px;
 }
 
@@ -1205,9 +1222,7 @@ a.foundInSearchParent{
    /*max-width: 400px;*/
 /*}*/
 
-.dropdown-settings{
 
-}
 
 .dashSystemDropdownItem, .newCompVarTypeDropdownItem {
     width: 200%;
@@ -1978,6 +1993,33 @@ div#buildCodeMatch {
    margin-bottom: 20px;
 }
 
+.topRow {
+   display: -ms-flexbox;
+   display: flex;
+   -ms-flex-wrap: nowrap;
+   flex-wrap: nowrap;
+   /*justify-content: space-between;*/
+   padding-left: 0;
+   margin-bottom: 0;
+   list-style: none;
+}
 
+#os-panels, .dropdown-settings{
+   white-space: nowrap;
+}
+
+.dropdown-settings{
+   margin-right: 15px;
+   margin-left: auto;
+}
+
+input#screenShotLinkHiddenCopy {
+   padding: 0;
+   border-width: 0;
+   width: 1px;
+   height: 1px;
+   background-color: #ffffff00;
+   /*display:none*/
+}
 
 

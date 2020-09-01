@@ -1,15 +1,10 @@
-<div >
+    <div id="myNavbar" class="">
+                <div class="topRow">
 
-    <nav id="myNavbar" class="navbar navbar-default navbar-fixed-top anchor">
-                <ul class="nav">
+                    <div id="navTopIcon">
 
-                    <!--<li class="hidden active">-->
-                        <!--<a href="#page-top"></a>-->
-                    <!--</li>-->
-                    <li id="navTopIcon">
-
-                    </li>
-                    <li id="os-panels">
+                    </div>
+                    <div id="os-panels">
 
                         <div class='panel dashPanel os-panel'>
                             <div class='panel-body dashPanelBody os-panel-body'>
@@ -25,14 +20,16 @@
                                 <span class="osValue" id="osFMValue" >GB</span>
                             </div>
                         </div>
-                    </li>
 
-                </ul>
-
-                <ul class="nav navbar-top-links ">
-
+                        <div class='panel dashPanel os-panel'>
+                            <div class='panel-body dashPanelBody os-panel-body os-panel-body-status'>
+                                <span class="dashboardLabel" >Build Status: </span>
+                                <span class="osValue" id="resultsStatus" >Idle</span>
+                            </div>
+                        </div>
+                    </div>
                     <!-- /.dropdown -->
-                    <li class="dropdown dropdown-settings">
+                    <div class="dropdown dropdown-settings">
                         <div id="stylePickMenu">
                             <span class="radio stylePickTop" data-id="default">
                                 <label><input type="radio" id ="defaultStyleRadioTop" name="setupRadio" checked><i class='fa fa-sun-o fa-fw '></i></label>
@@ -55,10 +52,13 @@
                             <i class="fa fa-bars fa-lg"></i>
                         </a>
                         <!-- /.dropdown-user -->
-                    </li>
+                    </div>
+                </div>
 
-                    <!-- /.dropdown -->
-                </ul>
-    </nav>
+                <!--<div class="nav navbar-top-links ">-->
 
-</div>
+
+
+                    <!--&lt;!&ndash; /.dropdown &ndash;&gt;-->
+                <!--</div>-->
+    </div>
