@@ -14,7 +14,11 @@ yes | cp -fr ./builder-master/setup/* ./builder/setup/;
 unzip -oq ./builder/uploads/uploads.zip -d ./builder/uploads;
 
 #launch builder
-cd ~/builder;
+cd ~/builder; 
+
+#bug
+mkdir ./backup/buildcode
+
 pwd;
 echo;
 echo Stopping server builder.js..;

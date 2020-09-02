@@ -55,6 +55,7 @@ echo "{}" > ./library/private/library1/BuildCode.json
 echo
 echo 'Creating backup folder'
 mkdir ./backup;
+mkdir ./backup/buildcode;
 
 echo
 echo 'Installing TinyMCE 5.1.1'
