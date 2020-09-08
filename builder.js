@@ -1015,7 +1015,7 @@ router.get("/JobsTree",function(req,res){
             rowdata.type = "system"
         } else { //if non-system add type as 'job'
             rowdata.type = "job";
-
+//console.log(SystemsJSON[key].name);
             if (SystemsJSON[key].hasOwnProperty("enabled")) {
                 rowdata.enabled = SystemsJSON[key].enabled;
 
@@ -1026,10 +1026,27 @@ router.get("/JobsTree",function(req,res){
                     rowdata.type = "needfull"
                 }
 
-                else if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].rerunnable === 1) {
-                    rowdata.type = "rerunnable"
-                }
+                // else if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].rerunnable === 1) {
+                //     rowdata.type = "rerunnable"
+                // }
             }
+            if (SystemsJSON[key].hasOwnProperty("buildCode")){
+                if (SystemsJSON[key].buildCode.linkArr.length > 0){
+                    if(BuildCode.hasOwnProperty(  SystemsJSON[key].buildCode.linkArr[0]  )){
+                        if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].rerunnable === 1) {
+                            rowdata.type = "rerunnable"
+                        }
+                    }else{
+                        rowdata.type = "disabled";
+                    }
+
+                }else{
+                    rowdata.type = "disabled";
+                }
+            }else{
+                rowdata.type = "disabled";
+            }
+
         }
 
         rowdata.comType = SystemsJSON[key].comType;
@@ -1279,7 +1296,7 @@ router.get("/Sys",function(req,res){
     var id = req.query.id;
     res.writeHead(200, {"Content-Type": "application/json"});
     var resJSON = [];
-    if (id !== ''){
+    if (SystemsJSON.hasOwnProperty(id)){
         var rowdata = SystemsJSON[id];
         rowdata.id = id;
         resJSON.push(rowdata);
@@ -3978,45 +3995,51 @@ router.get("/ClosestRerunnableAn",function(req,res){
     var ClosestRerunnableAnID = "";
     if (SystemsJSON.hasOwnProperty(id) ){
 
-        if(SystemsJSON[id].buildCode.linkArr.length > 0 && BuildCode[SystemsJSON[id].buildCode.linkArr[0]].systemFunction !== 1){
+        if(  BuildCode.hasOwnProperty(SystemsJSON[id].buildCode.linkArr[0])  ){
+            if(SystemsJSON[id].buildCode.linkArr.length > 0 && BuildCode[SystemsJSON[id].buildCode.linkArr[0]].systemFunction !== 1){
 
-            if(BuildCode.hasOwnProperty(SystemsJSON[id].buildCode.linkArr[0])){
-                if(BuildCode[SystemsJSON[id].buildCode.linkArr[0]].rerunnable !== 1){
-                    var parentID = SystemsJSON[id].parent;
-                    var x = 0;
-                    //loop through parent > parent > parent etc (max 100 times) and capture component that is rerunnable.
-                    //if none found when reached system set return id to self
-                    while ((parentID !== "#") && (ClosestRerunnableAnID === "") && (x < 100)){
+                if(BuildCode.hasOwnProperty(SystemsJSON[id].buildCode.linkArr[0])){
+                    if(BuildCode[SystemsJSON[id].buildCode.linkArr[0]].rerunnable !== 1){
+                        var parentID = SystemsJSON[id].parent;
+                        var x = 0;
+                        //loop through parent > parent > parent etc (max 100 times) and capture component that is rerunnable.
+                        //if none found when reached system set return id to self
+                        while ((parentID !== "#") && (ClosestRerunnableAnID === "") && (x < 100)){
 
-                        if (SystemsJSON.hasOwnProperty(parentID) ){
-                            if(SystemsJSON[parentID].comType !== "system"){
-                                if(BuildCode[SystemsJSON[parentID].buildCode.linkArr[0]].rerunnable === 1){
-                                    ClosestRerunnableAn = SystemsJSON[parentID];
-                                    ClosestRerunnableAnID = parentID
+                            if (SystemsJSON.hasOwnProperty(parentID) ){
+                                if(SystemsJSON[parentID].comType !== "system"){
+                                    if(BuildCode[SystemsJSON[parentID].buildCode.linkArr[0]].rerunnable === 1){
+                                        ClosestRerunnableAn = SystemsJSON[parentID];
+                                        ClosestRerunnableAnID = parentID
+                                    }
+                                }else{
+                                    //no rerunnable in parents chain. Set return id to query id
+                                    ClosestRerunnableAn = SystemsJSON[id];
+                                    ClosestRerunnableAnID = id
                                 }
-                            }else{
-                                //no rerunnable in parents chain. Set return id to query id
-                                ClosestRerunnableAn = SystemsJSON[id];
-                                ClosestRerunnableAnID = id
                             }
+                            parentID = SystemsJSON[parentID].parent;
+                            x++
                         }
-                        parentID = SystemsJSON[parentID].parent;
-                        x++
+                    }else{
+                        ClosestRerunnableAn = SystemsJSON[id];
+                        ClosestRerunnableAnID = id
                     }
                 }else{
                     ClosestRerunnableAn = SystemsJSON[id];
                     ClosestRerunnableAnID = id
                 }
+
             }else{
                 ClosestRerunnableAn = SystemsJSON[id];
                 ClosestRerunnableAnID = id
             }
-
-        }else{
-            ClosestRerunnableAn = SystemsJSON[id];
-            ClosestRerunnableAnID = id
         }
 
+
+    }else{
+        ClosestRerunnableAn = SystemsJSON[id];
+        ClosestRerunnableAnID = id
     }
     res.end(JSON.stringify({id:ClosestRerunnableAnID, ClosestRerunnableAn:ClosestRerunnableAn, thisCompId:id, thisComp:SystemsJSON[id]}));
 
