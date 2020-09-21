@@ -462,7 +462,7 @@ input:focus + .slider {
     /*background-color: rgb(70, 72, 74);*/
 }
 
-.screenShotLink > a, .screenShotLink > a:hover{
+.launchLink > a, .launchLink > a:hover{
     color: #79bdf3;
 }
 
@@ -828,6 +828,6 @@ a#buildCodeBtn i {
     color: #79bdf3;
 }
 
-#screenShotLinkCopy{
+#launchLinkCopy{
     color: #79bdf3;
 }

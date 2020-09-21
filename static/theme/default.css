@@ -343,7 +343,7 @@ input:not(:checked) + .slider.round:before{
     /*background-color: rgba(255, 255, 255,255);*/
 }
 
-.screenShotLink > a, .screenShotLink > a:hover{
+.launchLink > a, .launchLink > a:hover{
     color: #49494b;
 }
 
@@ -663,6 +663,6 @@ a#buildCodeBtn i {
     color: #367ae0;
 }
 
-#screenShotLinkCopy{
+#launchLinkCopy{
     color: #367ae0;
 }

@@ -907,8 +907,12 @@
                                     //Navigate to lastbuild.url if exists
                                     if(data[0].lastBuild){
                                         if(data[0].lastBuild.url){
-                                            var url= data[0].lastBuild.url;
+                                            const url= data[0].lastBuild.url;
                                             navigate(url);
+                                        }
+                                        if(data[0].lastBuild.launchUrl){
+                                            const launchUrl= data[0].lastBuild.launchUrl;
+                                            updateLaunchLink(launchUrl);
                                         }
                                     }
                                 });
@@ -1430,8 +1434,12 @@
                     //Navigate to lastbuild.url if exists
                     if(data[0].lastBuild){
                         if(data[0].lastBuild.url){
-                            var url= data[0].lastBuild.url;
+                            const url = data[0].lastBuild.url;
                             navigate(url);
+                        }
+                        if(data[0].lastBuild.launchUrl){
+                            const url= data[0].lastBuild.launchUrl;
+                            updateLaunchLink(url);
                         }
                     }
 
@@ -2251,7 +2259,7 @@
                                     localKey += row.substr(4) + '\n';
                                 }
                                 else if(row.substr(0,12) === 'message:url:'){
-                                    updateScreenShotLink(row.slice(12))
+                       //             updateLaunchLink(row.slice(12))
 
                                 }
                                 else if(row.substr(0,16) === 'message:BuildID:'){
@@ -2313,7 +2321,7 @@
 
                                    let url = row.replace('message:launch:','');
                                    //window.open(url, '_blank')
-                                    updateScreenShotLink(url)
+                                    updateLaunchLink(url)
                                 }
                                 else{
                                     $("#results_html").append(row + '<br>');
@@ -5417,7 +5425,7 @@ $("#componentsBtn").click();
             setTimeout(startStream, 5000);
 
             function navigate(url){
-                updateScreenShotLink(url);
+               // updateLaunchLink(url);
                 localStorage['appLink'] = url;
                 $.get('/navigate', {url:url}, function(data) {});
             }
@@ -5459,22 +5467,19 @@ $("#componentsBtn").click();
                 trigger: 'hover',
                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
             });
-var launchUrl = "";
-            function updateScreenShotLink(url){
+//var launchUrl = "";
+            function updateLaunchLink(url){
+                var appLink = "<a href='" + url +"' alt='" + url +"' target='_new' ><i class='fa  fa-external-link fa-fw '></i>" + '[launch]' + "</a><i id='launchLinkCopy' class='fa  fa-copy fa-fw'>";
+                $("#launchLink").html( appLink);
+                localStorage['launchLink'] = url;
 
-                //let urlFixed = url.toString().subString(0, 47);
-                //var urlText = urlFixed.length > 50 ? urlFixed.subString(0, 47)+'...' : urlFixed
-               // var appLink = "<a href='" + url +"' target='_new'><i class='fa  fa-external-link fa-fw '></i>" + '[launch]' + "</a>";
-                var appLink = "<a href='" + url +"' alt='" + url +"' target='_new' ><i class='fa  fa-external-link fa-fw '></i>" + '[launch]' + "</a><i id='screenShotLinkCopy' class='fa  fa-copy fa-fw'>";
-                $("#screenShotLink").html( appLink);
-                launchUrl = url;
-                $("#screenShotLinkCopy").click(function(event){
-//                    var myUrl = new URL(url).toString();
-//                    var myUrl = decodeURIComponent(url);
+//                launchUrl = url;
+
+                $("#launchLinkCopy").click(function(event){
                     
-                    $("#screenShotLinkHiddenCopy").val($("<div/>").html(url).text());
+                    $("#launchLinkHiddenCopy").val($("<div/>").html(url).text());
 
-                    var copyText = document.getElementById("screenShotLinkHiddenCopy");
+                    var copyText = document.getElementById("launchLinkHiddenCopy");
                     copyText.select();
                     copyText.setSelectionRange(0, 99999);
                     document.execCommand("copy");
@@ -5484,6 +5489,9 @@ var launchUrl = "";
 
             if(localStorage['appLink']){
                 navigate(localStorage['appLink'])
+            }
+            if(localStorage['launchLink']){
+                updateLaunchLink(localStorage['launchLink'])
             }
 
             //Video mouse click events
@@ -6239,7 +6247,7 @@ var launchUrl = "";
 
                                         <div class="col videoCol">
 
-                                            <input id="screenShotLinkHiddenCopy"><div id="screenShotLink" class="videoMenuItemLeft"></div>
+                                            <input id="launchLinkHiddenCopy"><div id="launchLink" class="videoMenuItemLeft"></div>
                                             <div class="videoMenu">
 
                                                 <!--<button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
@@ -6251,7 +6259,7 @@ var launchUrl = "";
 
                                                 <a id='videoRefreshLink' href='#'><i class='fa fa-refresh fa-fw videoMenuItemRight'></i></a>
                                                 <a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw videoMenuItemRight'></i></a>
-                                                <a id='inspectMaximizeLink' href='#' class='screenShotLink'><i class='fa fa-expand fa-fw videoMenuItemRight'></i></a>
+                                                <a id='inspectMaximizeLink' href='#' class='launchLink'><i class='fa fa-expand fa-fw videoMenuItemRight'></i></a>
 
                                             </div>
                                             <div><canvas id="videoCanvas"></canvas></div>

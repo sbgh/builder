@@ -3548,9 +3548,27 @@ router.post("/run",function(req,res){
 
                             } else if
                             (currentCommand.substr(0, 7) === "launch:") {
+                                var url = currentCommand.replace('launch:','').trim();
 
                                 message('launching url');
-                                message(currentCommand);
+                                // message(currentCommand);
+                                //Send url to client
+                                message('launch:' + url);
+
+
+                                var anArr = job.ft.replace('#/', '').split('/');
+                                var nearestPromotedAn = "";
+                                anArr.forEach(function (an) {
+                                    if (SystemsJSON[an].hasOwnProperty("promoted")){
+                                        if (SystemsJSON[an].promoted === 1){
+                                            nearestPromotedAn = an;
+                                        }
+                                    }
+                                });
+                                if(nearestPromotedAn !== ""){
+                                    SystemsJSON[nearestPromotedAn].lastBuild.launchUrl=url;
+                                }
+
                                 isDirective = true;
 
                             } else if

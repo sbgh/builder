@@ -2013,7 +2013,7 @@ div#buildCodeMatch {
    margin-left: auto;
 }
 
-input#screenShotLinkHiddenCopy {
+input#launchLinkHiddenCopy{
    padding: 0;
    border-width: 0;
    width: 1px;
