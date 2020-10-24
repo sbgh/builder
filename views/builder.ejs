@@ -786,203 +786,6 @@
                         "content-type": "application/json"
                     },
                     url: '/getPromoted',
-//                    success : function(data) {
-//
-//                        const promoted = JSON.parse(data);
-//                        var pCompHtml;
-//                        $("#dashTable").html("")
-//
-//                        const dashListRowClicked = localStorage['dashListRowClicked'];
-//
-//                        var clickedRowEnabled ="";
-//
-//                        currentPromotedDashDescriptionsArr = [];
-//                        var x=0;
-//                        for (var row in promoted){
-//                            pCompHtml = "";
-//
-//                            rowJson = promoted[row];
-//
-//                            var thisClass = 'd-flex dashTableRow';
-//                            var thisStyle = "padding-left:" + (rowJson.aNames.length * 10).toString() + "px;";
-//                            var thisUrlFlag = ""
-//                            if(rowJson.hasOwnProperty("lastBuild")){
-//                                if(rowJson.lastBuild.hasOwnProperty("url")){
-//                                    thisUrlFlag =  '<i class="fa  fa-external-link fa-fw "></i>'
-//                                }
-//                            }
-//
-//                            pCompHtml += "<tr  id='row_" + rowJson.id +"' data-id='" + rowJson.id +"' data-runSys='"+ rowJson.systemId +"' data-runSysName='"+ rowJson.systemName + "' class='" + thisClass + "'>";
-//
-//                            var display = rowJson.enabled == 1 ? 'style="display: inline;"' : 'style="display: none;"' ;
-//                            var thisNameColHtml = "<button id='DashOpenMenu' class='btn btn-default jobFormbtn dashTableOpenButton'><i class='fa  fa-folder-open fa-fw '></i></button></span>";
-//
-//                            thisNameColHtml += "<span>" + rowJson.name + thisUrlFlag + "</span>";
-//
-//                            pCompHtml += "<td style="+thisStyle+" class='col-2 dashTableNameItem'>  " + thisNameColHtml + "</td>";
-//
-//                            var thisBuildColHtml = "<div class='dashTableNameButtonRow' >";
-//                            thisBuildColHtml += "<button id='dashTableBuildButton_"+x+"' " + display + " class='btn btn-default jobFormbtn dashTableBuildButton'><i class='fa  fa-play fa-fw  '></i></button></div>  ";
-//                            pCompHtml += "<td class='col-1 dashTableBuildItem'>" + thisBuildColHtml +  "</td>";
-//
-//
-//                            var thisEnabledSliderHTML = "<div class='dashTableEnabledButtonRow'>"
-//                            thisEnabledSliderHTML += rowJson.hasOwnProperty("enabled") ? (rowJson.enabled == '1' ? '<label class="switch "><input type="checkbox" checked class="success dashTableEnableButton"><span class="slider round"></span></label>':'<label class="switch "><input type="checkbox" class="success dashTableEnableButton"><span class="slider round"></span></label>') : "";
-//                            thisEnabledSliderHTML += "</div>";
-//
-//                            if(rowJson.hasOwnProperty("enabled")){
-//                                if(rowJson.enabled == 1){
-//                                    enabledHTML = "<i class='fa fa-check-circle-o fa-fw DashListRowPass'></i>";
-//                                }else{
-//                                    enabledHTML = "<i class='fa fa-times-circle-o fa-fw DashListRowFail'></i>";
-//                                }
-//                            }
-//
-//                            pCompHtml += "<td class='col-1 dashTableEnableItem'>" + enabledHTML + thisEnabledSliderHTML +  "</td>";
-//
-//                            var success = rowJson.hasOwnProperty("lastBuild") ? (rowJson.lastBuild.pass ? "<i class='fa fa-check fa-fw DashListRowPass'></i>":"<i class='fa fa-times fa-fw DashListRowFail'></i>") : "";
-//                            pCompHtml += "<td class='col-1 dashTableSuccessItem'>" + success + "</td>";
-//
-//                            pCompHtml += "<td class='col-8 dashTableDescriptionItem'><div id = 'dashTableDescriptionItem"+x.toString()+"'></div></td>";
-//
-//                            pCompHtml += "</tr>"
-//
-//                            $("#dashTable").append(pCompHtml);
-//
-//                            if(dashListRowClicked === rowJson.id){
-//                                clickedRowEnabled = rowJson.enabled;
-//                                $("#dashSys").val(rowJson.systemId);
-//                            }
-//
-//                            if (currentPromotedDashDescriptionsArr[x]) {
-//                            } else {
-//                                currentPromotedDashDescriptionsArr.push(
-//                                    new Quill('#dashTableDescriptionItem' + x.toString(), {
-//                                        theme: 'snow',
-//                                        modules: {
-//                                            "toolbar": false
-//                                        }
-//                                    })
-//                                );
-//                                currentPromotedDashDescriptionsArr[x].enable(false);
-//                            }
-//                            if(rowJson.description.hasOwnProperty("ops")){
-//                                currentPromotedDashDescriptionsArr[x].setContents(rowJson.description.ops)
-//                            }else{
-//                                currentPromotedDashDescriptionsArr[x].setContents(
-//                                    [{ insert:  rowJson.description },
-//                                        { insert: '\n' }]
-//                                );
-//                            };
-//
-//                            x++;
-//                        }
-//
-//                        selectDashTableRow(dashListRowClicked);
-//
-//                        setRowEnablement(dashListRowClicked,clickedRowEnabled);
-//
-//                        function setRowEnablement(id, enabled){
-//                            if (enabled === 1){
-//                                $("#row_"+id + " > td > div > i.dashTableBuildButton").show();
-//                            }else{
-//                                $("#row_"+id + " > td > div > i.dashTableBuildButton").hide();
-//
-//                            }
-//                        }
-//
-//                        function selectDashTableRow(id){
-//
-//                            $(".dashTableRow").each(function(){
-//                                $(this).removeClass('dashListRowClicked');
-//                                $(this).addClass('dashListRowNotClicked');
-//                                $(this).off("click");
-//                            });
-//                            $("#row_" + id).addClass("dashListRowClicked");
-//                            $("#row_" + id).removeClass("dashListRowNotClicked");
-//
-//                            $("#dashId").val(id);
-//
-//                            $('.dashListRowNotClicked').on('click', function(){
-//                                var id = $(this).attr('data-Id');
-//
-//                                $.get('/Jobs', { id: id }, function(data) {
-//                                    //Navigate to lastbuild.url if exists
-//                                    if(data[0].lastBuild){
-//                                        if(data[0].lastBuild.url){
-//                                            const url= data[0].lastBuild.url;
-//                                            navigate(url);
-//                                        }
-//                                        if(data[0].lastBuild.launchUrl){
-//                                            const launchUrl= data[0].lastBuild.launchUrl;
-//                                            updateLaunchLink(launchUrl);
-//                                        }
-//                                    }
-//                                });
-//
-//                                var sys = $(this).attr('data-runSys');
-//                                var sysName = $(this).attr('data-runSysName');
-//
-//                                $("#dashId").val(id);
-//                                $("#dashSys").val(sys);
-//
-//                                selectDashTableRow(id);
-//
-//                                localStorage['dashListRowClicked'] = id;
-//                            });
-//
-//                        }
-//
-//                        $('.dashTableBuildButton').on('click', function(){
-//                            var id = $("#dashId").val();
-//                            var sys = $("#dashSys").val();
-//                            runJob(id, sys);
-//                        });
-//                        $('.dashTableOpenButton').on('click', function(){
-//                            var id = $("#dashId").val();
-//                            $("#componentsBtn").click();
-//                            $('#jstree_div').jstree("deselect_all");
-//                            $('#jstree_div').jstree('select_node',id);
-//                        });
-//
-//                        $('.dashTableEnableButton').on('click', function(){
-//                            var id = $("#dashId").val();
-//
-//                            const checked = {id:id, checked: this.checked};
-//
-//                            $.ajax({
-//                                type: 'get',
-//                                data: checked,
-//                                dataType : "text",
-//                                headers: {
-//                                    "content-type": "application/json"
-//                                },
-//                                url: '/setEnable',
-//                                success : function(data) {
-//
-//                                   const enabledJson = JSON.parse(data);
-//                                   const en = enabledJson.enabled;
-//                                   const id = $("#dashId").val();
-//
-//                                   if (en === 1){
-//                                       $("#row_"+id + " > td > div > button.dashTableBuildButton").show();
-//                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").removeClass('fa-times-circle-o').removeClass('DashListRowFail');
-//                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").addClass('fa-check-circle-o').addClass('DashListRowPass');
-//                                   }else{
-//                                       $("#row_"+id + " > td > div > button.dashTableBuildButton").hide();
-//                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").removeClass('fa-check-circle-o').removeClass('DashListRowPass');
-//                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").addClass('fa-times-circle-o').addClass('DashListRowFail');
-//                                   }
-//
-//                                },
-//                                error : function(error) {
-//                                    alert("Error changing enable property for this component");
-//                                    console.log(error)
-//                                }
-//                            })
-//
-//                        })
-//                    },
                     success : function(data) {
 
                         const promoted = JSON.parse(data);
@@ -1013,10 +816,6 @@
                             }
 
                             var rowStyle = 'grid-column: '+rowJson.aNames.length+";";
-
-//                            var thisEnabledSliderHTML = "<div class='dashTableEnabledButtonRow'>"
-//                            thisEnabledSliderHTML += rowJson.hasOwnProperty("enabled") ? (rowJson.enabled == '1' ? '<label class="switch "><input type="checkbox" checked class="success dashTableEnableButton"><span class="slider round"></span></label>':'<label class="switch "><input type="checkbox" class="success dashTableEnableButton"><span class="slider round"></span></label>') : "";
-//                            thisEnabledSliderHTML += "</div>";
 
                             if(rowJson.hasOwnProperty("enabled")){
                                 if(rowJson.enabled == 1){
@@ -1049,7 +848,7 @@
                                     pCompHtml += "<div class='dashButtonsRow'>";
                                         pCompHtml += "<div id='DashOpenMenu_" + x +"' class='dashTableOpenButton' data-id='" + rowJson.id +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
                                         pCompHtml += "<div id='dashTableEnableItem_"+x+"' class='dashTableEnableItem' data-id='" + rowJson.id +"'>" + enabledHTML +  "</div>";
-                            pCompHtml += "<div id='dashTableBuildButton_"+x+"' class='dashTableBuildButton' data-id='" + rowJson.id +"'><i class='fa  fa-play fa-fw  '></i></div>  ";
+                                        pCompHtml += "<div id='dashTableBuildButton_"+x+"' class='dashTableBuildButton' data-id='" + rowJson.id +"'><i class='fa  fa-play fa-fw  '></i></div>  ";
                                     pCompHtml += "</div>"
                                 pCompHtml += "</div>"
 
@@ -1104,11 +903,11 @@
                         $('.dashTableBuildButton').on('click', function(){
                             var id = $(this).attr('data-ID');
                             $("#dashId").val(id);
-                                $.get('/Jobs', {id: id}, function (data) {
-                                    var sys = data[0].ft.split("/")[1];
-                                        $("#dashSys").val(sys);
-                                    runJob(id, sys);
-                                })
+                            $.get('/Jobs', {id: id}, function (data) {
+                                var sys = data[0].ft.split("/")[1];
+                                    $("#dashSys").val(sys);
+                                runJob(id, sys);
+                            })
 
                         });
 

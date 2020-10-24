@@ -1678,7 +1678,8 @@ div#floatingPopover {
    height: 50px;
    top: 0px;
    left: 0px;
-   position: absolute;
+   position: absolute;  
+   pointer-events: none;
 }
 
 .floatPopMenuRow{
@@ -1690,7 +1691,7 @@ div#floatingPopover {
 }
 
 button.floatPopMenuItem{
-   font-size: 1.0em;
+   font-size: 0.7em;
    font-weight: 700;
    width: 50px;
    padding: 0px;
