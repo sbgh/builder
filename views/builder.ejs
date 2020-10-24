@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=980, user-scalable=yes">
+    <!--<meta name="viewport" content="width=980, user-scalable=yes">-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>ezStack builder</title>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
@@ -43,6 +45,7 @@
             var currentSysId = "";
             if (typeof localStorage['dashSystemDropItemClicked'] !== 'undefined'  ){
                 currentSysId = JSON.parse(localStorage['dashSystemDropItemClicked']).id ;
+                $("#dashSys").val(currentSysId);
             };
 
             //create main tree
@@ -783,169 +786,360 @@
                         "content-type": "application/json"
                     },
                     url: '/getPromoted',
+//                    success : function(data) {
+//
+//                        const promoted = JSON.parse(data);
+//                        var pCompHtml;
+//                        $("#dashTable").html("")
+//
+//                        const dashListRowClicked = localStorage['dashListRowClicked'];
+//
+//                        var clickedRowEnabled ="";
+//
+//                        currentPromotedDashDescriptionsArr = [];
+//                        var x=0;
+//                        for (var row in promoted){
+//                            pCompHtml = "";
+//
+//                            rowJson = promoted[row];
+//
+//                            var thisClass = 'd-flex dashTableRow';
+//                            var thisStyle = "padding-left:" + (rowJson.aNames.length * 10).toString() + "px;";
+//                            var thisUrlFlag = ""
+//                            if(rowJson.hasOwnProperty("lastBuild")){
+//                                if(rowJson.lastBuild.hasOwnProperty("url")){
+//                                    thisUrlFlag =  '<i class="fa  fa-external-link fa-fw "></i>'
+//                                }
+//                            }
+//
+//                            pCompHtml += "<tr  id='row_" + rowJson.id +"' data-id='" + rowJson.id +"' data-runSys='"+ rowJson.systemId +"' data-runSysName='"+ rowJson.systemName + "' class='" + thisClass + "'>";
+//
+//                            var display = rowJson.enabled == 1 ? 'style="display: inline;"' : 'style="display: none;"' ;
+//                            var thisNameColHtml = "<button id='DashOpenMenu' class='btn btn-default jobFormbtn dashTableOpenButton'><i class='fa  fa-folder-open fa-fw '></i></button></span>";
+//
+//                            thisNameColHtml += "<span>" + rowJson.name + thisUrlFlag + "</span>";
+//
+//                            pCompHtml += "<td style="+thisStyle+" class='col-2 dashTableNameItem'>  " + thisNameColHtml + "</td>";
+//
+//                            var thisBuildColHtml = "<div class='dashTableNameButtonRow' >";
+//                            thisBuildColHtml += "<button id='dashTableBuildButton_"+x+"' " + display + " class='btn btn-default jobFormbtn dashTableBuildButton'><i class='fa  fa-play fa-fw  '></i></button></div>  ";
+//                            pCompHtml += "<td class='col-1 dashTableBuildItem'>" + thisBuildColHtml +  "</td>";
+//
+//
+//                            var thisEnabledSliderHTML = "<div class='dashTableEnabledButtonRow'>"
+//                            thisEnabledSliderHTML += rowJson.hasOwnProperty("enabled") ? (rowJson.enabled == '1' ? '<label class="switch "><input type="checkbox" checked class="success dashTableEnableButton"><span class="slider round"></span></label>':'<label class="switch "><input type="checkbox" class="success dashTableEnableButton"><span class="slider round"></span></label>') : "";
+//                            thisEnabledSliderHTML += "</div>";
+//
+//                            if(rowJson.hasOwnProperty("enabled")){
+//                                if(rowJson.enabled == 1){
+//                                    enabledHTML = "<i class='fa fa-check-circle-o fa-fw DashListRowPass'></i>";
+//                                }else{
+//                                    enabledHTML = "<i class='fa fa-times-circle-o fa-fw DashListRowFail'></i>";
+//                                }
+//                            }
+//
+//                            pCompHtml += "<td class='col-1 dashTableEnableItem'>" + enabledHTML + thisEnabledSliderHTML +  "</td>";
+//
+//                            var success = rowJson.hasOwnProperty("lastBuild") ? (rowJson.lastBuild.pass ? "<i class='fa fa-check fa-fw DashListRowPass'></i>":"<i class='fa fa-times fa-fw DashListRowFail'></i>") : "";
+//                            pCompHtml += "<td class='col-1 dashTableSuccessItem'>" + success + "</td>";
+//
+//                            pCompHtml += "<td class='col-8 dashTableDescriptionItem'><div id = 'dashTableDescriptionItem"+x.toString()+"'></div></td>";
+//
+//                            pCompHtml += "</tr>"
+//
+//                            $("#dashTable").append(pCompHtml);
+//
+//                            if(dashListRowClicked === rowJson.id){
+//                                clickedRowEnabled = rowJson.enabled;
+//                                $("#dashSys").val(rowJson.systemId);
+//                            }
+//
+//                            if (currentPromotedDashDescriptionsArr[x]) {
+//                            } else {
+//                                currentPromotedDashDescriptionsArr.push(
+//                                    new Quill('#dashTableDescriptionItem' + x.toString(), {
+//                                        theme: 'snow',
+//                                        modules: {
+//                                            "toolbar": false
+//                                        }
+//                                    })
+//                                );
+//                                currentPromotedDashDescriptionsArr[x].enable(false);
+//                            }
+//                            if(rowJson.description.hasOwnProperty("ops")){
+//                                currentPromotedDashDescriptionsArr[x].setContents(rowJson.description.ops)
+//                            }else{
+//                                currentPromotedDashDescriptionsArr[x].setContents(
+//                                    [{ insert:  rowJson.description },
+//                                        { insert: '\n' }]
+//                                );
+//                            };
+//
+//                            x++;
+//                        }
+//
+//                        selectDashTableRow(dashListRowClicked);
+//
+//                        setRowEnablement(dashListRowClicked,clickedRowEnabled);
+//
+//                        function setRowEnablement(id, enabled){
+//                            if (enabled === 1){
+//                                $("#row_"+id + " > td > div > i.dashTableBuildButton").show();
+//                            }else{
+//                                $("#row_"+id + " > td > div > i.dashTableBuildButton").hide();
+//
+//                            }
+//                        }
+//
+//                        function selectDashTableRow(id){
+//
+//                            $(".dashTableRow").each(function(){
+//                                $(this).removeClass('dashListRowClicked');
+//                                $(this).addClass('dashListRowNotClicked');
+//                                $(this).off("click");
+//                            });
+//                            $("#row_" + id).addClass("dashListRowClicked");
+//                            $("#row_" + id).removeClass("dashListRowNotClicked");
+//
+//                            $("#dashId").val(id);
+//
+//                            $('.dashListRowNotClicked').on('click', function(){
+//                                var id = $(this).attr('data-Id');
+//
+//                                $.get('/Jobs', { id: id }, function(data) {
+//                                    //Navigate to lastbuild.url if exists
+//                                    if(data[0].lastBuild){
+//                                        if(data[0].lastBuild.url){
+//                                            const url= data[0].lastBuild.url;
+//                                            navigate(url);
+//                                        }
+//                                        if(data[0].lastBuild.launchUrl){
+//                                            const launchUrl= data[0].lastBuild.launchUrl;
+//                                            updateLaunchLink(launchUrl);
+//                                        }
+//                                    }
+//                                });
+//
+//                                var sys = $(this).attr('data-runSys');
+//                                var sysName = $(this).attr('data-runSysName');
+//
+//                                $("#dashId").val(id);
+//                                $("#dashSys").val(sys);
+//
+//                                selectDashTableRow(id);
+//
+//                                localStorage['dashListRowClicked'] = id;
+//                            });
+//
+//                        }
+//
+//                        $('.dashTableBuildButton').on('click', function(){
+//                            var id = $("#dashId").val();
+//                            var sys = $("#dashSys").val();
+//                            runJob(id, sys);
+//                        });
+//                        $('.dashTableOpenButton').on('click', function(){
+//                            var id = $("#dashId").val();
+//                            $("#componentsBtn").click();
+//                            $('#jstree_div').jstree("deselect_all");
+//                            $('#jstree_div').jstree('select_node',id);
+//                        });
+//
+//                        $('.dashTableEnableButton').on('click', function(){
+//                            var id = $("#dashId").val();
+//
+//                            const checked = {id:id, checked: this.checked};
+//
+//                            $.ajax({
+//                                type: 'get',
+//                                data: checked,
+//                                dataType : "text",
+//                                headers: {
+//                                    "content-type": "application/json"
+//                                },
+//                                url: '/setEnable',
+//                                success : function(data) {
+//
+//                                   const enabledJson = JSON.parse(data);
+//                                   const en = enabledJson.enabled;
+//                                   const id = $("#dashId").val();
+//
+//                                   if (en === 1){
+//                                       $("#row_"+id + " > td > div > button.dashTableBuildButton").show();
+//                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").removeClass('fa-times-circle-o').removeClass('DashListRowFail');
+//                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").addClass('fa-check-circle-o').addClass('DashListRowPass');
+//                                   }else{
+//                                       $("#row_"+id + " > td > div > button.dashTableBuildButton").hide();
+//                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").removeClass('fa-check-circle-o').removeClass('DashListRowPass');
+//                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").addClass('fa-times-circle-o').addClass('DashListRowFail');
+//                                   }
+//
+//                                },
+//                                error : function(error) {
+//                                    alert("Error changing enable property for this component");
+//                                    console.log(error)
+//                                }
+//                            })
+//
+//                        })
+//                    },
                     success : function(data) {
 
                         const promoted = JSON.parse(data);
-                        var pCompHtml;
                         $("#dashTable").html("")
 
                         const dashListRowClicked = localStorage['dashListRowClicked'];
+                        selectDashTableRow(dashListRowClicked);
 
-                        var clickedRowEnabled ="";
-
-                        currentPromotedDashDescriptionsArr = [];
                         var x=0;
                         for (var row in promoted){
-                            pCompHtml = "";
+
+                            var thisUrlFlag = ""
 
                             rowJson = promoted[row];
-
-                            var thisClass = 'd-flex dashTableRow';
-                            var thisStyle = "padding-left:" + (rowJson.aNames.length * 10).toString() + "px;";
-                            var thisUrlFlag = ""
                             if(rowJson.hasOwnProperty("lastBuild")){
                                 if(rowJson.lastBuild.hasOwnProperty("url")){
                                     thisUrlFlag =  '<i class="fa  fa-external-link fa-fw "></i>'
                                 }
                             }
 
-                            pCompHtml += "<tr  id='row_" + rowJson.id +"' data-id='" + rowJson.id +"' data-runSys='"+ rowJson.systemId +"' data-runSysName='"+ rowJson.systemName + "' class='" + thisClass + "'>";
+                            pCompHtml = "";
 
-                            var display = rowJson.enabled == 1 ? 'style="display: inline;"' : 'style="display: none;"' ;
-                            var thisNameColHtml = "<button id='DashOpenMenu' class='btn btn-default jobFormbtn dashTableOpenButton'><i class='fa  fa-folder-open fa-fw '></i></button></span>";
+                            var thisClass = 'dashTableRow dashListRowNotClicked';
 
-                            thisNameColHtml += "<span>" + rowJson.name + thisUrlFlag + "</span>";
+                            var thumbImageUrl = "";
+                            if(rowJson.hasOwnProperty("thumbnail")){
+                                    thumbImageUrl = "/uploads/" + rowJson.id + "/" + rowJson.thumbnail;
+                            }
 
-                            pCompHtml += "<td style="+thisStyle+" class='col-2 dashTableNameItem'>  " + thisNameColHtml + "</td>";
+                            var rowStyle = 'grid-column: '+rowJson.aNames.length+";";
 
-                            var thisBuildColHtml = "<div class='dashTableNameButtonRow' >";
-                            thisBuildColHtml += "<button id='dashTableBuildButton_"+x+"' " + display + " class='btn btn-default jobFormbtn dashTableBuildButton'><i class='fa  fa-play fa-fw  '></i></button></div>  ";
-                            pCompHtml += "<td class='col-1 dashTableBuildItem'>" + thisBuildColHtml +  "</td>";
-
-
-                            var thisEnabledSliderHTML = "<div class='dashTableEnabledButtonRow'>"
-                            thisEnabledSliderHTML += rowJson.hasOwnProperty("enabled") ? (rowJson.enabled == '1' ? '<label class="switch "><input type="checkbox" checked class="success dashTableEnableButton"><span class="slider round"></span></label>':'<label class="switch "><input type="checkbox" class="success dashTableEnableButton"><span class="slider round"></span></label>') : "";
-                            thisEnabledSliderHTML += "</div>";
+//                            var thisEnabledSliderHTML = "<div class='dashTableEnabledButtonRow'>"
+//                            thisEnabledSliderHTML += rowJson.hasOwnProperty("enabled") ? (rowJson.enabled == '1' ? '<label class="switch "><input type="checkbox" checked class="success dashTableEnableButton"><span class="slider round"></span></label>':'<label class="switch "><input type="checkbox" class="success dashTableEnableButton"><span class="slider round"></span></label>') : "";
+//                            thisEnabledSliderHTML += "</div>";
 
                             if(rowJson.hasOwnProperty("enabled")){
                                 if(rowJson.enabled == 1){
-                                    enabledHTML = "<i class='fa fa-check-circle-o fa-fw DashListRowPass'></i>";
+                                    enabledHTML = "<i class='fa fa-check-circle-o fa-fw DashListRowPass' data-checked='false' ></i>";
+                                    enableText = "Click to disable";
                                 }else{
-                                    enabledHTML = "<i class='fa fa-times-circle-o fa-fw DashListRowFail'></i>";
+                                    enabledHTML = "<i class='fa fa-times-circle-o fa-fw DashListRowFail' data-checked='true'></i>";
+                                    enableText = "Click to enable";
                                 }
                             }
 
-                            pCompHtml += "<td class='col-1 dashTableEnableItem'>" + enabledHTML + thisEnabledSliderHTML +  "</td>";
 
-                            var success = rowJson.hasOwnProperty("lastBuild") ? (rowJson.lastBuild.pass ? "<i class='fa fa-check fa-fw DashListRowPass'></i>":"<i class='fa fa-times fa-fw DashListRowFail'></i>") : "";
-                            pCompHtml += "<td class='col-1 dashTableSuccessItem'>" + success + "</td>";
 
-                            pCompHtml += "<td class='col-8 dashTableDescriptionItem'><div id = 'dashTableDescriptionItem"+x.toString()+"'></div></td>";
+                            pCompHtml += "<div style='"+rowStyle+"' id='row_" + rowJson.id +"' data-id='" + rowJson.id +"' data-runSys='"+ rowJson.systemId +"' data-runSysName='"+ rowJson.systemName + "' class='" + thisClass + "'>";
+                                pCompHtml += "<div class='dashContentRow'><div class='dashThumbRow'>";
+                                    if(thumbImageUrl !== ""){
+                                        pCompHtml += "<div class='dashItemThumbCol'>";
+                                            pCompHtml += "<img src='"+thumbImageUrl+"'>";
+                                        pCompHtml += "</div>";
+                                    }
+                                    pCompHtml += "</div>"
+                                    pCompHtml += "<div class='dashDetailsRow'>";
+                                        pCompHtml += "<div class='dashItemDetailsCol'>";
+                                            pCompHtml += "<div class='dashItemName'>" + rowJson.name + thisUrlFlag + "</div>";
 
-                            pCompHtml += "</tr>"
+                                            pCompHtml += "<div class='dashItemDescription'></div>";
 
+                                        pCompHtml += "</div>"
+                                    pCompHtml += "</div>"
+                                    pCompHtml += "<div class='dashButtonsRow'>";
+                                        pCompHtml += "<div id='DashOpenMenu_" + x +"' class='dashTableOpenButton' data-id='" + rowJson.id +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
+                                        pCompHtml += "<div id='dashTableEnableItem_"+x+"' class='dashTableEnableItem' data-id='" + rowJson.id +"'>" + enabledHTML +  "</div>";
+                            pCompHtml += "<div id='dashTableBuildButton_"+x+"' class='dashTableBuildButton' data-id='" + rowJson.id +"'><i class='fa  fa-play fa-fw  '></i></div>  ";
+                                    pCompHtml += "</div>"
+                                pCompHtml += "</div>"
+
+                            pCompHtml += "</div>"
                             $("#dashTable").append(pCompHtml);
 
-                            if(dashListRowClicked === rowJson.id){
-                                clickedRowEnabled = rowJson.enabled;
-                                $("#dashSys").val(rowJson.systemId);
-                            }
+                            $("#DashOpenMenu_" + x ).popover({
+                                animation: true,
+                                content: "Click to open "+rowJson.name+" component",
+                                delay: { "show": 500, "hide": 100 },
+                                trigger: 'hover',
+                                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                            });
 
-                            if (currentPromotedDashDescriptionsArr[x]) {
-                            } else {
-                                currentPromotedDashDescriptionsArr.push(
-                                    new Quill('#dashTableDescriptionItem' + x.toString(), {
-                                        theme: 'snow',
-                                        modules: {
-                                            "toolbar": false
-                                        }
-                                    })
-                                );
-                                currentPromotedDashDescriptionsArr[x].enable(false);
-                            }
-                            if(rowJson.description.hasOwnProperty("ops")){
-                                currentPromotedDashDescriptionsArr[x].setContents(rowJson.description.ops)
-                            }else{
-                                currentPromotedDashDescriptionsArr[x].setContents(
-                                    [{ insert:  rowJson.description },
-                                        { insert: '\n' }]
-                                );
-                            };
+                            $("#dashTableBuildButton_" + x ).popover({
+                                animation: true,
+                                content: "Click to build "+rowJson.name,
+                                delay: { "show": 500, "hide": 100 },
+                                trigger: 'hover',
+                                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                            });
 
+                            $("#dashTableEnableItem_" + x ).popover({
+                                animation: true,
+                                content: enableText + " "+rowJson.name,
+                                delay: { "show": 500, "hide": 100 },
+                                trigger: 'hover',
+                                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                            });
+
+                            if(!rowJson.enabled){
+                                 $("#row_"+ rowJson.id + " .dashTableBuildButton").hide();
+                             }
+
+                            if(rowJson.hasOwnProperty("description")){
+                                if(rowJson.description.hasOwnProperty("ops")){
+                                    $("#row_" + rowJson.id + " .dashItemDescription" ).html( (quillGetHTML(rowJson.description)).substring(0,200) )
+
+                                }
+                            }
                             x++;
                         }
 
-                        selectDashTableRow(dashListRowClicked);
-
-                        setRowEnablement(dashListRowClicked,clickedRowEnabled);
-
-                        function setRowEnablement(id, enabled){
-                            if (enabled === 1){
-                                $("#row_"+id + " > td > div > i.dashTableBuildButton").show();
-                            }else{
-                                $("#row_"+id + " > td > div > i.dashTableBuildButton").hide();
-
-                            }
-                        }
-
-                        function selectDashTableRow(id){
-
-                            $(".dashTableRow").each(function(){
-                                $(this).removeClass('dashListRowClicked');
-                                $(this).addClass('dashListRowNotClicked');
-                                $(this).off("click");
-                            });
-                            $("#row_" + id).addClass("dashListRowClicked");
-                            $("#row_" + id).removeClass("dashListRowNotClicked");
-
-                            $("#dashId").val(id);
-
-                            $('.dashListRowNotClicked').on('click', function(){
-                                var id = $(this).attr('data-Id');
-
-                                $.get('/Jobs', { id: id }, function(data) {
-                                    //Navigate to lastbuild.url if exists
-                                    if(data[0].lastBuild){
-                                        if(data[0].lastBuild.url){
-                                            const url= data[0].lastBuild.url;
-                                            navigate(url);
-                                        }
-                                        if(data[0].lastBuild.launchUrl){
-                                            const launchUrl= data[0].lastBuild.launchUrl;
-                                            updateLaunchLink(launchUrl);
-                                        }
-                                    }
-                                });
-
-                                var sys = $(this).attr('data-runSys');
-                                var sysName = $(this).attr('data-runSysName');
-
-                                $("#dashId").val(id);
-                                $("#dashSys").val(sys);
-
-                                selectDashTableRow(id);
-
-                                localStorage['dashListRowClicked'] = id;
-                            });
-
-                        }
-
-                        $('.dashTableBuildButton').on('click', function(){
-                            var id = $("#dashId").val();
-                            var sys = $("#dashSys").val();
-                            runJob(id, sys);
-                        });
                         $('.dashTableOpenButton').on('click', function(){
-                            var id = $("#dashId").val();
+                            var id = $(this).attr('data-ID');
                             $("#componentsBtn").click();
                             $('#jstree_div').jstree("deselect_all");
                             $('#jstree_div').jstree('select_node',id);
                         });
 
-                        $('.dashTableEnableButton').on('click', function(){
-                            var id = $("#dashId").val();
 
-                            const checked = {id:id, checked: this.checked};
+                        $('.dashTableBuildButton').on('click', function(){
+                            var id = $(this).attr('data-ID');
+                            $("#dashId").val(id);
+                                $.get('/Jobs', {id: id}, function (data) {
+                                    var sys = data[0].ft.split("/")[1];
+                                        $("#dashSys").val(sys);
+                                    runJob(id, sys);
+                                })
+
+                        });
+
+                        function selectDashTableRow(id){
+                            localStorage['dashListRowClicked'] = id;
+                        }
+
+                        $('.dashListRowNotClicked').on('click', function() {
+                            var id = $(this).attr('data-Id');
+                            selectDashTableRow(id);
+
+                            $.get('/Jobs', {id: id}, function (data) {
+                                //Navigate to lastbuild.url if exists
+                                if (data[0].lastBuild) {
+                                    if (data[0].lastBuild.url) {
+                                        const url = data[0].lastBuild.url;
+                                        navigate(url);
+                                    }
+                                    if (data[0].lastBuild.launchUrl) {
+                                        const launchUrl = data[0].lastBuild.launchUrl;
+                                        updateLaunchLink(launchUrl);
+                                    }
+                                }
+                            });
+                        })
+
+                        $('.dashTableEnableItem').on('click', function(){
+                                var id = $(this).attr('data-ID');
+                                var cCheck = $(this).find( "i" ).attr('data-checked');
+
+                                const checked = {id:id, checked: cCheck};
 
                             $.ajax({
                                 type: 'get',
@@ -955,21 +1149,22 @@
                                     "content-type": "application/json"
                                 },
                                 url: '/setEnable',
+                                id: id,
                                 success : function(data) {
 
-                                   const enabledJson = JSON.parse(data);
-                                   const en = enabledJson.enabled;
-                                   const id = $("#dashId").val();
+                                    const enabledJson = JSON.parse(data);
+                                    const en = enabledJson.enabled;
+                                    const id = $(this)[0].id;
 
-                                   if (en === 1){
-                                       $("#row_"+id + " > td > div > button.dashTableBuildButton").show();
-                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").removeClass('fa-times-circle-o').removeClass('DashListRowFail');
-                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").addClass('fa-check-circle-o').addClass('DashListRowPass');
-                                   }else{
-                                       $("#row_"+id + " > td > div > button.dashTableBuildButton").hide();
-                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").removeClass('fa-check-circle-o').removeClass('DashListRowPass');
-                                       $("#row_"+id + " > td.dashTableEnableItem > i.fa").addClass('fa-times-circle-o').addClass('DashListRowFail');
-                                   }
+                                    if (en === 1){
+                                        $("#row_"+id + " .dashTableBuildButton").show();
+                                        $("#row_"+id + " .dashTableEnableItem > i.fa").removeClass('fa-times-circle-o').removeClass('DashListRowFail').addClass('fa-check-circle-o').addClass('DashListRowPass');
+                                        $("#row_"+id + " .dashTableEnableItem > i.fa").attr('data-checked',"false" );
+                                    }else{
+                                        $("#row_"+id + " .dashTableBuildButton").hide();
+                                        $("#row_"+id + " .dashTableEnableItem > i.fa").removeClass('fa-check-circle-o').removeClass('DashListRowPass').addClass('fa-times-circle-o').addClass('DashListRowFail');
+                                        $("#row_"+id + " .dashTableEnableItem > i.fa").attr('data-checked',"true" );
+                                    }
 
                                 },
                                 error : function(error) {
@@ -977,14 +1172,22 @@
                                     console.log(error)
                                 }
                             })
+                        });
 
-                        })
                     },
                     error : function(error) {
                         console.log(error)
                     }
                 })
             }
+
+            var tempCont = document.createElement("div");
+            function quillGetHTML(inputDelta) {
+
+                (new Quill(tempCont)).setContents(inputDelta);
+                return tempCont.getElementsByClassName("ql-editor")[0].innerHTML;
+            }
+
 
             var serverFailedCount = 0;
             serverStats();
@@ -1331,6 +1534,29 @@
 
                     $("#id").val(data[0].id);
 
+                    //breadcrumbs
+                    const breadCrumbArr = $('#jstree_div').jstree().get_path(data[0].id, false, true);
+                    breadCrumbArr.shift();
+                    breadCrumbArr.pop();
+
+                    var bcHtml ="";
+                    for(let node in breadCrumbArr){
+                        breadCrumbArr[node] = '<span class="breadCrumbNode" data-id="' + breadCrumbArr[node] + '"> ' + $('#jstree_div').jstree(true).get_node( breadCrumbArr[node]).text + '</span>';
+                    }
+                    $("#breadcrumbsRow").html(breadCrumbArr.join(" > "));
+
+                    $(".breadCrumbNode").click(function(){
+                        let clickedNode = $(this).attr("data-id");
+//                        $('#jstree_div').jstree('select_node',clickedNode);
+//                        $('#jstree_div').jstree(true).get_node(clickedNode, true).children('.jstree-anchor').focus();
+
+
+                        $('#jstree_div').jstree("deselect_all");
+                        $('#jstree_div').jstree('select_node',clickedNode);
+                        $('#jstree_div').jstree(true).get_node(clickedNode, true).children('.jstree-anchor').focus();
+
+                    });
+
                     loadBuildCode(data[0].buildCode.linkArr[0]);
 
                     $("#comType").val(data[0].comType);
@@ -1612,6 +1838,7 @@
                                         x++;
                                     }
                                 }
+
                                 if(x === 0){
                                     $("#alsoUsedInMess").text("Not used in any other component")
                                 }else if(x === 1){
@@ -2688,6 +2915,8 @@
                 $("#buildCodeNameEdit").show();
                 $("#buildCodeNameRead").hide();
 
+                $("#snapButton").show();
+
                 //remove click event from readModeJob
                 $('#jobForm .ql-editor').unbind();
                 $('#jobForm .ql-editor').css("max-height","900px")
@@ -2698,7 +2927,6 @@
                 inputFields.each(disableElement);
                 inputFields = $("#jobForm").find("textarea");
                 inputFields.each(disableElement);
-                //$("#fakeInput")[0].readOnly = false;
 
                 $("#componentEnabledSlider").hide();
                 $("#promotedSlider").hide();
@@ -2720,7 +2948,6 @@
                 $("#new_button").show();
 
                 $(".templateTypeDropdownButton").attr("disabled" , true);
-//                $("#buildCodeDropdownButton").attr("disabled" , true);
 
                 $("#run_button").show();
 
@@ -2752,6 +2979,8 @@
                 $("#buildCodeNameEdit").hide();
                 $("#buildCodeNameRead").show();
 
+                $("#snapButton").hide();
+
                 $('#jobForm .ql-editor').unbind();
                 $('#jobForm .ql-editor').on('click', function(evt){
                     if($('#jobForm .ql-editor').css("max-height") !== "900px"){
@@ -2761,6 +2990,7 @@
                     }
 
                 })
+
             }
 
             function editModeSys(){
@@ -2899,12 +3129,17 @@
             //save Job
             $("#save_button").click(function(event){
                 //console.log("submitting");
+
+                $("#resultsStatus").html(  " <img src='/images/throbber.gif'> Saving..."   );
+
                 var mydata = {};
                 var id = $("#id").val();
                 mydata.id = id;
                 mydata.parent = $("#parent").val();
                 mydata.name = $("#name").val();
                 mydata.comType = $("#comType").val();
+
+                mydata.newImageURL = $("#newImageURL").val();
 
                 var delta = description.getContents();
                 mydata.description = delta;
@@ -2994,14 +3229,26 @@
                     url: '/save',
                     id: mydata.id,
                     success : function(result) {
+
+                        $("#resultsStatus").html("<i class='fa  fa-check fa-fw DashListRowPass'></i> Save Complete");
+
                         var resultJSON = JSON.parse(result);
                         $("#id").val(resultJSON.id);
                         $("#text").val(resultJSON.text);
 
                         $('#jstree_div').jstree(true).refresh(true);
+
+
+                        $.get('/fileList', { id: $('#buildCode').val() }, function(data) {
+                            $('#resourceFiles').val(data);
+                            populateFileList(data, false);
+                        });
                     },
                     error : function(error) {
-                        console.log(error)
+
+                        console.log(error);
+                        $("#resultsStatus").html("<i class='fa  fa-times fa-fw DashListRowFail'></i> Save Failed! See console log");
+
                     }
                 });
             });
@@ -3369,14 +3616,14 @@
                 currentCopyObj = {"id":$("#id").val(), "lib":"working", "name": $("#text").val()};
                 $("#paste_button").show();
                 $("#paste_to_sys_button").show();
-                $("#paste_button, #paste_to_sys_button").popover({
+                $("#paste_button, #paste_to_sys_button").popover('dispose').popover({
                     animation: true,
                     content: currentCopyObj.lib + " : " + $("#text").val(),
                     delay: { "show": 500, "hide": 100 },
                     trigger: 'hover',
                     template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
                 });
-                $(this).popover({
+                $(this).popover('dispose').popover({
                     animation: true,
                     content: "Copied "+currentCopyObj.lib + " : " + $("#text").val(),
                     delay: { "show": 500, "hide": 100 },
@@ -3397,14 +3644,14 @@
 
             $("#copy_sys_button").on("click",function() {
                 currentCopySysObj = {"id":$("#id").val(), "lib":"working", "name": $("#text").val()};
-                $("#paste_sys_button, #paste_sys_lib_button").popover({
+                $("#paste_sys_button, #paste_sys_lib_button").popover('dispose').popover({
                     animation: true,
                     content: "System : " + $("#text").val(),
                     delay: { "show": 500, "hide": 100 },
                     trigger: 'hover',
                     template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
                 });
-                $(this).popover({
+                $(this).popover('dispose').popover('dispose').popover({
                     animation: true,
                     content: "Copied System : " + $("#text").val(),
                     delay: { "show": 500, "hide": 100 },
@@ -4284,7 +4531,7 @@ showFloatDashTable()
                         $("#dashBtn").click();
                         $(".dashTableRow")[0].click();
                         preferedPopPos = "bottom";
-                        floatPop("DashOpenMenu","This button is used to exit the dashboard and open this component in the components view.")
+                        floatPop("DashOpenMenu_0","This button is used to exit the dashboard and open this component in the components view.")
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                         $("#floatPopOk").click(function(event){
@@ -5095,18 +5342,12 @@ $("#componentsBtn").click();
                     $("#videoScreen").detach().appendTo('#screenshot-panel-body');
 
                 });
+                $("#snapButton").hide();
             });
 
             $("#componentsBtn").on("click",function(){
                 localStorage["topMenuViewSelected"] = "Components";
                 $("#componentsRow").show();
-
-
-
-                //need to refresh tree elsewhere since doing it here causes probs
-//                setTimeout(function(){
-//                    $('#jstree_div').jstree(true).refresh(true)
-//                },1000);
 
                 $("#dashRow").hide(function(){
 
@@ -5442,10 +5683,34 @@ $("#componentsBtn").click();
             });
 
 
+            $("#snapButton").on('click', function(e){
+                const id = $("#id").val();
+                $.get("/snapComp",{'id': id});
+                $("#snapButton").addClass('active');
+                setTimeout(function(){
+                    $("#snapButton").removeClass('active'); }
+                , 300)
+            });
+            $("#snapButton").hide();
+
+            $("#snapButton").popover({
+                animation: true,
+                content: "Click to snap thumbnail image",
+                delay: { "show": 500, "hide": 100 },
+                trigger: 'hover',
+                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+            });
+
             $("#videoRefreshLink").on('click', function(e){
                 $.get("/endChrome");
-                $("#videoRefreshLink").addClass('active');
-                setTimeout(function(){ $.get("/startChrome");$("#videoRefreshLink").removeClass('active'); }, 3000)
+                var videoCanvas = document.getElementById('videoCanvas');
+                var ctx = videoCanvas.getContext('2d');
+                ctx.fillStyle = '#777';
+                ctx.fillRect(0, 0, videoCanvas.width, videoCanvas.height);
+                setTimeout(function(){ $.get("/startChrome");
+                    $("#videoRefreshLink").addClass('active');
+                    $("#videoRefreshLink").removeClass('active'); }
+                , 3000)
             });
             $("#videoRefreshLink").popover({
                 animation: true,
@@ -5654,6 +5919,9 @@ $("#componentsBtn").click();
             })
 
             $('#matchLink_jstree_div').on("select_node.jstree", function (e, data) {
+
+                    $('#videoModal').modal('hide');
+
                     var selectedMatchNode = data.selected[0];
 
                     if( ! $("#componentsBtn").hasClass('active')){
@@ -6125,6 +6393,39 @@ $("#componentsBtn").click();
                 image.src = dataURL;
             }
 
+            if (focused.id === "pasteNewImage" ){
+                var dataURL, filename;
+                filename = results.filename;
+                dataURL = results.dataURL;
+
+
+                var canvas = document.createElement("canvas");
+                var ctx = canvas.getContext("2d");
+
+                canvas.width = 210; // target width
+                canvas.height = 210; // target height
+
+                var image = new Image();
+
+                image.onload = function(e) {
+                    ctx.drawImage(image,
+                        0, 0, image.width, image.height,
+                        0, 0, canvas.width, canvas.height
+                    );
+                    // create a new base64 encoding
+                    var resampledImage = new Image();
+                    var newdataURL = canvas.toDataURL();
+                    resampledImage.src = newdataURL;
+                    $('#newImageURL').val(newdataURL);
+                    var rs = document.getElementById("resampledNewImage");
+                    rs.innerHTML = '';
+                    rs.appendChild(resampledImage);
+                };
+                image.src = dataURL;
+
+
+            }
+
 
         });
 
@@ -6192,111 +6493,77 @@ $("#componentsBtn").click();
                 </div>
             </nav>
 
-            <main role="main" class="  mainCol">
+            <main role="main" class="container-fluid  mainCol">
                 <%- include topMenu.ejs %>
-                <div id="dashRow" class="row top-row">
-                    <div class="panel panel-default dashboardPanel" id="dashboard">
-
-                        <input name="dashId" id="dashId" type="hidden" />
-                        <input name="dashSys" id="dashSys" type="hidden" />
-                        <!--<input name="dashSysName" id="dashSysName" type="hidden" />-->
-
-                        <div class='panel-body dashboardPanelBody'>
-
-                            <div id = "dashBoardTopRow" class="row dashBoardTopRow">
-                                <div class="col-md-6 dash-panel-column" >
+                <input name="dashId" id="dashId" type="hidden" />
+                <input name="dashSys" id="dashSys" type="hidden" />
 
 
-                                    <div class="row">
-                                        <div class="panel dashPanel systemDetailPanel">
-                                            <div class="row">
-                                                <div class="col">
-                                                    <div class="dashboardLabel">System</div>
-                                                    <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                        Pick...
-                                                    </button>
-                                                    <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
-                                                        <div><a class="dropdown-item" href="#">Action</a></div>
-                                                    </div>
+                <div class="" id="dashRow">
 
-                                                    <div id="dashSystemDetails" class="dashSystemDetails"></div>
+                    <div id="" class="row top-row">
 
-                                                </div>
-                                                <div class="col">
-                                                    <div class="dashboardLabel">System Functions</div>
-                                                    <div id = "systemFunctionsCol" class="systemFunctionsCol"></div>
 
-                                                </div>
-                                            </div>
-                                        </div>
+
+                        <div class="col-md-6 dash-panel-column" >
+
+
+                            <div class="row systemDetailPanelRow">
+                                <div class="col dashboardDetails">
+                                    <div class="dashboardLabel">System</div>
+                                    <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Pick...
+                                    </button>
+                                    <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
+                                        <div><a class="dropdown-item" href="#">Action</a></div>
                                     </div>
-                                    <!--<div class="row">-->
-                                        <!--<div class="col lastCol" >-->
-                                            <!--<div class='panel dashPanel currentBuildStatusPanel'>-->
-                                                <!--<div class='panel-body dashPanelBody status-panel-body'>-->
-                                                    <!--<span class="dashboardLabel" >Build Status: </span>-->
-                                                    <!--<span class="resultsStatus" id="resultsStatus">Idle</span>-->
-                                                <!--</div>-->
-                                            <!--</div>-->
-                                        <!--</div>-->
-                                    <!--</div>-->
+
+                                    <div id="dashSystemDetails" class="dashSystemDetails"></div>
 
                                 </div>
-                                <div id='screenshot-panel-body' class="col-md-6 dashVideoCol" >
-                                    <div id="videoScreen">
+                                <div class="col">
+                                    <div class="dashboardLabel">System Functions</div>
+                                    <div id = "systemFunctionsCol" class="systemFunctionsCol"></div>
 
-                                        <div class="col videoCol">
+                                </div>
 
-                                            <input id="launchLinkHiddenCopy"><div id="launchLink" class="videoMenuItemLeft"></div>
-                                            <div class="videoMenu">
+                            </div>
 
-                                                <!--<button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
-                                                <!--<i class="fa fa-search fa-fw"></i>Match<div id="vidMenuMatchNum"></div>-->
-                                                <!--</button>-->
-                                                <!--<div id="vidMenuMatchOverlay" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="vidMenuMatch">-->
-                                                <!--<div class="col matchLinkCol"><div id="matchLink_jstree_div"></div></div>-->
-                                                <!--</div>-->
+                        </div>
+                        <div id='screenshot-panel-body' class="col-md-6 dashVideoCol" >
+                            <div id="videoScreen">
 
-                                                <a id='videoRefreshLink' href='#'><i class='fa fa-refresh fa-fw videoMenuItemRight'></i></a>
-                                                <a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw videoMenuItemRight'></i></a>
-                                                <a id='inspectMaximizeLink' href='#' class='launchLink'><i class='fa fa-expand fa-fw videoMenuItemRight'></i></a>
+                                <div class="col videoCol">
 
-                                            </div>
-                                            <div><canvas id="videoCanvas"></canvas></div>
-                                            <div id="vidMenuDesc"></div>
-                                            <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                <div id="componentLinks"></div><div id="vidMenuMatchNum"></div>
-                                            </button>
-                                            <div id="vidMenuMatchOverlay" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="vidMenuMatch">
-                                                <div class="col matchLinkCol">
-                                                    <div id="matchLink_jstree_div"></div>
-                                                </div>
-                                            </div>
+                                    <input id="launchLinkHiddenCopy"><div id="launchLink" class="videoMenuItemLeft"></div>
+                                    <div class="videoMenu">
+
+                                        <a id='snapButton' href='#'><i class='fa fa-camera fa-fw videoMenuItemRight'></i></a>
+                                        <a id='videoRefreshLink' href='#'><i class='fa fa-refresh fa-fw videoMenuItemRight'></i></a>
+                                        <a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw videoMenuItemRight'></i></a>
+                                        <a id='inspectMaximizeLink' href='#' class='launchLink'><i class='fa fa-expand fa-fw videoMenuItemRight'></i></a>
+
+                                    </div>
+                                    <div><canvas id="videoCanvas"></canvas></div>
+                                    <div id="vidMenuDesc"></div>
+                                    <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <div id="componentLinks"></div><div id="vidMenuMatchNum"></div>
+                                    </button>
+                                    <div id="vidMenuMatchOverlay" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="vidMenuMatch">
+                                        <div class="col matchLinkCol">
+                                            <div id="matchLink_jstree_div"></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="row justify-content-center dashBoardBottomRow">
-                                <div id="dashListCol" class="col-md-12 dashListCol">
-                                    <table class="table dashTable">
-                                        <thead>
-                                        <tr class="d-flex">
-                                            <th class="col-2 dashboardLabel">Name</th>
-                                            <th class="col-1 dashboardLabel center">Build</th>
-                                            <th class="col-1 dashboardLabel center">Enabled</th>
-                                            <th class="col-1 dashboardLabel center">Last Build</th>
-                                            <th class="col-7 dashboardLabel">Description</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody id="dashTable" class="dashTbody"></tbody>
-                                    </table>
+                        </div>
 
-                                </div>
-                            </div>
+                    </div>
+                    <div class="dashHr"><hr></div>
+                    <div class=" dashBoardBottomRow">
+                        <div id="dashListCol" class="dashListCol">
+                            <div id="dashTable" class="dashTbody"></div>
 
-                            <!--<div id="dashboardList" class="row launchPadBody ">-->
-
-                            <!--</div>-->
                         </div>
                     </div>
                 </div>
@@ -6332,7 +6599,7 @@ $("#componentsBtn").click();
                     <div id="rightCol" class="" >
 
                         <button id = "paste_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-paste fa-fw"></i>Paste System</button>
-                        <button id = "paste_sys_lib_button" class="btn btn-default jobFormbtn"><i class="fa fa-paste fa-fw"></i>Paste System</button>
+                        <button id = "paste_sys_lib_button" class="btn btn-default jobFormbtn"><i class="fa fa-paste fa-fw"></i>Paste System to Library</button>
                         <!--<icon class="fa fa-th-large"></icon> Component Details-->
                         <div id="sysScreen">
                             <div class="buttonRow">
@@ -6437,6 +6704,7 @@ $("#componentsBtn").click();
                                     <form id="jobForm">
                                         <div class="row">
                                             <div id="topLeftForm" class="col topLeftForm">
+                                                <div id="breadcrumbsRow" class="row"></div>
                                                 <div class="row" id="firstRow" >
                                                     <div class="col jobCompNameCol">
                                                         <div class="form-group">
@@ -6621,10 +6889,22 @@ $("#componentsBtn").click();
                                                                         <input id="upload-input" type="file" name="uploads[]" multiple="multiple">
                                                                     </div>
                                                                 </div>
+                                                                <div class="form-group">
+                                                                    <!--<label class="build-label">Thumbnail</label>-->
+                                                                    <!--<div id="jobThumbnail"><img width="210" height="210" src="" style="display: none;"></div>-->
+                                                                    <div id="newImagePaste" style="">
+                                                                        <!--<p>Paste thumbnail image: </p>-->
+                                                                        <span><input type="text" id="pasteNewImage" class="form-control" placeholder="Paste new image here"></span>
+                                                                        <div id="resampledNewImage"></div>
+                                                                        <input type="hidden" id="newImagelURL" value="">
+                                                                    </div>
+                                                                </div>
 
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    <!--<div class="row">-->
+                                                    <!--</div>-->
                                                 </div>
 
                                                 <div id="buildTestAccordion">

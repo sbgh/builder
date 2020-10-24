@@ -8,6 +8,7 @@ html, body {
 
 body {
     transform: scaleX(0.0);
+   /*font-size: 1.1em;*/
 }
 
 .jobScreen{
@@ -30,16 +31,18 @@ body {
     height : calc(var(--vh, 1vh) * 100);
    /*min-height: 100vh;*/
 }
-
-.row {
-   margin-right: 5px;
-   margin-left: 5px;
-
+.fullWidth{
+   /*width: 100%;*/
 }
+
 
 #mainRow{
    flex-wrap: nowrap;
    margin-left: 0px;
+}
+
+div#myNavbar {
+   width: 100%;
 }
 
 .top-row{
@@ -238,36 +241,7 @@ div#sysPanel {
    /*height: calc(100vh - 20px);*/
 }
 
-@media (max-height: 500px) {
 
-   /*noinspection ALL*/
-   .dashboardPanel {
-      overflow-y: scroll;
-      height: calc(var(--vh, 1vh) * 100 - 30px);
-      /*min-height: calc(100vh - 30px);*/
-   }
-   tbody.dashTbody {
-      /*height: calc(100vh - 360px);*/
-      /*position: absolute;*/
-      overflow-y: visible;
-   }
-}
-@media (min-height: 501px) {
-
-   /*noinspection ALL*/
-   .dashboardPanel {
-      overflow-y: auto;
-      width: 100%;
-      height: calc(var(--vh, 1vh) * 100 - 30px);
-   }
-
-   /*noinspection ALL*/
-   tbody.dashTbody {
-      height: calc(var(--vh, 1vh) * 100 - 380px);
-      position: absolute;
-      overflow-y: auto;
-   }
-}
 
 input[readonly].form-control {
    cursor: text;
@@ -289,7 +263,7 @@ padding-left: 0px;
 
 .jobFormbtn {
    padding: 1px 2px;
-   font-size: 12px;
+   font-size: .7em;
    font-weight: 400;
    width:95px;
 }
@@ -411,7 +385,7 @@ padding-left: 0px;
 
 .model-label{
    font-weight: 600;
-   font-size: 14px;
+   font-size: 1.0em;
 }
 
 .modal-copy-dialog {
@@ -524,7 +498,7 @@ padding-left: 0px;
    width: 50px;
    height: 34px;
    padding: 6px 12px;
-   font-size: 14px;
+   font-size: 0.8em;
    line-height: 1.42857143;
    border: 0px solid #ccc;
    border-radius: 10px;
@@ -556,7 +530,8 @@ padding-left: 0px;
 
 .topLeftForm{
    min-width: 410px;
-   padding: 0px;
+   /*padding: 0px;*/
+   margin-left: 10px;
 }
 
 .vakata-contextmenu{
@@ -634,7 +609,7 @@ input:checked + .slider:before {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 .systemRow{
-   font-size: 16px;
+   font-size: .9em;
 }
 .disabledRow{
 
@@ -673,12 +648,12 @@ input:checked + .slider:before {
 
 }
 .welcome-modal-body h3{
-   font-size: 1.3rem;
+   font-size: 1.1rem;
    font-weight: 800;
 }
 
 .welcome-modal-body h2{
-   font-size: 1.5rem;
+   font-size: 1.1rem;
    font-weight: 800;
 }
 
@@ -769,105 +744,8 @@ input:checked + .slider:before {
    line-height: 24px;
 }
 
-.varLabelName{
-    /*min-width: 180px;*/
-}
-
-.dashBoardList{
-
-}
-
-.dashBoardListRow{
-
-
-}
-
-.dashTable > thead > tr > th {
-   padding: 0px;
-}
-
-.dashTableRow{
-   cursor: pointer;
-   font-size: 12px;
-   margin-top: 2px;
-   position: relative;
-}
-
-.dashTableRow td > * {
-   vertical-align : middle;
-}
-.dashTableEnableItem{
-   text-align: center;
-}
-
-.dashTableEnableItem > i, .dashTableSuccessItem > i{
-   font-size: 15px;
-}
-.dashTableSuccessItem{
-   text-align: center;
-}
-
-.dashTableNameButtonRow{
-   white-space: nowrap;
-}
-
-.dashListRowClicked .dashTableNameButtonRow, .dashListRowClicked  .dashTableOpenButton{
-   display: inline;
-}
-
-.dashListRowNotClicked .dashTableNameButtonRow, .dashListRowNotClicked  .dashTableOpenButton{
-   display: none;
-}
-
-.dashTableNameItem{
-   font-size: 14px;
-}
-
-.dashListRowClicked > td.dashTableNameItem{
-   font-weight: 900;
-   font-size: 14px;
-   font-weight: bold;
-}
-
-div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
-   -moz-transition: max-width 0.2s;
-   -ms-transition: max-width 0.2s;
-   -o-transition: max-width 0.2s;
-   -webkit-transition: max-width 0.2s;
-   transition: max-width 0.2s;
-   overflow: hidden;
-   max-width:0px;
-
-   vertical-align: middle;
-   display: inline-block;
-
-}
-.dashListRowClicked > td.dashTableNameItem > div.dashTableNameButtonRow, .dashListRowClicked > td.dashTableEnableItem > div.dashTableEnabledButtonRow{
-   -moz-transition: max-height 0.2s;
-   -ms-transition: max-width 0.2s;
-   -o-transition: max-width 0.2s;
-   -webkit-transition: max-width 0.2s;
-   transition: max-width 0.2s;
-   overflow: hidden;
-   max-width: 50px;
-}
-
-/*.DashListRowPass{*/
-   /*color: #10a54a;*/
-/*}*/
-/*.DashListRowFail{*/
-   /*color: #d52322;*/
-/*}*/
-.DashListRowNotBuilt{
-   color: #2c3433;
-}
-.os-panel-column{
-   /*min-width: 85px;*/
-}
 .os-panel{
    display: inline-block;
-   /*margin-bottom: 20px;*/
-   /*margin-right: 20px;*/
 }
 
 @media (max-width: 1000px) {
@@ -879,8 +757,6 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
 
 .os-panel-body{
    text-align: center;
-   /*font-weight: 700;*/
-   /*padding: 5px;*/
    padding-top: 2px;
    padding-right: 5px;
    padding-bottom: 2px;
@@ -893,20 +769,13 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
    width: 100%;
 }
 
-/*div.col-sm-2{*/
-   /*min-width: 120px;*/
-/*}*/
-
 .currentBuildStatusPanel{
-   /*height: 58px;*/
-   /*margin-bottom: 20px;*/
    display: inline-block;
    width: 100%;
 }
 
 .status-panel-body{
    max-height: 284px;
-   /*height: 300px;*/
    overflow: hidden;
    font-weight: 700;
    padding: 5px;
@@ -955,7 +824,7 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
    min-width: 350px;
 }
 .dashboardDetails{
-
+   margin-left: 15px;
 }
 
 
@@ -963,7 +832,7 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
    display: inline-block;
    margin-right: 20px;
    margin-left: 20px;
-   font-size: 20px;
+   font-size: 1.0em;
    font-weight: 700;
 }
 .dashboardDetailsDescription{
@@ -975,7 +844,7 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
 .dashboardDetailsSysName{
    margin-left: 20px;
    margin-top: 5px;
-   font-size: 18px;
+   font-size: 1.0em;
    font-weight: 500;
 }
 
@@ -993,7 +862,7 @@ div.dashTableNameButtonRow, div.dashTableEnabledButtonRow{
 }
 .dashboardMenuItem{
     /*width:70px;*/
-   font-size: 16px;
+   font-size: 1.0em;
    font-weight: 700;
     display: inline-block;
     /*padding-left: 5px;*/
@@ -1189,7 +1058,7 @@ a.foundInSearchParent{
    padding: 0;
    padding-bottom: 15px;
    border: none;
-   font-size: 16px;
+   font-size: 1.0em;
 }
 
 .buildCodePickButton {
@@ -1239,39 +1108,36 @@ tr {
 }
 
 
-.dashTable{
-   color: inherit;
-   border: none;
-}
+/*.dashTable{*/
+   /*color: inherit;*/
+   /*border: none;*/
+/*}*/
 
-.dashTable > thead > tr > th{
-   border-top: 0px solid;
-   border-bottom: 0px solid;
-   padding-bottom: 0px;
-}
-
-
-.dashTbody{
-   /*overflow-y: auto;*/
-   width: 98%;
-}
-
-.dashTbody > tr.dashListRowClicked > td.dashTableNameItem{
-   border-left: 3px solid;
-}
+/*.dashTable > thead > tr > th{*/
+   /*border-top: 0px solid;*/
+   /*border-bottom: 0px solid;*/
+   /*padding-bottom: 0px;*/
+/*}*/
 
 
-.dashTbody > tr > td{
-   border-top: 0px solid;
-   border-bottom: 0px solid;
-   margin-top: 0;
-   margin-bottom: 0;
-   padding: 0;
-}
+
+
+/*.dashTbody > tr.dashListRowClicked > td.dashTableNameItem{*/
+   /*border-left: 3px solid;*/
+/*}*/
+
+
+/*.dashTbody > tr > td{*/
+   /*border-top: 0px solid;*/
+   /*border-bottom: 0px solid;*/
+   /*margin-top: 0;*/
+   /*margin-bottom: 0;*/
+   /*padding: 0;*/
+/*}*/
 
 
 .userIcon{
-   font-size: 20px;
+   font-size: 1.2em;
 }
 
 .dropdown-menu > a{
@@ -1340,7 +1206,7 @@ th.col-1, td.col-1{
    padding: 0;
    padding-bottom: 0px;
    border: none;
-   font-size: 16px;
+   font-size: 1.0em;
 }
 
 .templateCard{
@@ -1457,7 +1323,7 @@ tbody.varTbody{
 
 .varRow > td{
    font-weight: 500;
-   font-size: 14px;
+   font-size: .8em;
    border: none;
    padding: 0px;
    min-width: min-content;
@@ -1478,7 +1344,7 @@ tbody.varTbody{
    padding: 0;
    border: none;
    font-weight: 500;
-   font-size: 14px;
+   font-size: 1.0em;
 
 }
 
@@ -1569,10 +1435,9 @@ tbody.varTbody{
 }
 
 #componentLinks{
-   font-size: small;
    font-weight: 700;
    display: inline-block;
-   font-size: 15px;
+   font-size: 1.0em;
 }
 
 .matchLink{
@@ -1645,7 +1510,7 @@ tbody.buildCodeTbody{
    align-self: center;
 }
 .newBuildCodeName > input{
-   font-size: 14px;
+   font-size: 1.0em;
    height: 20px;
 }
 
@@ -1679,7 +1544,7 @@ tbody.buildCodeTbody{
 }
 
 .dash-panel-column{
-   max-height: 290px;
+   /*max-height: 290px;*/
    overflow: auto;
 }
 
@@ -1753,7 +1618,7 @@ button#vidMenuMatch, #vidMenuDesc {
 
 .dashTableOpenButton{
    width:30px;
-   margin-right: 10px;
+   /*margin-right: 10px;*/
 }
 
 td.col-1.dashTableBuildItem {
@@ -1825,7 +1690,7 @@ div#floatingPopover {
 }
 
 button.floatPopMenuItem{
-   font-size: 11px;
+   font-size: 1.0em;
    font-weight: 700;
    width: 50px;
    padding: 0px;
@@ -1833,7 +1698,7 @@ button.floatPopMenuItem{
    cursor: pointer;
 }
 button:focus floatPopMenuItem{
-   font-size: 10px;
+   font-size: 1.0em;
    font-weight: 700;
 }
 
@@ -1980,7 +1845,7 @@ a#sidebarBtn {
 
 .buildCodeMatchRow{
    font-weight: 500;
-   font-size: 14px;
+   font-size: 1.0em;
    cursor: pointer;
    white-space: nowrap;
 }
@@ -2003,9 +1868,14 @@ div#buildCodeMatch {
    margin-bottom: 0;
    list-style: none;
 }
+#os-panels{
+   overflow: hidden;
+   margin-right: 15px;
+}
 
 #os-panels, .dropdown-settings{
    white-space: nowrap;
+   max-width: 100%;
 }
 
 .dropdown-settings{
@@ -2022,4 +1892,124 @@ input#launchLinkHiddenCopy{
    /*display:none*/
 }
 
+.systemDetailPanelRow{
+   margin-top: 24px;
+}
 
+div#breadcrumbsRow {
+   font-size: 0.9em;
+}
+
+span.breadCrumbNode {
+   margin-left: 5px;
+   margin-right: 5px;
+   text-decoration: underline;
+   cursor: pointer;
+}
+
+div#firstRow {
+   margin-top: 12px;
+}
+
+
+
+.dashTbody{
+   display: grid;
+   grid-template-columns: repeat(auto-fit, minmax(150px, 250px));
+   align-items: center;
+   overflow-x: auto;
+   padding: 15px;
+}
+
+.dashTableRow{
+   padding: 5px;
+   margin: 10px;
+   text-align: center;
+   border-radius: 6px;
+}
+
+#dashRow {
+   overflow-y: auto;
+   overflow-x: hidden;
+   height: calc(100vh - 30px);
+   padding-left: 5px;
+   display: flex;
+   flex-direction: column
+}
+
+.dashListCol{
+   padding-bottom: 60px;
+}
+
+.dashItemThumbCol img {
+   width: 100%;
+   border: solid 2px;
+   border-radius: 6px;
+}
+
+.dashContentRow{
+   border-radius: 6px;
+}
+
+.dashItemName {
+   text-align: center;
+   font-size: .8em;
+   font-weight: 500;
+}
+
+.dashItemDescription {
+   max-height: 16px;
+   overflow: hidden;
+}
+
+.dashItemDescription p {
+   font-size: 0.6em;
+}
+
+@media (max-height: 500px) {
+
+   /*noinspection ALL*/
+   .dashRow {
+      overflow-y: scroll;
+      /*height: calc(var(--vh, 1vh) * 100 - 30px);*/
+      /*min-height: calc(100vh - 30px);*/
+
+   }
+   .dashBoardBottomRow {
+      /*height: calc(100vh - 360px);*/
+      /*position: absolute;*/
+      overflow-y: visible;
+   }
+}
+@media (min-height: 501px) {
+
+   /*noinspection ALL*/
+   .dashRow {
+      overflow-y: hidden;
+      width: 100%;
+      /*height: calc(var(--vh, 1vh) * 100 - 30px);*/
+   }
+
+   /*noinspection ALL*/
+   .dashBoardBottomRow {
+      /*height: calc(var(--vh, 1vh) * 100 - 380px);*/
+      overflow-y: auto;
+   }
+}
+
+.dashButtonsRow {
+   display: flex;
+   flex-direction: row;
+   justify-content: center;
+}
+
+.dashButtonsRow i, .dashItemName i {
+   cursor: pointer;
+}
+
+.dashHr hr {
+   margin-top: 1rem;
+   margin-bottom: 0;
+   border: 0;
+   border-top: 1px solid #77777730;
+}

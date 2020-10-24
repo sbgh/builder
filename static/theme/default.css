@@ -358,6 +358,7 @@ input:not(:checked) + .slider.round:before{
 
 
 #videoCanvas{
+    transition: box-shadow 2.5s;
     box-shadow: 3px 5px 18px 1px rgba(51, 51, 51, 0.88);
 }
 
@@ -411,42 +412,42 @@ input:not(:checked) + .slider.round:before{
     color: #1a1b1c;
 }
 
-.dashTable > thead > tr > th {
-    transition: color 0.5s;
-    border-color: #1a1b1c ;
-}
+/*.dashTable > thead > tr > th {*/
+    /*transition: color 0.5s;*/
+    /*border-color: #1a1b1c ;*/
+/*}*/
 
-.dashTbody > tr.dashListRowClicked{
-    box-shadow: 3px 5px 9px 1px rgba(112, 108, 108, 0.58);
-    z-index: 1000;
-}
+/*.dashTbody > tr.dashListRowClicked{*/
+    /*box-shadow: 3px 5px 9px 1px rgba(112, 108, 108, 0.58);*/
+    /*z-index: 1000;*/
+/*}*/
 
-.dashTbody > tr.dashListRowClicked > td.dashTableNameItem{
+/*.dashTbody > tr.dashListRowClicked > td.dashTableNameItem{*/
 
-    border-color: #367ae0;
-    color: black;
-}
+    /*border-color: #367ae0;*/
+    /*color: black;*/
+/*}*/
 
-.dashTbody > tr.dashListRowClicked > td.dashTableDescriptionItem{
-    transition: color 0.5s;
-    color: black;
-}
+/*.dashTbody > tr.dashListRowClicked > td.dashTableDescriptionItem{*/
+    /*transition: color 0.5s;*/
+    /*color: black;*/
+/*}*/
 
-.dashTbody > tr > td{
-    transition: background-color 1s;
-    background-color: rgba(206, 206, 206, 0.13);
-}
+/*.dashTbody > tr > td{*/
+    /*transition: background-color 1s;*/
+    /*background-color: rgba(206, 206, 206, 0.13);*/
+/*}*/
 
-.dashTbody > tr:hover > td {
-    transition: background-color .3s;
-    background-color: rgba(40, 40, 40, 0.2);
-}
+/*.dashTbody > tr:hover > td {*/
+    /*transition: background-color .3s;*/
+    /*background-color: rgba(40, 40, 40, 0.2);*/
+/*}*/
 
-.dashTbody > tr.dashListRowClicked > td{
-    transition: background-color 1s;
-    background-color: rgba(0, 0, 0, 0.29);
+/*.dashTbody > tr.dashListRowClicked > td{*/
+    /*transition: background-color 1s;*/
+    /*background-color: rgba(0, 0, 0, 0.29);*/
 
-}
+/*}*/
 
 .dashTableBuildButton{
     transition: color 0.5s;
@@ -460,10 +461,6 @@ input:not(:checked) + .slider.round:before{
 .stylePickTop, .buildCodeFilter{
     transition: color 0.5s;
     color: #367ae0
-}
-
-.dashTableRow:nth-child(2n+1) {
-    background: #ececec
 }
 
 
@@ -603,7 +600,7 @@ btn:focus {
 }
 
 .sidebar{
-    /*transition: background-color 0.2s;*/
+    transition: box-shadow 0.2s;
     background-color: #367ae0;
     box-shadow: 3px 5px 9px 1px rgba(51, 51, 51, 0.88);
     z-index: 1000;
@@ -659,10 +656,29 @@ a#buildCodeBtn i {
     color: #367ae0;
 }
 
-.buildCodeMatchRow{
+.buildCodeMatchRow, #breadcrumbsRow{
     color: #367ae0;
 }
 
 #launchLinkCopy{
     color: #367ae0;
+}
+
+.dashTableRow {
+    transition: box-shadow 2.5s;
+    box-shadow: 3px 5px 18px 1px rgba(51, 51, 51, 0.88);
+}
+
+.dashContentRow {
+    transition: background-color 2.5s;
+    background-color: #ffffff;
+}
+
+div#dashRow {
+    transition: background-color 2.5s;
+    background-color: #ececec;
+}
+
+.dashItemThumbCol img {
+    border-color: #e6e6e6;
 }

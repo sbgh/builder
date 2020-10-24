@@ -1636,7 +1636,7 @@ router.post("/save",function(req,res){
 
     //if component is not of type system
     if(req.body.comType !== "system"){
-        var comType = "job";
+        // var comType = "job";
 
         //If new
         if (id.length < 32){
@@ -1711,7 +1711,7 @@ router.post("/save",function(req,res){
 
             //store linked build code
 
-            var bCode = req.body.buildCode
+            var bCode = req.body.buildCode;
 
             //hopefully the picked build code exists
             if(BuildCode.hasOwnProperty(bCode)){
@@ -1752,12 +1752,38 @@ router.post("/save",function(req,res){
             newBuildCode.runLocal = req.body.runLocal;
 
             newBuildCode.resourceFiles = req.body.resourceFiles;
-            newBuildCode.templates = req.body.templates
+            newBuildCode.templates = req.body.templates;
             newBuildCode.script = req.body.script;
 
             newBuildCode.name = req.body.buildCodeName === "" ? "New Build Code" : req.body.buildCodeName;
 
+            if(SystemsJSON[id].hasOwnProperty('thumbnail')){
+                newData.thumbnail = SystemsJSON[id].thumbnail
+            }
+            if (reqJSON.hasOwnProperty('thumbURL')){
+                //if reqJSON.thumbURL has data then a new icon has been copied to UI
+                var base64Data = reqJSON.thumbURL.replace(/^data:image\/png;base64,/, "");
+                if (base64Data !== '') {
+                    var thumbPath = filesPath + bCode + '/' + "thumbnail.png";
 
+                    if (!fs.existsSync(filesPath + bCode)) {
+                        fs.mkdirSync(filesPath + bCode)
+                    }
+                    fs.writeFileSync(thumbPath, base64Data, 'base64');
+
+                    var found = false;
+                    var resourceFilesArr = JSON.parse(newBuildCode.resourceFiles);
+                    for (let x in resourceFilesArr) {
+                        if (resourceFilesArr[x].name === "thumbnail.png") {
+                            found = true;
+                        }
+                    }
+                    if (found === false) {
+                        resourceFilesArr.push({name: "thumbnail.png"});
+                        newBuildCode.resourceFiles = JSON.stringify(resourceFilesArr);
+                    }
+                }
+            }
 
             SystemsJSON[id] = newData;
             BuildCode[bCode] = newBuildCode;
@@ -1909,14 +1935,6 @@ router.post("/copy",function(req,res){
             //add from parent and new parent to id map
             idMap[SystemsJSON[fromIds[0]].parent] = targetId;
 
-            //count target siblings and give new sort number to 1st node
-            // var x =0;
-            // for (var key in SystemsJSON) {
-            //     if (SystemsJSON[key].parent === targetId) {
-            //         x++;
-            //     }
-            // }
-
             //loop through all fromIds and copy
             fromIds.forEach(function(fromId) {
                 var fromNode = SystemsJSON[fromId];
@@ -1970,6 +1988,9 @@ router.post("/copy",function(req,res){
 
                     NewRow.icon=fromNode.icon;
                     NewRow.buildCode=fromNode.buildCode;
+                    if(fromNode.hasOwnProperty('thumbnail')){
+                        NewRow.thumbnail = fromNode.thumbnail;
+                    }
                 }
 
                 SystemsJSON[id] = NewRow;
@@ -2105,6 +2126,10 @@ router.post("/copy",function(req,res){
                     NewRow.promoted=fromNode.promoted;
 
                     NewRow.buildCode=fromNode.buildCode;
+                }
+
+                if(fromNode.hasOwnProperty('thumbnail')){
+                    NewRow.thumbnail = fromNode.thumbnail;
                 }
 
                 //Add to SystemsJSON
@@ -2287,6 +2312,9 @@ router.post("/copyToLib",function(req,res){
                 NewRow.promoted=fromNode.promoted;
                 NewRow.enabled=fromNode.enabled;
                 NewRow.buildCode=fromNode.buildCode;
+            }
+            if(fromNode.hasOwnProperty('thumbnail')){
+                NewRow.thumbnail = fromNode.thumbnail;
             }
 
             //Add new row to lib json
@@ -3465,6 +3493,9 @@ router.post("/run",function(req,res){
 
                                     const screenshot = await Page.captureScreenshot({format: "png", fromSurface: true});
                                     const buffer = new Buffer(screenshot.data, 'base64');
+                                    if (!fs.existsSync(filesPath + jobId)) {
+                                        fs.mkdirSync(filesPath + jobId);
+                                    }
                                     fs.writeFile(filesPath + jobId + '/' +'screenshot.png', buffer, 'base64', function(err) {
                                         if (err) {
                                             console.error(err);
@@ -3482,6 +3513,7 @@ router.post("/run",function(req,res){
                                     }
 
                                 })();
+
                                 isDirective = true;
 
                             } else if
@@ -4207,9 +4239,14 @@ router.get("/getPromoted",function(req,res){
                 if((SystemsJSON[key].promoted === 1 && hasParentRun && hostIP !== "")){
                     allow = true;
                 }
+
+                var resourceFiles = "";
                 if(SystemsJSON[key].buildCode.linkArr.length > 0){
                     if(BuildCode[SystemsJSON[key].buildCode.linkArr[0]].systemFunction === 1){
                         // allow = true;
+                    }
+                    if(BuildCode[SystemsJSON[key].buildCode.linkArr[0]].hasOwnProperty("resourceFiles")){
+                        resourceFiles = BuildCode[SystemsJSON[key].buildCode.linkArr[0]].resourceFiles
                     }
                 }
 
@@ -4218,6 +4255,7 @@ router.get("/getPromoted",function(req,res){
                     rowdata.id = key;
                     rowdata.systemName =  SystemsJSON[rowdata.ft.split("/")[1]].name;
                     rowdata.systemId =  rowdata.ft.split("/")[1];
+                    rowdata.resourceFiles = resourceFiles;
 
                     //convert family tree+key string to string containing sort values eg ?1?2?1?6?3
                     var sortStr = " ";
@@ -4467,6 +4505,33 @@ router.get("/massupdate",function(req,res){
     }
 
     res.write("</body></html>");
+    res.end("");
+
+});
+
+router.get("/snapComp",function(req,res){
+    const jobId = req.query.id;
+    if(SystemsJSON.hasOwnProperty(jobId)){
+        (async function () {
+
+            const screenshot = await Page.captureScreenshot({format: "png", fromSurface: true});
+            const buffer = new Buffer(screenshot.data, 'base64');
+            if (!fs.existsSync(filesPath + jobId)) {
+                fs.mkdirSync(filesPath + jobId);
+            }
+            fs.writeFile(filesPath + jobId + '/' +'thumbnail.png', buffer, 'base64', function(err) {
+                if (err) {
+                    console.error(err);
+                } else {
+                    SystemsJSON[jobId].thumbnail = 'thumbnail.png';
+                    saveAllJSON(false)
+                }
+            });
+
+        })();
+}
+
+
     res.end("");
 
 });

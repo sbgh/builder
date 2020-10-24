@@ -89,7 +89,7 @@ a, a:hover {
 }
 
 .dashTableRow:nth-child(2n+1) {
-    background: #3b3b3b
+    /*background: #3b3b3b*/
 }
 
 .treePanelHandle {
@@ -476,7 +476,10 @@ input:focus + .slider {
     /*color: #79bdf3;*/
 /*}*/
 
-
+#videoCanvas{
+    transition: box-shadow 2.5s;
+    box-shadow: 0px 0px 0px 0px rgba(51, 51, 51, 0.88);
+}
 
 
 .navbar-default .navbar-nav > li >a,
@@ -582,11 +585,11 @@ input:focus + .slider {
 
 .dashTableBuildButton{
     transition: color 0.5s;
-    color: #ececec;
+    color: #79bdf3;
 }
 .dashTableOpenButton{
     transition: color 0.5s;
-    color: #ececec;
+    color: #79bdf3;
 }
 
 .stylePickTop, .buildCodeFilter{
@@ -770,9 +773,10 @@ btn:focus {
 }
 
 .sidebar{
-    /*transition: background-color 0.2s;*/
-    /*background-color: #000000;*/
+    transition: box-shadow 2.5s;
+    box-shadow: 0px 0px 0px 0px rgba(51, 51, 51, 0.88);
 }
+
 .sidebar ul li a.nav-link {
     color: white;
     /*transition: background-color 0.2s;*/
@@ -824,10 +828,29 @@ a#buildCodeBtn i {
     color: #79bdf3;
 }
 
-.buildCodeMatchRow{
+.buildCodeMatchRow, #breadcrumbsRow{
     color: #79bdf3;
 }
 
 #launchLinkCopy{
     color: #79bdf3;
+}
+
+.dashTableRow {
+    transition: box-shadow 2.5s;
+    box-shadow: 0px 0px 0px 0px rgba(51, 51, 51, 0.88);
+}
+
+.dashContentRow {
+    transition: background-color 2.5s;
+    background-color: #46484a;
+}
+
+div#dashRow {
+    transition: background-color 2.5s;
+    background-color: black;
+}
+
+.dashItemThumbCol img {
+    border-color: #959595;
 }
