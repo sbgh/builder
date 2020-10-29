@@ -682,3 +682,25 @@ div#dashRow {
 .dashItemThumbCol img {
     border-color: #e6e6e6;
 }
+
+/*@property --colorPrimary {*/
+    /*syntax: '<color>';*/
+    /*initial-value: #ecececff;*/
+    /*inherits: false;*/
+/*}*/
+
+/*@property --colorSecondary {*/
+    /*syntax: '<color>';*/
+    /*initial-value: #ececec00;*/
+    /*inherits: false;*/
+/*}*/
+
+.top-row{
+    transition: background-color 2.5s;
+    background-color: #ecececd4;
+}
+
+/*.fadeTop {*/
+    /*!*transition: --colorPrimary 1s, --colorSecondary 1s;*!*/
+    /*background-image: linear-gradient( var(--colorPrimary) , var(--colorSecondary) );*/
+/*}*/

@@ -45,9 +45,6 @@ div#myNavbar {
    width: 100%;
 }
 
-.top-row{
-   position: relative;
-}
 
 .panel {
    margin-bottom: 0px;
@@ -1912,8 +1909,6 @@ div#firstRow {
    margin-top: 12px;
 }
 
-
-
 .dashTbody{
    display: grid;
    grid-template-columns: repeat(auto-fit, minmax(150px, 250px));
@@ -1935,7 +1930,8 @@ div#firstRow {
    height: calc(100vh - 30px);
    padding-left: 5px;
    display: flex;
-   flex-direction: column
+   flex-direction: column;
+   align-items: flex-start;
 }
 
 .dashListCol{
@@ -1972,14 +1968,14 @@ div#firstRow {
    /*noinspection ALL*/
    .dashRow {
       overflow-y: scroll;
-      /*height: calc(var(--vh, 1vh) * 100 - 30px);*/
-      /*min-height: calc(100vh - 30px);*/
-
    }
    .dashBoardBottomRow {
-      /*height: calc(100vh - 360px);*/
-      /*position: absolute;*/
       overflow-y: visible;
+      order: 2;
+   }
+
+   .top-row{
+      order: 1;
    }
 }
 @media (min-height: 501px) {
@@ -1988,13 +1984,20 @@ div#firstRow {
    .dashRow {
       overflow-y: hidden;
       width: 100%;
-      /*height: calc(var(--vh, 1vh) * 100 - 30px);*/
+   }
+
+   .top-row{
+      position: absolute;
+      backdrop-filter: blur(5px);
+      padding-bottom: 10px;
+      margin-right: 15px;
+      margin-left: 15px;
    }
 
    /*noinspection ALL*/
    .dashBoardBottomRow {
-      /*height: calc(var(--vh, 1vh) * 100 - 380px);*/
       overflow-y: auto;
+      padding-top: 300px;
    }
 }
 
@@ -2008,9 +2011,48 @@ div#firstRow {
    cursor: pointer;
 }
 
-.dashHr hr {
-   margin-top: 1rem;
-   margin-bottom: 0;
-   border: 0;
-   border-top: 1px solid #77777730;
-}
+/*.dashHr hr {*/
+   /*margin-top: 1rem;*/
+   /*margin-bottom: 0;*/
+   /*border: 0;*/
+   /*border-top: 1px solid #77777730;*/
+/*}*/
+
+/*.dashBoardBottomRow {*/
+   /*margin-top: 20px;*/
+/*}*/
+
+/*@property --colorPrimary {*/
+    /*syntax: '<color>';*/
+    /*initial-value: #ecececff;*/
+    /*inherits: false;*/
+/*}*/
+
+/*@property --colorSecondary {*/
+    /*syntax: '<color>';*/
+    /*initial-value: #ececec00;*/
+    /*inherits: false;*/
+/*}*/
+
+
+
+/*.fadeTop {*/
+   /*display: block;*/
+    /*position: absolute;*/
+    /*height: 20px;*/
+    /*width: 100%;*/
+   /*pointer-events: none;*/
+
+    /*!*THIS CRASHES CHROME AFTER A FEW CYCLES OF DEFAULT TO DARK - "aw snap"  Error code: "STATUS_ACCESS_VIOLATION"*!*/
+    /*!*transition: --colorPrimary 1s, --colorSecondary 1s;*!*/
+
+    /*background-image: linear-gradient( var(--colorPrimary) , var(--colorSecondary) );*/
+/*}*/
+
+/*@media (max-height: 500px) {*/
+
+   /*!*noinspection ALL*!*/
+   /*.fadeTop {*/
+      /*display: none;*/
+   /*}*/
+/*}*/
