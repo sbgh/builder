@@ -665,7 +665,6 @@
                         let newHtml = "";
                         $("#dashFuncDropdownMenu").html("");
                         for(let row in promoted){
-                            //newHtml += '<div>' + promoted[row].name + '</div>'
                             newHtml = "<div><a class='dropdown-item dashSystemFunctionItem' href='#' data-id='"+ promoted[row].id +"'></a></div>"
 
 
@@ -6303,7 +6302,7 @@ $("#componentsBtn").click();
                 <div class="" id="dashRow">
 
                     <div id="" class="row top-row">
-                        <div class="dash-panel-column" >
+                        <div class="col dash-panel-column" >
                             <div class="systemDetailPanelRow">
                                 <div class="dashboardDetails">
                                     <div class="dashboardLabel">System</div>
@@ -6340,7 +6339,7 @@ $("#componentsBtn").click();
                             </div>
 
                         </div>
-                        <div id='screenshot-panel-body' class="dashVideoCol" >
+                        <div id='screenshot-panel-body' class="col dashVideoCol" >
                             <div id="videoScreen">
 
                                 <div class="col videoCol">

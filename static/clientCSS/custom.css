@@ -821,7 +821,7 @@ input:checked + .slider:before {
    min-width: 350px;
 }
 .dashboardDetails{
-   margin-left: 15px;
+   margin-left: 25px;
 }
 
 
