@@ -670,7 +670,7 @@
 
 
                             $("#dashFuncDropdownMenu").append(newHtml);
-                            $("a[data-id="+promoted[row].id+"]").text(promoted[row].name ) ;
+                            $("a[data-id="+promoted[row].id+"]").text('\u0192 '+promoted[row].name ) ;
                         }
 
                         $(".dashSystemFunctionItem").on('click', function(){
@@ -6318,6 +6318,7 @@ $("#componentsBtn").click();
                                         </div>
                                         <div class="col">
                                             <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownFuncButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <!--<span>&#402;</span>-->
                                                 Functions
                                             </button>
                                             <div id="dashFuncDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownFuncButton">
