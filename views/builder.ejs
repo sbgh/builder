@@ -4310,6 +4310,8 @@ showFloatDesc()
                         floatPop("dashSystemDetails", "The systems description is displayed here.");
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
+
+                        $('#dashBoardBottomRow').animate({scrollTop: 0}, 4000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
@@ -4318,13 +4320,13 @@ showFloatDashTable()
                     }
                     function showFloatDashTable(){
                         $("#dashBtn").click();
-                        preferedPopPos = "top";
+                        preferedPopPos = "bottom";
                         floatPop("dashListCol","Below is a grid that displays promoted components that have been built or are ready to be built for the specified system.");
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},9000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout)
-                            showFloatDashCompOpen();
+showFloatDashCompOpen();
                         })
                     }
                     function showFloatDashCompOpen(){
@@ -6369,7 +6371,7 @@ $("#componentsBtn").click();
 
                     </div>
                     
-                    <div class=" dashBoardBottomRow">
+                    <div id ="dashBoardBottomRow" class=" dashBoardBottomRow">
                         <div id="dashListCol" class="dashListCol">
                             <!--<div class="fadeTop"></div>-->
                             <div id="dashTable" class="dashTbody"></div>
