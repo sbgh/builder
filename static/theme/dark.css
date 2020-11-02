@@ -870,6 +870,7 @@ div#dashRow {
 .top-row{
     transition: background-color 2.5s;
     background-color: #000000d4;
+    box-shadow: 1px 4px 8px rgb(0 0 0);
 
 }
 
