@@ -663,13 +663,15 @@
                         const promoted = JSON.parse(data);
 
                         let newHtml = "";
+                        $("#dashFuncDropdownMenu").html("");
                         for(let row in promoted){
                             //newHtml += '<div>' + promoted[row].name + '</div>'
-                            newHtml += "<div><a class=' dashSystemFunctionItem' href='#' data-id='"+ promoted[row].id +"'>"+ promoted[row].name +"</a></div>"
+                            newHtml = "<div><a class='dropdown-item dashSystemFunctionItem' href='#' data-id='"+ promoted[row].id +"'></a></div>"
 
 
+                            $("#dashFuncDropdownMenu").append(newHtml);
+                            $("a[data-id="+promoted[row].id+"]").text(promoted[row].name ) ;
                         }
-                        $("#systemFunctionsCol").html(newHtml)
 
                         $(".dashSystemFunctionItem").on('click', function(){
 
@@ -6305,19 +6307,32 @@ $("#componentsBtn").click();
                             <div class="systemDetailPanelRow">
                                 <div class="dashboardDetails">
                                     <div class="dashboardLabel">System</div>
-                                    <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        Pick...
-                                    </button>
-                                    <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
-                                        <div><a class="dropdown-item" href="#">Action</a></div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                Pick...
+                                            </button>
+                                            <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
+                                                <div><a class="dropdown-item" href="#">Action</a></div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownFuncButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                Functions
+                                            </button>
+                                            <div id="dashFuncDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownFuncButton">
+
+                                            </div>
+                                        </div>
                                     </div>
+
+
 
                                     <div id="dashSystemDetails" class="dashSystemDetails"></div>
 
                                 </div>
                                 <div class="dashboardDetails">
-                                    <div class="dashboardLabel">System Functions</div>
-                                    <div id = "systemFunctionsCol" class="systemFunctionsCol"></div>
+
 
                                 </div>
 

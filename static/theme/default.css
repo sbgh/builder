@@ -514,7 +514,7 @@ input:not(:checked) + .slider.round:before{
     z-index: 1001;
 }
 
-.vidMenuMatchOverlay, .dashSystemDropdownItem, .templateTypeDropdownItem, .topMenuDropdown{
+.vidMenuMatchOverlay, .dashSystemDropdownItem, .dashSystemFunctionItem, .templateTypeDropdownItem, .topMenuDropdown{
     background-color: rgba(236, 236, 236, 0.9);
 }
 
@@ -703,4 +703,8 @@ div#dashRow {
 /*.fadeTop {*/
     /*!*transition: --colorPrimary 1s, --colorSecondary 1s;*!*/
     /*background-image: linear-gradient( var(--colorPrimary) , var(--colorSecondary) );*/
+/*}*/
+
+/*div#dashFuncDropdownMenu {*/
+    /*background-color: rgba(236, 236, 236, 0.9);*/
 /*}*/

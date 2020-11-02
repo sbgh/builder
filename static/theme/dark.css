@@ -543,7 +543,7 @@ input:focus + .slider {
      border-color: inherit;
 }
 
-.dashSystemDropdownItem, .buildCodeDropdownItem, .newCompVarTypeDropdownItem, .buildCodePickItem {
+.dashSystemDropdownItem, .dashSystemFunctionItem, .buildCodeDropdownItem, .newCompVarTypeDropdownItem, .buildCodePickItem {
     transition: background-color 0.5s;
     background-color: rgb(60, 63, 65);
     border-bottom: 1px solid rgba(0,0,0,.125);
@@ -699,7 +699,7 @@ input:focus + .slider {
     background-color: rgba(43, 43, 43, 0);
 }
 
-.vidMenuMatchOverlay, .dashSystemDropdownItem, .templateTypeDropdownItem, .topMenuDropdown{
+.vidMenuMatchOverlay, .dashSystemDropdownItem, .dashSystemFunctionItem, .templateTypeDropdownItem, .topMenuDropdown{
     background-color: rgba(43, 43, 43, 0.9);
 }
 
@@ -877,5 +877,9 @@ div#dashRow {
 
     /*!*transition: --colorPrimary 1s, --colorSecondary 1s;*!*/
     /*!*background-image: linear-gradient( var(--colorPrimary) , var(--colorSecondary) );*!*/
+/*}*/
+
+/*div#dashFuncDropdownMenu {*/
+    /*background-color: rgba(0, 0, 0, 0.9);*/
 /*}*/
 

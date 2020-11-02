@@ -1081,6 +1081,7 @@ a.foundInSearchParent{
    max-width: 400px;
 }
 
+
 /*.buildCodeDropdownMenu{*/
    /*padding:0px ;*/
    /*max-height: 500px;*/
@@ -1090,7 +1091,7 @@ a.foundInSearchParent{
 
 
 
-.dashSystemDropdownItem, .newCompVarTypeDropdownItem {
+.dashSystemDropdownItem, .dashSystemFunctionItem, .newCompVarTypeDropdownItem {
     width: 200%;
 }
 
@@ -1541,13 +1542,16 @@ tbody.buildCodeTbody{
 }
 
 .dash-panel-column{
-   overflow: auto;
+   /*overflow-x: hidden;*/
+   /*overflow-y: auto;*/
    min-width: 32vw;
 }
 
 .dashVideoCol{
    padding-left: 0px;
+   margin-top: 24px;
 }
+
 #videoScreen, #vidMenuMatchNum{
    white-space:nowrap;
    display:inline-block;
