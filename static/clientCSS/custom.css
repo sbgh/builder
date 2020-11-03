@@ -1550,6 +1550,7 @@ tbody.buildCodeTbody{
 .dashVideoCol{
    padding-left: 0px;
    margin-top: 24px;
+   max-width: 61vh;
 }
 
 #videoScreen, #vidMenuMatchNum{
@@ -1969,6 +1970,10 @@ div#firstRow {
    .dashBoardBottomRow {
       overflow-y: visible;
       order: 2;
+   }
+   body{
+      /*scale: 50%;*/
+      /*transform: scale(0.35);*/
    }
 
    .top-row{

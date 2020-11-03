@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <!--<meta name="viewport" content="width=980, user-scalable=yes">-->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta id="myViewport"  name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>ezStack builder</title>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -38,6 +39,11 @@
         var bottomMinimizedFlag = true;
         <!-- doc.ready() -->
         $(document).ready(function() {
+
+            if (screen.width < 1050) {
+                var mvp = document.getElementById('myViewport');
+                mvp.setAttribute('content','user-scalable=yes,width=1050, initial-scale=1');
+            }
 
             $('#jobForm').on('submit', function(e){ e.preventDefault()});
             $('#sysForm').on('submit', function(e){ e.preventDefault()});
@@ -3830,7 +3836,7 @@
             if(!localStorage['locTreeWidth']){
                 setWindowWidth(250, container);
             }else{
-                setWindowWidth(JSON.parse(localStorage['locTreeWidth']).width, container); 
+                setWindowWidth(JSON.parse(localStorage['locTreeWidth']).width, container);
             }
 
             function setFormColWidth(){
