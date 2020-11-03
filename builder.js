@@ -563,7 +563,7 @@ function searchComponentProperties(AttributesArray){
                             foundObj[key].type = getType(key);
                             foundObj[key].parent = lastParent;
                             foundObj[key].li_attr = {"class": "matchTreeLi matchTreeLi-found"};
-                            foundObj[key].a_attr = {"class": "matchTreeA matchTreeA-found "}
+                            foundObj[key].a_attr = {"class": "matchTreeA matchTreeA-found "};
 
                             foundObjArr.push(foundObj[key]);
 
@@ -1011,43 +1011,44 @@ router.get("/JobsTree",function(req,res){
         rowdata.sort = SystemsJSON[key].sort > -1 ? SystemsJSON[key].sort : 0;
 
         //if type of component = 'system' then add type
-        if (SystemsJSON[key].comType === "system") {
-            rowdata.type = "system"
-        } else { //if non-system add type as 'job'
-            rowdata.type = "job";
-//console.log(SystemsJSON[key].name);
-            if (SystemsJSON[key].hasOwnProperty("enabled")) {
-                rowdata.enabled = SystemsJSON[key].enabled;
+        // if (SystemsJSON[key].comType === "system") {
+        //     rowdata.type = "system"
+        // } else { //if non-system add type as 'job'
+        //     rowdata.type = "job";
+        //     //console.log(SystemsJSON[key].name);
+        //     if (SystemsJSON[key].hasOwnProperty("enabled")) {
+        //         rowdata.enabled = SystemsJSON[key].enabled;
+        //
+        //         if (rowdata.enabled === 0) { //If enabled set type that is used in jstree type plugin
+        //             rowdata.type = "disabled";
+        //         }
+        //         else if (!SystemsJSON[key].hasOwnProperty("lastBuild")) {
+        //             rowdata.type = "needfull"
+        //         }
+        //
+        //         // else if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].rerunnable === 1) {
+        //         //     rowdata.type = "rerunnable"
+        //         // }
+        //     }
+        //     if (SystemsJSON[key].hasOwnProperty("buildCode")){
+        //         if (SystemsJSON[key].buildCode.linkArr.length > 0){
+        //             if(BuildCode.hasOwnProperty(  SystemsJSON[key].buildCode.linkArr[0]  )){
+        //                 if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].rerunnable === 1) {
+        //                     rowdata.type = "rerunnable"
+        //                 }
+        //             }else{
+        //                 rowdata.type = "disabled";
+        //             }
+        //
+        //         }else{
+        //             rowdata.type = "disabled";
+        //         }
+        //     }else{
+        //         rowdata.type = "disabled";
+        //     }
+        // }
 
-                if (rowdata.enabled === 0) { //If enabled set type that is used in jstree type plugin
-                    rowdata.type = "disabled";
-                }
-                else if (!SystemsJSON[key].hasOwnProperty("lastBuild")) {
-                    rowdata.type = "needfull"
-                }
-
-                // else if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].rerunnable === 1) {
-                //     rowdata.type = "rerunnable"
-                // }
-            }
-            if (SystemsJSON[key].hasOwnProperty("buildCode")){
-                if (SystemsJSON[key].buildCode.linkArr.length > 0){
-                    if(BuildCode.hasOwnProperty(  SystemsJSON[key].buildCode.linkArr[0]  )){
-                        if (BuildCode[SystemsJSON[key].buildCode.linkArr[0]].rerunnable === 1) {
-                            rowdata.type = "rerunnable"
-                        }
-                    }else{
-                        rowdata.type = "disabled";
-                    }
-
-                }else{
-                    rowdata.type = "disabled";
-                }
-            }else{
-                rowdata.type = "disabled";
-            }
-
-        }
+        rowdata.type = getType(key);
 
         rowdata.comType = SystemsJSON[key].comType;
 
