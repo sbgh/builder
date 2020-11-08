@@ -3972,6 +3972,10 @@ router.get("/delFiles",function(req,res){
             if (myFile.trim().length > 0){
                 try{ //try to delete file
                     fs.unlinkSync(filesPath + id + '/' + myFile);
+                    if(myFile === "thumbnail.png" && SystemsJSON.hasOwnProperty(id)){
+                        delete SystemsJSON[id].thumbnail;
+                        saveAllJSON(false)
+                    }
                 }catch(err){
                     message("error removing file: " + myFile.trim())
                 }
@@ -3985,7 +3989,7 @@ router.get("/delFiles",function(req,res){
                 var returnArr = [];
                 files.forEach(function(file){
                     returnArr.push({name:file})
-                })
+                });
                 res.end(JSON.stringify(returnArr))
             }
 
