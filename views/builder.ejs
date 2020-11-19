@@ -3415,9 +3415,13 @@
             $("#job-form-panel").scroll(function(){
                 updateAllPopovers();
             });
-            $("#dashboard").scroll(function(){
+            $("#dashBoardBottomRow").scroll(function(){
                 updateAllPopovers();
             });
+            $("#dashRow").scroll(function(){
+                updateAllPopovers();
+            });
+
 
 
             $("#new_button, #new_sys_button").on("click",function() {
@@ -4423,13 +4427,20 @@ showFloatStatus();
                     }
                     function showFloatDashCompBuildApps(){
                         $("#dashBtn").click();
-                        $(".dashTableRow")[1].click();
+//                        $(".dashTableRow")[1].click();
 
                         preferedPopPos = "bottom";
                         floatPop("dashTableBuildButton_1","Apps is a project that contains several web applications and services.<br><br><b class='floatPopTaskLabel'>Practise:</b> If the prime build is complete, click this build button and then click 'build' in the dialog to install 'Apps' on this server.")
 
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},60*1000);
+                        setTimeout(function(){
+                            const eleObj = document.getElementById("dashTableBuildButton_1");
+                            eleObj.scrollIntoView(false);
+
+                        },1000)
+
+
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
                             showFloatVideo();
