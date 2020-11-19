@@ -144,11 +144,11 @@ topLib-col-fixed-240{
 
 #consoleDiv{
    width:100%;
+   overflow-x: auto;
    padding-left: 3px;
    flex-grow: 2;
 }
 #resultsDiv{
-   /*width:100%;*/
    padding-left: 3px;
 }
 #terminal-container .terminal {
@@ -172,11 +172,13 @@ topLib-col-fixed-240{
 
 #results_html{
    white-space: pre;
-   display: inline-block;
+   /*display: inline-block;*/
    overflow-x: auto;
    overflow-y: hidden;
    background-color: #63657c;
    padding: 3px;
+   /*display: flex;*/
+   /*flex-direction: column-reverse;*/
 }
 
 .result_history{
@@ -528,7 +530,7 @@ padding-left: 0px;
 .topLeftForm{
    min-width: 410px;
    /*padding: 0px;*/
-   margin-left: 10px;
+   margin-left: 15px;
 }
 
 .vakata-contextmenu{
@@ -2001,6 +2003,7 @@ div#firstRow {
    .dashBoardBottomRow {
       overflow-y: auto;
       padding-top: 340px;
+      width: 100%;
    }
 }
 

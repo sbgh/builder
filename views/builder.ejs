@@ -2293,6 +2293,7 @@
                                     });
                                 }
                                 else if(row.substr(0,26) === 'message:CompletionSuccess:'){
+                                    $('#results_html')[0].scrollTop = $('#results_html')[0].scrollHeight;
                                     if(row.slice(26) === 'true'){
 //                                        $("#resultsStatus").append( "<i class='fa  fa-check fa-fw DashListRowPass'></i>");
                                         $("#resultsStatus").html(  $("#resultsStatus").html().replace('<img src="/images/throbber.gif">',"<i class='fa  fa-check fa-fw DashListRowPass'></i>"));
@@ -2320,7 +2321,8 @@
                                         $('#' + buildIDRunning + '_anchor').removeClass('runningJobCompleteSuccess').removeClass('runningJobCompleteFail').addClass("runningJob");
                                         if(buildIDRunningPrev !== ''){
                                           //  $('#results_html').animate({scrollTop: $('#results_html').get(0).scrollHeight}, 200);
-                                            $('#results_html').scrollTop($('#results_html').get(0).scrollHeight);
+                                            //$('#results_html').scrollTop($('#results_html').get(0).scrollHeight);
+//                                            $('#results_html').scrollTop = $('#results_html').scrollHeight;
 
                                             $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteFail').addClass("runningJobCompleteSuccess");
                                         }
@@ -2373,6 +2375,7 @@
                                 }
                                 else{
                                     $("#results_html").append(row + '<br>');
+//                                    $('#results_html')[0].scrollTop = $('#results_html')[0].scrollHeight;
                                 }
                             })
                         };
@@ -2380,6 +2383,7 @@
                         return xhr;
                     }
                 }).done(function (e) {
+                    $('#results_html')[0].scrollTop = $('#results_html')[0].scrollHeight;
                     if(localKey !== '' && sys.length !== 0 && !localStorage['key_' + sys]  ){
                         if($('#localStoreKeyCb').is(':checked')) {
                             localStorage['key_' + sys] = localKey
@@ -5541,13 +5545,15 @@ $("#componentsBtn").click();
                 setTimeout(function(){
                     $("#snapButton").removeClass('active'); }
                 , 300);
-                $(this).popover('dispose').popover({
-                    animation: true,
-                    content: "Snapped thumbnail",
-                    delay: { "show": 50, "hide": 100 },
-                    trigger: 'hover',
-                    template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
-                });
+                $(this).data('bs.popover').config.content = "Snapped thumbnail";
+                $(this).popover("show");
+//                $(this).popover('dispose').popover({
+//                    animation: true,
+//                    content: "Snapped thumbnail",
+//                    delay: { "show": 50, "hide": 100 },
+//                    trigger: 'hover',
+//                    template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+//                });
             });
             $("#snapButton").hide();
 
@@ -7314,6 +7320,11 @@ $("#componentsBtn").click();
                     Usage: snap:url<br/>
                     Instructs builder to launch an asynchronous process that will navigate to a url and take a snapshot, then save image as a component file resource called screenshot.png.<br/>
                     Eg: snap:http://google.com
+
+                    <li><b>setTimeout:</b></li>
+                    Usage: setTimeout:number-ms<br/>
+                    Instructs builder to set the 'no prompt' timeout to a value other then what is defined in the user setup.
+                    Eg: setTimeout:120000   will change the time out to 120000 ms (2 minutes)
 
                     <li><b>abort:</b></li>
                     Usage: abort:<br/>

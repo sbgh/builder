@@ -119,7 +119,7 @@ async function startChrome() {
 
     // default url to cast
     if(Page.hasOwnProperty("startScreencast")){
-        Page.navigate({url: "https://ezStack.systems"});
+        Page.navigate({url: "https://ezStack.systems?headless"});
 
         //start screen cast
         // Page.startScreencast({
@@ -2532,12 +2532,6 @@ router.post("/run",function(req,res){
     //set default timeout. May be over written by user prefs
     var timeOut = 30000;  //By default - how many ms all connections should wait for the prompt to reappear before connection is terminated
 
-    //lookup user pref timeout value
-    const timeoutNumber = parseInt(config.timeout);
-    if (timeoutNumber > 0 ){ //If config holds timeout, use it.
-        timeOut = timeoutNumber
-    }
-
     var lastTimeout;
     var exportVar = "";
 
@@ -2939,6 +2933,14 @@ router.post("/run",function(req,res){
         var aSyncInProgress = 0; //counter to indicate number of async processes in flight
         var deferredExit = false; //flag to indicate async processes exist
         var respBufferAccu = new Buffer([]); //response buffer
+
+        //lookup user pref timeout value
+        const timeoutNumber = parseInt(config.timeout);
+        if (timeoutNumber > 0 ){ //If config holds timeout, use it.
+            timeOut = timeoutNumber
+        }else{
+            timeOut = 3000;
+        }
 
         resultsArray = []; // array to hold results key vals init
         SystemsJSON[jobId].lastBuild = {}; //Obj to hold last build time stamp, pass/fall, url
@@ -3479,8 +3481,10 @@ router.post("/run",function(req,res){
                                         }
                                     }
                                 });
-                                if(nearestPromotedAn !== ""){
-                                    SystemsJSON[nearestPromotedAn].lastBuild.url=url;
+                                if(nearestPromotedAn && nearestPromotedAn !== ""){
+                                    if(SystemsJSON[nearestPromotedAn].hasOwnProperty('lastBuild')){
+                                        SystemsJSON[nearestPromotedAn].lastBuild.url=url;
+                                    }
                                 }
 
                                 (async function () {
@@ -3538,8 +3542,10 @@ router.post("/run",function(req,res){
                                         }
                                     }
                                 });
-                                if(nearestPromotedAn !== ""){
-                                    SystemsJSON[nearestPromotedAn].lastBuild.url=url;
+                                if(nearestPromotedAn && nearestPromotedAn !== ""){
+                                    if(SystemsJSON[nearestPromotedAn].hasOwnProperty('lastBuild')){
+                                        SystemsJSON[nearestPromotedAn].lastBuild.url=url;
+                                    }
                                 }
 
                                 (async function () {
@@ -3599,16 +3605,35 @@ router.post("/run",function(req,res){
                                     }
                                 });
                                 if(nearestPromotedAn !== ""){
-                                    SystemsJSON[nearestPromotedAn].lastBuild.launchUrl=url;
+                                    if(SystemsJSON[nearestPromotedAn].hasOwnProperty('lastBuild')){
+                                        SystemsJSON[nearestPromotedAn].lastBuild.launchUrl=url;
+                                    }
                                 }
 
                                 isDirective = true;
 
                             } else if
-                            (currentCommand.substr(0, 11) === "restart:") {
+                            (currentCommand.substr(0, 8) === "restart:") {
 
                                 //request client to restart
                                 message("restart:request client to restart");
+                                isDirective = true;
+
+                            } else if
+                            (currentCommand.substr(0, 11) === "setTimeout:") {
+
+                                //set the 'no prompt' timeout to a value for the remainder of this session
+
+                                var TOString = currentCommand.replace('setTimeout:','').trim();
+                                if(parseInt(TOString ) > 0){
+                                    timeOut = parseInt(TOString);
+                                    clearTimeout(lastTimeout);
+                                    lastTimeout = setTimeout(conTimeout, timeOut);
+
+                                }else{
+                                    message("setTimeout: value error")
+                                }
+
                                 isDirective = true;
 
                             } else if
@@ -4276,7 +4301,7 @@ router.get("/getPromoted",function(req,res){
                         }
                     });
 
-                    rowdata.sortStr = sortStr;
+                    // rowdata.sortStr = sortStr;
                     rowdata.aNames = aNames;
 
                     resJSON.push(rowdata);
@@ -4284,14 +4309,25 @@ router.get("/getPromoted",function(req,res){
             }
         }
     }
+
     //sort all rows by sort property
     resJSON.sort(function(a, b){
-        var keyA = a.sortStr,
-            keyB = b.sortStr;
 
-        if(keyA < keyB) return -1;
-        if(keyA > keyB) return 1;
-        return 0;
+        var compA = "";
+        var compB = "";
+
+        a.ft.split("/").forEach(function(id){
+            compA += id === "#" ? "0000000/" : ("0000000" + SystemsJSON[id].sort).slice((SystemsJSON[id].sort).length ) + "/"
+        });
+        compA += ("0000000" + a.sort).slice((a.sort).length );
+
+        b.ft.split("/").forEach(function(id){
+            compB += id === "#" ? "0000000/" : ("0000000" + SystemsJSON[id].sort).slice((SystemsJSON[id].sort).length ) + "/"
+        });
+        compB += ("0000000" + b.sort).slice((b.sort).length );
+
+        //https://stackoverflow.com/questions/4340227/sort-mixed-alpha-numeric-array
+        return compA.localeCompare(compB, 'en', { numeric: true });
     });
 
     res.end(JSON.stringify(resJSON));
