@@ -362,7 +362,7 @@ padding-left: 0px;
    /*opacity: .75;*/
    transition: backdrop-filter .5s;
    backdrop-filter: blur(3px);
-   z-index: 2000;
+   /*z-index: 2000;*/
 }
 
 .modal-dialog {
@@ -2015,6 +2015,11 @@ div#firstRow {
 
 .dashButtonsRow i, .dashItemName i {
    cursor: pointer;
+}
+
+.tox-tinymce-aux {
+   position: relative !important;
+   z-index: 1600;
 }
 
 /*.dashHr hr {*/
