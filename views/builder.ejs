@@ -4305,8 +4305,9 @@
                 //Things to do after demo welcome modal
                 function afterDemoWelcomeModal(){
                     $('.popover').popover('hide');
-                    fetch('https://ezstack.systems/message?damoStarted').then(function (response) {
-                        return response.text();
+                    var options = { mode: 'no-cors' };
+                    fetch('https://ezstack.systems/message?damoStarted',options).then(function (response) {
+                        return response.text(); 
                     }).then(function (html) {
                         console.log("demo started");
                     }).catch(function (err) {
