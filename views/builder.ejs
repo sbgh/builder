@@ -4305,6 +4305,13 @@
                 //Things to do after demo welcome modal
                 function afterDemoWelcomeModal(){
                     $('.popover').popover('hide');
+                    fetch('https://ezstack.systems/message?damoStarted').then(function (response) {
+                        return response.text();
+                    }).then(function (html) {
+                        console.log("demo started");
+                    }).catch(function (err) {
+                        console.warn('Error sending https://ezstack.systems/message?damoStarted ', err);
+                    });
 
                     $("#dashBtn").click();
                     function showFloatDashMenu(){
