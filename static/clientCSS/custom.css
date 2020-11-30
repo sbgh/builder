@@ -2021,6 +2021,13 @@ div#firstRow {
    position: relative !important;
    z-index: 1600;
 }
+input.CheckboxFileList {
+    margin-right: 5px;
+    margin-left: 5px;
+}
+#pasteNewImage, #fileList{
+   width: 370px;
+}
 
 /*.dashHr hr {*/
    /*margin-top: 1rem;*/

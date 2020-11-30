@@ -3470,22 +3470,22 @@ router.post("/run",function(req,res){
                                 //Send url to client
                                 message('url:' + url);
 
-                                //add url tag to current comp and to nearest promoted ancestor
+                                //add url tag to current comp
                                 SystemsJSON[jobId].lastBuild.url=url;
-                                var anArr = job.ft.replace('#/', '').split('/');
-                                var nearestPromotedAn = "";
-                                anArr.forEach(function (an) {
-                                    if (SystemsJSON[an].hasOwnProperty("promoted")){
-                                        if (SystemsJSON[an].promoted === 1){
-                                            nearestPromotedAn = an;
-                                        }
-                                    }
-                                });
-                                if(nearestPromotedAn && nearestPromotedAn !== ""){
-                                    if(SystemsJSON[nearestPromotedAn].hasOwnProperty('lastBuild')){
-                                        SystemsJSON[nearestPromotedAn].lastBuild.url=url;
-                                    }
-                                }
+                                // var anArr = job.ft.replace('#/', '').split('/');
+                                // var nearestPromotedAn = "";
+                                // anArr.forEach(function (an) {
+                                //     if (SystemsJSON[an].hasOwnProperty("promoted")){
+                                //         if (SystemsJSON[an].promoted === 1){
+                                //             nearestPromotedAn = an;
+                                //         }
+                                //     }
+                                // });
+                                // if(nearestPromotedAn && nearestPromotedAn !== ""){
+                                //     if(SystemsJSON[nearestPromotedAn].hasOwnProperty('lastBuild')){
+                                //         SystemsJSON[nearestPromotedAn].lastBuild.url=url;
+                                //     }
+                                // }
 
                                 (async function () {
 
@@ -3594,21 +3594,7 @@ router.post("/run",function(req,res){
                                 //Send url to client
                                 message('launch:' + url);
 
-
-                                var anArr = job.ft.replace('#/', '').split('/');
-                                var nearestPromotedAn = "";
-                                anArr.forEach(function (an) {
-                                    if (SystemsJSON[an].hasOwnProperty("promoted")){
-                                        if (SystemsJSON[an].promoted === 1){
-                                            nearestPromotedAn = an;
-                                        }
-                                    }
-                                });
-                                if(nearestPromotedAn !== ""){
-                                    if(SystemsJSON[nearestPromotedAn].hasOwnProperty('lastBuild')){
-                                        SystemsJSON[nearestPromotedAn].lastBuild.launchUrl=url;
-                                    }
-                                }
+                                SystemsJSON[jobId].lastBuild.launch=url;
 
                                 isDirective = true;
 
@@ -3969,20 +3955,22 @@ router.get(["/uploads/*", "/library/*"],function(req,res){
 router.get("/fileList",function(req,res){
     var id = req.query.id;
 
-    fs.readdir(filesPath + id + '/' , function(err, files){
-        if(err){
-            //console.log(err);
-            res.end(JSON.stringify([]))
-        }else{
-            var returnArr = [];
-            files.forEach(function(file){
-                returnArr.push({name:file})
-            });
-            res.end(JSON.stringify(returnArr))
-        }
-
-    })
-
+    if( id === "" || (!BuildCode.hasOwnProperty(id) && !SystemsJSON.hasOwnProperty(id))){
+        res.end(JSON.stringify([]))
+    } else{
+        fs.readdir(filesPath + id + '/' , function(err, files){
+            if(err){
+                //console.log(err);
+                res.end(JSON.stringify([]))
+            }else{
+                var returnArr = [];
+                files.forEach(function(file){
+                    returnArr.push({name:file})
+                });
+                res.end(JSON.stringify(returnArr))
+            }
+        })
+    }
 });
 
 
@@ -4002,7 +3990,7 @@ router.get("/delFiles",function(req,res){
                         saveAllJSON(false)
                     }
                 }catch(err){
-                    message("error removing file: " + myFile.trim())
+                    console.log("error removing file: " + myFile.trim())
                 }
 
             }
@@ -4574,6 +4562,37 @@ router.get("/snapComp",function(req,res){
 
 
     res.end("");
+
+});
+
+
+router.post("/setNewImage",function(req,res) {
+    //console.log("submit");
+
+    var reqJSON = req.body;
+    var id = reqJSON.id;
+    var fileName = reqJSON.fileName;
+    fileName = fileName.replace(/([^a-z0-9]+)/gi, '-');
+    if (fileName === ""){
+        fileName = "new_image.png"
+    }else{
+        fileName = fileName + ".png"
+    }
+
+    if (reqJSON.hasOwnProperty('iconURL')){
+        var base64Data = reqJSON.iconURL.replace(/^data:image\/png;base64,/, "");
+        //console.log("base64Data: "+base64Data);
+        if (base64Data !== '') {
+            var iconPath = filesPath + id + '/' + fileName;
+
+            //console.log(iconPath);
+            if (!fs.existsSync(filesPath + id)) {
+                fs.mkdirSync(filesPath + id)
+            }
+            fs.writeFileSync(iconPath, base64Data, 'base64');
+        }
+    }
+    res.end('');
 
 });
 

@@ -636,6 +636,10 @@
                     $("#results_codes").html('');
                     $('#messageSpan').html('');
 
+                    $("#resampledNewImage").html('');
+                    $("#newImageURL").val('');
+                    $("#pasteNewImage").val('');
+
                     var inputFields = $("#job-form-panel").find('textarea');
                     inputFields.each(setWidth);
                     function setWidth(index, element) {
@@ -930,24 +934,24 @@
                             localStorage['dashListRowClicked'] = id;
                         }
 
-                        $('.dashListRowNotClicked').on('click', function() {
-                            var id = $(this).attr('data-Id');
-                            selectDashTableRow(id);
-
-                            $.get('/Jobs', {id: id}, function (data) {
-                                //Navigate to lastbuild.url if exists
-                                if (data[0].lastBuild) {
-                                    if (data[0].lastBuild.url) {
-                                        const url = data[0].lastBuild.url;
-                                        navigate(url);
-                                    }
-                                    if (data[0].lastBuild.launchUrl) {
-                                        const launchUrl = data[0].lastBuild.launchUrl;
-                                        updateLaunchLink(launchUrl);
-                                    }
-                                }
-                            });
-                        })
+//                        $('.dashListRowNotClicked').on('click', function() {
+//                            var id = $(this).attr('data-Id');
+//                            selectDashTableRow(id);
+//
+//                            $.get('/Jobs', {id: id}, function (data) {
+//                                //Navigate to lastbuild.url if exists
+//                                if (data[0].lastBuild) {
+//                                    if (data[0].lastBuild.url) {
+//                                        const url = data[0].lastBuild.url;
+//                                        navigate(url);
+//                                    }
+//                                    if (data[0].lastBuild.launchUrl) {
+//                                        const launchUrl = data[0].lastBuild.launchUrl;
+//                                        updateLaunchLink(launchUrl);
+//                                    }
+//                                }
+//                            });
+//                        })
 
                         $('.dashTableEnableItem').on('click', function(){
                                 var id = $(this).attr('data-ID');
@@ -1477,13 +1481,13 @@
                             const url = data[0].lastBuild.url;
                             navigate(url);
                         }
-                        if(data[0].lastBuild.launchUrl){
-                            const url= data[0].lastBuild.launchUrl;
+                        if(data[0].lastBuild.launch){
+                            const url= data[0].lastBuild.launch;
                             updateLaunchLink(url);
                         }
                     }
 
-                    //format screen for either read mode or write
+
                     if(viewmode === "read"){
                         readModeJob();
                         $.get('/fileList', { id: $('#id').val() }, function(data) {
@@ -2708,6 +2712,9 @@
                 $("#moveUp_button").hide();
                 $("#moveDn_button").hide();
                 $("#screenShotImageHolder").show();
+                $("#newImagePaste").show();
+                $("#setImageBtn").hide();
+
 
                 var checkBoxes = $(".varCheckboxFileList")
                 if (checkBoxes.exists()){
@@ -2717,6 +2724,9 @@
                 $.get('/fileList', { id: $('#buildCode').val() }, function(data) {
                     $('#resourceFiles').val(data);
                     populateFileList($('#buildCode').val(), data, true, "#fileList");
+                });
+                $.get('/fileList', { id: $('#id').val() }, function(data) {
+                    populateFileList($('#id').val(), data, true, "#fileCompList");
                 });
 
                 scriptEditor.renderer.$cursorLayer.element.style.display = "";
@@ -2800,6 +2810,7 @@
                 $(".compVarEditButton").hide();
                 $(".compVarEditValButton").hide()
                 $("#screenShotImageHolder").show();
+                $("#newImagePaste").hide();
 
                 $("#buildCodeNameEdit").hide();
                 $("#buildCodeNameRead").show();
@@ -3875,30 +3886,33 @@
 
             //Resource file management
             function populateFileList(id, data, editMode, target){
-                var fileNamesHtmlHeader = "<div><table style='width: 50%;'  role='grid' class='table table-striped table-bordered table-hover dataTable no-footer dtr-inline var_Table' id='dataTables-fileList' width='50%'><tbody>";
-                var fileNamesHtmlFooter = "</tbody></table></div>";
-                var fileNamesHtml = "";
-                var fileNamesHtmlEmpty = "<tr role='row' class='gradeA odd'><td width = '10%'><br/></td></tr>";
+                var fList =''
+                $(target).html('')
                 try{
-                    var fList = JSON.parse(data);
-                    if(fList.length > 0){
-                        fList.forEach(function(fName){
-                            fileNamesHtml += "<tr role='row' class='gradeA odd'><td width = '10%'>"
-                            fileNamesHtml +="<span class='varCheckboxFileList'><input class='CheckboxFileList' value='" + fName.name + "' type='checkbox'/></span>";
-                            fileNamesHtml += "<a class='fileListLink' href='/uploads/" + id + "/" + fName.name + "' target='_new'>" + fName.name + "</a>";
-                            fileNamesHtml +="</td></tr>";
-                        })
-                    }else{
-                        fileNamesHtml += fileNamesHtmlEmpty;
-                    }
-                    $(target).html(fileNamesHtmlHeader + fileNamesHtml + fileNamesHtmlFooter);
-                    if(!editMode){
-                        $(".varCheckboxFileList").hide();
+                    fList = JSON.parse(data);
+                } catch (e) {
+                    return false
+                }
+                if(fList.length > 0){
+                    for(let x in fList){
+                        let fHtml = '<div class="fileList" data-index="'+x+'"><input type="checkbox" class="CheckboxFileList" value="' + fList[x].name + '"/>'
+                        fHtml += '<a class="fileListLink" href="/uploads/' + id + '/' + fList[x].name + '" target="_new"></a>'
+                        fHtml += '</div>'
+                        $(target).append(fHtml);
                     }
 
-                } catch (e) {
-                    $(target).html(fileNamesHtmlHeader + fileNamesHtmlEmpty + fileNamesHtmlFooter); //#fileCompList
+                    $(target).find(".fileList").each(function(){
+                        index = $(this).attr("data-index")
+                        $(this).find(".fileListLink").text(fList[index].name)
+                    })
+                    if(!editMode){
+                        $(target).find(".CheckboxFileList").hide()
+                    }
+
+                }else{
+                    return false
                 }
+                return true
             }
 
             function populateLibFileList(data){
@@ -3946,7 +3960,6 @@
                     },
                     url: '/delFiles',
                     success : function(data) {
-                        $('#resourceFiles').val(data);
                         populateFileList($('#id').val(), data, true, "#fileCompList");
                     },
                     error : function(error) {
@@ -4307,7 +4320,7 @@
                     $('.popover').popover('hide');
                     var options = { mode: 'no-cors' };
                     fetch('https://ezstack.systems/message?damoStarted',options).then(function (response) {
-                        return response.text(); 
+                        return response.text();
                     }).then(function (html) {
                         console.log("demo started");
                     }).catch(function (err) {
@@ -5232,9 +5245,6 @@ $("#componentsBtn").click();
                     $('#jslibtree_div').hide();
                     $('#jstree_div').show( function(){
                         selectedNode = $('#jstree_div').jstree('get_selected', true);
-//                        if(selectedNode.length !== 0){
-//                            $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus()
-//                        };
                     });
 
                     if(!bottomHiddenFlag){
@@ -5566,23 +5576,8 @@ $("#componentsBtn").click();
                 , 300);
                 $(this).data('bs.popover').config.content = "Snapped thumbnail";
                 $(this).popover("show");
-//                $(this).popover('dispose').popover({
-//                    animation: true,
-//                    content: "Snapped thumbnail",
-//                    delay: { "show": 50, "hide": 100 },
-//                    trigger: 'hover',
-//                    template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
-//                });
             });
             $("#snapButton").hide();
-
-//            $("#snapButton").popover('dispose').popover({
-//                animation: true,
-//                content: "Click to snap thumbnail image",
-//                delay: { "show": 500, "hide": 100 },
-//                trigger: 'hover',
-//                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
-//            });
 
             $("#videoRefreshLink").on('click', function(e){
                 $.get("/endChrome");
@@ -5615,13 +5610,11 @@ $("#componentsBtn").click();
                 trigger: 'hover',
                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
             });
-//var launchUrl = "";
+
             function updateLaunchLink(url){
                 var appLink = "<a href='" + url +"' alt='" + url +"' target='_new' ><i class='fa  fa-external-link fa-fw '></i>" + '[launch]' + "</a><i id='launchLinkCopy' class='fa  fa-copy fa-fw'>";
                 $("#launchLink").html( appLink);
                 localStorage['launchLink'] = url;
-
-//                launchUrl = url;
 
                 $("#launchLinkCopy").click(function(event){
                     
@@ -6134,6 +6127,33 @@ $("#componentsBtn").click();
                 main.css({'transition': 'padding-left 0.2s ease-in', 'padding-left':'0px' });
             });
 
+            $("#setImageBtn").click(function(){
+                var mydata = {};
+                mydata.id = $("#buildCode").val();
+                mydata.iconURL = $("#newImageURL").val();
+                mydata.fileName = $("#pasteNewImage").val();
+                $.ajax({
+                    type: 'POST',
+                    data: JSON.stringify(mydata),
+                    dataType : "text",
+                    headers: {
+                        "content-type": "application/json",
+                    },
+                    url: '/setNewImage',
+                    success : function(result) {
+
+                        $.get('/fileList', { id: $('#buildCode').val() }, function(data) {
+                            $('#resourceFiles').val(data);
+                            populateFileList($('#buildCode').val(), data, true, "#fileList");
+                        });
+
+                    },
+                    error : function(error) {
+                        console.log(error)
+                    }
+                })
+            })
+
 
         });
 
@@ -6285,15 +6305,14 @@ $("#componentsBtn").click();
                 var canvas = document.createElement("canvas");
                 var ctx = canvas.getContext("2d");
 
-                canvas.width = 210; // target width
-                canvas.height = 210; // target height
-
                 var image = new Image();
 
                 image.onload = function(e) {
+                    canvas.width = image.width;
+                    canvas.height = image.height;
                     ctx.drawImage(image,
-                        0, 0, image.width, image.height,
-                        0, 0, canvas.width, canvas.height
+                        0, 0, image.width, image.height, 
+                        0, 0, image.width, image.height
                     );
                     // create a new base64 encoding
                     var resampledImage = new Image();
@@ -6303,6 +6322,7 @@ $("#componentsBtn").click();
                     var rs = document.getElementById("resampledNewImage");
                     rs.innerHTML = '';
                     rs.appendChild(resampledImage);
+                    $("#setImageBtn").show();
                 };
                 image.src = dataURL;
 
@@ -6786,10 +6806,11 @@ $("#componentsBtn").click();
                                                                     <!--<label class="build-label">Thumbnail</label>-->
                                                                     <!--<div id="jobThumbnail"><img width="210" height="210" src="" style="display: none;"></div>-->
                                                                     <div id="newImagePaste" style="">
+                                                                        <label class="build-label">New PNG Image</label>
                                                                         <!--<p>Paste thumbnail image: </p>-->
-                                                                        <span><input type="text" id="pasteNewImage" class="form-control" placeholder="Paste new image here"></span>
+                                                                        <span><input type="text" id="pasteNewImage" class="form-control" placeholder="Paste new image here and enter new file name"><button id="setImageBtn" class="btn btn-default jobFormbtn">Set</button></span>
                                                                         <div id="resampledNewImage"></div>
-                                                                        <input type="hidden" id="newImagelURL" value="">
+                                                                        <input type="hidden" id="newImageURL" value="">
                                                                     </div>
                                                                 </div>
 
@@ -6837,21 +6858,15 @@ $("#componentsBtn").click();
                                                                     <div class="form-group"><label class="build-label">Price: </label><input class="form-control form-custom" id="price"></div>
                                                                 </div>
                                                                 </div>
-                                                                <div class="row ">
+                                                                <div class="row "><div class="col-6 ">
                                                                     <div class="form-group">
                                                                         <label class="build-label">Component File Resources
                                                                             <!--<a id='newCompFileButton' class='newFile' href='#'><i class="fa fa-plus fa-fw"></i></a>-->
                                                                             <a id='delCompFileButton' class='delFile' href='#'><i class="fa fa-minus fa-fw"></i></a>
                                                                         </label>
                                                                         <div id = 'fileCompList' class = 'fileList'></div>
-                                                                        <!--<div id = 'fileCompUpload'>-->
-                                                                            <!--<div class="progress">-->
-                                                                                <!--<div class="progress-bar" role="progressbar"></div>-->
-                                                                            <!--</div>-->
-                                                                            <!--<input id="upload-input" type="file" name="uploads[]" multiple="multiple">-->
-                                                                        <!--</div>-->
                                                                     </div>
-                                                                </div>
+                                                                </div></div>
                                                                 <!--TESTING-->
                                                                 <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
                                                                 <div class="form-group">
