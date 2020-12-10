@@ -372,7 +372,7 @@
                             var pickedDir = $(this).attr('data-ID');
                             pickedLib = pickedDir;
 
-                            $("#componentsRow").show();
+                            $("#componentsRowContainer").show();
                             $("#jobScreen").hide();
                             $("#sysScreen").hide();
                             $("#dashRow").hide(function(){
@@ -432,7 +432,7 @@
                         $('#jstree_div').jstree("deselect_all");
 
                         $("#dashRow").hide();
-                        $("#componentsRow").show();
+                        $("#componentsRowContainer").show();
                         $("#sysScreen").hide();
                         $("#jobScreen").show();
                         $("#comType").val('Job');
@@ -442,7 +442,7 @@
                         readModeLibSys();
                         $('#jstree_div').jstree("deselect_all");
                         $("#dashRow").hide();
-                        $("#componentsRow").show();
+                        $("#componentsRowContainer").show();
                         $("#sysScreen").show();
                         $("#jobScreen").hide();
                         $("#comType").val('system');
@@ -1374,7 +1374,7 @@
                         $('#jstree_div').jstree(true).get_node(clickedNode, true).children('.jstree-anchor').focus();
 
                     });
-
+                    $("#buildCode").val((data[0].buildCode.linkArr[0]));
                     loadBuildCode(data[0].buildCode.linkArr[0]);
 
                     $("#comType").val(data[0].comType);
@@ -1507,185 +1507,190 @@
 //                    console.log("try to get build code " + data[0].buildCode.linkArr[0]);
                 $.get('/BuildCode', { id: id }, function(data) {
 
-                    // testing vvvvvvvvvvvvvvvvvvv
-                    var dispData = JSON.parse(JSON.stringify(data[0]) )  ;
-                    $("#buildCodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  );
-                    // testing ^^^^^^^^^^^^^^^^^^^
+                    if($("#buildCode").val() === data[0].id){
 
-                    if(data[0].hasOwnProperty("id")){
-                        if(data[0].id === ""){
-                            $("#buildCode").val("");
-                            $("#newBuildCodeName").val("New Build Code");
-                            $("#buildCodeNameRead").html("New Build Code");
-                            scriptEditor.session.setValue("");
-                            $('#custTemplates').html("");
+// testing vvvvvvvvvvvvvvvvvvv
+                        var dispData = JSON.parse(JSON.stringify(data[0]) )  ;
+                        $("#buildCodeData").val(JSON.stringify(dispData).split(',"').join(',\n"')  )
+// testing ^^^^^^^^^^^^^^^^^^^
 
-                            $('#rerunnable').prop('checked', false);
-                            $('#rerunnableVal').html('No');
-                            $('#sysFunc').prop('checked', false);
-                            $('#sysFuncVal').html('No');
-                            $('#runLoc').prop('checked', false);
-                            $('#runLocVal').html('No');
+                        if(data[0].hasOwnProperty("id")){
+                            if(data[0].id === ""){
+                                $("#buildCode").val("");
+                                $("#newBuildCodeName").val("New Build Code");
+                                $("#buildCodeNameRead").html("New Build Code");
+                                scriptEditor.session.setValue("");
+                                $('#custTemplates').html("");
 
-                            $("#alsoUsedInMess").text("Not used in any other component")
-                            $("#buildCodeMatch").html("");
-                            $("#buildCodeCopyButton").hide();
-                            $("#buildCodeForkButton").hide();
-                            currentTemplatesArr = [];
-                        }else{
-                            $("#buildCodeCopyButton").show();
-                            $("#buildCodeForkButton").show();
-                            let thisId = data[0].id
-                            $("#buildCode").val(thisId);
-                            $("#newBuildCodeName").val(data[0].name);
-                            $("#buildCodeNameRead").html(data[0].name);
-
-                            if(data[0].rerunnable === 1){
-                                $('#rerunnable').prop('checked', true);
-                                $('#rerunnableVal').html('Yes');
-                            }else{
                                 $('#rerunnable').prop('checked', false);
                                 $('#rerunnableVal').html('No');
-                            }
-
-                            if(data[0].systemFunction === 1){
-                                $('#sysFunc').prop('checked', true);
-                                $('#sysFuncVal').html('Yes');
-                            }else{
                                 $('#sysFunc').prop('checked', false);
-                                $('#sysFuncVal').html('No')
-                            }
-
-                            if(data[0].runLocal === 1){
-                                $('#runLoc').prop('checked', true);
-                                $('#runLocVal').html('Yes')
-                            }else{
+                                $('#sysFuncVal').html('No');
                                 $('#runLoc').prop('checked', false);
                                 $('#runLocVal').html('No');
-                            }
 
-                            var curTxtVal = scriptEditor.getValue();
-                            var newTxtVal = data[0].script;
-                            if(curTxtVal !== newTxtVal){
-                                scriptEditor.session.setValue(newTxtVal);
-                            }
+                                $("#alsoUsedInMess").text("Not used in any other component")
+                                $("#buildCodeMatch").html("");
+                                $("#buildCodeCopyButton").hide();
+                                $("#buildCodeForkButton").hide();
+                                currentTemplatesArr = [];
+                            }else{
+                                $("#buildCodeCopyButton").show();
+                                $("#buildCodeForkButton").show();
 
-                            //load templates
-                            var x=0;
-                            var tempObjArr = data[0].templates.tempArr;
+                                $("#newBuildCodeName").val(data[0].name);
+                                $("#buildCodeNameRead").html(data[0].name);
 
-                            tempObjArr.forEach(function(tempObj){
-
-                                //if there is not an instance to reuse create a new
-                                if(!currentTemplatesArr[x]){
-                                    var inHtml = authorTemplateHTML(x, true);
-
-                                    $('#custTemplates').append(inHtml);
-
-                                    currentTemplatesArr.push(ace.edit("template"+x.toString()));
-
-                                    currentTemplatesArr[currentTemplatesArr.length-1].session.setMode("ace/mode/text");
-                                    document.getElementById("template"+x.toString()).style.fontSize='14px';
-
-                                    currentTemplatesArr[currentTemplatesArr.length-1].renderer.$cursorLayer.element.style.display = "none"
-
-                                    loadjobTempTypeDropdown(x);
-                                    $("#templateWindowMin"+x.toString()).hide();
-
-                                    $("#templateWindowMax"+x.toString()).click( function(){
-                                        var inx = parseInt($(this).attr('data-inx'), 10);
-                                        setTempAceHeight(inx, "max");
-                                        $("#templateWindowMax"+inx.toString()).hide();
-                                        $("#templateWindowMin"+inx.toString()).show()
-                                    })
-                                    $("#templateWindowMin"+x.toString()).click( function(){
-                                        var inx = parseInt($(this).attr('data-inx'), 10);
-                                        setTempAceHeight(inx, "min");
-                                        $("#templateWindowMax"+inx.toString()).show();
-                                        $("#templateWindowMin"+inx.toString()).hide()
-                                    })
+                                if(data[0].rerunnable === 1){
+                                    $('#rerunnable').prop('checked', true);
+                                    $('#rerunnableVal').html('Yes');
                                 }else{
-                                    //unhide the old template code to reuse it
-                                    $("#templateBlock" + x.toString()).show();
+                                    $('#rerunnable').prop('checked', false);
+                                    $('#rerunnableVal').html('No');
                                 }
 
-                                currentTemplatesArr[x].session.setValue(tempObj.c);
-                                currentTemplatesArr[x].isValid = true;
-                                x++;
-                            });
+                                if(data[0].systemFunction === 1){
+                                    $('#sysFunc').prop('checked', true);
+                                    $('#sysFuncVal').html('Yes');
+                                }else{
+                                    $('#sysFunc').prop('checked', false);
+                                    $('#sysFuncVal').html('No')
+                                }
 
-                            //mark the rest if the ace instances as invalid, hide the block and clear the values so they can be recycled
-                            while (x < currentTemplatesArr.length ){
-                                $("#templateBlock" + x.toString()).hide();
-                                currentTemplatesArr[x].session.setValue("");
-                                currentTemplatesArr[x].isValid = false;
-                                x++;
-                            }
+                                if(data[0].runLocal === 1){
+                                    $('#runLoc').prop('checked', true);
+                                    $('#runLocVal').html('Yes')
+                                }else{
+                                    $('#runLoc').prop('checked', false);
+                                    $('#runLocVal').html('No');
+                                }
 
-                            //insert the contents of the instances and populate type dropdowns
-                            x=0;
-                            tempObjArr.forEach(function(tempObj){
-                                var tempType =  tempObj.t === "" ? "text" :  tempObj.t;
-                                currentTemplatesArr[x].session.setMode("ace/mode/" + tempType);
-                                $("#templateType" + x.toString()).val(tempType);
-                                $("#dropdownTemplateTypeButton"+x.toString())[0].innerHTML = tempType;
-                                x++;
-                            })
+                                var curTxtVal = scriptEditor.getValue();
+                                var newTxtVal = data[0].script;
+                                if(curTxtVal !== newTxtVal){
+                                    scriptEditor.session.setValue(newTxtVal);
+                                }
 
-                            //set the style if eack instance
-                            setAceStyle(currentStyleName);
-                            $(".ace_editor").addClass("aceDisabled");
+                                //load templates
+                                var x=0;
+                                var tempObjArr = data[0].templates.tempArr;
 
-                            //hide the cursor for each instance
-                            for(var inx in currentTemplatesArr){
-                                currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "none";
-                                currentTemplatesArr[inx].setReadOnly(true);
-                            }
+                                tempObjArr.forEach(function(tempObj){
 
-                            $('#resourceFiles').val(data[0].resourceFiles);
-                            populateFileList( $('#buildCode').val(), $('#resourceFiles').val(), false, "#fileList");
+                                    //if there is not an instance to reuse create a new
+                                    if(!currentTemplatesArr[x]){
+                                        var inHtml = authorTemplateHTML(x, true);
 
-                            $("#buildCodeMatch").html("");
-                            $.get('/componentsByBcId', { id: data[0].id }, function(data) {
-                                var rowHtml;
-                                const dataObj = JSON.parse(data);
-                                const  buildCodeMatch = dataObj.compArr;
-                                const thistId = $("#id").val();
-                                let x=0;
-                                for (var key in buildCodeMatch) {
-                                    if (buildCodeMatch.hasOwnProperty(key) && thistId !== buildCodeMatch[key].id) {
-                                        rowHtml = '<div data-id="'+buildCodeMatch[key].id+'" class="buildCodeMatchRow">';
-                                        rowHtml += '<i class="fa  fa-folder-open fa-fw "></i>';
-                                        rowHtml += buildCodeMatch[key].systemName + ' : ';
-                                        rowHtml += buildCodeMatch[key].name + '</div>';
+                                        $('#custTemplates').append(inHtml);
 
-                                        $("#buildCodeMatch").append(rowHtml);
-                                        x++;
+                                        currentTemplatesArr.push(ace.edit("template"+x.toString()));
+
+                                        currentTemplatesArr[currentTemplatesArr.length-1].session.setMode("ace/mode/text");
+                                        document.getElementById("template"+x.toString()).style.fontSize='14px';
+
+                                        currentTemplatesArr[currentTemplatesArr.length-1].renderer.$cursorLayer.element.style.display = "none"
+
+                                        loadjobTempTypeDropdown(x);
+                                        $("#templateWindowMin"+x.toString()).hide();
+
+                                        $("#templateWindowMax"+x.toString()).click( function(){
+                                            var inx = parseInt($(this).attr('data-inx'), 10);
+                                            setTempAceHeight(inx, "max");
+                                            $("#templateWindowMax"+inx.toString()).hide();
+                                            $("#templateWindowMin"+inx.toString()).show()
+                                        })
+                                        $("#templateWindowMin"+x.toString()).click( function(){
+                                            var inx = parseInt($(this).attr('data-inx'), 10);
+                                            setTempAceHeight(inx, "min");
+                                            $("#templateWindowMax"+inx.toString()).show();
+                                            $("#templateWindowMin"+inx.toString()).hide()
+                                        })
+                                    }else{
+                                        //unhide the old template code to reuse it
+                                        $("#templateBlock" + x.toString()).show();
                                     }
-                                }
 
-                                if(x === 0){
-                                    $("#alsoUsedInMess").text("Not used in any other component")
-                                }else if(x === 1){
-                                    $("#alsoUsedInMess").text("Used in one other component:")
-                                }else{
-                                    $("#alsoUsedInMess").text("Used in "+x.toString()+" other components:")
-                                }
-
-                                $('.buildCodeMatchRow').on('click', function(){
-                                    var id = $(this).attr('data-id');
-                                    $('#jstree_div').jstree("deselect_all");
-                                    $('#jstree_div').jstree('select_node',id);
-                                    $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
+                                    currentTemplatesArr[x].session.setValue(tempObj.c);
+                                    currentTemplatesArr[x].isValid = true;
+                                    x++;
                                 });
-                            })
-                        }
 
-                    }else{
-                        $("#newBuildCodeName").val("Error: ID Property not set");
-                        $("#buildCodeCopyButton").hide();
-                        $("#buildCodeForkButton").hide();
+                                //mark the rest if the ace instances as invalid, hide the block and clear the values so they can be recycled
+                                while (x < currentTemplatesArr.length ){
+                                    $("#templateBlock" + x.toString()).hide();
+                                    currentTemplatesArr[x].session.setValue("");
+                                    currentTemplatesArr[x].isValid = false;
+                                    x++;
+                                }
+
+                                //insert the contents of the instances and populate type dropdowns
+                                x=0;
+                                tempObjArr.forEach(function(tempObj){
+                                    var tempType =  tempObj.t === "" ? "text" :  tempObj.t;
+                                    currentTemplatesArr[x].session.setMode("ace/mode/" + tempType);
+                                    $("#templateType" + x.toString()).val(tempType);
+                                    $("#dropdownTemplateTypeButton"+x.toString())[0].innerHTML = tempType;
+                                    x++;
+                                })
+
+                                //set the style if eack instance
+                                setAceStyle(currentStyleName);
+                                $(".ace_editor").addClass("aceDisabled");
+
+                                //hide the cursor for each instance
+                                for(var inx in currentTemplatesArr){
+                                    currentTemplatesArr[inx].renderer.$cursorLayer.element.style.display = "none";
+                                    currentTemplatesArr[inx].setReadOnly(true);
+                                }
+
+                                $('#resourceFiles').val(data[0].resourceFiles);
+                                populateFileList( $('#buildCode').val(), $('#resourceFiles').val(), false, "#fileList");
+
+                                $("#buildCodeMatch").html("");
+                                $.get('/componentsByBcId', { id: data[0].id }, function(data) {
+                                    var rowHtml;
+                                    const dataObj = JSON.parse(data);
+                                    const  buildCodeMatch = dataObj.compArr;
+                                    const thistId = $("#id").val();
+                                    let x=0;
+                                    for (var key in buildCodeMatch) {
+                                        if (buildCodeMatch.hasOwnProperty(key) && thistId !== buildCodeMatch[key].id) {
+                                            rowHtml = '<div data-id="'+buildCodeMatch[key].id+'" class="buildCodeMatchRow">';
+                                            rowHtml += '<i class="fa  fa-folder-open fa-fw "></i>';
+                                            rowHtml += buildCodeMatch[key].systemName + ' : ';
+                                            rowHtml += buildCodeMatch[key].name + '</div>';
+
+                                            $("#buildCodeMatch").append(rowHtml);
+                                            x++;
+                                        }
+                                    }
+
+                                    if(x === 0){
+                                        $("#alsoUsedInMess").text("Not used in any other component")
+                                    }else if(x === 1){
+                                        $("#alsoUsedInMess").text("Used in one other component:")
+                                    }else{
+                                        $("#alsoUsedInMess").text("Used in "+x.toString()+" other components:")
+                                    }
+
+                                    $('.buildCodeMatchRow').on('click', function(){
+                                        var id = $(this).attr('data-id');
+                                        $('#jstree_div').jstree("deselect_all");
+                                        $('#jstree_div').jstree('select_node',id);
+                                        $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
+                                    });
+                                })
+                            }
+
+                        }else{
+                            $("#newBuildCodeName").val("Error: ID Property not set");
+                            $("#buildCodeCopyButton").hide();
+                            $("#buildCodeForkButton").hide();
+                        }
                     }
+
+
+
                 });
             }
 
@@ -3249,7 +3254,7 @@
 
             //populates variables in the Insert Variables modal
             function getVariables(scope){
-                var mydata = {};
+                var mydata = {systemId: $("#ft").val().split("/")[1]};
                 var scopeRadioVal = $('input[name="insertScope"]:checked').val();
                 var html = "<div class='varBody'><table style='width: 100%;' aria-describedby='insertVarTable_info' role='grid' class='table table-striped table-bordered table-hover dataTable no-footer dtr-inline var_Table' id='insertVarTable' width='100%'>";
                 html += "<thead>";
@@ -3306,6 +3311,18 @@
                                     if (ResultsJson.hasOwnProperty(key)) {
                                         var currentFtArr = $('#ft').val().split('/');
                                         if(jQuery.inArray(ResultsJson[key].link, currentFtArr) === -1){
+                                            delete ResultsJson[key]
+                                        }
+                                    }
+                                }
+                            }
+
+                            var thisSid = $('#ft').val().split('/')[1];
+                            if (this.insertScope == 'Same System'){
+                                for (var key in ResultsJson) {
+                                    if (ResultsJson.hasOwnProperty(key)) {
+
+                                        if (ResultsJson[key].ft.split('/')[1] !== thisSid && ResultsJson[key].link !== thisSid ) {
                                             delete ResultsJson[key]
                                         }
                                     }
@@ -5208,7 +5225,8 @@ $("#componentsBtn").click();
             });
 
             $("#dashBtn").addClass("active");
-            $("#componentsRow").hide();
+            $("#componentsRowContainer").hide();
+            $("#buildCodeRow").hide();
             loadDashboard();
 
             //Main menu selections
@@ -5216,7 +5234,8 @@ $("#componentsBtn").click();
                 localStorage["topMenuViewSelected"] = "Dashboard"
                 loadDashboard();
                 hideBottom();
-                $("#componentsRow").hide(200);
+                $("#componentsRowContainer").hide(200);
+                $("#buildCodeRow").hide(200);
                 $("#dashRow").show(200, function(){
                     $(".nav-link").removeClass("active");
                     $("#dashBtn").addClass("active");
@@ -5231,12 +5250,27 @@ $("#componentsBtn").click();
                 });
                 $("#snapButton").hide();
             });
+            $("#buildCodeBtn").on("click",function(){
+                loadBuildCodeRows();
+                hideBottom();
+                $("#componentsRowContainer").hide(200);
+                $("#dashRow").hide(200);
+                $("#buildCodeRow").show(200, function(){
+                    $(".nav-link").removeClass("active");
+                    $("#buildCodeBtn").addClass("active");
+                    $('#jslibtree_div').hide();
 
+                    setWindowHeight(currentHeight, false);
+
+                });
+                $("#snapButton").hide();
+            });
             $("#componentsBtn").on("click",function(){
                 localStorage["topMenuViewSelected"] = "Components";
-                $("#componentsRow").show();
+                $("#dashRow").hide(200);
+                $("#buildCodeRow").hide(200);
 
-                $("#dashRow").hide(function(){
+                $("#componentsRowContainer").show(200, function(){
 
                     $('#jstree_div').jstree('select_node',selectedWorkingNode);
 
@@ -5255,9 +5289,229 @@ $("#componentsBtn").click();
 
                     //move video screen to components ui
                     $("#videoScreen").detach().appendTo('#screenShotImageHolder');
+
+//                    const id = $("#buildCodeOrg").val();
+//                    $("#buildCodeBody").detach().appendTo('#codeCollapse');
+//                    $("#buildCode").val(id);
+//                    loadBuildCode(id);
+//                    if($("#edit_button").is(":visible")){
+//                        readModeJob();
+//                    }else{
+//                    }
                 });
 
             });
+
+            function loadBuildCodeRows(){
+                $.get('/BuildCode', { id: '#' }, function(data) {
+                    for(let i in data){
+                        if($("#BuildCode-" + data[i].id).length > 0){
+
+                            if (data[i].hasOwnProperty('compList')){
+                                count = data[i].compList.length > 0 ? data[i].compList.length.toString() : '';
+                            }
+                            row += '<div class="buildCodeRowCount">' + count +'</div>'
+                            $("#BuildCode-" + data[i].id).find(".buildCodeRowCount").text(count);
+
+                            $("#BuildCode-"+data[i].id).find(".buildCodeRowName").text(data[i].name);
+
+                            if(data[i].hasOwnProperty('lastUpdated')){
+                                $("#BuildCode-"+data[i].id).find(".buildCodeRowLastUpdated").text((new Date(data[i].lastUpdated.ds)).toLocaleDateString('en-US'));
+                            }
+                        }else{
+                            var row = '';
+                            row += '<div class="buildCodeListItem" id="BuildCode-' + data[i].id + '">' ;
+                            row += '<input type="checkbox" class="buildCodeRowCheck" >' ;
+                            var count='';
+                            if (data[i].hasOwnProperty('compList')){
+                                count = data[i].compList.length > 0 ? data[i].compList.length.toString() : '';
+                            }
+                            row += '<div class="buildCodeRowCount">' + count +'</div>'
+                            row += '<div class="buildCodeRowName"></div>';
+
+                            if(data[i].hasOwnProperty('lastUpdated')){
+                                row += '<div class="buildCodeRowLastUpdated">'+(new Date(data[i].lastUpdated.ds)).toLocaleDateString('en-US')+'</div>';
+                            }else{
+                                row += '<div class="buildCodeRowLastUpdated"></div>';
+                            }
+
+                            row += '<div class="buildCodeListCopy"><i class="fa  fa-copy fa-fw"></i></div>'
+
+                            row += '</div>';
+
+
+                            $("#buildCodes").append(row);
+
+                            $("#BuildCode-"+data[i].id).find(".buildCodeRowName").text(data[i].name);
+
+                            $("#BuildCode-"+data[i].id).click(function(){
+                                var selectedEle = this;
+                                $(this).css({'background-color':'#00000055'});
+                                $(".buildCodeListItem").each(function(ele){
+                                    var thisEle = $($(".buildCodeListItem")[ele]);
+//                                    thisEle.css({'background-color':'white;'});
+                                    if (thisEle.get(0) !== selectedEle){
+
+                                        thisEle.css({'background-color':'#00000000'});
+
+                                    }else{
+//                                        thisEle.css({'background-color':'black'});
+                                    }
+                                })
+
+                                const id = $(this).attr("id").replace("BuildCode-","");
+                                loadBuildCodeClick(id);
+                            })
+                            $("#BuildCode-"+data[i].id).find("#deleteBuildCodes").click(function(){
+                                const checked = $("#buildCodes").find(".buildCodeRowCheck:checked");
+                                var boxes = []
+                                checked.each(function(box){
+                                    boxes.push($(this).parent().attr('id').replace("BuildCode-",""))
+                                })
+
+                                $.ajax({
+                                    type: 'POST',
+                                    data: JSON.stringify({boxes:boxes}),
+                                    dataType : "text",
+                                    headers: {
+                                        "content-type": "application/json",
+                                    },
+                                    url: '/deleteBuildCodes',
+                                    success : function(results) {
+
+                                        var deleted = JSON.parse(results)
+                                        for(let bc in deleted ){
+
+                                            console.log("Deleted BuildCode; "+deleted[bc]);
+                                            $("#BuildCode-"+deleted[bc]).remove();
+                                        }
+
+                                    },
+                                    error : function(error) {
+                                        console.log(error)
+                                    }
+                                });
+                            })
+
+                            $("#BuildCode-"+data[i].id).find(".buildCodeListCopy").click(function(evt){
+                                copyCodeId = $(this).parent().attr('id').replace("BuildCode-","")
+                                $("#buildCodePasteButton").show();
+
+                                $(this).data('bs.popover').config.content = "Copied '"+data[i].name+"'";
+                                $(this).popover("show");
+
+                                $("#buildCodePasteButton").popover('dispose').popover({
+                                    animation: true,
+                                    content: "Paste '"+data[i].name+"'",
+                                    delay: { "show": 50, "hide": 100 },
+                                    trigger: 'hover',
+                                    template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                                });
+
+                                evt.stopPropagation();
+
+
+                            });
+
+                            $("#BuildCode-"+data[i].id).find(".buildCodeListCopy").popover('dispose').popover({
+                                animation: true,
+                                content: "Click to copy '"+data[i].name+"' to clipboard",
+                                delay: { "show": 50, "hide": 100 },
+                                trigger: 'hover',
+                                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                            });
+                        }
+                    }
+                });
+            };
+            setTimeout(loadBuildCodeRows, 2000);
+
+            var scriptDisplay = ace.edit("buildCodeDisplay-script");
+            scriptDisplay.setTheme("ace/theme/clouds");
+            scriptDisplay.session.setMode("ace/mode/sh");
+            document.getElementById('buildCodeDisplay-script').style.fontSize='14px';
+            $("#buildCodeDisplay-script").addClass("aceDisabled");
+
+            var buildCodeDisplayTemps = [];
+            function loadBuildCodeClick(id){
+
+                $.get('/BuildCode', { id: id }, function(data) {
+
+
+                    if(data[0].hasOwnProperty("id")){
+
+
+                        if(data[0].rerunnable === 1){
+                            $('#buildCodeDisplay-rerunnableVal').html('<label>Rerunnable: Yes</label>');
+                        }else{
+                            $('#buildCodeDisplay-rerunnableVal').html('<label>Rerunnable: No</label>');
+                        }
+
+                        if(data[0].systemFunction === 1){
+                            $('#buildCodeDisplay-sysFuncVal').html('<label>System Function: Yes</label>');
+                        }else{
+                            $('#buildCodeDisplay-sysFuncVal').html('<label>System Function: No</label>')
+                        }
+
+                        if(data[0].runLocal === 1){
+                            $('#buildCodeDisplay-runLocVal').html('<label>Run Locally: Yes</label>')
+                        }else{
+                            $('#buildCodeDisplay-runLocVal').html('<label>Run Locally: No</label>');
+                        }
+
+
+                        scriptDisplay.session.setValue(data[0].script);
+
+                        var tempObjArr = data[0].templates.tempArr;
+                        $('#buildCodeTemplates').html('');
+                        buildCodeDisplayTemps = [];
+                        var x = 0;
+                        tempObjArr.forEach(function(tempObj){
+
+                            //if there is not an instance to reuse create a new
+
+                                var inHtml = "<div class='form-group' id='buildCodeDisplay-templateBlock"+x.toString()+"'>";
+
+                                inHtml += "         <label class='build-label'>Template "+ (x > 0 ? (x + 1).toString() : "") +"</label>";
+                                inHtml += "         <input type='hidden' id='templateType"+x.toString()+"'>"
+
+
+                                inHtml += "     <div class='' id='buildCodeDisplay-templateCard"+ x.toString() +"'>"
+                                inHtml += "         <div class='buildCodeDisplay-template' id='buildCodeDisplay-template"+x.toString()+"' class=''></div>"
+                                inHtml += "     </div>"
+                                inHtml += "</div>";
+
+                                $('#buildCodeTemplates').append(inHtml);
+
+                            var thisTemplate = ace.edit('buildCodeDisplay-template'+x.toString());
+                            buildCodeDisplayTemps.push(thisTemplate);
+                            thisTemplate.setTheme("ace/theme/clouds");
+                            thisTemplate.session.setMode("ace/mode/sh");
+
+                            $('buildCodeDisplay-template'+x.toString()).addClass("aceDisabled");
+
+                            thisTemplate.session.setMode("ace/mode/text");
+                            document.getElementById('buildCodeDisplay-template'+x.toString()).style.fontSize='14px';
+
+                            thisTemplate.renderer.$cursorLayer.element.style.display = "none"
+
+//                                loadjobTempTypeDropdown(x);
+
+
+
+                            thisTemplate.session.setValue(tempObj.c);
+                            thisTemplate.isValid = true;
+                            x++;
+                        });
+
+                        setAceStyle(currentStyleName);
+                    }
+
+
+
+
+                });
+            }
 
             if(localStorage["topMenuViewSelected"]){
                 if(localStorage["topMenuViewSelected"] === "Components"){
@@ -5349,16 +5603,22 @@ $("#componentsBtn").click();
             var currentStyleName = ""
             function setAceStyle(styleName){
                 if(styleName === "dark"){
-                    //$("#darkStyleRadioTop").prop('checked',true);
+                    scriptDisplay.setTheme("ace/theme/twilight");
                     scriptEditor.setTheme("ace/theme/twilight");
-                    //templateEditor.setTheme("ace/theme/twilight");
                     for(var inx in currentTemplatesArr){
                         currentTemplatesArr[inx].setTheme("ace/theme/twilight");
                     }
+                    for(var inx in buildCodeDisplayTemps){
+                        buildCodeDisplayTemps[inx].setTheme("ace/theme/twilight");
+                    }
                 }else{
+                    scriptDisplay.setTheme("ace/theme/clouds");
                     scriptEditor.setTheme("ace/theme/clouds");
                     for(var inx in currentTemplatesArr){
                         currentTemplatesArr[inx].setTheme("ace/theme/clouds");
+                    }
+                    for(var inx in buildCodeDisplayTemps){
+                        buildCodeDisplayTemps[inx].setTheme("ace/theme/clouds");
                     }
                 }
             }
@@ -5493,6 +5753,9 @@ $("#componentsBtn").click();
             //call ajax /video and process the returned chunncked json video frames
             function startStream(){
                // console.log("starting stream: "  );
+                $("#playButton").hide();
+                $("#pauseButton").show();
+                videoPaused = false;
                 $.ajax({
                     url: '/video',
                     processData: false,
@@ -5506,35 +5769,40 @@ $("#componentsBtn").click();
                         var currentRespText = '';
 
                         var buffer = ""
-                        xhr.onprogress = function e() {
-                            var rText = xhr.responseText
+                        xhr.onprogress = function(e) {
+                            if(videoPaused === true){
+                                xhr.abort();
+                            }else{
+                                var rText = xhr.responseText
 
-                            var imgData = rText.substr(currentRespText.length)
-                            currentRespText = rText;
+                                var imgData = rText.substr(currentRespText.length)
+                                currentRespText = rText;
 
-                            x = imgData.split('<-->').length;
+                                x = imgData.split('<-->').length;
 
-                            buffer += imgData;
-                            var x = 0;
-                            while (buffer.split("<-->").length > 1){
+                                buffer += imgData;
+                                var x = 0;
+                                while (buffer.split("<-->").length > 1){
 
-                                var imgBlock = buffer.split("<-->")[0];
-                                var remainderBlocks = buffer.split("<-->");
-                                remainderBlocks.shift();
-                                buffer = remainderBlocks.join("<-->");
+                                    var imgBlock = buffer.split("<-->")[0];
+                                    var remainderBlocks = buffer.split("<-->");
+                                    remainderBlocks.shift();
+                                    buffer = remainderBlocks.join("<-->");
 
-                                if(imgBlock.charAt(0) == "{" && imgBlock.charAt((imgBlock.length)-1) == "}" ){
+                                    if(imgBlock.charAt(0) == "{" && imgBlock.charAt((imgBlock.length)-1) == "}" ){
 
-                                   // console.log("processing block: " + imgBlock.length.toString());
+                                        // console.log("processing block: " + imgBlock.length.toString());
 
-                                    imgObj = JSON.parse(imgBlock);
-                                    //console.log("setting image#: " + imgObj.frameCount.toString());
+                                        imgObj = JSON.parse(imgBlock);
+                                        //console.log("setting image#: " + imgObj.frameCount.toString());
 
-                                    if(imgObj.hasOwnProperty("data")){
-                                        webStreamCanvasImageContainer.src = 'data:image/jpeg;base64,' + imgObj.data;
+                                        if(imgObj.hasOwnProperty("data")){
+                                            webStreamCanvasImageContainer.src = 'data:image/jpeg;base64,' + imgObj.data;
+                                        }
                                     }
                                 }
                             }
+
                         };
                         return xhr;
                     }
@@ -5542,9 +5810,13 @@ $("#componentsBtn").click();
                     //console.log("startStream Done -> restart");
                     setTimeout(startStream, 1000);
                 }).fail(function (e) {
-
-                    setTimeout(startStream, 5000);
-                    console.log("startStream Fail"  )
+                    if(videoPaused !== true){
+                        setTimeout(startStream, 5000);
+                        console.log("startStream Fail"  )
+                    }else{
+                        $("#playButton").show();
+                        $("#pauseButton").hide();
+                    }
                 });
             };
             setTimeout(startStream, 5000);
@@ -5611,6 +5883,16 @@ $("#componentsBtn").click();
                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
             });
 
+            $("#playButton").hide();
+            var videoPaused = true;
+            $("#playButton").on('click', function(e){
+                startStream();
+            })
+            $("#pauseButton").on('click', function(e){
+                videoPaused = true;
+                $("#playButton").show();
+                $("#pauseButton").hide();
+            })
             function updateLaunchLink(url){
                 var appLink = "<a href='" + url +"' alt='" + url +"' target='_new' ><i class='fa  fa-external-link fa-fw '></i>" + '[launch]' + "</a><i id='launchLinkCopy' class='fa  fa-copy fa-fw'>";
                 $("#launchLink").html( appLink);
@@ -5898,6 +6180,7 @@ $("#componentsBtn").click();
             //user clicks paste code btn.
             $("#buildCodePasteButton").hide();
             $("#buildCodePasteButton").click(function(evt){
+                $("#buildCode").val(copyCodeId);
                 loadBuildCode(copyCodeId);
                 editModeJob();
                 evt.stopPropagation();
@@ -6016,6 +6299,7 @@ $("#componentsBtn").click();
             var selectedBuildCode = "";
             $("#buildCodeSelectBtn").on('click', function(evt){
                 if(selectedBuildCode !== ""){
+                    $("#buildCode").val(selectedBuildCode);
                     loadBuildCode(selectedBuildCode);
                     editModeJob();
                 }
@@ -6450,6 +6734,10 @@ $("#componentsBtn").click();
                                     <input id="launchLinkHiddenCopy"><div id="launchLink" class="videoMenuItemLeft"></div>
                                     <div class="videoMenu">
 
+                                        <span>
+                                            <a id='playButton' href='#'><i class='fa fa-play fa-fw videoMenuItemRight'></i></a>
+                                            <a id='pauseButton' href='#'><i class='fa fa-pause fa-fw videoMenuItemRight'></i></a>
+                                        </span>
                                         <a id='snapButton' href='#'><i class='fa fa-camera fa-fw videoMenuItemRight'></i></a>
                                         <a id='videoRefreshLink' href='#'><i class='fa fa-refresh fa-fw videoMenuItemRight'></i></a>
                                         <a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw videoMenuItemRight'></i></a>
@@ -6480,418 +6768,453 @@ $("#componentsBtn").click();
                         </div>
                     </div>
                 </div>
-                <div id="componentsRow" class="d-flex justify-content-between nowrap  ">
+                <div id="componentsRowContainer">
 
-                    <!--username kept showing up in search input so https://stackoverflow.com/questions/17781077/autocomplete-off-is-not-working-on-firefox/29852908#29852908-->
-                    <input type="password" hidden />
+                    <div id="componentsRow" class="d-flex justify-content-between nowrap  ">
 
-                    <div id="leftCol" class="d-flex justify-content-between nowrap top-col-fixed-240" >
-                        <div id="treePanel" class='panel panel-default cust-panel locTree-panel-body' style="float: left;"  >
-                            <div class='panel-heading treePanelHeading '>
-                                <div class="cust-panel-heading">
-                                    Systems <a class='newSys' href='#'><i class="fa fa-plus fa-fw"></i></a>
+                        <!--username kept showing up in search input so https://stackoverflow.com/questions/17781077/autocomplete-off-is-not-working-on-firefox/29852908#29852908-->
+                        <input type="password" hidden />
 
-                                    <!--<a href="#" data-toggle="modal" data-target="#welcomeModal">  <i class="fa fa-question fa-fw"></i></a>-->
+                        <div id="leftCol" class="d-flex justify-content-between nowrap top-col-fixed-240" >
+                            <div id="treePanel" class='panel panel-default cust-panel locTree-panel-body' style="float: left;"  >
+                                <div class='panel-heading treePanelHeading '>
+                                    <div class="cust-panel-heading">
+                                        Systems <a class='newSys' href='#'><i class="fa fa-plus fa-fw"></i></a>
 
-                                    <i id="search-icon" class="fa fa-search  fa-fw search-icon"></i>
-                                    <span id="searchCycleDiv"><i id="searchCycleUp" class="fa fa-chevron-up fa-fw searchCycleBtn"></i><i  id="searchCycleDown" class="fa fa-chevron-down fa-fw searchCycleBtn"></i></span>
-                                    <span id="compSearch" class="form-group search-group">
+                                        <!--<a href="#" data-toggle="modal" data-target="#welcomeModal">  <i class="fa fa-question fa-fw"></i></a>-->
+
+                                        <i id="search-icon" class="fa fa-search  fa-fw search-icon"></i>
+                                        <span id="searchCycleDiv"><i id="searchCycleUp" class="fa fa-chevron-up fa-fw searchCycleBtn"></i><i  id="searchCycleDown" class="fa fa-chevron-down fa-fw searchCycleBtn"></i></span>
+                                        <span id="compSearch" class="form-group search-group">
                                     <input class="form-control form-custom searchInput" placeholder="" id="searchInput" >
                                 </span>
+                                    </div>
+                                </div>
+
+                                <div class='panel-body tree-panel-body'>
+                                    <div id="jstree_div" class="SysTree"></div>
+                                    <div id="jslibtree_div" class="SysTree"></div>
                                 </div>
                             </div>
-
-                            <div class='panel-body tree-panel-body'>
-                                <div id="jstree_div" class="SysTree"></div>
-                                <div id="jslibtree_div" class="SysTree"></div>
-                            </div>
+                            <div id = "treePanelHandle" class = "treePanelHandle"></div>
                         </div>
-                        <div id = "treePanelHandle" class = "treePanelHandle"></div>
-                    </div>
 
-                    <div id="rightCol" class="" >
+                        <div id="rightCol" class="" >
 
-                        <button id = "paste_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-paste fa-fw"></i>Paste System</button>
-                        <button id = "paste_sys_lib_button" class="btn btn-default jobFormbtn"><i class="fa fa-paste fa-fw"></i>Paste System to Library</button>
-                        <!--<icon class="fa fa-th-large"></icon> Component Details-->
-                        <div id="sysScreen">
-                            <div class="buttonRow">
-                                <button id = "edit_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
-                                <button id = "save_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
-                                <button id = "moveUp_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-up fa-fw"></i>Move Up</button>
-                                <button id = "moveDn_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-down fa-fw"></i>Move Down</button>
-                                <button id = "new_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Comp</button>
-                                <button id = "remove_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
-                                <button id = "clear_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-history fa-fw"></i>Clear History</button>
-                                <button id = "copy_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-copy fa-fw"></i>Copy</button>
-                                <button id = "paste_to_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-paste fa-fw"></i>Paste</button>
-                            </div>
-                            <div id="sysPanel" class="panel panel-default sysPanel">
-                                <div class="panel-body sys-form-panel"  id="sys-form-panel">
-                                    <form id="sysForm">
-                                        <div class="col-lg-12">
-                                            <div class="row">
-                                                <div class="col nomarg">
-                                                    <div class="form-group">
-                                                        <label class="build-label">System Name</label>
-                                                        <input class="form-control form-custom" placeholder="Enter system name" id="sysName">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-lg-12" style="padding: 0px">
-                                                    <div class="form-group">
-                                                        <label class="build-label">System Description</label>
-                                                        <div id="sysDescription" class=""></div>
-
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="row">
-                                                <div class="col-lg-12" style="padding: 0px">
-                                                    <div id="sysVariablesForm" class="form-group">
-                                                        <label class="build-label">System Variables</label>
-                                                        <a class="newSysVarBtn" href="#" style=""><i class="fa fa-plus fa-fw"></i></a>
-                                                        <table class="table varTable">
-                                                            <thead>
-                                                            <tr class="d-flex">
-                                                                <th class="col-3 dashboardLabel">Name</th>
-                                                                <th class="col-1 dashboardLabel center">Private</th>
-                                                                <!--<th class="col-2 dashboardLabel center">Type</th>-->
-                                                                <th class="col-6 dashboardLabel">Value</th>
-                                                            </tr>
-                                                            </thead>
-                                                            <tbody id="sysVariables" class="varTbody"></tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="form-group">
-                                                    <label class="build-label">Icon</label>
-                                                    <div id="sysIcon"></div>
-                                                    <div id="iconPaste">
-                                                        <!--<p>Paste icon image: </p>-->
-                                                        <span><input type="text" id="pasteIcon" class="form-control" placeholder="Paste icon image here"></span>
-                                                        <div id="resampled"></div>
-                                                        <input type="hidden" id="iconURL">
-                                                    </div>
-                                                </div>
-                                            </div>
-
-
-
-                                            <!--TESTING-->
-                                            <!--<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>-->
-                                            <!--<div class="form-group">-->
-                                            <!--<label class="build-label">nodeData</label>-->
-                                            <!--<textarea type="disabled" class="form-control form-custom code" rows="25" id="sysNodeData"></textarea>-->
-                                            <!--</div>-->
-
-
-                                        </div>
-                                    </form>
+                            <button id = "paste_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-paste fa-fw"></i>Paste System</button>
+                            <button id = "paste_sys_lib_button" class="btn btn-default jobFormbtn"><i class="fa fa-paste fa-fw"></i>Paste System to Library</button>
+                            <!--<icon class="fa fa-th-large"></icon> Component Details-->
+                            <div id="sysScreen">
+                                <div class="buttonRow">
+                                    <button id = "edit_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
+                                    <button id = "save_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
+                                    <button id = "moveUp_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-up fa-fw"></i>Move Up</button>
+                                    <button id = "moveDn_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-down fa-fw"></i>Move Down</button>
+                                    <button id = "new_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Comp</button>
+                                    <button id = "remove_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
+                                    <button id = "clear_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-history fa-fw"></i>Clear History</button>
+                                    <button id = "copy_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-copy fa-fw"></i>Copy</button>
+                                    <button id = "paste_to_sys_button" class="btn btn-default jobFormbtn"><i class="fa fa-paste fa-fw"></i>Paste</button>
                                 </div>
-                            </div>
-                        </div>
-                        <div id="jobScreen" class="jobScreen">
-                            <div class="buttonRow">
-
-                                <button id = "run_button" class="btn btn-default jobFormbtn"><i class="fa fa-play fa-fw"></i>Build</button>
-                                <button id = "edit_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
-                                <button id = "save_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
-                                <button id = "cancelSave_button" class="btn btn-default jobFormbtn"><i class="fa fa-times-circle fa-fw"></i>Cancel</button>
-                                <button id = "moveUp_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-up fa-fw"></i>Move Up</button>
-                                <button id = "moveDn_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-down fa-fw"></i>Move Down</button>
-                                <button id = "new_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Child</button>
-                                <button id = "remove_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
-                                <button id = "copy_button" class="btn btn-default jobFormbtn"><i class="fa fa-copy fa-fw"></i>Copy</button>
-                                <button id = "paste_button" class="btn btn-default jobFormbtn"><i class="fa fa-paste fa-fw"></i>Paste</button>
-
-                            </div>
-                            <div id="mainJobPanel" class="panel panel-default jobPanel">
-                                <input type="hidden" id="buildCode" ><input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="comType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >
-
-                                <div class="panel-body job-form-panel" id="job-form-panel">
-                                    <form id="jobForm">
-                                        <div class="row">
-                                            <div id="topLeftForm" class="col topLeftForm">
-                                                <div id="breadcrumbsRow" class="row"></div>
-                                                <div class="row" id="firstRow" >
-                                                    <div class="col jobCompNameCol">
+                                <div id="sysPanel" class="panel panel-default sysPanel">
+                                    <div class="panel-body sys-form-panel"  id="sys-form-panel">
+                                        <form id="sysForm">
+                                            <div class="col-lg-12">
+                                                <div class="row">
+                                                    <div class="col nomarg">
                                                         <div class="form-group">
-                                                            <label id='compFocus' class="build-label ">Component Name</label>
-                                                            <!--<i id='compFocus' class='fa  fa-fw fa-folder-open compFocusButton'></i>-->
-                                                            <input class="form-control form-custom" placeholder="Enter name" id="name">
+                                                            <label class="build-label">System Name</label>
+                                                            <input class="form-control form-custom" placeholder="Enter system name" id="sysName">
                                                         </div>
                                                     </div>
-
-                                                    <!--<div class="col-sm-2 switchCol">-->
-                                                    <!--<div class="form-group">-->
-                                                    <!--<label class="build-label">Version</label>-->
-                                                    <!--<div id="version" class="statusBox"></div>-->
-                                                    <!--</div>-->
-                                                    <!--</div>-->
-                                                    <div class="col-sm-2 switchCol">
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-lg-12" style="padding: 0px">
                                                         <div class="form-group">
-                                                            <label class="build-label">Enabled</label>
-                                                            <div>
-                                                                <label class="switch" id="componentEnabledSlider">
-                                                                    <input name="componentEnabled" id="componentEnabled" type="checkbox">
-                                                                    <span class="slider round"></span>
-                                                                </label>
-                                                                <span id="componentEnabledVal" class="statusBox"></span>
+                                                            <label class="build-label">System Description</label>
+                                                            <div id="sysDescription" class=""></div>
 
-                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-sm-2 switchCol">
-                                                        <div class="form-group">
-                                                            <label class="build-label">Promoted</label>
-                                                            <div>
-                                                                <label class="switch" id="promotedSlider">
-                                                                    <input name="promoted" id="promoted" type="checkbox">
-                                                                    <span class="slider round"></span>
-                                                                </label>
-                                                                <span id="promotedVal" class="statusBox"></span>
-
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-
-                                                    <!--     https://stackoverflow.com/questions/19865158/what-is-the-difference-among-col-lg-col-md-and-col-sm-in-bootstrap   -->
                                                 </div>
 
                                                 <div class="row">
                                                     <div class="col-lg-12" style="padding: 0px">
-                                                        <div class="form-group">
-                                                            <label class="build-label">Description</label>
-                                                            <!--<textarea rows="4" class="form-control form-custom" placeholder="Enter description of this component" id="description"></textarea>-->
-                                                            <div id="description" class=""></div>
-                                                        </div>
-                                                        <div id="compVariablesForm" class="form-group">
-                                                            <label class="build-label">Component Variables</label><a class="newCompVarBtn" href="#"><i class="fa fa-plus fa-fw"></i></a>
-                                                            <a href="#" id='varHelp' data-toggle="modal" data-target="#varHelpModal"><i class="fa fa-question fa-fw"></i></a>
-                                                            <!--<textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="compVariables"></textarea>-->
+                                                        <div id="sysVariablesForm" class="form-group">
+                                                            <label class="build-label">System Variables</label>
+                                                            <a class="newSysVarBtn" href="#" style=""><i class="fa fa-plus fa-fw"></i></a>
                                                             <table class="table varTable">
                                                                 <thead>
                                                                 <tr class="d-flex">
-                                                                    <th class="col-3 varLabel varLabelName">Name</th>
-                                                                    <th class="col-2 varLabel center">Private</th>
-                                                                    <th class="col-2 varLabel center">Type</th>
-                                                                    <th class="col-5 varLabel">Value</th>
+                                                                    <th class="col-3 dashboardLabel">Name</th>
+                                                                    <th class="col-1 dashboardLabel center">Private</th>
+                                                                    <!--<th class="col-2 dashboardLabel center">Type</th>-->
+                                                                    <th class="col-6 dashboardLabel">Value</th>
                                                                 </tr>
                                                                 </thead>
-                                                                <tbody id="compVariables" class="varTbody"></tbody>
+                                                                <tbody id="sysVariables" class="varTbody"></tbody>
                                                             </table>
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <div class="row">
+                                                    <div class="form-group">
+                                                        <label class="build-label">Icon</label>
+                                                        <div id="sysIcon"></div>
+                                                        <div id="iconPaste">
+                                                            <!--<p>Paste icon image: </p>-->
+                                                            <span><input type="text" id="pasteIcon" class="form-control" placeholder="Paste icon image here"></span>
+                                                            <div id="resampled"></div>
+                                                            <input type="hidden" id="iconURL">
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+
+
+                                                <!--TESTING-->
+                                                <!--<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>-->
+                                                <!--<div class="form-group">-->
+                                                <!--<label class="build-label">nodeData</label>-->
+                                                <!--<textarea type="disabled" class="form-control form-custom code" rows="25" id="sysNodeData"></textarea>-->
+                                                <!--</div>-->
+
+
                                             </div>
-                                            <div id="screenShotImageHolder" class="col screenShotImageHolder"></div>
-                                        </div>
-                                        <div class="row">
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="jobScreen" class="jobScreen">
+                                <div class="buttonRow">
 
-                                            <div class="col-lg-12 ">
+                                    <button id = "run_button" class="btn btn-default jobFormbtn"><i class="fa fa-play fa-fw"></i>Build</button>
+                                    <button id = "edit_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
+                                    <button id = "save_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
+                                    <button id = "cancelSave_button" class="btn btn-default jobFormbtn"><i class="fa fa-times-circle fa-fw"></i>Cancel</button>
+                                    <button id = "moveUp_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-up fa-fw"></i>Move Up</button>
+                                    <button id = "moveDn_button" class="btn btn-default jobFormbtn"><i class="fa fa-chevron-down fa-fw"></i>Move Down</button>
+                                    <button id = "new_button" class="btn btn-default jobFormbtn"><i class="fa fa-plus-square-o fa-fw"></i>New Child</button>
+                                    <button id = "remove_button" class="btn btn-default jobFormbtn"><i class="fa fa-minus-square-o fa-fw"></i>Remove</button>
+                                    <button id = "copy_button" class="btn btn-default jobFormbtn"><i class="fa fa-copy fa-fw"></i>Copy</button>
+                                    <button id = "paste_button" class="btn btn-default jobFormbtn"><i class="fa fa-paste fa-fw"></i>Paste</button>
 
-                                                <div id="buildCodeAccordion">
-                                                    <div class="card jobCard">
-                                                        <div class="card-header buildCodeHeader" id="codeHeading" data-toggle="collapse" data-target="#codeCollapse" aria-expanded="true" aria-controls="codeCollapse">
-                                                            <span class="cardLable"><i class="fa fa-tasks fa-fw"></i>Build Code</span>
-                                                            <span id="buildCodeNameEdit" class="newBuildCodeName">
+                                </div>
+                                <div id="mainJobPanel" class="panel panel-default jobPanel">
+                                    <input type="hidden" id="buildCode" ><input type="hidden" id="id" ><input type="hidden" id="parent" ><input type="hidden" id="text" ><input type="hidden" id="comType" ><input type="hidden" id="ft" ><input type="hidden" id="resourceFiles" >
+
+                                    <div class="panel-body job-form-panel" id="job-form-panel">
+                                        <form id="jobForm">
+                                            <div class="row">
+                                                <div id="topLeftForm" class="col topLeftForm">
+                                                    <div id="breadcrumbsRow" class="row"></div>
+                                                    <div class="row" id="firstRow" >
+                                                        <div class="col jobCompNameCol">
+                                                            <div class="form-group">
+                                                                <label id='compFocus' class="build-label ">Component Name</label>
+                                                                <!--<i id='compFocus' class='fa  fa-fw fa-folder-open compFocusButton'></i>-->
+                                                                <input class="form-control form-custom" placeholder="Enter name" id="name">
+                                                            </div>
+                                                        </div>
+
+                                                        <!--<div class="col-sm-2 switchCol">-->
+                                                        <!--<div class="form-group">-->
+                                                        <!--<label class="build-label">Version</label>-->
+                                                        <!--<div id="version" class="statusBox"></div>-->
+                                                        <!--</div>-->
+                                                        <!--</div>-->
+                                                        <div class="col-sm-2 switchCol">
+                                                            <div class="form-group">
+                                                                <label class="build-label">Enabled</label>
+                                                                <div>
+                                                                    <label class="switch" id="componentEnabledSlider">
+                                                                        <input name="componentEnabled" id="componentEnabled" type="checkbox">
+                                                                        <span class="slider round"></span>
+                                                                    </label>
+                                                                    <span id="componentEnabledVal" class="statusBox"></span>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-2 switchCol">
+                                                            <div class="form-group">
+                                                                <label class="build-label">Promoted</label>
+                                                                <div>
+                                                                    <label class="switch" id="promotedSlider">
+                                                                        <input name="promoted" id="promoted" type="checkbox">
+                                                                        <span class="slider round"></span>
+                                                                    </label>
+                                                                    <span id="promotedVal" class="statusBox"></span>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+
+                                                        <!--     https://stackoverflow.com/questions/19865158/what-is-the-difference-among-col-lg-col-md-and-col-sm-in-bootstrap   -->
+                                                    </div>
+
+                                                    <div class="row">
+                                                        <div class="col-lg-12" style="padding: 0px">
+                                                            <div class="form-group">
+                                                                <label class="build-label">Description</label>
+                                                                <!--<textarea rows="4" class="form-control form-custom" placeholder="Enter description of this component" id="description"></textarea>-->
+                                                                <div id="description" class=""></div>
+                                                            </div>
+                                                            <div id="compVariablesForm" class="form-group">
+                                                                <label class="build-label">Component Variables</label><a class="newCompVarBtn" href="#"><i class="fa fa-plus fa-fw"></i></a>
+                                                                <a href="#" id='varHelp' data-toggle="modal" data-target="#varHelpModal"><i class="fa fa-question fa-fw"></i></a>
+                                                                <!--<textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="compVariables"></textarea>-->
+                                                                <table class="table varTable">
+                                                                    <thead>
+                                                                    <tr class="d-flex">
+                                                                        <th class="col-3 varLabel varLabelName">Name</th>
+                                                                        <th class="col-2 varLabel center">Private</th>
+                                                                        <th class="col-2 varLabel center">Type</th>
+                                                                        <th class="col-5 varLabel">Value</th>
+                                                                    </tr>
+                                                                    </thead>
+                                                                    <tbody id="compVariables" class="varTbody"></tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div id="screenShotImageHolder" class="col screenShotImageHolder"></div>
+                                            </div>
+                                            <div class="row">
+
+                                                <div class="col-lg-12 ">
+
+                                                    <div id="buildCodeAccordion">
+                                                        <div class="card jobCard">
+                                                            <div class="card-header buildCodeHeader" id="codeHeading" data-toggle="collapse" data-target="#codeCollapse" aria-expanded="true" aria-controls="codeCollapse">
+                                                                <span class="cardLable"><i class="fa fa-tasks fa-fw"></i>Build Code</span>
+                                                                <span id="buildCodeNameEdit" class="newBuildCodeName">
                                                                     <input id="newBuildCodeName" class="form-control" type="text">
                                                                     <i id="buildCodePickButton" class="fa fa-list fa-fw buildCodeButton"></i>
                                                                     <i id="buildCodeForkButton" class="fa fa-code-fork fa-fw buildCodeButton"></i>
                                                                     <i id="buildCodeCopyButton" class="fa fa-copy fa-fw buildCodeButton"></i>
                                                                     <i id="buildCodePasteButton" class="fa fa-paste fa-fw buildCodeButton"></i>
                                                                 </span>
-                                                            <span id="buildCodeNameRead" class="buildCodeNameRead"></span>
-                                                        </div>
+                                                                <span id="buildCodeNameRead" class="buildCodeNameRead"></span>
+                                                            </div>
 
-                                                        <div id="codeCollapse" class="collapse cardBody" aria-labelledby="codeHeading" data-parent="#buildCodeAccordion">
-                                                            <div class="card-body">
-                                                                <div id="buildCodeSwitches" class="row" >
-                                                                    <div class="col-sm-2 switchCol">
-                                                                        <div class="form-group">
-                                                                            <label class="build-label">Rerunnable</label>
-                                                                            <div>
-                                                                                <label class="switch" id="rerunnableSlider">
-                                                                                    <input name="rerunnable" id="rerunnable" type="checkbox">
-                                                                                    <span class="slider round"></span>
-                                                                                </label>
-                                                                                <span id="rerunnableVal" class="statusBox"></span>
+                                                            <div id="codeCollapse" class="collapse cardBody" aria-labelledby="codeHeading" data-parent="#buildCodeAccordion">
+                                                                <div id="buildCodeBody" class="card-body">
+                                                                    <div id="buildCodeSwitches" class="row" >
+                                                                        <div class="col-sm-2 switchCol">
+                                                                            <div class="form-group">
+                                                                                <label class="build-label">Rerunnable</label>
+                                                                                <div>
+                                                                                    <label class="switch" id="rerunnableSlider">
+                                                                                        <input name="rerunnable" id="rerunnable" type="checkbox">
+                                                                                        <span class="slider round"></span>
+                                                                                    </label>
+                                                                                    <span id="rerunnableVal" class="statusBox"></span>
 
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-                                                                    </div>
-                                                                    <div class="col-sm-2 switchCol">
-                                                                        <div class="form-group">
-                                                                            <label class="build-label">System Function</label>
-                                                                            <div>
-                                                                                <label class="switch" id="sysFuncSlider">
-                                                                                    <input name="System Function" id="sysFunc" type="checkbox">
-                                                                                    <span class="slider round"></span>
-                                                                                </label>
-                                                                                <span id="sysFuncVal" class="statusBox"></span>
+                                                                        <div class="col-sm-2 switchCol">
+                                                                            <div class="form-group">
+                                                                                <label class="build-label">System Function</label>
+                                                                                <div>
+                                                                                    <label class="switch" id="sysFuncSlider">
+                                                                                        <input name="System Function" id="sysFunc" type="checkbox">
+                                                                                        <span class="slider round"></span>
+                                                                                    </label>
+                                                                                    <span id="sysFuncVal" class="statusBox"></span>
 
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-                                                                    </div>
-                                                                    <div class="col-sm-2 switchCol">
-                                                                        <div class="form-group">
-                                                                            <label class="build-label">Run Locally</label>
-                                                                            <div>
-                                                                                <label class="switch" id="runLocSlider">
-                                                                                    <input name="System Function" id="runLoc" type="checkbox">
-                                                                                    <span class="slider round"></span>
-                                                                                </label>
-                                                                                <span id="runLocVal" class="statusBox"></span>
+                                                                        <div class="col-sm-2 switchCol">
+                                                                            <div class="form-group">
+                                                                                <label class="build-label">Run Locally</label>
+                                                                                <div>
+                                                                                    <label class="switch" id="runLocSlider">
+                                                                                        <input name="System Function" id="runLoc" type="checkbox">
+                                                                                        <span class="slider round"></span>
+                                                                                    </label>
+                                                                                    <span id="runLocVal" class="statusBox"></span>
 
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-                                                                    </div>
-                                                                    <div class="col-sm-6">
+                                                                        <div class="col-sm-6">
 
-                                                                        <label id="alsoUsedInMess" class="build-label"></label>
-                                                                        <div id="buildCodeMatch"></div>
-                                                                    </div>
-                                                                </div>
-
-
-                                                                <div class="form-group">
-                                                                    <label class="build-label">Build Script</label><i class="fa fa-fw"></i>
-                                                                    <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal"><i class="fa fa-question fa-fw"></i></a>
-                                                                    <a href="#" id='insertVariable' data-toggle="modal" data-target="#varModal">[Insert Variable]</a>
-                                                                    <!--<textarea class="form-control form-custom code" rows="4" id="script"></textarea>-->
-
-                                                                    <div class="card codeCard">
-                                                                        <div id="script" class="jobCodeEditor"></div>
-                                                                    </div>
-
-                                                                </div>
-
-                                                                <div id="custTemplates">
-                                                                </div>
-                                                                <div id="newTemplateButton">
-                                                                    <label class="build-label">Template<a class='newCust' href='#'><i class="fa fa-plus fa-fw"></i></a></label><br><br>
-                                                                </div>
-
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div id="buildResAccordion">
-                                                    <div class="card jobCard">
-                                                        <div class="card-header" id="resHeading" data-toggle="collapse" data-target="#resCollapse" aria-expanded="true" aria-controls="resCollapse">
-                                                            <i class="fa fa-upload fa-fw"></i>Resources
-                                                        </div>
-
-                                                        <div id="resCollapse" class="collapse cardBody" aria-labelledby="resHeading" data-parent="#buildResAccordion">
-                                                            <div class="card-body">
-
-                                                                <div class="form-group">
-                                                                    <label class="build-label">File Resources<a id='newFileButton' class='newFile' href='#'><i class="fa fa-plus fa-fw"></i></a><a id='delFileButton' class='delFile' href='#'><i class="fa fa-minus fa-fw"></i></a></label>
-                                                                    <div id = 'fileList' class = 'fileList'></div>
-                                                                    <div id = 'fileUpload'>
-                                                                        <div class="progress">
-                                                                            <div class="progress-bar" role="progressbar"></div>
+                                                                            <label id="alsoUsedInMess" class="build-label"></label>
+                                                                            <div id="buildCodeMatch"></div>
                                                                         </div>
-                                                                        <input id="upload-input" type="file" name="uploads[]" multiple="multiple">
                                                                     </div>
-                                                                </div>
-                                                                <div class="form-group">
-                                                                    <!--<label class="build-label">Thumbnail</label>-->
-                                                                    <!--<div id="jobThumbnail"><img width="210" height="210" src="" style="display: none;"></div>-->
-                                                                    <div id="newImagePaste" style="">
-                                                                        <label class="build-label">New PNG Image</label>
-                                                                        <!--<p>Paste thumbnail image: </p>-->
-                                                                        <span><input type="text" id="pasteNewImage" class="form-control" placeholder="Paste new image here and enter new file name"><button id="setImageBtn" class="btn btn-default jobFormbtn">Set</button></span>
-                                                                        <div id="resampledNewImage"></div>
-                                                                        <input type="hidden" id="newImageURL" value="">
-                                                                    </div>
-                                                                </div>
 
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!--<div class="row">-->
-                                                    <!--</div>-->
-                                                </div>
 
-                                                <div id="buildTestAccordion">
-                                                    <div class="card jobCard">
-                                                        <div class="card-header" id="testHeading" data-toggle="collapse" data-target="#testCollapse" aria-expanded="true" aria-controls="testCollapse">
-                                                            <i class="fa fa- fa-check-square-o fa-fw"></i>Test
-                                                        </div>
-
-                                                        <div id="testCollapse" class="collapse cardBody" aria-labelledby="testHeading" data-parent="#buildTestAccordion">
-                                                            <div class="card-body">
-
-                                                                <div class="form-group">
-                                                                    <label class="build-label">Test Script</label>
-                                                                    <textarea class="form-control form-custom code" rows="4" id="test"></textarea>
-                                                                </div>
-
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div id="buildMetaAccordion">
-                                                    <div class="card jobCard">
-                                                        <div class="card-header" id="metaHeading" data-toggle="collapse" data-target="#metaCollapse" aria-expanded="true" aria-controls="metaCollapse">
-                                                            <i class="fa fa- fa-list fa-fw"></i>Meta
-                                                        </div>
-                                                        <div id="metaCollapse" class="collapse cardBody" aria-labelledby="metaHeading" data-parent="#buildMetaAccordion">
-                                                            <div class="card-body">
-
-                                                                <div class="row ">
-                                                                    <div class="col ">
-                                                                        <div class="form-group"><label class="build-label">Created Date: </label><input class="form-control form-custom" id="createdDate"></div>
-                                                                        <div class="form-group"><label class="build-label">Created By: </label><input class="form-control form-custom" id="createdBy"></div>
-                                                                    </div>
-                                                                    <div class="col ">
-                                                                    <div class="form-group"><label class="build-label">ID: </label><input class="form-control form-custom" id="idDisp"></div>
-                                                                    <div class="form-group"><label class="build-label">Price: </label><input class="form-control form-custom" id="price"></div>
-                                                                </div>
-                                                                </div>
-                                                                <div class="row "><div class="col-6 ">
                                                                     <div class="form-group">
-                                                                        <label class="build-label">Component File Resources
-                                                                            <!--<a id='newCompFileButton' class='newFile' href='#'><i class="fa fa-plus fa-fw"></i></a>-->
-                                                                            <a id='delCompFileButton' class='delFile' href='#'><i class="fa fa-minus fa-fw"></i></a>
-                                                                        </label>
-                                                                        <div id = 'fileCompList' class = 'fileList'></div>
-                                                                    </div>
-                                                                </div></div>
-                                                                <!--TESTING-->
-                                                                <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-                                                                <div class="form-group">
-                                                                    <label class="build-label">nodeData</label>
-                                                                    <textarea type="disabled" class="form-control form-custom code" rows="25" id="nodeData"></textarea>
-                                                                    <hr>
-                                                                    <textarea type="disabled" class="form-control form-custom code" rows="25" id="buildCodeData"></textarea>
-                                                                </div>
+                                                                        <label class="build-label">Build Script</label><i class="fa fa-fw"></i>
+                                                                        <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal"><i class="fa fa-question fa-fw"></i></a>
+                                                                        <a href="#" id='insertVariable' data-toggle="modal" data-target="#varModal">[Insert Variable]</a>
+                                                                        <!--<textarea class="form-control form-custom code" rows="4" id="script"></textarea>-->
 
+                                                                        <div class="card codeCard">
+                                                                            <div id="script" class="jobCodeEditor"></div>
+                                                                        </div>
+
+                                                                    </div>
+
+                                                                    <div id="custTemplates">
+                                                                    </div>
+                                                                    <div id="newTemplateButton">
+                                                                        <label class="build-label">Template<a class='newCust' href='#'><i class="fa fa-plus fa-fw"></i></a></label><br><br>
+                                                                    </div>
+
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
+
+                                                    <div id="buildResAccordion">
+                                                        <div class="card jobCard">
+                                                            <div class="card-header" id="resHeading" data-toggle="collapse" data-target="#resCollapse" aria-expanded="true" aria-controls="resCollapse">
+                                                                <i class="fa fa-upload fa-fw"></i>Resources
+                                                            </div>
+
+                                                            <div id="resCollapse" class="collapse cardBody" aria-labelledby="resHeading" data-parent="#buildResAccordion">
+                                                                <div class="card-body">
+
+                                                                    <div class="form-group">
+                                                                        <label class="build-label">File Resources<a id='newFileButton' class='newFile' href='#'><i class="fa fa-plus fa-fw"></i></a><a id='delFileButton' class='delFile' href='#'><i class="fa fa-minus fa-fw"></i></a></label>
+                                                                        <div id = 'fileList' class = 'fileList'></div>
+                                                                        <div id = 'fileUpload'>
+                                                                            <div class="progress">
+                                                                                <div class="progress-bar" role="progressbar"></div>
+                                                                            </div>
+                                                                            <input id="upload-input" type="file" name="uploads[]" multiple="multiple">
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <!--<label class="build-label">Thumbnail</label>-->
+                                                                        <!--<div id="jobThumbnail"><img width="210" height="210" src="" style="display: none;"></div>-->
+                                                                        <div id="newImagePaste" style="">
+                                                                            <label class="build-label">New PNG Image</label>
+                                                                            <!--<p>Paste thumbnail image: </p>-->
+                                                                            <span><input type="text" id="pasteNewImage" class="form-control" placeholder="Paste new image here and enter new file name"><button id="setImageBtn" class="btn btn-default jobFormbtn">Set</button></span>
+                                                                            <div id="resampledNewImage"></div>
+                                                                            <input type="hidden" id="newImageURL" value="">
+                                                                        </div>
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <!--<div class="row">-->
+                                                        <!--</div>-->
+                                                    </div>
+
+                                                    <div id="buildTestAccordion">
+                                                        <div class="card jobCard">
+                                                            <div class="card-header" id="testHeading" data-toggle="collapse" data-target="#testCollapse" aria-expanded="true" aria-controls="testCollapse">
+                                                                <i class="fa fa- fa-check-square-o fa-fw"></i>Test
+                                                            </div>
+
+                                                            <div id="testCollapse" class="collapse cardBody" aria-labelledby="testHeading" data-parent="#buildTestAccordion">
+                                                                <div class="card-body">
+
+                                                                    <div class="form-group">
+                                                                        <label class="build-label">Test Script</label>
+                                                                        <textarea class="form-control form-custom code" rows="4" id="test"></textarea>
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div id="buildMetaAccordion">
+                                                        <div class="card jobCard">
+                                                            <div class="card-header" id="metaHeading" data-toggle="collapse" data-target="#metaCollapse" aria-expanded="true" aria-controls="metaCollapse">
+                                                                <i class="fa fa- fa-list fa-fw"></i>Meta
+                                                            </div>
+                                                            <div id="metaCollapse" class="collapse cardBody" aria-labelledby="metaHeading" data-parent="#buildMetaAccordion">
+                                                                <div class="card-body">
+
+                                                                    <div class="row ">
+                                                                        <div class="col ">
+                                                                            <div class="form-group"><label class="build-label">Created Date: </label><input class="form-control form-custom" id="createdDate"></div>
+                                                                            <div class="form-group"><label class="build-label">Created By: </label><input class="form-control form-custom" id="createdBy"></div>
+                                                                        </div>
+                                                                        <div class="col ">
+                                                                            <div class="form-group"><label class="build-label">ID: </label><input class="form-control form-custom" id="idDisp"></div>
+                                                                            <div class="form-group"><label class="build-label">Price: </label><input class="form-control form-custom" id="price"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="row "><div class="col-6 ">
+                                                                            <div class="form-group">
+                                                                                <label class="build-label">Component File Resources
+                                                                                    <!--<a id='newCompFileButton' class='newFile' href='#'><i class="fa fa-plus fa-fw"></i></a>-->
+                                                                                    <a id='delCompFileButton' class='delFile' href='#'><i class="fa fa-minus fa-fw"></i></a>
+                                                                                </label>
+                                                                                <div id = 'fileCompList' class = 'fileList'></div>
+                                                                            </div>
+                                                                        </div></div>
+                                                                    <!--TESTING-->
+                                                                    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+                                                                    <div class="form-group">
+                                                                        <label class="build-label">nodeData</label>
+                                                                        <textarea type="disabled" class="form-control form-custom code" rows="25" id="nodeData"></textarea>
+                                                                        <hr>
+                                                                        <textarea type="disabled" class="form-control form-custom code" rows="25" id="buildCodeData"></textarea>
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+
+
+
                                                 </div>
-
-
-
-
                                             </div>
-                                        </div>
-                                    </form>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="buildCodeRow">
+                    <div class="col buildCodeRowListCol" >
+                        <button type="button" class="btn btn-default jobFormbtn" id="deleteBuildCodes">Delete</button>
+                        <div  id="buildCodes"></div>
+                    </div>
+
+                        <div id="buildCodeDisplayCol" class="col" >
+
+                        <div id="buildCodeDisplay" class="">
+
+                            <div id="buildCodeDisplayTop" class="">
+                                <span id="buildCodeDisplay-runLocVal" class=""></span>
+                                <span id="buildCodeDisplay-rerunnableVal" class=""></span>
+                                <span id="buildCodeDisplay-sysFuncVal" class=""></span>
+                            </div>
+
+                            <label class="build-label">Build Script</label><i class="fa fa-fw"></i>
+                            <div class="">
+                                <div id="buildCodeDisplay-script" class=" ace_editor ace_dark ace-twilight"></div>
+                            </div>
+
+
+
+                            <div id="buildCodeTemplates"></div>
+
                         </div>
 
+
+
                     </div>
+
                 </div>
 
                 <div id='bottomRow'  style="display: none" class="d-flex  nowrap   ">

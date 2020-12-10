@@ -405,7 +405,7 @@ input:not(:checked) + .slider.round:before{
     color: #367ae0;
 }
 
-.card-body{
+.card-body, #buildCodeRow{
     transition: background-color 1s;
     background-color: #f7f7f7;
     transition: color 0.5s;
@@ -660,7 +660,7 @@ a#buildCodeBtn i {
     color: #367ae0;
 }
 
-#launchLinkCopy{
+#launchLinkCopy, .buildCodeListCopy{
     color: #367ae0;
 }
 

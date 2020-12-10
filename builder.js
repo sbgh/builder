@@ -10,6 +10,7 @@ const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 const bodyParser = require("body-parser");
 const execSync = require('child_process').execSync;
+// const { spawn } = require('child_process');
 const passwordHash = require('password-hash');
 const Client = require('ssh2').Client;
 
@@ -76,7 +77,17 @@ const viewport = [1280,720];
 async function startChrome() {
     async function launchChrome() {
         return await chromeLauncher.launch({
-            chromeFlags: ["--disable-gpu", "--headless",  "--no-sandbox", "--allow-insecure-localhost"] //"--enable-logging",, "--enable-low-end-device-mode" , '--window-size=800,600', --force-device-scale-factor=1.5
+            chromeFlags: [ "--headless",
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--no-first-run',
+                '--no-zygote',
+                '--single-process',
+                '--disable-gpu',
+                "--allow-running-insecure-content",
+                "--ignore-certificate-errors"] //"--enable-logging",, "--enable-low-end-device-mode" , '--window-size=800,600', --force-device-scale-factor=1.5
         });
     }
     chrome = await launchChrome();
@@ -135,7 +146,7 @@ async function startChrome() {
             image.frameCount = frameCount;
             currentFrame = image;
 
-            //console.log('saved frame ' + frameCount.toString());
+            // console.log('saved frame ' + frameCount.toString());
             Page.screencastFrameAck({sessionId: sessionId});
         });
     }else{
@@ -147,7 +158,14 @@ async function startChrome() {
 startChrome();
 
 async function endChrome() {
-    await chrome.kill();
+
+    try{
+        await chrome.kill();
+    }catch(err){
+        console.log('chrome.kill tried and caught');
+    }
+    const killed = execSync('pkill chrome');
+
 }
 
 //Define user table global
@@ -264,7 +282,11 @@ router.get('/video', function(req, res) {
     req.on("close", function(){
         console.log("The client disconnected!");
         clientDisconnectFlag = true;
+        Page.stopScreencast();
+        // endChrome();
+        // Page.close();
         //res.end();
+        Page.navigate({url: "http://google.com"});
     });
 
     startDate = new Date();
@@ -283,7 +305,7 @@ router.get('/video', function(req, res) {
         Page.startScreencast({
             format: 'jpeg',
             quality: 50,
-            everyNthFrame: 5
+            everyNthFrame: 1
         });
     }catch(err){
         endChrome();
@@ -314,9 +336,9 @@ router.get('/video', function(req, res) {
             if (currentFrame.data !== lastFrame.data) {
                 res.write(JSON.stringify(currentFrame) + '<-->');
                 lastFrame = currentFrame;
-                //console.log('sent: ' + frameCount.toString());
+                // console.log('sent: ' + frameCount.toString());
             } else {
-                //console.log('skip: ' + frameCount.toString());
+                // console.log('skip: ' + frameCount.toString());
             }
         }
     }
@@ -395,9 +417,9 @@ router.get("/navigate",function(req,res){
     (async function () {
 
         await Page.navigate({url: url});
-        //await Page.loadEventFired();
+        await Page.loadEventFired();
 
-        //console.log("navigate: " + url)
+        console.log("navigate: " + url)
 
     })();
     res.end();
@@ -1205,7 +1227,54 @@ router.get("/BuildCode",function(req,res){
              }
 
         }else{
-            //resJSON = BuildCode;
+
+            var compList = {};
+            for (var key in SystemsJSON){
+                if(SystemsJSON[key].hasOwnProperty("buildCode")){
+
+                    if (BuildCode.hasOwnProperty(SystemsJSON[key].buildCode.linkArr[0])){
+                        if(!compList.hasOwnProperty(SystemsJSON[key].buildCode.linkArr[0])){
+                            compList[SystemsJSON[key].buildCode.linkArr[0]] = [key]
+                        }else{
+                            compList[SystemsJSON[key].buildCode.linkArr[0]].push(key)
+                        }
+                    }
+
+                }
+            }
+            var rowObj;
+            var rowsArr = [];
+            for (var key in BuildCode){
+                rowObj = {};
+                rowObj.id = key;
+                rowObj.name = BuildCode[key].name;
+                if(compList.hasOwnProperty(key) ) {
+                    rowObj.compList = compList[key];
+                }
+                rowObj.ver = BuildCode[key].ver;
+                rowObj.rerunnable = BuildCode[key].rerunnable;
+                rowObj.systemFunction = BuildCode[key].systemFunction;
+                rowObj.runLocal = BuildCode[key].runLocal;
+                if(BuildCode[key].hasOwnProperty('hist')){
+                    rowObj.lastUpdated = BuildCode[key].hist[BuildCode[key].hist.length -1];
+                }
+                // if(BuildCode[key].hasOwnProperty('description')){
+                //     rowObj.description = BuildCode[key].description.substring(0, 40);
+                // }
+
+                rowsArr.push(rowObj)
+            }
+
+            rowsArr.sort(function(a, b)
+            {
+                if(a.name.toUpperCase() > b.name.toUpperCase() ){
+                    return 1;
+                }else{
+                    return -1;
+                }
+            });
+
+            resJSON = rowsArr;
         }
 
     }
@@ -2841,84 +2910,9 @@ router.post("/run",function(req,res){
         conn.end();
      }
 
-     //function to return file names array of latest results of all componnents
-    function getLatestResultsFileList() {
-        var files = fs.readdirSync(resultsPath);  //!!Sync
-        files = files.sort(function (a, b) //sort by id_time desc
-        {
-            var ap = b;
-            var bp = a;
-            return ap === bp ? 0 : ap < bp ? -1 : 1;
-        });//sort dec
-
-        var lastID = '';
-        files = files.filter(function (file) {
-            if (file.split('_')[0] !== lastID) {
-                lastID = file.split('_')[0];
-                return (true)
-            } else {
-                return (false)
-            }
-        }); //include most recent of each id
-
-        return (files);
-    }
     latestResultsFileList = getLatestResultsFileList(); //cache the list of results files to make var lookups quicker
 
 
-    //function to parse all results files in latestResultsFileList and cache all results variables (var:key:val)
-    function cacheVarVals(latestResultsFileList, systemId){
-
-        //getSystemVarVal(jobId, vari)
-
-        latestResultsFileList.forEach(function (file) {
-            var id = file.substr(0, 36);
-            if(typeof SystemsJSON[id] !== "undefined"){
-                var resultsSystem = SystemsJSON[id].ft.split('/')[1];
-                if (systemId === resultsSystem){
-                    try {
-                        var results = JSON.parse(fs.readFileSync(resultsPath + file));
-                    } catch (e) {
-                        console.log(resultsPath + file + " not valid results JSON");
-                        return('');
-                    }
-                    var trimmedResults = '';
-                    results.forEach(function (row) {
-                        if (row.hasOwnProperty('results')) {
-                            if (row.results.substr(0, 4) === 'var:') {
-                                var varName = row.results.split(':')[1];
-
-                                trimmedResults = row.results.substr(('var:' + varName + ':').length);
-                                if(typeof latestVarCache[id] === 'undefined'){
-                                    latestVarCache[id] = {};
-                                }
-                                latestVarCache[id][varName] = trimmedResults.replace(/\n$/, "").replace(/\r$/, "");
-                            }
-                        }
-                        if (row.hasOwnProperty('x') && row.x !== '') {
-                            varName = row.x;
-                            trimmedResults = row.results;
-                            if(typeof latestVarCache[id] === 'undefined'){
-                                latestVarCache[id] = {};
-                            }
-                            latestVarCache[id][varName] = trimmedResults.replace(/\n$/, "").replace(/\r$/, "");
-                        }
-                    });
-                }
-            }
-        });
-
-        //cache system vars
-        var varListAr = SystemsJSON[systemId].variables;
-        if(typeof latestVarCache[systemId] === 'undefined'){
-            latestVarCache[systemId] = {};
-        }
-        for(var thisVar in varListAr){
-            var kName = thisVar;
-            var kVal = varListAr[thisVar].value;
-            latestVarCache[systemId][kName] = kVal
-        }
-    }
 
     //log number of vars found cacheVarVals in
     console.log("complete cacheVarVals - " + Object.keys(latestVarCache).length.toString() + " results added" );
@@ -3776,100 +3770,205 @@ router.post("/run",function(req,res){
     }
 });
 
+//function to return file names array of latest results of all componnents
+function getLatestResultsFileList() {
+    var files = fs.readdirSync(resultsPath);  //!!Sync
+    files = files.sort(function (a, b) //sort by id_time desc
+    {
+        var ap = b;
+        var bp = a;
+        return ap === bp ? 0 : ap < bp ? -1 : 1;
+    });//sort dec
+
+    var lastID = '';
+    files = files.filter(function (file) {
+        if (file.split('_')[0] !== lastID) {
+            lastID = file.split('_')[0];
+            return (true)
+        } else {
+            return (false)
+        }
+    }); //include most recent of each id
+
+    return (files);
+}
+latestResultsFileList = getLatestResultsFileList(); //cache the list of results files to make var lookups quicker
+
+//function to parse all results files in latestResultsFileList and cache all results variables in a given system (var:key:val)
+function cacheVarVals(latestResultsFileList, systemId){
+
+    //getSystemVarVal(jobId, vari)
+
+    latestResultsFileList.forEach(function (file) {
+        var id = file.substr(0, 36);
+        if(typeof SystemsJSON[id] !== "undefined"){
+            var resultsSystem = SystemsJSON[id].ft.split('/')[1];
+            if (systemId === resultsSystem){
+                try {
+                    var results = JSON.parse(fs.readFileSync(resultsPath + file));
+                } catch (e) {
+                    console.log(resultsPath + file + " not valid results JSON");
+                    return('');
+                }
+                var trimmedResults = '';
+                results.forEach(function (row) {
+                    if (row.hasOwnProperty('results')) {
+                        if (row.results.substr(0, 4) === 'var:') {
+                            var varName = row.results.split(':')[1];
+
+                            trimmedResults = row.results.substr(('var:' + varName + ':').length);
+                            if(typeof latestVarCache[id] === 'undefined'){
+                                latestVarCache[id] = {};
+                            }
+                            latestVarCache[id][varName] = trimmedResults.replace(/\n$/, "").replace(/\r$/, "");
+                        }
+                    }
+                    if (row.hasOwnProperty('x') && row.x !== '') {
+                        varName = row.x;
+                        trimmedResults = row.results;
+                        if(typeof latestVarCache[id] === 'undefined'){
+                            latestVarCache[id] = {};
+                        }
+                        latestVarCache[id][varName] = trimmedResults.replace(/\n$/, "").replace(/\r$/, "");
+                    }
+                });
+            }
+        }
+    });
+
+    //cache system vars
+    var varListAr = SystemsJSON[systemId].variables;
+    if(typeof latestVarCache[systemId] === 'undefined'){
+        latestVarCache[systemId] = {};
+    }
+    for(var thisVar in varListAr){
+        var kName = thisVar;
+        var kVal = varListAr[thisVar].value;
+        latestVarCache[systemId][kName] = kVal
+    }
+}
+
+//function to parse all results files in latestResultsFileList and cache all results variables (var:key:val)
+function cacheAllVarVals(latestResultsFileList){
+
+    //getSystemVarVal(jobId, vari)
+
+    latestResultsFileList.forEach(function (file) {
+        var id = file.substr(0, 36);
+        if(typeof SystemsJSON[id] !== "undefined"){
+            // var resultsSystem = SystemsJSON[id].ft.split('/')[1];
+            // if (systemId === resultsSystem){
+                try {
+                    var results = JSON.parse(fs.readFileSync(resultsPath + file));
+                } catch (e) {
+                    console.log(resultsPath + file + " not valid results JSON");
+                    return('');
+                }
+                var trimmedResults = '';
+                results.forEach(function (row) {
+                    if (row.hasOwnProperty('results')) {
+                        if (row.results.substr(0, 4) === 'var:') {
+                            var varName = row.results.split(':')[1];
+
+                            trimmedResults = row.results.substr(('var:' + varName + ':').length);
+                            if(typeof latestVarCache[id] === 'undefined'){
+                                latestVarCache[id] = {};
+                            }
+                            latestVarCache[id][varName] = trimmedResults.replace(/\n$/, "").replace(/\r$/, "");
+                        }
+                    }
+                    if (row.hasOwnProperty('x') && row.x !== '') {
+                        varName = row.x;
+                        trimmedResults = row.results;
+                        if(typeof latestVarCache[id] === 'undefined'){
+                            latestVarCache[id] = {};
+                        }
+                        latestVarCache[id][varName] = trimmedResults.replace(/\n$/, "").replace(/\r$/, "");
+                    }
+                });
+            // }
+        }
+    });
+
+}
+cacheAllVarVals(latestResultsFileList);
 
 //Service Rt: /getVars to return a list of all vars in current system , Method: get, Requires: nothing , Returns: json string of format {pri:priFiles, pub:pubFiles}
 //The service is to be rewritten utalizing new lookups
 router.get("/getVars",function(req,res){
+    var systemId = req.query.systemId;
+
     res.writeHead(200, {"Content-Type": "application/json"});
 
-    //var resultsFileArray = {};
-    fs.readdir(resultsPath, function (err, files) {
-        if (err) {
-            throw err;
-        } else {
-            //var resultsFileArray = [];
-            files = files.sort(function(a, b) //sort by id_time desc
-            {
-                var ap = b;
-                var bp = a;
-                return ap === bp ? 0 : ap < bp ? -1 : 1;
-            });//sort dec
+    // ft: "#/48fa9073-491d-42d9-9390-d4c821bcf148/594fe4ba-c629-4dc9-aa4c-1b89433e1462/5bc35105-2197-4368-86de-fe0def4796a7/303f3eb0-0207-4655-b398-2728b1c41ab5/5383f5d6-3a36-4512-a38f-ee4f76c767b0/2ce51355-845a-4ad9-b9f0-58eb324657b5/84d38166-d997-4a24-87a4-5deacf0b978d/b5685f79-f62f-467e-bade-516b3b75cfef"
+    // link: "0a7bd5ce-24cf-425a-bd84-f926566cc5bf"
+    // path: "ezStack.Systems/Apps/Node instance (Server.js)/Services/Contact (/contact)/Contact UI/Main Raised Col/body row/right body col 8/12"
+    // row: "insertrightbodyCol"
+    // varName: "currentHTMLInsert"
 
-            var lastID = '';
-            files = files.filter(function (file) {
-                if (file.split('_')[0] !== lastID){
-                    lastID = file.split('_')[0];
-                    return (true)
-                }else{
-                    return (false)
-                }
-            }); //include most recent of each id
+    //cache system vars
+    var varListAr = SystemsJSON[systemId].variables;
+    if(typeof latestVarCache[systemId] === 'undefined'){
+        latestVarCache[systemId] = {};
+    }
+    for(var thisVar in varListAr){
+        var kName = thisVar;
+        var kVal = varListAr[thisVar].value;
+        latestVarCache[systemId][kName] = kVal
+    }
 
-            //console.log(files);
-            var listOfVars = {};
-            var listOfVarsIndex = [];
-            files.forEach(function (file) {
-                // console.log(file)
-                var id = file.split('_')[0];
-                // console.log(id)
-                if(SystemsJSON.hasOwnProperty(id)){
-                    var name = SystemsJSON[id].name;
-                    var ftRaw = SystemsJSON[id].ft;
-                    var ftAr = ftRaw.split('/');
-                    var t = [];
-                    ftAr.forEach(function(id){
-                        if (id !== '#'){
-                            if((typeof SystemsJSON[id]) === "undefined"){
-                                // console.log(JSON.stringify(SystemsJSON[id]),id, ftRaw, name)
-                            }
-                            t.push(SystemsJSON[id].name)
-                        }
-                    })//convert id/id/... to name/name/... for fam tree
-                    var ft = t.join('/');
+    var resultsFileObj = {};
 
-                    var results = JSON.parse(fs.readFileSync(resultsPath + file));
-                    results.forEach(function(row){
-                        if ( row.hasOwnProperty('results') && row.results.substr(0,4) === 'var:'){
-                            var varName = row.results.split(':')[1];
-                            var trimmedResults= row.results.substr(('var:' + varName + ':').length);
-                            insertResultsArr(trimmedResults, varName, listOfVars);
-                        }
-                        if(row.hasOwnProperty('x') && row.x !== ''){
-                            var varName = row.x;
-                            var trimmedResults= row.results;
-                            insertResultsArr(trimmedResults, varName, listOfVars);
-                        }
-                    });
-                    function insertResultsArr(trimmedResults, varName, listOfVars){
-                        if (listOfVars.hasOwnProperty(id+':'+varName)){
-                                listOfVars[id+':'+varName] = {'id':id, 'path': ft+'/'+name,'ft':ftRaw, 'link':id, 'varName':varName, 'row' : listOfVars[id+':'+varName].row + trimmedResults};
-                        }else{
-                            listOfVars[id+':'+varName] = {'id':id, 'path': ft+'/'+name,'ft':ftRaw, 'link':id, 'varName':varName, 'row' : trimmedResults};
-                            listOfVarsIndex.push({id:id, pathRaw: ftRaw+'/'+id, path:ft+'/'+name, varName:varName});
-                        }
+    var tmpArr = [];
+    for(let i in latestVarCache){
+        var id = i;
+
+        for(let v in Object.keys(latestVarCache[i])){
+
+            var varName = Object.keys(latestVarCache[i])[v];
+
+            var ftRaw = SystemsJSON[id].ft;
+            var ftAr = ftRaw.split('/');
+            var t = [];
+            ftAr.forEach(function(id){
+                if (id !== '#'){
+                    if((typeof SystemsJSON[id]) === "undefined"){
+                    }else{
+                        t.push(SystemsJSON[id].name)
                     }
                 }
-            });
+            })//convert id/id/... to name/name/... for fam tree
+            var ft = t.join('/')+"/" + SystemsJSON[id].name;
 
-            listOfVarsIndex = listOfVarsIndex.sort(function(a, b){
-                if(a.path.toUpperCase() === b.path.toUpperCase()){
-                    return 0
-                }else if(a.path.toUpperCase() < b.path.toUpperCase()){
-                    return -1
-                }else{
-                    return 1
-                }
-            });//sort by path
 
-            var newListOfVars = {};
-            listOfVarsIndex.forEach(function(row){
-                newListOfVars[row.id+':'+row.varName] = listOfVars[row.id+':'+row.varName]
-            });
-
-           // console.log(JSON.stringify(listOfVars));
-            res.end(JSON.stringify(newListOfVars));
+            var tmpObj = {};
+            tmpObj.ft = ftRaw;
+            tmpObj.link = id;
+            tmpObj.path = ft;
+            tmpObj.varName = varName;
+            tmpObj.row = latestVarCache[i][varName];
+            tmpArr.push(tmpObj)
         }
-    })
+    }
+
+    tmpArr.sort(function(a, b){
+        if(a.path.toUpperCase() > b.path.toUpperCase()){
+            return 1
+        }else{
+            return -1
+        }
+    });
+
+    for(let i in tmpArr){
+        resultsFileObj[tmpArr[i].link + ":" + tmpArr[i].varName] = {};
+        resultsFileObj[tmpArr[i].link + ":" + tmpArr[i].varName].ft = tmpArr[i].ft;
+        resultsFileObj[tmpArr[i].link + ":" + tmpArr[i].varName].link = tmpArr[i].link;
+        resultsFileObj[tmpArr[i].link + ":" + tmpArr[i].varName].path = tmpArr[i].path;
+        resultsFileObj[tmpArr[i].link + ":" + tmpArr[i].varName].varName = tmpArr[i].varName;
+        resultsFileObj[tmpArr[i].link + ":" + tmpArr[i].varName].row = tmpArr[i].row;
+    }
+
+    res.end(JSON.stringify(resultsFileObj));
 });
 
 //Service Rt: /upload to up;oad file and attach to specified id, Method: post, Requires: form including id = component ID | uploads = file list , Returns: array of files attached to component format {name:file} or Error String
@@ -4593,6 +4692,27 @@ router.post("/setNewImage",function(req,res) {
         }
     }
     res.end('');
+
+});
+
+router.post("/deleteBuildCodes",function(req,res){
+    var reqJSON= req.body;
+    var buildCodeArr = reqJSON.boxes;
+
+    res.writeHead(200, {"Content-Type": "application/json"});
+
+    var returnArr = [];
+    for(let bc in buildCodeArr ){
+        if(BuildCode.hasOwnProperty(buildCodeArr[bc])){
+            delete BuildCode[buildCodeArr[bc]];
+            returnArr.push(buildCodeArr[bc])
+        }
+        //console.log(buildCodeArr[bc])
+    }
+
+    saveAllJSON(false);
+
+    res.end(JSON.stringify(returnArr))
 
 });
 

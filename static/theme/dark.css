@@ -10,7 +10,7 @@ body {
     color: #3c3f41;
 }
 
-#rightCol {
+#rightCol, #buildCodeRow {
     transition: background-color 1s;
     background-color: #3c3f41;
     border-color: #3c3f41;
@@ -85,7 +85,7 @@ a, a:hover {
 
 .table-striped > tbody > tr:nth-child(2n+1) {
     transition: background-color 0.5s;
-    background-color: #555555;
+    background-color: #3a3a3a;
 }
 
 .dashTableRow:nth-child(2n+1) {
@@ -832,7 +832,7 @@ a#buildCodeBtn i {
     color: #79bdf3;
 }
 
-#launchLinkCopy{
+#launchLinkCopy, .buildCodeListCopy{
     color: #79bdf3;
 }
 

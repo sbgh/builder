@@ -421,8 +421,7 @@ padding-left: 0px;
 }
 
 .varCheckbox {
-   margin-top: 0px;
-   margin-bottom: 0px;
+   margin-top: 5px;
 }
 
 .code{
@@ -2029,48 +2028,119 @@ input.CheckboxFileList {
    width: 370px;
 }
 
-/*.dashHr hr {*/
-   /*margin-top: 1rem;*/
-   /*margin-bottom: 0;*/
-   /*border: 0;*/
-   /*border-top: 1px solid #77777730;*/
-/*}*/
+#buildCodeRow {
+   /*display: flex;*/
+   /*flex-direction: column;*/
+   height: calc(100vh - 30px);
+   padding-bottom: 18px;
+}
 
-/*.dashBoardBottomRow {*/
-   /*margin-top: 20px;*/
-/*}*/
+#buildCodes{
+   overflow-y: auto;
+   overflow-x: hidden;
+   height: calc(100vh - 30px);
+   padding-left: 5px;
+   display: flex;
+   flex-direction: column;
+   align-items: flex-start;
+   margin-top: 40px;
+}
 
-/*@property --colorPrimary {*/
-    /*syntax: '<color>';*/
-    /*initial-value: #ecececff;*/
-    /*inherits: false;*/
-/*}*/
+.buildCodeRowName{
+   width: 250px;
+   overflow: hidden;
+   white-space: nowrap;
+   font-weight: bold;
+}
 
-/*@property --colorSecondary {*/
-    /*syntax: '<color>';*/
-    /*initial-value: #ececec00;*/
-    /*inherits: false;*/
-/*}*/
+.buildCodeListItem{
+   display: flex;
+   border-bottom: solid 1px;
+   border-color: #aaaaaa;
+   /*width: 100%;*/
+   font-size: small;
+}
+
+.buildCodeRowCount{
+   padding-left: 5px;
+   padding-right: 5px;
+   width:40px;
+}
+.buildCodeRowCheck{
+   margin-left: 5px;
+   margin-right: 5px;
+   width: 30px;
+   margin-top: 5px;
+}
+
+.buildCodeRowLastUpdated {
+   width: 6em;
+   text-align: right;
+   margin-left: 5px;
+   margin-right: 5px;
+}
+
+.buildCodeRowDescription{
+   margin-left: 5px;
+   margin-right: 5px;
+}
+.buildCodeListCopy{
+   cursor: pointer;
+}
+
+.buildCodeRowListCol{
+   max-width: 476px;
+   padding-right: 0px;
+
+}
+
+#buildCodeDisplayCol{
+}
+
+
+.buildCodeRowListCol, #buildCodeDisplayCol{
+   display: flex;
+   flex-direction: column;
+   height: 100%;
+}
+
+
+#buildCodeDisplay{
+   overflow-y: auto;
+   height: 100%;
+   padding-left: 0px;
+   margin-top: 55px;
+   padding-left: 30px;
+   padding-right: 30px;
+   margin-left: -15px;
+}
+
+#buildCodeDisplayTop label{
+   padding-right: 10px;
+}
+
+#buildCodeDisplay #buildCodeBody{
+   padding-left: 0px;
+   padding-top: 58px;
+   display: flex;
+   flex-direction: column;
+   height: 100%;
+   overflow-y: auto;
+   overflow-x: hidden;
+}
+
+div#buildCodeDisplay-script {
+   height: 300px;
+}
+
+div#buildCodeTemplates {
+   margin-top: 25px;
+}
+
+.buildCodeDisplay-template{
+   height: 300px;
+}
 
 
 
-/*.fadeTop {*/
-   /*display: block;*/
-    /*position: absolute;*/
-    /*height: 20px;*/
-    /*width: 100%;*/
-   /*pointer-events: none;*/
 
-    /*!*THIS CRASHES CHROME AFTER A FEW CYCLES OF DEFAULT TO DARK - "aw snap"  Error code: "STATUS_ACCESS_VIOLATION"*!*/
-    /*!*transition: --colorPrimary 1s, --colorSecondary 1s;*!*/
-
-    /*background-image: linear-gradient( var(--colorPrimary) , var(--colorSecondary) );*/
-/*}*/
-
-/*@media (max-height: 500px) {*/
-
-   /*!*noinspection ALL*!*/
-   /*.fadeTop {*/
-      /*display: none;*/
-   /*}*/
-/*}*/
