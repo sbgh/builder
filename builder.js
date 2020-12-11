@@ -4524,6 +4524,75 @@ router.get("/componentsByBcId",function(req,res){
     res.end(JSON.stringify(resJSON));
 });
 
+router.get("/componentsTreeByBcId",function(req,res){
+
+    var buildId = req.query.buildId;
+    const matchingComponents = searchForComponentByBuildId(buildId);
+
+
+    const RetObj = {matchingComponents:matchingComponents.foundObjArr, matchingComponentsCount:matchingComponents.count};
+    res.end(JSON.stringify(RetObj));
+
+});
+
+function searchForComponentByBuildId(buildId){
+//return a jstree array of component ids, and promoted gr/parents, where the build id is used.
+    var foundObj = {};
+    var foundObjArr = [];
+    var x=0;
+    for(var key in SystemsJSON){
+        if(SystemsJSON[key].comType === "job"){
+            if(SystemsJSON[key].hasOwnProperty("buildCode")) {
+                if(SystemsJSON[key].buildCode.linkArr[0] === buildId) {
+                    //add the names of promoted gr/parents to each row
+                    var ancestors = SystemsJSON[key].ft.split("/");
+                    var lastParent = '#';
+                    for (var idx in ancestors) {
+                        if(ancestors[idx] !== '#'){
+
+                            if(SystemsJSON[ancestors[idx]].comType === "system" || SystemsJSON[ancestors[idx]].promoted === 1){
+
+                                if(!foundObj.hasOwnProperty(ancestors[idx])){
+                                    foundObj[ancestors[idx]] = {};
+                                    foundObj[ancestors[idx]].id = ancestors[idx];
+                                    foundObj[ancestors[idx]].text = SystemsJSON[ancestors[idx]].name;
+                                    foundObj[ancestors[idx]].type = getType(ancestors[idx]);
+                                    foundObj[ancestors[idx]].comType = SystemsJSON[ancestors[idx]].comType;
+                                    foundObj[ancestors[idx]].sort = SystemsJSON[ancestors[idx]].sort;
+                                    foundObj[ancestors[idx]].parent = lastParent;
+                                    if (SystemsJSON[ancestors[idx]].icon) {
+                                        foundObj[ancestors[idx]].icon = "/uploads/" + ancestors[idx] + "/" + "icon.png"
+                                    }
+                                    foundObj[ancestors[idx]].li_attr = {"class": "matchTreeLi"};
+                                    foundObj[ancestors[idx]].a_attr = {"class": "matchTreeA"};
+
+                                    foundObjArr.push(foundObj[ancestors[idx]]);
+                                }
+                                lastParent = ancestors[idx];
+                            }
+                        }
+                    }
+
+                    x++;
+                    foundObj[key] = {};
+                    foundObj[key].id = key;
+                    foundObj[key].text = SystemsJSON[key].name;
+                    foundObj[key].comType = SystemsJSON[key].comType;
+                    foundObj[key].sort = SystemsJSON[key].sort;
+                    foundObj[key].type = getType(key);
+                    foundObj[key].parent = lastParent;
+                    foundObj[key].li_attr = {"class": "matchTreeLi matchTreeLi-found"};
+                    foundObj[key].a_attr = {"class": "matchTreeA matchTreeA-found "};
+
+                    foundObjArr.push(foundObj[key]);
+                }
+            }
+        }
+    }
+    var returnObj = {count:x, foundObjArr:foundObjArr};
+    return(returnObj)
+}
+
 //Service Rt: /getChildCount
 router.get("/getChildCount",function(req,res){
     var id = req.query.id;
@@ -4562,80 +4631,80 @@ router.get("/getTempTypes",function(req,res){
     res.end(JSON.stringify(resJSON));
 });
 
-router.get("/massupdate",function(req,res){
-//mass updates and fix build codes
-
-    res.write("<html><body>");
-
-    var x=0;
-    var list = {};
-    for (var key in SystemsJSON) {
-        //console.log(x++);
-        if(SystemsJSON[key].comType === "job"){
-            var bc =  SystemsJSON[key].buildCode.linkArr[0];
-
-            // console.log("=====");
-            // console.log(BuildCode[bc].name );
-
-
-            var scriptC = BuildCode[bc].script.length;
-
-            var tempObjArr = BuildCode[bc].templates.tempArr;
-
-            var tempC = 0;
-            tempObjArr.forEach(function(tempObj){
-                tempC += tempObj.c.length
-            });
-            var resC = 0;
-            // console.log(typeof BuildCode[bc].resourceFiles);
-            // console.log(BuildCode[bc].resourceFiles);
-
-            if(BuildCode[bc].hasOwnProperty("resourceFiles")){
-                if(BuildCode[bc].resourceFiles !== '[object Object]'){
-                    if(BuildCode[bc].resourceFiles !== ""){
-                        var resArr = JSON.parse(BuildCode[bc].resourceFiles);
-                        for (let i = 0; i < resArr.length; i++) {
-                            resC += resArr[i].name.length
-                        }
-
-                    }else{
-                        console.log("=====");
-                        console.log(BuildCode[bc].name );
-                        console.log("blank" );
-                        // BuildCode[bc].resourceFiles = "[]"
-                    }
-                }else{
-                    console.log("=====");
-                    console.log(BuildCode[bc].name );
-                    console.log("o o");
-                    // BuildCode[bc].resourceFiles = "[]"
-                }
-            }else{
-                console.log("=====");
-                console.log(BuildCode[bc].name );
-                console.log("no resourceFiles");
-            }
-
-            var idx = BuildCode[bc].name + (scriptC + tempC + resC).toString();
-            if(! list.hasOwnProperty(idx)){
-                list[idx] = {count : 0, cid : bc, sid : key}
-            }else{
-                list[idx].count++;
-            }
-
-        }
-
-    }
-
-    for (var key in list) {
-        res.write( "<br>");
-        res.write(list[key].count.toString() + " : " + key + "<br>");
-    }
-
-    res.write("</body></html>");
-    res.end("");
-
-});
+// router.get("/massupdate",function(req,res){
+// //mass updates and fix build codes
+//
+//     res.write("<html><body>");
+//
+//     var x=0;
+//     var list = {};
+//     for (var key in SystemsJSON) {
+//         //console.log(x++);
+//         if(SystemsJSON[key].comType === "job"){
+//             var bc =  SystemsJSON[key].buildCode.linkArr[0];
+//
+//             // console.log("=====");
+//             // console.log(BuildCode[bc].name );
+//
+//
+//             var scriptC = BuildCode[bc].script.length;
+//
+//             var tempObjArr = BuildCode[bc].templates.tempArr;
+//
+//             var tempC = 0;
+//             tempObjArr.forEach(function(tempObj){
+//                 tempC += tempObj.c.length
+//             });
+//             var resC = 0;
+//             // console.log(typeof BuildCode[bc].resourceFiles);
+//             // console.log(BuildCode[bc].resourceFiles);
+//
+//             if(BuildCode[bc].hasOwnProperty("resourceFiles")){
+//                 if(BuildCode[bc].resourceFiles !== '[object Object]'){
+//                     if(BuildCode[bc].resourceFiles !== ""){
+//                         var resArr = JSON.parse(BuildCode[bc].resourceFiles);
+//                         for (let i = 0; i < resArr.length; i++) {
+//                             resC += resArr[i].name.length
+//                         }
+//
+//                     }else{
+//                         console.log("=====");
+//                         console.log(BuildCode[bc].name );
+//                         console.log("blank" );
+//                         // BuildCode[bc].resourceFiles = "[]"
+//                     }
+//                 }else{
+//                     console.log("=====");
+//                     console.log(BuildCode[bc].name );
+//                     console.log("o o");
+//                     // BuildCode[bc].resourceFiles = "[]"
+//                 }
+//             }else{
+//                 console.log("=====");
+//                 console.log(BuildCode[bc].name );
+//                 console.log("no resourceFiles");
+//             }
+//
+//             var idx = BuildCode[bc].name + (scriptC + tempC + resC).toString();
+//             if(! list.hasOwnProperty(idx)){
+//                 list[idx] = {count : 0, cid : bc, sid : key}
+//             }else{
+//                 list[idx].count++;
+//             }
+//
+//         }
+//
+//     }
+//
+//     for (var key in list) {
+//         res.write( "<br>");
+//         res.write(list[key].count.toString() + " : " + key + "<br>");
+//     }
+//
+//     res.write("</body></html>");
+//     res.end("");
+//
+// });
 
 router.get("/snapComp",function(req,res){
     const jobId = req.query.id;

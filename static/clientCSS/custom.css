@@ -2141,6 +2141,11 @@ div#buildCodeTemplates {
    height: 300px;
 }
 
+div#usedInMatchOverlay {
+   max-height: 80vh;
+   overflow: auto;
+}
+
 
 
 

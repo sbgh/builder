@@ -5309,6 +5309,8 @@ $("#componentsBtn").click();
 
                             if (data[i].hasOwnProperty('compList')){
                                 count = data[i].compList.length > 0 ? data[i].compList.length.toString() : '';
+                            }else{
+                                count = '';
                             }
                             row += '<div class="buildCodeRowCount">' + count +'</div>'
                             $("#BuildCode-" + data[i].id).find(".buildCodeRowCount").text(count);
@@ -5349,13 +5351,10 @@ $("#componentsBtn").click();
                                 $(this).css({'background-color':'#00000055'});
                                 $(".buildCodeListItem").each(function(ele){
                                     var thisEle = $($(".buildCodeListItem")[ele]);
-//                                    thisEle.css({'background-color':'white;'});
                                     if (thisEle.get(0) !== selectedEle){
 
                                         thisEle.css({'background-color':'#00000000'});
 
-                                    }else{
-//                                        thisEle.css({'background-color':'black'});
                                     }
                                 })
 
@@ -5459,21 +5458,25 @@ $("#componentsBtn").click();
                             $('#buildCodeDisplay-runLocVal').html('<label>Run Locally: No</label>');
                         }
 
+                        if(data[0].hasOwnProperty('script')){
+                            scriptDisplay.session.setValue(data[0].script);
+                            $("#buildCodeDisplay-script").show();
+                        }else{
+                            scriptDisplay.session.setValue('');
+                            $("#buildCodeDisplay-script").hide();
+                        }
 
-                        scriptDisplay.session.setValue(data[0].script);
-
-                        var tempObjArr = data[0].templates.tempArr;
                         $('#buildCodeTemplates').html('');
-                        buildCodeDisplayTemps = [];
-                        var x = 0;
-                        tempObjArr.forEach(function(tempObj){
-
-                            //if there is not an instance to reuse create a new
+                        if(data[0].hasOwnProperty('templates')){
+                            buildCodeDisplayTemps = [];
+                            var tempObjArr = data[0].templates.tempArr;
+                            var x = 0;
+                            tempObjArr.forEach(function(tempObj){
 
                                 var inHtml = "<div class='form-group' id='buildCodeDisplay-templateBlock"+x.toString()+"'>";
 
                                 inHtml += "         <label class='build-label'>Template "+ (x > 0 ? (x + 1).toString() : "") +"</label>";
-                                inHtml += "         <input type='hidden' id='templateType"+x.toString()+"'>"
+                                inHtml += "         <label class='build-label'>("+tempObj.t+")</label>"
 
 
                                 inHtml += "     <div class='' id='buildCodeDisplay-templateCard"+ x.toString() +"'>"
@@ -5483,34 +5486,126 @@ $("#componentsBtn").click();
 
                                 $('#buildCodeTemplates').append(inHtml);
 
-                            var thisTemplate = ace.edit('buildCodeDisplay-template'+x.toString());
-                            buildCodeDisplayTemps.push(thisTemplate);
-                            thisTemplate.setTheme("ace/theme/clouds");
-                            thisTemplate.session.setMode("ace/mode/sh");
+                                var thisTemplate = ace.edit('buildCodeDisplay-template'+x.toString());
+                                buildCodeDisplayTemps.push(thisTemplate);
+                                thisTemplate.setTheme("ace/theme/clouds");
+                                thisTemplate.session.setMode("ace/mode/sh");
 
-                            $('buildCodeDisplay-template'+x.toString()).addClass("aceDisabled");
+                                $('#buildCodeDisplay-template'+x.toString()).addClass("aceDisabled");
 
-                            thisTemplate.session.setMode("ace/mode/text");
-                            document.getElementById('buildCodeDisplay-template'+x.toString()).style.fontSize='14px';
+                                thisTemplate.session.setMode("ace/mode/" + tempObj.t);
+                                document.getElementById('buildCodeDisplay-template'+x.toString()).style.fontSize='14px';
 
-                            thisTemplate.renderer.$cursorLayer.element.style.display = "none"
+                                thisTemplate.renderer.$cursorLayer.element.style.display = "none"
+                                thisTemplate.session.setValue(tempObj.c);
+                                thisTemplate.isValid = true;
+                                x++;
+                            });
 
-//                                loadjobTempTypeDropdown(x);
+                            setAceStyle(currentStyleName);
+                        }else{
 
+                        }
 
-
-                            thisTemplate.session.setValue(tempObj.c);
-                            thisTemplate.isValid = true;
-                            x++;
-                        });
-
-                        setAceStyle(currentStyleName);
                     }
-
-
-
-
                 });
+
+                loadUsedInTree(id);
+            }
+
+            //create usedInMatchLink tree
+            var currectMatchTreeObjArr = [];
+            $("#usedInMatchLink_jstree_div").jstree({
+                "core" : {
+                    "themes": {
+                        "name": "default",
+                        "dots": true,
+                        "icons": true,
+                        "variant" : "small"
+                    },
+                    "data" : currectMatchTreeObjArr,
+                    'check_callback': function(operation, node, node_parent, node_position, more) {
+                        return true;  //allow all other operations
+                    }
+                },
+                "types" : {
+                    "system" : {
+                        "icon" : "fa fa-server ",
+                        "a_attr": { class : " systemRow "}
+                    },
+                    "job" : {
+                        "icon" : "fa fa-check-circle-o jobRow"
+                    },
+                    "needfull" : {
+                        "icon" : "fa fa-play-circle-o",
+                        "a_attr": { class : " needfull "},
+                        "li_attr": { class : " needfull "}
+                    },
+                    "rerunnable" : {
+                        "icon" : "fa fa-repeat rerunnableRow",
+                        "a_attr": { class : " rerunnableRow "}
+                    },
+                    "root" : {
+                        "icon" : "fa fa-server"
+                    },
+                    "disabled" : {
+                        "icon" : "fa fa-times-circle-o disabledRow",
+                        "li_attr": { class : "  "}
+                    }
+                },
+                "sort" : function(a, b) {
+                    a1 = this.get_node(a);
+                    b1 = this.get_node(b);
+                    return (a1.original.sort < b1.original.sort) ? -1 : 1;
+
+                },
+                "plugins" : [ "sort", "types", "wholerow"]
+            }).on(  'create_node.jstree', function(e, data) {
+                //console.log('saved');
+            }  );
+
+            $('#usedInMatchLink_jstree_div').bind("refresh.jstree", function (e, data) {
+                $(this).jstree("open_all");
+            })
+
+            $('#usedInMatchLink_jstree_div').on("select_node.jstree", function (e, data) {
+
+                $('#videoModal').modal('hide');
+
+                var selectedMatchNode = data.selected[0];
+
+                if( ! $("#componentsBtn").hasClass('active')){
+                    $("#componentsBtn").click();
+                }
+                setTimeout(function(){
+                    $('#jstree_div').jstree("deselect_all");
+                    $('#jstree_div').jstree('select_node', selectedMatchNode);
+                    $('#jstree_div').jstree(true).get_node(selectedMatchNode, true).children('.jstree-anchor').focus();
+                }, 500);
+            });
+
+            function loadUsedInTree(buildId){
+                $.get("/componentsTreeByBcId",{buildId:buildId},function(resp){
+
+                    var respObj = JSON.parse(resp);
+
+
+                    var matchingComponents = respObj.matchingComponents;
+                    var matchingComponentsCount = respObj.matchingComponentsCount;
+
+
+                    $('#usedInMatchLink_jstree_div').jstree(true).settings.core.data = matchingComponents;
+                    $('#usedInMatchLink_jstree_div').jstree(true).refresh();
+
+                    if(matchingComponentsCount < 1){
+                        $("#usedInMatch").text('0 components');
+                    }else if(matchingComponentsCount === 1){
+                        $("#usedInMatch").text('1 component');
+                    }else{
+                            $("#usedInMatch").text(matchingComponentsCount.toString() +" components")
+                        }
+
+                })
             }
 
             if(localStorage["topMenuViewSelected"]){
@@ -6129,6 +6224,7 @@ $("#componentsBtn").click();
                     }
                 })
             }
+
             $("#HtmlLabel").hide();
             $("#AttributesLabel").hide();
             $('#vidMenuMatch').hide();
@@ -7198,6 +7294,17 @@ $("#componentsBtn").click();
                                 <span id="buildCodeDisplay-runLocVal" class=""></span>
                                 <span id="buildCodeDisplay-rerunnableVal" class=""></span>
                                 <span id="buildCodeDisplay-sysFuncVal" class=""></span>
+                                <div id="usedIn" class="">
+                                    <label>Used In: </label>
+                                    <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="usedInMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <div id="usedInComponentLinks"></div><div id="usedInMatchNum"></div>
+                                    </button>
+                                    <div id="usedInMatchOverlay" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="usedInMatch">
+                                        <div class="col matchLinkCol">
+                                            <div id="usedInMatchLink_jstree_div"></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <label class="build-label">Build Script</label><i class="fa fa-fw"></i>
