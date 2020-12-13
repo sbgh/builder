@@ -286,7 +286,7 @@ router.get('/video', function(req, res) {
         // endChrome();
         // Page.close();
         //res.end();
-        Page.navigate({url: "http://google.com"});
+        // Page.navigate({url: "http://google.com"});
     });
 
     startDate = new Date();
@@ -4550,7 +4550,7 @@ function searchForComponentByBuildId(buildId){
                     for (var idx in ancestors) {
                         if(ancestors[idx] !== '#'){
 
-                            if(SystemsJSON[ancestors[idx]].comType === "system" || SystemsJSON[ancestors[idx]].promoted === 1){
+                            if(SystemsJSON[ancestors[idx]].comType === "system" || SystemsJSON[ancestors[idx]].promoted === 1 || BuildCode[SystemsJSON[ancestors[idx]].buildCode.linkArr[0]].rerunnable  === 1){
 
                                 if(!foundObj.hasOwnProperty(ancestors[idx])){
                                     foundObj[ancestors[idx]] = {};

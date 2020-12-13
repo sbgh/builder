@@ -1233,36 +1233,36 @@ th.col-1, td.col-1{
 }
 
 
-.dashTableDescriptionItem{
-   padding-top: 5px;
-   padding-bottom: 5px;
-}
+/*.dashTableDescriptionItem{*/
+   /*padding-top: 5px;*/
+   /*padding-bottom: 5px;*/
+/*}*/
 
-.dashTableDescriptionItem > .ql-container{
-   border: 0px solid;
-}
+/*.dashTableDescriptionItem > .ql-container{*/
+   /*border: 0px solid;*/
+/*}*/
 
-.dashTableDescriptionItem .ql-editor {
-   padding: 0px;
-}
+/*.dashTableDescriptionItem .ql-editor {*/
+   /*padding: 0px;*/
+/*}*/
 
-.dashListRowNotClicked .ql-editor {
+/*.dashListRowNotClicked .ql-editor {*/
 
-   transition: max-height .5s;
-   max-height: 37px;
-   overflow:hidden
-}
+   /*transition: max-height .5s;*/
+   /*max-height: 37px;*/
+   /*overflow:hidden*/
+/*}*/
 
-.dashListRowClicked .ql-editor {
+/*.dashListRowClicked .ql-editor {*/
 
-   transition: max-height .5s;
-   max-height: 200px;
-   overflow:auto
-}
+   /*transition: max-height .5s;*/
+   /*max-height: 200px;*/
+   /*overflow:auto*/
+/*}*/
 #jobForm .ql-editor {
 
    transition: max-height .5s;
-   max-height: 70px;
+   max-height: 300px;
    overflow:auto
 }
 

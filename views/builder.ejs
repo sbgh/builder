@@ -18,6 +18,7 @@
     <!--<link rel="stylesheet" href="/theme/startbootstrap-sb-admin-2-gh-pages/dist/css/sb-admin-2.min.css">-->
     <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
+
     <!--Quill-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.css" rel="stylesheet">
@@ -539,7 +540,7 @@
 
                 $("#snapButton").popover('dispose').popover({
                     animation: true,
-                    content: "Click to snap thumbnail image",
+                    content: "Snap thumbnail image",
                     delay: { "show": 500, "hide": 100 },
                     trigger: 'hover',
                     template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
@@ -876,7 +877,7 @@
 
                             $("#DashOpenMenu_" + x ).popover({
                                 animation: true,
-                                content: "Click to open "+rowJson.name+" component",
+                                content: "Open "+rowJson.name+" component",
                                 delay: { "show": 500, "hide": 100 },
                                 trigger: 'hover',
                                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
@@ -884,7 +885,7 @@
 
                             $("#dashTableBuildButton_" + x ).popover({
                                 animation: true,
-                                content: "Click to build "+rowJson.name,
+                                content: "Build "+rowJson.name,
                                 delay: { "show": 500, "hide": 100 },
                                 trigger: 'hover',
                                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
@@ -2745,7 +2746,7 @@
                     currentTemplatesArr[inx].setReadOnly(false);
                 }
 
-                $(".ace_editor").removeClass("aceDisabled");
+                $("#buildCodeBody").find(".ace_editor").removeClass("aceDisabled");
 
                 $(".newCompVarBtn").show();
                 $(".compVarDelButton").show();
@@ -2759,7 +2760,7 @@
 
                 //remove click event from readModeJob
                 $('#jobForm .ql-editor').unbind();
-                $('#jobForm .ql-editor').css("max-height","900px")
+//                $('#jobForm .ql-editor').css("max-height","500px")
             }
 
             function readModeJob(){
@@ -2823,14 +2824,14 @@
                 $("#snapButton").hide();
 
                 $('#jobForm .ql-editor').unbind();
-                $('#jobForm .ql-editor').on('click', function(evt){
-                    if($('#jobForm .ql-editor').css("max-height") !== "900px"){
-                        $('#jobForm .ql-editor').css("max-height","900px")
-                    }else{
-                        $('#jobForm .ql-editor').css("max-height","70px")
-                    }
-
-                })
+//                $('#jobForm .ql-editor').on('click', function(evt){
+//                    if($('#jobForm .ql-editor').css("max-height") !== "900px"){
+//                        $('#jobForm .ql-editor').css("max-height","900px")
+//                    }else{
+//                        $('#jobForm .ql-editor').css("max-height","70px")
+//                    }
+//
+//                })
 
             }
 
@@ -3553,7 +3554,7 @@
             });
             $(".newSys").popover({
                 animation: true,
-                content: "Click to create a new system",
+                content: "Create a new system",
                 delay: { "show": 500, "hide": 100 },
                 trigger: 'hover',
                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
@@ -5361,7 +5362,7 @@ $("#componentsBtn").click();
                                 const id = $(this).attr("id").replace("BuildCode-","");
                                 loadBuildCodeClick(id);
                             })
-                            $("#BuildCode-"+data[i].id).find("#deleteBuildCodes").click(function(){
+                            $("#deleteBuildCodes").click(function(){
                                 const checked = $("#buildCodes").find(".buildCodeRowCheck:checked");
                                 var boxes = []
                                 checked.each(function(box){
@@ -5414,7 +5415,7 @@ $("#componentsBtn").click();
 
                             $("#BuildCode-"+data[i].id).find(".buildCodeListCopy").popover('dispose').popover({
                                 animation: true,
-                                content: "Click to copy '"+data[i].name+"' to clipboard",
+                                content: "Copy '"+data[i].name+"' to clipboard",
                                 delay: { "show": 50, "hide": 100 },
                                 trigger: 'hover',
                                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
@@ -5432,13 +5433,14 @@ $("#componentsBtn").click();
             $("#buildCodeDisplay-script").addClass("aceDisabled");
 
             var buildCodeDisplayTemps = [];
+            $("#buildCodeDisplayCol").hide();
             function loadBuildCodeClick(id){
 
                 $.get('/BuildCode', { id: id }, function(data) {
 
 
                     if(data[0].hasOwnProperty("id")){
-
+                        $("#buildCodeDisplayCol").show(200);
 
                         if(data[0].rerunnable === 1){
                             $('#buildCodeDisplay-rerunnableVal').html('<label>Rerunnable: Yes</label>');
@@ -5473,10 +5475,11 @@ $("#componentsBtn").click();
                             var x = 0;
                             tempObjArr.forEach(function(tempObj){
 
+                                var mode = tempObj.t === "" ? "text" : tempObj.t;
                                 var inHtml = "<div class='form-group' id='buildCodeDisplay-templateBlock"+x.toString()+"'>";
 
                                 inHtml += "         <label class='build-label'>Template "+ (x > 0 ? (x + 1).toString() : "") +"</label>";
-                                inHtml += "         <label class='build-label'>("+tempObj.t+")</label>"
+                                inHtml += "         <label class='build-label'>("+mode+")</label>"
 
 
                                 inHtml += "     <div class='' id='buildCodeDisplay-templateCard"+ x.toString() +"'>"
@@ -5488,12 +5491,11 @@ $("#componentsBtn").click();
 
                                 var thisTemplate = ace.edit('buildCodeDisplay-template'+x.toString());
                                 buildCodeDisplayTemps.push(thisTemplate);
-                                thisTemplate.setTheme("ace/theme/clouds");
-                                thisTemplate.session.setMode("ace/mode/sh");
+//                                thisTemplate.setTheme("ace/theme/clouds");
 
                                 $('#buildCodeDisplay-template'+x.toString()).addClass("aceDisabled");
 
-                                thisTemplate.session.setMode("ace/mode/" + tempObj.t);
+                                thisTemplate.session.setMode("ace/mode/" + mode);
                                 document.getElementById('buildCodeDisplay-template'+x.toString()).style.fontSize='14px';
 
                                 thisTemplate.renderer.$cursorLayer.element.style.display = "none"
@@ -5865,9 +5867,9 @@ $("#componentsBtn").click();
 
                         var buffer = ""
                         xhr.onprogress = function(e) {
-                            if(videoPaused === true){
-                                xhr.abort();
-                            }else{
+//                            if(videoPaused === true){
+//                                xhr.abort();
+//                            }else{
                                 var rText = xhr.responseText
 
                                 var imgData = rText.substr(currentRespText.length)
@@ -5896,7 +5898,7 @@ $("#componentsBtn").click();
                                         }
                                     }
                                 }
-                            }
+//                            }
 
                         };
                         return xhr;
@@ -5905,13 +5907,13 @@ $("#componentsBtn").click();
                     //console.log("startStream Done -> restart");
                     setTimeout(startStream, 1000);
                 }).fail(function (e) {
-                    if(videoPaused !== true){
+//                    if(videoPaused !== true){
                         setTimeout(startStream, 5000);
                         console.log("startStream Fail"  )
-                    }else{
+//                    }else{
                         $("#playButton").show();
                         $("#pauseButton").hide();
-                    }
+//                    }
                 });
             };
             setTimeout(startStream, 5000);
@@ -5927,7 +5929,7 @@ $("#componentsBtn").click();
             });
             $("#inspectLink").popover({
                 animation: true,
-                content: "Click to enable inspect mode then click element to inspect",
+                content: "Enable inspect mode then select element to inspect",
                 delay: { "show": 500, "hide": 100 },
                 trigger: 'hover',
                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
@@ -5959,7 +5961,7 @@ $("#componentsBtn").click();
             });
             $("#videoRefreshLink").popover({
                 animation: true,
-                content: "Click to kill and restart Chrome",
+                content: "Kill and restart Chrome",
                 delay: { "show": 500, "hide": 100 },
                 trigger: 'hover',
                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
@@ -5972,21 +5974,22 @@ $("#componentsBtn").click();
             });
             $("#inspectMaximizeLink").popover({
                 animation: true,
-                content: "Click to expand Chrome window",
+                content: "Expand Chrome window",
                 delay: { "show": 500, "hide": 100 },
                 trigger: 'hover',
                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
             });
 
             $("#playButton").hide();
-            var videoPaused = true;
+//            var videoPaused = true;
             $("#playButton").on('click', function(e){
                 startStream();
             })
             $("#pauseButton").on('click', function(e){
-                videoPaused = true;
+//                videoPaused = true;
                 $("#playButton").show();
                 $("#pauseButton").hide();
+                navigate('https://localhost:8443/images/tvoff.gif')
             })
             function updateLaunchLink(url){
                 var appLink = "<a href='" + url +"' alt='" + url +"' target='_new' ><i class='fa  fa-external-link fa-fw '></i>" + '[launch]' + "</a><i id='launchLinkCopy' class='fa  fa-copy fa-fw'>";
@@ -6823,7 +6826,7 @@ $("#componentsBtn").click();
 
                         </div>
                         <div id='screenshot-panel-body' class="col dashVideoCol" >
-                            <div id="videoScreen">
+                            <div class="row" id="videoScreen">
 
                                 <div class="col videoCol">
 
