@@ -1634,7 +1634,7 @@ router.get("/getResults",function(req,res) {
 //     });
 // };
 
-//Service Rt: /resultsList get list of all results file names foir a given id, Method: get, Requires: id = the id of component to be returning results list of , Returns: new array of file names
+//Service Rt: /resultsList get list of all results file names for a given id, Method: get, Requires: id = the id of component to be returning results list of , Returns: new array of file names
 router.get("/resultsList",function(req,res){
     var id = req.query.id;
     res.writeHead(200, {"Content-Type": "application/json"});

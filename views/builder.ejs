@@ -5907,13 +5907,10 @@ $("#componentsBtn").click();
                     //console.log("startStream Done -> restart");
                     setTimeout(startStream, 1000);
                 }).fail(function (e) {
-//                    if(videoPaused !== true){
                         setTimeout(startStream, 5000);
                         console.log("startStream Fail"  )
-//                    }else{
                         $("#playButton").show();
                         $("#pauseButton").hide();
-//                    }
                 });
             };
             setTimeout(startStream, 5000);
@@ -5981,19 +5978,34 @@ $("#componentsBtn").click();
             });
 
             $("#playButton").hide();
-//            var videoPaused = true;
             $("#playButton").on('click', function(e){
                 startStream();
             })
+            $("#playButton").popover({
+                animation: true,
+                content: "Play stream",
+                delay: { "show": 500, "hide": 100 },
+                trigger: 'hover',
+                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+            });
             $("#pauseButton").on('click', function(e){
-//                videoPaused = true;
                 $("#playButton").show();
                 $("#pauseButton").hide();
                 navigate('https://localhost:8443/images/tvoff.gif')
             })
+            $("#pauseButton").popover({
+                animation: true,
+                content: "Pause stream",
+                delay: { "show": 500, "hide": 100 },
+                trigger: 'hover',
+                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+            });
             function updateLaunchLink(url){
-                var appLink = "<a href='" + url +"' alt='" + url +"' target='_new' ><i class='fa  fa-external-link fa-fw '></i>" + '[launch]' + "</a><i id='launchLinkCopy' class='fa  fa-copy fa-fw'>";
+                var appLink = "<a href='" + url +"' alt='" + url +"' target='_new' ><i class='fa  fa-external-link fa-fw '></i>" + "</a>";
                 $("#launchLink").html( appLink);
+                var copyLink = "<i id='launchLinkCopy' class='fa  fa-copy fa-fw'>";
+                $("#launchLinkCopyContainer").html( copyLink);
+
                 localStorage['launchLink'] = url;
 
                 $("#launchLinkCopy").click(function(event){
@@ -6005,6 +6017,20 @@ $("#componentsBtn").click();
                     copyText.setSelectionRange(0, 99999);
                     document.execCommand("copy");
 //                    console.log(copyText.value)
+                });
+                $("#launchLink").popover('dispose').popover({
+                    animation: true,
+                    content: "launch "+url,
+                    delay: { "show": 500, "hide": 100 },
+                    trigger: 'hover',
+                    template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                });
+                $("#launchLinkCopy").popover('dispose').popover({
+                    animation: true,
+                    content: "copy '"+url+"' to clipboard",
+                    delay: { "show": 500, "hide": 100 },
+                    trigger: 'hover',
+                    template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
                 });
             }
 
@@ -6830,7 +6856,7 @@ $("#componentsBtn").click();
 
                                 <div class="col videoCol">
 
-                                    <input id="launchLinkHiddenCopy"><div id="launchLink" class="videoMenuItemLeft"></div>
+                                    <input id="launchLinkHiddenCopy"><div id="launchLink" class="videoMenuItemLeft"></div><div id="launchLinkCopyContainer"></div>
                                     <div class="videoMenu">
 
                                         <span>

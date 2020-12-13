@@ -1886,7 +1886,10 @@ input#launchLinkHiddenCopy{
    width: 1px;
    height: 1px;
    background-color: #ffffff00;
-   /*display:none*/
+}
+
+#launchLinkCopyContainer{
+   display: inline;
 }
 
 .systemDetailPanelRow{
