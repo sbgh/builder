@@ -424,6 +424,28 @@ padding-left: 0px;
    margin-top: 5px;
 }
 
+.varFlagLabel {
+   display: inline;
+   padding-left: 3px;
+   padding-right: 3px;
+}
+
+.compVarButton {
+   display: inline;
+   padding-left: 3px;
+   padding-right: 3px;
+}
+
+.newCompVarButtonRow {
+   text-align: center;
+}
+
+label.varFlag {
+   padding-left: 5px;
+   padding-right: 5px;
+   margin-bottom: 2px;
+}
+
 .code{
    font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
    line-height: 1;
@@ -572,9 +594,9 @@ padding-left: 0px;
    transition: .4s;
 }
 
-/*input.success:checked + .slider {*/
-   /*background-color: #8bc34a;*/
-/*}*/
+input.success:checked + .slider {
+   background-color: #8bc34a;
+}
 
 .slider:before {
    position: absolute;
@@ -792,19 +814,6 @@ input:checked + .slider:before {
    .dropdown-settings {
       font-size: small;
    }
-}
-.dropdown-settings{
-
-}
-
-
-.launchPadHeading{
-
-
-}
-
-.lastScreeenshotPanel{
-
 }
 
 .launchPadPanel{
@@ -1878,6 +1887,8 @@ div#buildCodeMatch {
 .dropdown-settings{
    margin-right: 15px;
    margin-left: auto;
+   margin-top: auto;
+   margin-bottom: auto;
 }
 
 input#launchLinkHiddenCopy{
@@ -2032,7 +2043,7 @@ input.CheckboxFileList {
 }
 
 #buildCodeRow {
-   /*display: flex;*/
+   display: flex;
    /*flex-direction: column;*/
    height: calc(100vh - 30px);
    padding-bottom: 18px;
@@ -2050,17 +2061,16 @@ input.CheckboxFileList {
 }
 
 .buildCodeRowName{
-   width: 250px;
-   overflow: hidden;
    white-space: nowrap;
    font-weight: bold;
+   overflow: hidden;
 }
 
 .buildCodeListItem{
    display: flex;
    border-bottom: solid 1px;
    border-color: #aaaaaa;
-   /*width: 100%;*/
+   width: 100%;
    font-size: small;
 }
 
@@ -2072,15 +2082,16 @@ input.CheckboxFileList {
 .buildCodeRowCheck{
    margin-left: 5px;
    margin-right: 5px;
-   width: 30px;
+   /*width: 30px;*/
    margin-top: 5px;
 }
 
 .buildCodeRowLastUpdated {
    width: 6em;
    text-align: right;
-   margin-left: 5px;
+   margin-left: auto;
    margin-right: 5px;
+   padding-left: 3px;
 }
 
 .buildCodeRowDescription{
@@ -2089,10 +2100,11 @@ input.CheckboxFileList {
 }
 .buildCodeListCopy{
    cursor: pointer;
+   margin-right: 3px;
 }
 
 .buildCodeRowListCol{
-   max-width: 476px;
+   max-width: 38%;
    padding-right: 0px;
 
 }
@@ -2147,6 +2159,10 @@ div#buildCodeTemplates {
 div#usedInMatchOverlay {
    max-height: 80vh;
    overflow: auto;
+}
+
+#buildCodeDisplayTitle{
+   font-size: 1.3em;
 }
 
 

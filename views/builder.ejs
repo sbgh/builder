@@ -1125,9 +1125,19 @@
                 newHtml += '<td class="col-3"><input id="newCompVarName'+currentRowCntStr+'" class="form-control newCompVarName" type="text"></td>'
 
                 //New privacy switch
-                newHtml += '<td class="col-2"><div class="newCompVarPrivateButtonRow">';
-                newHtml += '<label class="switch privacy-switch" ><input id="newCompVarPrivateInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class="success newCompVarPrivateButton"><span class="slider round"></span></label>';
-                newHtml += '<span id="newCompVarPrivateDisp'+currentRowCntStr+'" class="newCompVarPrivateDisp"></span>';
+                newHtml += '<td class="col-3 newCompVarButtonRow">'
+//                    '<div class="newCompVarPrivateButtonRow">';
+                newHtml += '<label class="varFlag privacy-flag" ><input id="newCompVarPrivateInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class=" "></label>';
+//                newHtml += '</td>';
+
+                //New promoted switch
+//                newHtml += '<td class="col-2"><div class="newCompVarPrivateButtonRow">';
+                newHtml += '<label class="varFlag promoted-flag" ><input id="newCompVarPromotedInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class=" "></label>';
+//                newHtml += '</td>';
+
+                //New ask switch
+//                newHtml += '<td class="col-2"><div class="newCompVarPrivateButtonRow">';
+                newHtml += '<label class="varFlag ask-flag" ><input id="newCompVarAskInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class=" "></label>';
                 newHtml += '</td>';
 
                 //New var type pick
@@ -1186,13 +1196,13 @@
                     }
                 });
 
-                $('.newCompVarPrivateButton').on('click', function(){
-                    var id = $("#id").val();
-                    const checked =  this.checked;
-                    var inx = $(this).attr('data-inx');
-
-                    $("#newCompVarPrivateDisp"+inx).html(checked ? 'Yes' : 'No');
-                })
+//                $('.newCompVarPrivateButton').on('click', function(){
+//                    var id = $("#id").val();
+//                    const checked =  this.checked;
+//                    var inx = $(this).attr('data-inx');
+//
+//                    $("#newCompVarPrivateDisp"+inx).html(checked ? 'Yes' : 'No');
+//                })
 
                 $(".compVarEditValButton").on('click', function(){
                     var idn = $(this).attr('data-idn');
@@ -1220,41 +1230,6 @@
                     }
 
                 });
-
-//                $(".compVarEditValButton").on('click', function(){
-//                    var idn = $(this).attr('data-idn');
-//
-//                    var varName = "";
-//                    var varType = $("#newCompVarTypeButton" + idn).text();
-//                    for(var nm in currentCompVarObj){
-//                        if (currentCompVarObj[nm].idn === idn){
-//                            varName = nm;
-//                        }
-//
-//                    }
-//                    if(varType === "WYSIWYG"){
-//                        $('#varEditWYSIWYGModal').modal('show');
-//
-//                        // Sets the HTML contents of the activeEditor editor
-//                        tinymce.activeEditor.setContent($("#newCompVarValue"+idn).val());
-//
-//                        $("#varEditWYSIWYGModalCutrrentIdn").val(idn);
-//
-//                    }else{
-//                        $('#varEditModal').modal('show');
-//                        $('#varValEditor').val($("#newCompVarValue"+idn).val());
-//                        $("#varEditModalCutrrentIdn").val(idn);
-//                    }
-//
-//                });
-
-//                $(".compVarEditColorButton").on('click', function(){
-//                    var idn = $(this).attr('data-idn');
-//
-//                    $("#colorPicker"+idn).click();
-//
-//                });
-
 
                 $('.colorPicker').on('change', function() {
                     var idn = $(this).attr('data-idn');
@@ -1447,7 +1422,11 @@
                         }
 
                         $("#newCompVarName" + idn).val(varName);
+
                         $("#newCompVarPrivateInput" + idn)[0].checked = currentCompVarObj[varName].private;
+                        $("#newCompVarPromotedInput" + idn)[0].checked = currentCompVarObj[varName].promoted;
+                        $("#newCompVarAskInput" + idn)[0].checked = currentCompVarObj[varName].ask;
+
                         var thisType = currentCompVarObj[varName].type === "" ? "Text" : currentCompVarObj[varName].type;
 
                         $("#newCompVarTypeButton" + idn).val(thisType);
@@ -2100,8 +2079,12 @@
                     pCompHtml += showTools ?"<i class='fa fa-times fa-fw compVarDelButton' data-idn='" + idn +"'></i>" : "";
                     pCompHtml += "</td>";
 
-                    //add private col
-                    pCompHtml += "<td class='col-2 center'>" + (variables[varName].private ? "Yes":"No") + "</td>";
+                    //add flag col
+                    pCompHtml += "<td class='col-3 center compVarButtonRow'>"
+                    pCompHtml += '<div class="compVarButton">' + (variables[varName].private ? "Yes":"No") + '</div>';
+                    pCompHtml += '<div class="compVarButton">' + (variables[varName].promoted ? "Yes":"No") + '</div>';
+                    pCompHtml += '<div class="compVarButton">' + (variables[varName].ask ? "Yes":"No") + '</div>';
+                    pCompHtml += "</td>"
 
                     //add type col
                     var typeTxt = variables[varName].type;
@@ -2142,6 +2125,29 @@
                     $("#varValColor" + idn).val(valText);
                 }
             }
+
+
+            $(".varFlagLabel-pro" ).popover({
+                animation: true,
+                content: "Promote this variable to the dashboard",
+                delay: { "show": 50, "hide": 100 },
+                trigger: 'hover',
+                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+            });
+            $(".varFlagLabel-pri" ).popover({
+                animation: true,
+                content: "Private variable that will not be copied",
+                delay: { "show": 50, "hide": 100 },
+                trigger: 'hover',
+                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+            });
+            $(".varFlagLabel-ask" ).popover({
+                animation: true,
+                content: "Ask user for the value before before component can be built",
+                delay: { "show": 50, "hide": 100 },
+                trigger: 'hover',
+                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+            });
 
             //clear all fields in a system
             function clearSysFields(){
@@ -3023,6 +3029,8 @@
                             delete currentCompVarObj[idn];
                             var newVarsObj = {};
                             newVarsObj["private"] = $("#newCompVarPrivateInput"+currentRowCntStr)[0].checked ? true : false;
+                            newVarsObj["promoted"] = $("#newCompVarPromotedInput"+currentRowCntStr)[0].checked ? true : false;
+                            newVarsObj["ask"] = $("#newCompVarAskInput"+currentRowCntStr)[0].checked ? true : false;
                             newVarsObj["type"] = $("#newCompVarTypeButton"+currentRowCntStr).text();
                             newVarsObj["value"] = $("#newCompVarValue"+currentRowCntStr).val();
 
@@ -3781,16 +3789,16 @@
                         e.preventDefault();
                         var leftWidth = e.clientX;
                         const container = $('#rowContainer');
-//                        setWindowWidth(leftWidth - libTreeWidth - 2, container, false);
+
                         if($( "#sidebar" ).hasClass( "show" )){
                             setWindowWidth(leftWidth - $("#sidebar").width() - 2, container, false);
                         }else{
                             setWindowWidth(leftWidth - 2, container, false);
                         }
 
-                        updateAllPopovers()
+                        updateAllPopovers();
+                        setWindowHeight(container.height() * currentRatio ,  false);
                     }
-
 
                 }).on('mouseup', function (e) {
                     isResizingHeight = false;
@@ -5442,6 +5450,8 @@ $("#componentsBtn").click();
                     if(data[0].hasOwnProperty("id")){
                         $("#buildCodeDisplayCol").show(200);
 
+                        $('#buildCodeDisplayTitle').text(data[0].name);
+
                         if(data[0].rerunnable === 1){
                             $('#buildCodeDisplay-rerunnableVal').html('<label>Rerunnable: Yes</label>');
                         }else{
@@ -5491,7 +5501,6 @@ $("#componentsBtn").click();
 
                                 var thisTemplate = ace.edit('buildCodeDisplay-template'+x.toString());
                                 buildCodeDisplayTemps.push(thisTemplate);
-//                                thisTemplate.setTheme("ace/theme/clouds");
 
                                 $('#buildCodeDisplay-template'+x.toString()).addClass("aceDisabled");
 
@@ -5850,9 +5859,9 @@ $("#componentsBtn").click();
             //call ajax /video and process the returned chunncked json video frames
             function startStream(){
                // console.log("starting stream: "  );
-                $("#playButton").hide();
-                $("#pauseButton").show();
-                videoPaused = false;
+//                $("#playButton").hide();
+//                $("#pauseButton").show();
+//                videoPaused = false;
                 $.ajax({
                     url: '/video',
                     processData: false,
@@ -5916,9 +5925,14 @@ $("#componentsBtn").click();
             setTimeout(startStream, 5000);
 
             function navigate(url){
-               // updateLaunchLink(url);
-                localStorage['appLink'] = url;
-                $.get('/navigate', {url:url}, function(data) {});
+                if(url === 'pausedUrl' ){
+                    url = 'https://localhost:8443/images/tvoff.gif';
+                    $.get('/navigate', {url:url}, function(data) {});
+                }else{
+                    pausedUrl = url;
+                    localStorage['appLink'] = url;
+                    $.get('/navigate', {url:url}, function(data) {});
+                }
             }
             $("#inspectLink").on('click', function(e){
                 $("#inspectLink").addClass('active');
@@ -5977,9 +5991,13 @@ $("#componentsBtn").click();
                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
             });
 
+            var pausedUrl = "";
             $("#playButton").hide();
             $("#playButton").on('click', function(e){
-                startStream();
+//                startStream();
+                $("#playButton").hide();
+                $("#pauseButton").show();
+                navigate(pausedUrl);
             })
             $("#playButton").popover({
                 animation: true,
@@ -5991,7 +6009,8 @@ $("#componentsBtn").click();
             $("#pauseButton").on('click', function(e){
                 $("#playButton").show();
                 $("#pauseButton").hide();
-                navigate('https://localhost:8443/images/tvoff.gif')
+                navigate('pausedUrl');
+
             })
             $("#pauseButton").popover({
                 animation: true,
@@ -6481,8 +6500,6 @@ $("#componentsBtn").click();
                 }else{
                     setWindowWidth(te - 2, container, false);
                 }
-//                setWindowWidth( te - $("#leftLibCol").width(), container);
-                //setWindowWidth( te , container);
             });
 
             var componentDetailsHoverFlag = false;
@@ -6891,6 +6908,10 @@ $("#componentsBtn").click();
                             <div id="dashTable" class="dashTbody"></div>
 
                         </div>
+                        <div id="dashDetailCol" class="dashDetailCol">
+
+
+                        </div>
                     </div>
                 </div>
                 <div id="componentsRowContainer">
@@ -6971,8 +6992,8 @@ $("#componentsBtn").click();
                                                             <table class="table varTable">
                                                                 <thead>
                                                                 <tr class="d-flex">
-                                                                    <th class="col-3 dashboardLabel">Name</th>
-                                                                    <th class="col-1 dashboardLabel center">Private</th>
+                                                                   <th class="col-3 dashboardLabel">Name</th>
+                                                                    <th class="col-1 dashboardLabel center"><div class="varFlagLabel">Pri</div></th>
                                                                     <!--<th class="col-2 dashboardLabel center">Type</th>-->
                                                                     <th class="col-6 dashboardLabel">Value</th>
                                                                 </tr>
@@ -7094,7 +7115,8 @@ $("#componentsBtn").click();
                                                                     <thead>
                                                                     <tr class="d-flex">
                                                                         <th class="col-3 varLabel varLabelName">Name</th>
-                                                                        <th class="col-2 varLabel center">Private</th>
+                                                                        <th class="col-3 dashboardLabel center"><div class="varFlagLabel varFlagLabel-pri">Pri</div><div class="varFlagLabel varFlagLabel-pro">Pro</div><div class="varFlagLabel varFlagLabel-ask">Ask</div></th>
+
                                                                         <th class="col-2 varLabel center">Type</th>
                                                                         <th class="col-5 varLabel">Value</th>
                                                                     </tr>
@@ -7309,8 +7331,8 @@ $("#componentsBtn").click();
                         </div>
                     </div>
                 </div>
-                <div class="row" id="buildCodeRow">
-                    <div class="col buildCodeRowListCol" >
+                <div class="" id="buildCodeRow">
+                    <div class=" buildCodeRowListCol" >
                         <button type="button" class="btn btn-default jobFormbtn" id="deleteBuildCodes">Delete</button>
                         <div  id="buildCodes"></div>
                     </div>
@@ -7318,7 +7340,7 @@ $("#componentsBtn").click();
                         <div id="buildCodeDisplayCol" class="col" >
 
                         <div id="buildCodeDisplay" class="">
-
+                            <div id="buildCodeDisplayTitle" class=""></div>
                             <div id="buildCodeDisplayTop" class="">
                                 <span id="buildCodeDisplay-runLocVal" class=""></span>
                                 <span id="buildCodeDisplay-rerunnableVal" class=""></span>
