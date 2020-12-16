@@ -1,9 +1,9 @@
 /*
- builder.js
+ builder.js  
  Usage: node builder
  Complete back-end code for ezStack Builder Prototype. Ensure SystemsJSON.json (at least "{}") exists in the builder folder.
 */
-const express = require("express");
+const express = require("express");  
 const http = require('http');
 const https = require('https');
 const session = require('express-session');
@@ -18,21 +18,21 @@ const getuid = require('getuid');
 const formidable = require('formidable');
 const chromeLauncher = require('chrome-launcher');
 const CDP = require('chrome-remote-interface');
-
-const app = express();
+ 
+const app = express();  
 const fs = require('fs');
-const os = require('os');
-
+const os = require('os'); 
+       
 const router = express.Router();
 const viewPath = __dirname + '/views/';
 const resultsPath = __dirname + '/results/';
 const filesPath = __dirname + '/uploads/';
 const libsPath = __dirname + '/library/';
-const treeStylesPath = __dirname + '/static/jstree/dist/themes/';
+const treeStylesPath = __dirname + '/static/jstree/dist/themes/'; 
 const staticPath = __dirname + '/static/';
 const stylesPath = __dirname + '/static/theme/';
 
-//Load configs into global config obj
+//Load configs into global config obj  
 const cf = fs.readFileSync('config.json');
 const config = JSON.parse(cf);
 
@@ -43,7 +43,7 @@ app.use(session({
         resave: true,
         saveUninitialized: true,
         name:config.session_name
-    }));
+}));
 
 //Enable static assets in the ./static folder
 app.use(express.static('static'));
