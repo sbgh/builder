@@ -835,7 +835,7 @@
                                     thumbImageUrl = "/uploads/" + rowJson.id + "/" + rowJson.thumbnail;
                             }
 
-                            var rowStyle = 'grid-column: '+rowJson.aNames.length+";";
+                            // var rowStyle = 'grid-column: '+rowJson.aNames.length+";";
 
                             if(rowJson.hasOwnProperty("enabled")){
                                 if(rowJson.enabled == 1){
@@ -848,27 +848,24 @@
                             }
 
 
-
-                            pCompHtml += "<div style='"+rowStyle+"' id='row_" + rowJson.id +"' data-id='" + rowJson.id +"' data-runSys='"+ rowJson.systemId +"' data-runSysName='"+ rowJson.systemName + "' class='" + thisClass + "'>";
-                                pCompHtml += "<div class='dashContentRow'><div class='dashThumbRow'>";
-                                    if(thumbImageUrl !== ""){
-                                        pCompHtml += "<div class='dashItemThumbCol'>";
-                                            pCompHtml += "<img src='"+thumbImageUrl+"'>";
-                                        pCompHtml += "</div>";
-                                    }
+                            pCompHtml += "<div id='row_" + rowJson.id +"' data-id='" + rowJson.id +"' data-runSys='"+ rowJson.systemId +"' data-runSysName='"+ rowJson.systemName + "' class='" + thisClass + "'>";
+                                pCompHtml += "<div class='dashContentRow'>"
+                                if(thumbImageUrl !== ""){
+                                   pCompHtml +=  "<div class='dashThumb'>";
+                                        pCompHtml += "<img src='"+thumbImageUrl+"'>";
                                     pCompHtml += "</div>"
-                                    pCompHtml += "<div class='dashDetailsRow'>";
-                                        pCompHtml += "<div class='dashItemDetailsCol'>";
-                                            pCompHtml += "<div class='dashItemName'>" + rowJson.name + thisUrlFlag + "</div>";
+                                }
 
-                                            pCompHtml += "<div class='dashItemDescription'></div>";
+                                pCompHtml += "<div class='dashDetails'>";
+                                        pCompHtml += "<div class='dashItemName'>" + rowJson.name + thisUrlFlag + "</div>";
 
+                                        // pCompHtml += "<div class='dashItemDescription'></div>";
+
+                                        pCompHtml += "<div class='dashButtons'>";
+                                            pCompHtml += "<div id='DashOpenMenu_" + x +"' class='dashTableOpenButton' data-id='" + rowJson.id +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
+                                            pCompHtml += "<div id='dashTableEnableItem_"+x+"' class='dashTableEnableItem' data-id='" + rowJson.id +"'>" + enabledHTML +  "</div>";
+                                            pCompHtml += "<div id='dashTableBuildButton_"+x+"' class='dashTableBuildButton' data-id='" + rowJson.id +"'><i class='fa  fa-play fa-fw  '></i></div>  ";
                                         pCompHtml += "</div>"
-                                    pCompHtml += "</div>"
-                                    pCompHtml += "<div class='dashButtonsRow'>";
-                                        pCompHtml += "<div id='DashOpenMenu_" + x +"' class='dashTableOpenButton' data-id='" + rowJson.id +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
-                                        pCompHtml += "<div id='dashTableEnableItem_"+x+"' class='dashTableEnableItem' data-id='" + rowJson.id +"'>" + enabledHTML +  "</div>";
-                                        pCompHtml += "<div id='dashTableBuildButton_"+x+"' class='dashTableBuildButton' data-id='" + rowJson.id +"'><i class='fa  fa-play fa-fw  '></i></div>  ";
                                     pCompHtml += "</div>"
                                 pCompHtml += "</div>"
 
@@ -903,12 +900,11 @@
                                  $("#row_"+ rowJson.id + " .dashTableBuildButton").hide();
                              }
 
-                            if(rowJson.hasOwnProperty("description")){
-                                if(rowJson.description.hasOwnProperty("ops")){
-                                    $("#row_" + rowJson.id + " .dashItemDescription" ).html( (quillGetHTML(rowJson.description)).substring(0,200) )
-
-                                }
-                            }
+                            // if(rowJson.hasOwnProperty("description")){
+                            //     if(rowJson.description.hasOwnProperty("ops")){
+                            //         $("#row_" + rowJson.id + " .dashItemDescription" ).html( (quillGetHTML(rowJson.description)).substring(0,200) )
+                            //     }
+                            // }
                             x++;
                         }
 
@@ -1125,7 +1121,7 @@
                 newHtml += '<td class="col-3"><input id="newCompVarName'+currentRowCntStr+'" class="form-control newCompVarName" type="text"></td>'
 
                 //New privacy switch
-                newHtml += '<td class="col-3 newCompVarButtonRow">'
+                newHtml += '<td class="col-2 newCompVarButtonRow">'
 //                    '<div class="newCompVarPrivateButtonRow">';
                 newHtml += '<label class="varFlag privacy-flag" ><input id="newCompVarPrivateInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class=" "></label>';
 //                newHtml += '</td>';
@@ -2080,7 +2076,7 @@
                     pCompHtml += "</td>";
 
                     //add flag col
-                    pCompHtml += "<td class='col-3 center compVarButtonRow'>"
+                    pCompHtml += "<td class='col-2 center compVarButtonRow'>"
                     pCompHtml += '<div class="compVarButton">' + (variables[varName].private ? "Yes":"No") + '</div>';
                     pCompHtml += '<div class="compVarButton">' + (variables[varName].promoted ? "Yes":"No") + '</div>';
                     pCompHtml += '<div class="compVarButton">' + (variables[varName].ask ? "Yes":"No") + '</div>';
@@ -2115,7 +2111,7 @@
                             animation: true,
                             content: valTextPop,
                             delay: { "show": 500, "hide": 50 },
-                            trigger: 'click',
+                            trigger: 'hover',
                             template: '<div class="popover clickPop" role="tooltip"><div class="arrow clickPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
 
                         }
@@ -5297,23 +5293,28 @@ $("#componentsBtn").click();
                     //move video screen to components ui
                     $("#videoScreen").detach().appendTo('#screenShotImageHolder');
 
-//                    const id = $("#buildCodeOrg").val();
-//                    $("#buildCodeBody").detach().appendTo('#codeCollapse');
-//                    $("#buildCode").val(id);
-//                    loadBuildCode(id);
-//                    if($("#edit_button").is(":visible")){
-//                        readModeJob();
-//                    }else{
-//                    }
                 });
 
+            });
+
+            $("#buildCodeSearchInput").on("keyup",function(key){
+
+                var searchString = $("#buildCodeSearchInput").val();
+                $(".buildCodeListItem").each(function(i){
+                    // var thisRow = $(".buildCodeListItem")[i]
+                    if(searchString === "" || $(this).find(".buildCodeRowName").text().toUpperCase().includes(searchString.toUpperCase())){
+                        $(this).show();
+                    }else{
+                        $(this).hide();
+                    }
+                })
             });
 
             function loadBuildCodeRows(){
                 $.get('/BuildCode', { id: '#' }, function(data) {
                     for(let i in data){
                         if($("#BuildCode-" + data[i].id).length > 0){
-
+                            //this row exists, update it
                             if (data[i].hasOwnProperty('compList')){
                                 count = data[i].compList.length > 0 ? data[i].compList.length.toString() : '';
                             }else{
@@ -5328,6 +5329,7 @@ $("#componentsBtn").click();
                                 $("#BuildCode-"+data[i].id).find(".buildCodeRowLastUpdated").text((new Date(data[i].lastUpdated.ds)).toLocaleDateString('en-US'));
                             }
                         }else{
+                            //this row is new, create it
                             var row = '';
                             row += '<div class="buildCodeListItem" id="BuildCode-' + data[i].id + '">' ;
                             row += '<input type="checkbox" class="buildCodeRowCheck" >' ;
@@ -7112,9 +7114,9 @@ $("#componentsBtn").click();
                                                                     <thead>
                                                                     <tr class="d-flex">
                                                                         <th class="col-3 varLabel varLabelName">Name</th>
-                                                                        <th class="col-3 dashboardLabel center"><div class="varFlagLabel varFlagLabel-pri">Pri</div><div class="varFlagLabel varFlagLabel-pro">Pro</div><div class="varFlagLabel varFlagLabel-ask">Ask</div></th>
+                                                                        <th class="col-2 varLabel varFlagLabels center"><div class="varFlagLabel varFlagLabel-pri">Pri</div><div class="varFlagLabel varFlagLabel-pro">Pro</div><div class="varFlagLabel varFlagLabel-ask">Ask</div></th>
 
-                                                                        <th class="col-2 varLabel center">Type</th>
+                                                                        <th class="col-2 varLabel center">Type</th> 
                                                                         <th class="col-5 varLabel">Value</th>
                                                                     </tr>
                                                                     </thead>
@@ -7331,7 +7333,12 @@ $("#componentsBtn").click();
                 <div class="" id="buildCodeRow">
                     <div class=" buildCodeRowListCol" >
                         <button type="button" class="btn btn-default jobFormbtn" id="deleteBuildCodes">Delete</button>
-                        <div  id="buildCodes"></div>
+                        <div id="buildCodeSearchRow">
+                            <input class = "form-control searchInput buildCodeSearchInput" id="buildCodeSearchInput" type="text">
+                            <i id="buildCodeSearchIcon" class="search-icon fa fa-search  fa-fw"></i>
+                        </div>
+                        <div class="buildCodeListHeader"><div class="buildCodeRowCount">n</div><div class="buildCodeRowName">Build Code Title</div><div class="buildCodeRowLastUpdated">Updated</div></div>
+                        <div  id="buildCodes"></div> 
                     </div>
 
                         <div id="buildCodeDisplayCol" class="col" >

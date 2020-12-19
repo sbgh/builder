@@ -424,26 +424,35 @@ padding-left: 0px;
    margin-top: 5px;
 }
 
+.varFlagLabels{
+   display: flex;
+   justify-content: space-between; 
+}
 .varFlagLabel {
-   display: inline;
-   padding-left: 3px;
-   padding-right: 3px;
+   width: 33%;
 }
 
 .compVarButton {
+   width: 33%;
    display: inline;
-   padding-left: 3px;
-   padding-right: 3px;
+   text-align: center;
+}
+
+.compVarButtonRow{
+   text-align: center;
+   display: flex;
+   justify-content: space-between;  
 }
 
 .newCompVarButtonRow {
    text-align: center;
+   display: flex;
+   justify-content: space-between; 
 }
 
 label.varFlag {
-   padding-left: 5px;
-   padding-right: 5px;
    margin-bottom: 2px;
+   width: 33%;
 }
 
 .code{
@@ -1326,7 +1335,8 @@ tbody.varTbody{
 }
 
 .varTable > thead > tr > th {
-   padding: 5px;
+   padding: 0px;
+   margin-bottom: 6px;
 }
 
 .varRow > td{
@@ -1923,11 +1933,12 @@ div#firstRow {
 }
 
 .dashTbody{
-   display: grid;
-   grid-template-columns: repeat(auto-fit, minmax(150px, 250px));
+   /* display: grid;
+   grid-template-columns: repeat(auto-fit, minmax(150px, 250px)); */
    align-items: center;
    overflow-x: auto;
    padding: 15px;
+   width: 50%;
 }
 
 .dashTableRow{
@@ -1951,7 +1962,13 @@ div#firstRow {
    padding-bottom: 60px;
 }
 
-.dashItemThumbCol img {
+.dashThumb  {
+   width: 50%;
+   margin-top: auto;
+   margin-bottom: auto;
+}
+
+.dashThumb img {
    width: 100%;
    border: solid 2px;
    border-radius: 6px;
@@ -1959,17 +1976,28 @@ div#firstRow {
 
 .dashContentRow{
    border-radius: 6px;
+   display: flex;
+   justify-content: center;
+}
+
+.dashDetails{
+   width:50%;
+   margin-top: auto;
+   margin-bottom: auto;
 }
 
 .dashItemName {
    text-align: center;
-   font-size: .8em;
+   font-size: 1.5em;
    font-weight: 500;
 }
 
 .dashItemDescription {
-   max-height: 16px;
    overflow: hidden;
+   font-size: 1.2em;
+   padding-left: 20px;
+   padding-right: 20px;
+   max-height: 20em;
 }
 
 .dashItemDescription p {
@@ -2020,13 +2048,13 @@ div#firstRow {
    }
 }
 
-.dashButtonsRow {
+.dashButtons {
    display: flex;
    flex-direction: row;
    justify-content: center;
 }
 
-.dashButtonsRow i, .dashItemName i {
+.dashButtons i, .dashItemName i {
    cursor: pointer;
 }
 
@@ -2057,7 +2085,6 @@ input.CheckboxFileList {
    display: flex;
    flex-direction: column;
    align-items: flex-start;
-   margin-top: 40px;
 }
 
 .buildCodeRowName{
@@ -2103,9 +2130,27 @@ input.CheckboxFileList {
    margin-right: 3px;
 }
 
+.buildCodeListHeader {
+   display: flex;
+   font-size: .8em;
+   margin-left: 30px;
+   margin-right: 36px;
+   /* border-bottom: solid 1px; */
+   margin-bottom: 5px;
+   font-weight: 700;
+}
+.buildCodeListHeader div{
+   text-decoration: underline
+}
 .buildCodeRowListCol{
    max-width: 38%;
    padding-right: 0px;
+   padding-top: 34px;
+}
+
+#buildCodeSearchRow{
+   width: 14em;
+   display: flex;
 
 }
 

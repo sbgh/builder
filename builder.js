@@ -1500,7 +1500,7 @@ router.post("/clear",function(req,res){
 
 });
 
-//Function: rmDir(dirPath) recursivly delete specified directory and all children, Requires: dirPath = the folder to be removed , Returns:  nothing
+//Function: rmDir(dirPath) recursivly delete specified directory and all children, Requires: dirPath = the folder to be removed 
 function rmDir(dirPath) { //sync remove dir
     try { var files = fs.readdirSync(dirPath); }
     catch(e) { return; }

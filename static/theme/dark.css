@@ -677,7 +677,7 @@ input:focus + .slider {
     color: #F8F8F8;
 }
 
-.searchCycleBtn, .search-icon{
+.searchCycleBtn, .search-icon, #buildCodeSearchIcon{
     transition: color 2.5s;
     color: #79bdf3;
 }
