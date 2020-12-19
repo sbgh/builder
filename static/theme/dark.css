@@ -832,7 +832,7 @@ a#buildCodeBtn i {
     color: #79bdf3;
 }
 
-#launchLinkCopy, .buildCodeListCopy{
+#launchLinkCopy, .buildCodeListCopy, #deleteBuildCodes {
     color: #79bdf3;
 }
 

@@ -2130,18 +2130,22 @@ input.CheckboxFileList {
    margin-right: 3px;
 }
 
-.buildCodeListHeader {
+.buildCodeListHeader{
    display: flex;
    font-size: .8em;
-   margin-left: 30px;
+   margin-left: 8px;
    margin-right: 36px;
-   /* border-bottom: solid 1px; */
    margin-bottom: 5px;
    font-weight: 700;
 }
-.buildCodeListHeader div{
-   text-decoration: underline
+
+#deleteBuildCodes {
+   margin-right: 5px;
+   margin-top: 5px;
+   padding: 2px;
+   cursor: pointer;
 }
+
 .buildCodeRowListCol{
    max-width: 38%;
    padding-right: 0px;
@@ -2150,13 +2154,10 @@ input.CheckboxFileList {
 
 #buildCodeSearchRow{
    width: 14em;
-   display: flex;
-
+    display: flex;
+    margin-left: 6px;
+    margin-bottom: 14px;
 }
-
-#buildCodeDisplayCol{
-}
-
 
 .buildCodeRowListCol, #buildCodeDisplayCol{
    display: flex;

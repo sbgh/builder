@@ -660,7 +660,7 @@ a#buildCodeBtn i {
     color: #367ae0;
 }
 
-#launchLinkCopy, .buildCodeListCopy{
+#launchLinkCopy, .buildCodeListCopy, #deleteBuildCodes {
     color: #367ae0;
 }
 

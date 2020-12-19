@@ -5310,6 +5310,14 @@ $("#componentsBtn").click();
                 })
             });
 
+            $("#deleteBuildCodes").popover({
+                animation: true,
+                content: "Delete selected Build Codes",
+                delay: { "show": 50, "hide": 100 },
+                trigger: 'hover',
+                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+            });
+
             function loadBuildCodeRows(){
                 $.get('/BuildCode', { id: '#' }, function(data) {
                     for(let i in data){
@@ -7249,12 +7257,9 @@ $("#componentsBtn").click();
                                                                             <input type="hidden" id="newImageURL" value="">
                                                                         </div>
                                                                     </div>
-
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <!--<div class="row">-->
-                                                        <!--</div>-->
                                                     </div>
 
                                                     <div id="buildTestAccordion">
@@ -7262,15 +7267,12 @@ $("#componentsBtn").click();
                                                             <div class="card-header" id="testHeading" data-toggle="collapse" data-target="#testCollapse" aria-expanded="true" aria-controls="testCollapse">
                                                                 <i class="fa fa- fa-check-square-o fa-fw"></i>Test
                                                             </div>
-
                                                             <div id="testCollapse" class="collapse cardBody" aria-labelledby="testHeading" data-parent="#buildTestAccordion">
                                                                 <div class="card-body">
-
                                                                     <div class="form-group">
                                                                         <label class="build-label">Test Script</label>
                                                                         <textarea class="form-control form-custom code" rows="4" id="test"></textarea>
                                                                     </div>
-
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -7311,33 +7313,27 @@ $("#componentsBtn").click();
                                                                         <hr>
                                                                         <textarea type="disabled" class="form-control form-custom code" rows="25" id="buildCodeData"></textarea>
                                                                     </div>
-
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-
-
-
-
                                                 </div>
                                             </div>
                                         </form>
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
                 <div class="" id="buildCodeRow">
                     <div class=" buildCodeRowListCol" >
-                        <button type="button" class="btn btn-default jobFormbtn" id="deleteBuildCodes">Delete</button>
+                        
                         <div id="buildCodeSearchRow">
                             <input class = "form-control searchInput buildCodeSearchInput" id="buildCodeSearchInput" type="text">
                             <i id="buildCodeSearchIcon" class="search-icon fa fa-search  fa-fw"></i>
                         </div>
-                        <div class="buildCodeListHeader"><div class="buildCodeRowCount">n</div><div class="buildCodeRowName">Build Code Title</div><div class="buildCodeRowLastUpdated">Updated</div></div>
+                        <div class="buildCodeListHeader"><i class="fa  fa-minus fa-fw" id="deleteBuildCodes"></i> <div class="buildCodeRowCount">n</div><div class="buildCodeRowName">Build Code Title</div><div class="buildCodeRowLastUpdated">Updated</div></div>
                         <div  id="buildCodes"></div> 
                     </div>
 
