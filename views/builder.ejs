@@ -5272,7 +5272,14 @@ showFloatCompVars()
                             $('#job-form-panel').animate({ scrollTop: 0 }, 1000);
                             preferedPopPos = "bottom";
                             floatPop("dashBtn",  "Back at the dashboard...");
+                            $(".dashContentRow").first().click(); 
                         },500);
+
+                        setTimeout(function(){
+                            $(".lastBuildUrl").first().click();  
+                        },1200);
+
+                        $(".lastBuildUrl").first().click(); 
 
                         setTimeout(function(){
                             $("#dashBtn").click();

@@ -2288,6 +2288,8 @@ div#usedInMatchOverlay {
    font-size: 1.3em;
 }
 
-
+ul#userMenuDrop {
+   z-index: 2000;
+}
 
 
