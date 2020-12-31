@@ -1138,7 +1138,7 @@ router.get("/Jobs",function(req,res){
     res.end(JSON.stringify(resJSON));
 });
 
-//Service Rt: /BuildCode [components build code], Method: get, Requires: id = build code ID or component ID (will lookup build id) or '#' [all with optional filter (prop mode = "" | All | thisParent | thisBranch, prop node = id of component to compare)], Returns:  single row from BuildCode + id prop or all raw BuildCode rows filtered by either All buildcodes used in systemJson or all buildcodes used in all comps with same rerunnable ansestor or all comps with same parent.
+//Service Rt: /BuildCode [components build code], Method: get, Requires: id = build code ID or component ID (will lookup build id) or '#' [all with optional filter (prop mode = "" | All | thisParent | thisBranch, prop node = id of component to compare)], Returns:  single row from BuildCode + id prop or all raw BuildCode rows filtered by either All buildcodes used in systemJson or all buildcodes used in all comps with same rerunnable ancestor or all comps with same parent.
 router.get("/BuildCode",function(req,res){
 
     var id = "";
@@ -2616,7 +2616,7 @@ router.post("/run",function(req,res){
             ids = [fields.ids.split(';')[0]];
 
             if (fields.runChildren === 'true') {
-                //find all children and add to ids arr
+                //find all children and add to ids arr 
                 var childList = {};
                 childList[ids[0]] = true;
                 for (var key in SystemsJSON) {
@@ -2762,7 +2762,7 @@ router.post("/run",function(req,res){
         //loop through ids and build 'disabled ids' list
         var disabledIds = [];
         var y = 0;
-        ids.forEach(function(id){
+        ids.forEach(function(id){      
             var hasRun = false;
             if(SystemsJSON[id].hasOwnProperty("lastBuild")){
                 if(SystemsJSON[id].lastBuild.pass === 1){
@@ -4154,7 +4154,7 @@ router.get("/getStyle",function(req,res){
 
 });
 
-//Service Rt: /ClosestRerunnableAn to return object containing the closest ancestor that is rerunnable, Method: get, Requires: id = id of the component to search for ancestor, Returns: id of closest rerunnable ancestor and the SystemsJSON row of the same (If comp is systemFunction then return same id). format {id:ClosestRerunnableAnID, ClosestRerunnableAn:ClosestRerunnableAn}
+//Service Rt: /ClosestRerunnableAn to return id & object of the component that should run based on whether this id or parents are rerunnable and if they have run yet , Method: get, Requires: id = id of the component to search for ancestor, Returns: id & SystemJson Obj of closest rerunnable ancestor or closest unrun ancestor which ever is higher in family tree (If requested id is systemFunction then return same id and obj for that id). format {id:ClosestRerunnableAnID, ClosestRerunnableAn:ClosestRerunnableAn}
 router.get("/ClosestRerunnableAn",function(req,res){
     var id = req.query.id;
 
@@ -4166,47 +4166,37 @@ router.get("/ClosestRerunnableAn",function(req,res){
             if(SystemsJSON[id].buildCode.linkArr.length > 0 && BuildCode[SystemsJSON[id].buildCode.linkArr[0]].systemFunction !== 1){
 
                 if(BuildCode.hasOwnProperty(SystemsJSON[id].buildCode.linkArr[0])){
-                    if(BuildCode[SystemsJSON[id].buildCode.linkArr[0]].rerunnable !== 1){
-                        var parentID = SystemsJSON[id].parent;
-                        var x = 0;
-                        //loop through parent > parent > parent etc (max 100 times) and capture component that is rerunnable.
-                        //if none found when reached system set return id to self
-                        while ((parentID !== "#") && (ClosestRerunnableAnID === "") && (x < 100)){
 
-                            if (SystemsJSON.hasOwnProperty(parentID) ){
-                                if(SystemsJSON[parentID].comType !== "system"){
-                                    if(BuildCode[SystemsJSON[parentID].buildCode.linkArr[0]].rerunnable === 1){
-                                        ClosestRerunnableAn = SystemsJSON[parentID];
-                                        ClosestRerunnableAnID = parentID
+                    var hasParentRun = SystemsJSON[SystemsJSON[id].parent].hasOwnProperty("lastBuild") ? true : false
+                    var isParentSystem = SystemsJSON[SystemsJSON[id].parent].comType === "system" ? true : false
+                    if(BuildCode[SystemsJSON[id].buildCode.linkArr[0]].rerunnable === 1 && (hasParentRun || isParentSystem)){//this id is rerunnable and its parent has run (or a system)
+                        ClosestRerunnableAn = SystemsJSON[id]; //set this as the closest rerunnable
+                        ClosestRerunnableAnID = id
+                    }else{ //else search all ancestors
+                        const ftArray = SystemsJSON[id].ft.split("/");
+                        //cycle through ancestors in reverse to find id of closest rerunnable ancestor or closest unrun ancestor which ever is higher
+                        for(idn in ftArray ){
+                            var rIdn = ftArray.length - idn - 1;
+                            if(ftArray[rIdn] !== "#" ){
+                                if(SystemsJSON[ftArray[rIdn]].comType === "job"){                                        
+                                    if(BuildCode[SystemsJSON[ftArray[rIdn]].buildCode.linkArr[0]].rerunnable === 1  && ClosestRerunnableAnID === ""){
+                                        ClosestRerunnableAn = SystemsJSON[ftArray[rIdn]];
+                                        ClosestRerunnableAnID = ftArray[rIdn]
                                     }
-                                }else{
-                                    //no rerunnable in parents chain. Set return id to query id
-                                    ClosestRerunnableAn = SystemsJSON[id];
-                                    ClosestRerunnableAnID = id
+                                    if(!SystemsJSON[ftArray[rIdn]].hasOwnProperty("lastBuild") ){
+                                        ClosestRerunnableAn = SystemsJSON[ftArray[rIdn]];
+                                        ClosestRerunnableAnID = ftArray[rIdn]
+                                    }
                                 }
                             }
-                            parentID = SystemsJSON[parentID].parent;
-                            x++
                         }
-                    }else{
-                        ClosestRerunnableAn = SystemsJSON[id];
-                        ClosestRerunnableAnID = id
                     }
-                }else{
-                    ClosestRerunnableAn = SystemsJSON[id];
-                    ClosestRerunnableAnID = id
                 }
-
             }else{
-                ClosestRerunnableAn = SystemsJSON[id];
+                ClosestRerunnableAn = SystemsJSON[id]; //this is a system function, set this as the closest rerunnable
                 ClosestRerunnableAnID = id
             }
         }
-
-
-    }else{
-        ClosestRerunnableAn = SystemsJSON[id];
-        ClosestRerunnableAnID = id
     }
     res.end(JSON.stringify({id:ClosestRerunnableAnID, ClosestRerunnableAn:ClosestRerunnableAn, thisCompId:id, thisComp:SystemsJSON[id]}));
 
@@ -4344,23 +4334,23 @@ router.get("/getPromoted",function(req,res){
             if (SystemsJSON.hasOwnProperty(key)) {
                 var  hostIP = getSystemVarVal(key, "host");
                 var hasParentRun = false;
-                if((SystemsJSON[SystemsJSON[key].parent].hasOwnProperty("lastBuild") || SystemsJSON[SystemsJSON[key].parent].comType === "system") ){
 
-                    if (SystemsJSON[SystemsJSON[key].parent].comType === "system"){
-                        hasParentRun = true
-                    }else if (SystemsJSON[SystemsJSON[key].parent].lastBuild.pass === 1 ){
-                        hasParentRun = true
-                    }
-                }
+                // if((SystemsJSON[SystemsJSON[key].parent].hasOwnProperty("lastBuild") || SystemsJSON[SystemsJSON[key].parent].comType === "system") ){
+                //     if (SystemsJSON[SystemsJSON[key].parent].comType === "system"){
+                //         hasParentRun = true
+                //     }else if (SystemsJSON[SystemsJSON[key].parent].lastBuild.pass === 1 ){
+                //         hasParentRun = true
+                //     }
+                // }
 
-                if((SystemsJSON[key].promoted === 1 && hasParentRun && hostIP !== "")){
+                if((SystemsJSON[key].promoted === 1  && hostIP !== "")){ //&& hasParentRun
                     allow = true;
                 }
 
                 var resourceFiles = "";
                 if(SystemsJSON[key].buildCode.linkArr.length > 0){
                     if(BuildCode[SystemsJSON[key].buildCode.linkArr[0]].systemFunction === 1){
-                        // allow = true;
+                        allow = false;
                     }
                     if(BuildCode[SystemsJSON[key].buildCode.linkArr[0]].hasOwnProperty("resourceFiles")){
                         resourceFiles = BuildCode[SystemsJSON[key].buildCode.linkArr[0]].resourceFiles
@@ -4462,58 +4452,6 @@ router.get("/componentsByBcId",function(req,res){
         }
     }
 
-    //     if(SystemsJSON[key].ft.split("/")[1] === systemId){
-    //         if (SystemsJSON.hasOwnProperty(key)) {
-    //             var  hostIP = getSystemVarVal(key, "host");
-    //             var hasParentRun = false;
-    //             if((SystemsJSON[SystemsJSON[key].parent].hasOwnProperty("lastBuild") || SystemsJSON[SystemsJSON[key].parent].comType === "system") ){
-    //
-    //                 if (SystemsJSON[SystemsJSON[key].parent].comType === "system"){
-    //                     hasParentRun = true
-    //                 }else if (SystemsJSON[SystemsJSON[key].parent].lastBuild.pass === 1 ){
-    //                     hasParentRun = true
-    //                 }
-    //             }
-    //
-    //             if((SystemsJSON[key].promoted === 1 && hasParentRun && hostIP !== "")){
-    //                 allow = true;
-    //             }
-    //             if(SystemsJSON[key].buildCode.linkArr.length > 0){
-    //                 if(BuildCode[SystemsJSON[key].buildCode.linkArr[0]].systemFunction === 1){
-    //                     // allow = true;
-    //                 }
-    //             }
-    //
-    //             if(allow){
-    //                 rowdata = JSON.parse(JSON.stringify(SystemsJSON[key]) );
-    //                 rowdata.id = key;
-    //                 rowdata.systemName =  SystemsJSON[rowdata.ft.split("/")[1]].name;
-    //                 rowdata.systemId =  rowdata.ft.split("/")[1];
-    //
-    //                 //convert family tree+key string to string containing sort values eg ?1?2?1?6?3
-    //                 var sortStr = " ";
-    //                 var sArr = rowdata.ft.split('/');
-    //                 var aNames = [];
-    //                 sArr.push(key);
-    //                 sArr.forEach(function(parent_id){
-    //                     sortStr += parent_id.length>20 ? "?" + SystemsJSON[parent_id].sort.toString() : "";
-    //                     if(SystemsJSON.hasOwnProperty(parent_id)){
-    //                         if(SystemsJSON[parent_id].promoted){
-    //                             aNames.push(SystemsJSON[parent_id].name)
-    //                         }
-    //                     }
-    //                 });
-    //
-    //                 rowdata.sortStr = sortStr;
-    //                 rowdata.aNames = aNames;
-    //
-    //                 resJSON.push(rowdata);
-    //             }
-    //         }
-    //     // }
-    // }
-    //sort all rows by sort property
-
     resJSON.compArr.sort(function(a, b){
         var keyA = a.sortStr,
             keyB = b.sortStr;
@@ -4593,6 +4531,85 @@ function searchForComponentByBuildId(buildId){
     return(returnObj)
 }
 
+//getDashDetails
+router.get("/getDashDetails",function(req,res){
+
+    var id = req.query.id;
+
+    var resJSON = {};
+    if(SystemsJSON.hasOwnProperty(id)){
+        resJSON["comp"] = SystemsJSON[id];
+        resJSON["id"] = id; 
+    }
+
+    var proVarArr =  []; //store the array of promoted variables
+    var lastBuildUrlsArr =  []; //store the array of urls found in children
+    for (var key in SystemsJSON) {//cycle through all components
+        if(SystemsJSON[key].comType === "job"){ //if component is not a system...     
+            var ancestors = SystemsJSON[key].ft.split("/"); //get array of familt tree
+            if(ancestors.includes(id) || key === id){  //if this comp is a desendent or self...
+                for (var ind in SystemsJSON[key].variables) {   //look at all variables
+                    if(SystemsJSON[key].variables[ind].hasOwnProperty("promoted")){
+                        if(SystemsJSON[key].variables[ind].promoted){ //if promoted var 
+
+                            //create tmpVar {compId - the requested key, name - name of component}
+                            var tmpObj = {compId:key, name:SystemsJSON[key].name}
+
+                            //create vObj to store the current var
+                            var vObj = {};
+                            vObj[ind] = SystemsJSON[key].variables[ind] 
+
+                            //place vObj into tmpObj as a prop
+                            tmpObj["var"] = vObj
+
+                            //push tmpObj (containing compID, name, var) into promoted Var Array
+                            proVarArr.push(tmpObj) 
+                        }
+                    }
+                } 
+                if(SystemsJSON[key].hasOwnProperty("lastBuild")){
+                    if(SystemsJSON[key].lastBuild.hasOwnProperty("url")){
+                        if(!lastBuildUrlsArr.includes(SystemsJSON[key].lastBuild.url)){
+                            lastBuildUrlsArr.push(SystemsJSON[key].lastBuild.url)  
+                        }                        
+                    }                    
+                }   
+            }
+        }
+    }
+
+    resJSON["proVarArr"] = proVarArr; 
+    resJSON["lastBuildUrlsArr"] = lastBuildUrlsArr; 
+    res.end(JSON.stringify(resJSON)); 
+});
+
+router.post("/setDashVarVal",function(req,res) {
+    //console.log("submit");
+
+    var reqJSON = req.body;
+    var id = reqJSON.id;
+    var val = reqJSON.val;
+    var name = reqJSON.name;
+    
+    var currentVal = "error";
+
+    if(id && name){
+        if(SystemsJSON.hasOwnProperty(id)){
+            if(SystemsJSON[id].hasOwnProperty("variables")){
+                if(SystemsJSON[id].variables.hasOwnProperty(name)){
+                    SystemsJSON[id].variables[name].value = val;
+                    currentVal = val;
+                    saveAllJSON(true)
+                }
+            }
+        }        
+    }
+    const respObj = {id:id,val:currentVal,name:name}
+    res.writeHead(200, {"Content-Type": "application/json"});
+    res.end(JSON.stringify(respObj));
+}); 
+
+
 //Service Rt: /getChildCount
 router.get("/getChildCount",function(req,res){
     var id = req.query.id;
@@ -4631,80 +4648,81 @@ router.get("/getTempTypes",function(req,res){
     res.end(JSON.stringify(resJSON));
 });
 
-// router.get("/massupdate",function(req,res){
-// //mass updates and fix build codes
-//
-//     res.write("<html><body>");
-//
-//     var x=0;
-//     var list = {};
-//     for (var key in SystemsJSON) {
-//         //console.log(x++);
-//         if(SystemsJSON[key].comType === "job"){
-//             var bc =  SystemsJSON[key].buildCode.linkArr[0];
-//
-//             // console.log("=====");
-//             // console.log(BuildCode[bc].name );
-//
-//
-//             var scriptC = BuildCode[bc].script.length;
-//
-//             var tempObjArr = BuildCode[bc].templates.tempArr;
-//
-//             var tempC = 0;
-//             tempObjArr.forEach(function(tempObj){
-//                 tempC += tempObj.c.length
-//             });
-//             var resC = 0;
-//             // console.log(typeof BuildCode[bc].resourceFiles);
-//             // console.log(BuildCode[bc].resourceFiles);
-//
-//             if(BuildCode[bc].hasOwnProperty("resourceFiles")){
-//                 if(BuildCode[bc].resourceFiles !== '[object Object]'){
-//                     if(BuildCode[bc].resourceFiles !== ""){
-//                         var resArr = JSON.parse(BuildCode[bc].resourceFiles);
-//                         for (let i = 0; i < resArr.length; i++) {
-//                             resC += resArr[i].name.length
-//                         }
-//
-//                     }else{
-//                         console.log("=====");
-//                         console.log(BuildCode[bc].name );
-//                         console.log("blank" );
-//                         // BuildCode[bc].resourceFiles = "[]"
-//                     }
-//                 }else{
-//                     console.log("=====");
-//                     console.log(BuildCode[bc].name );
-//                     console.log("o o");
-//                     // BuildCode[bc].resourceFiles = "[]"
-//                 }
-//             }else{
-//                 console.log("=====");
-//                 console.log(BuildCode[bc].name );
-//                 console.log("no resourceFiles");
-//             }
-//
-//             var idx = BuildCode[bc].name + (scriptC + tempC + resC).toString();
-//             if(! list.hasOwnProperty(idx)){
-//                 list[idx] = {count : 0, cid : bc, sid : key}
-//             }else{
-//                 list[idx].count++;
-//             }
-//
-//         }
-//
-//     }
-//
-//     for (var key in list) {
-//         res.write( "<br>");
-//         res.write(list[key].count.toString() + " : " + key + "<br>");
-//     }
-//
-//     res.write("</body></html>");
-//     res.end("");
-//
-// });
+/* router.get("/massupdate",function(req,res){
+
+//mass updates and fix build codes
+
+    res.write("<html><body>");
+
+    var x=0;
+    var list = {};
+    for (var key in SystemsJSON) {
+        //console.log(x++);
+        if(SystemsJSON[key].comType === "job"){
+            var bc =  SystemsJSON[key].buildCode.linkArr[0];
+
+            // console.log("=====");
+            // console.log(BuildCode[bc].name );
+
+
+            var scriptC = BuildCode[bc].script.length;
+
+            var tempObjArr = BuildCode[bc].templates.tempArr;
+
+            var tempC = 0;
+            tempObjArr.forEach(function(tempObj){
+                tempC += tempObj.c.length
+            });
+            var resC = 0;
+            // console.log(typeof BuildCode[bc].resourceFiles);
+            // console.log(BuildCode[bc].resourceFiles);
+
+            if(BuildCode[bc].hasOwnProperty("resourceFiles")){
+                if(BuildCode[bc].resourceFiles !== '[object Object]'){
+                    if(BuildCode[bc].resourceFiles !== ""){
+                        var resArr = JSON.parse(BuildCode[bc].resourceFiles);
+                        for (let i = 0; i < resArr.length; i++) {
+                            resC += resArr[i].name.length
+                        }
+
+                    }else{
+                        console.log("=====");
+                        console.log(BuildCode[bc].name );
+                        console.log("blank" );
+                        // BuildCode[bc].resourceFiles = "[]"
+                    }
+                }else{
+                    console.log("=====");
+                    console.log(BuildCode[bc].name );
+                    console.log("o o");
+                    // BuildCode[bc].resourceFiles = "[]"
+                }
+            }else{
+                console.log("=====");
+                console.log(BuildCode[bc].name );
+                console.log("no resourceFiles");
+            }
+
+            var idx = BuildCode[bc].name + (scriptC + tempC + resC).toString();
+            if(! list.hasOwnProperty(idx)){
+                list[idx] = {count : 0, cid : bc, sid : key}
+            }else{
+                list[idx].count++;
+            }
+
+        }
+
+    }
+
+    for (var key in list) {
+        res.write( "<br>");
+        res.write(list[key].count.toString() + " : " + key + "<br>");
+    }
+
+    res.write("</body></html>");
+    res.end("");
+
+}); */
 
 router.get("/snapComp",function(req,res){
     const jobId = req.query.id;
@@ -4714,7 +4732,7 @@ router.get("/snapComp",function(req,res){
             const screenshot = await Page.captureScreenshot({format: "png", fromSurface: true});
             const buffer = new Buffer(screenshot.data, 'base64');
             if (!fs.existsSync(filesPath + jobId)) {
-                fs.mkdirSync(filesPath + jobId);
+                fs.mkdirSync(filesPath + jobId); 
             }
             fs.writeFile(filesPath + jobId + '/' +'thumbnail.png', buffer, 'base64', function(err) {
                 if (err) {
@@ -4726,7 +4744,7 @@ router.get("/snapComp",function(req,res){
             });
 
         })();
-}
+    }
 
 
     res.end("");

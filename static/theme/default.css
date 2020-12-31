@@ -492,7 +492,7 @@ input:not(:checked) + .slider.round:before{
     filter: brightness(50%);
 }
 
-.compVarEditValButton, .compVarEditButton, .ql-snow a, .buildCodePickButton, .compFocusButton {
+.compVarEditValButton, .compVarEditButton, .ql-snow a, .buildCodePickButton, .compFocusButton, .compDashVarEditButton {
     transition: color 0.5s;
     color: #367ae0;
 }
@@ -660,19 +660,19 @@ a#buildCodeBtn i {
     color: #367ae0;
 }
 
-#launchLinkCopy, .buildCodeListCopy, #deleteBuildCodes {
+#launchLinkCopy, .buildCodeListCopy, #deleteBuildCodes, .lastBuildUrl  {
     color: #367ae0;
 }
 
 .dashTableRow {
-    transition: box-shadow 2.5s;
-    box-shadow: 3px 5px 18px 1px rgba(51, 51, 51, 0.88);
-}
-
-.dashContentRow {
-    transition: background-color 2.5s;
     background-color: #ffffff;
 }
+
+/* .dashContentRow {
+    transition: background-color 2.5s;
+    background-color: #ffffff;
+    box-shadow: 3px 5px 18px 1px rgba(51, 51, 51, 0.58);
+} */
 
 div#dashRow {
     transition: background-color 2.5s;
@@ -683,29 +683,8 @@ div#dashRow {
     border-color: #e6e6e6;
 }
 
-/*@property --colorPrimary {*/
-    /*syntax: '<color>';*/
-    /*initial-value: #ecececff;*/
-    /*inherits: false;*/
-/*}*/
-
-/*@property --colorSecondary {*/
-    /*syntax: '<color>';*/
-    /*initial-value: #ececec00;*/
-    /*inherits: false;*/
-/*}*/
-
 .top-row{
     transition: background-color 2.5s;
     background-color: #ecececd4;
     box-shadow: 1px 4px 8px rgb(236 236 236);
 }
-
-/*.fadeTop {*/
-    /*!*transition: --colorPrimary 1s, --colorSecondary 1s;*!*/
-    /*background-image: linear-gradient( var(--colorPrimary) , var(--colorSecondary) );*/
-/*}*/
-
-/*div#dashFuncDropdownMenu {*/
-    /*background-color: rgba(236, 236, 236, 0.9);*/
-/*}*/

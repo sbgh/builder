@@ -667,7 +667,7 @@ input:focus + .slider {
     filter: brightness(150%);
 }
 
-.compVarEditValButton, .compVarEditButton, .ql-snow a , .buildCodePickButton, .compFocusButton{
+.compVarEditValButton, .compVarEditButton, .ql-snow a , .buildCodePickButton, .compFocusButton, .compDashVarEditButton{
     transition: color 0.5s;
     color: #79bdf3;
 }
@@ -832,18 +832,17 @@ a#buildCodeBtn i {
     color: #79bdf3;
 }
 
-#launchLinkCopy, .buildCodeListCopy, #deleteBuildCodes {
+#launchLinkCopy, .buildCodeListCopy, #deleteBuildCodes, .lastBuildUrl {
     color: #79bdf3;
 }
 
 .dashTableRow {
-    transition: box-shadow 2.5s;
-    box-shadow: 0px 0px 0px 0px rgba(51, 51, 51, 0.88);
+    background-color: #3c3f41;
 }
 
 .dashContentRow {
-    transition: background-color 2.5s;
-    background-color: #46484a;
+    /* transition: background-color 2.5s;
+    background-color: #46484a; */
 }
 
 div#dashRow {
@@ -855,32 +854,10 @@ div#dashRow {
     border-color: #959595;
 }
 
-/*@property --colorPrimary {*/
-    /*syntax: '<color>';*/
-    /*initial-value: #000000ff;*/
-    /*inherits: false;*/
-/*}*/
-
-/*@property --colorSecondary {*/
-    /*syntax: '<color>';*/
-    /*initial-value: #00000000;*/
-    /*inherits: false;*/
-/*}*/
-
 .top-row{
     transition: background-color 2.5s;
     background-color: #000000d4;
     box-shadow: 1px 4px 8px rgb(0 0 0);
 
 }
-
-/*.fadeTop {*/
-
-    /*!*transition: --colorPrimary 1s, --colorSecondary 1s;*!*/
-    /*!*background-image: linear-gradient( var(--colorPrimary) , var(--colorSecondary) );*!*/
-/*}*/
-
-/*div#dashFuncDropdownMenu {*/
-    /*background-color: rgba(0, 0, 0, 0.9);*/
-/*}*/
 

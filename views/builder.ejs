@@ -1,5 +1,5 @@
 <!DOCTYPE html>     
-<html lang="en"> 
+<html lang="en">  
 <head>
     <meta charset="UTF-8">
     <!--<meta name="viewport" content="width=980, user-scalable=yes">-->
@@ -95,7 +95,7 @@
                         "icon" : "fa fa-check-circle-o jobRow"
                     },
                     "needfull" : {
-                        "icon" : "fa fa-play-circle-o",
+                        "icon" : "fa fa-wrench", //fa-play-circle-o
                         "a_attr": { class : " needfull "},
                         "li_attr": { class : " needfull "}
                     },
@@ -205,7 +205,7 @@
                         "a_attr": { class : " systemRow "}
                     },
                     "job" : {
-                        "icon" : "fa fa-play-circle-o"
+                        "icon" : "fa fa-wrench" //fa--play-circle-o
                     },
                     "rerunnable" : {
                         "icon" : "fa fa-repeat rerunnableRow",
@@ -661,11 +661,12 @@
                     $("#dropdownMenuButton")[0].innerHTML = '<img id="dashSystemIcon" class="dashSystemIcon" src='+urlString+'></img>';
                     $("#dropdownMenuButton")[0].innerHTML += dashSystemDropItemClickedJson.sysName;
                     loadDashTable(dashSystemDropItemClickedJson.id);
-                    loadDashSystemDetails(dashSystemDropItemClickedJson.id);
+                    // loadDashSystemDetails(dashSystemDropItemClickedJson.id);
                     loadDashSystemFunctions(dashSystemDropItemClickedJson.id);
 
                 }
             }
+            loadDashboard();
 
             function loadDashSystemFunctions(systemId){
                 var mydata = {systemId:systemId};
@@ -746,7 +747,7 @@
                             $("#dropdownMenuButton")[0].innerHTML = '<img id="dashSystemIcon" class="dashSystemIcon" src='+urlString+'></img>';
                             $("#dropdownMenuButton")[0].innerHTML += sysName;
                             loadDashTable(id);
-                            loadDashSystemDetails(id);
+                            // loadDashSystemDetails(id);
                             loadDashSystemFunctions(id);
 
                             localStorage['dashSystemDropItemClicked'] = JSON.stringify({ id:id, sysName:sysName }) ;
@@ -760,6 +761,7 @@
                 })
             }
 
+            //not used
             function loadDashSystemDetails(systemId){
                 $.get('/Sys', { id: systemId }, function(data) {
                     var sysJson = data[0] ;
@@ -769,7 +771,6 @@
                     }else{
                         host = "[Unspecified]";
                     }
-
 
                     var dashSystemDetailsHtml = '<div class="dashboardLabel">Host</div>';
                     dashSystemDetailsHtml += '<p>' + host + '</p>';
@@ -795,7 +796,8 @@
                     };
                 });
             }
-
+            
+            var dashCompDescription;
             function loadDashTable(systemId){
                 var mydata = {systemId:systemId}
                 $.ajax({
@@ -828,167 +830,246 @@
 
                             pCompHtml = "";
 
-                            var thisClass = 'dashTableRow dashListRowNotClicked';
+                            var thisClass = 'dashTableRow';
 
                             var thumbImageUrl = "";
                             if(rowJson.hasOwnProperty("thumbnail")){
                                     thumbImageUrl = "/uploads/" + rowJson.id + "/" + rowJson.thumbnail;
                             }
 
-                            // var rowStyle = 'grid-column: '+rowJson.aNames.length+";";
-
-                            if(rowJson.hasOwnProperty("enabled")){
-                                if(rowJson.enabled == 1){
-                                    enabledHTML = "<i class='fa fa-check-circle-o fa-fw DashListRowPass' data-checked='false' ></i>";
-                                    enableText = "Click to disable";
-                                }else{
-                                    enabledHTML = "<i class='fa fa-times-circle-o fa-fw DashListRowFail' data-checked='true'></i>";
-                                    enableText = "Click to enable";
-                                }
-                            }
-
-
+                           
                             pCompHtml += "<div id='row_" + rowJson.id +"' data-id='" + rowJson.id +"' data-runSys='"+ rowJson.systemId +"' data-runSysName='"+ rowJson.systemName + "' class='" + thisClass + "'>";
-                                pCompHtml += "<div class='dashContentRow'>"
-                                if(thumbImageUrl !== ""){
-                                   pCompHtml +=  "<div class='dashThumb'>";
-                                        pCompHtml += "<img src='"+thumbImageUrl+"'>";
-                                    pCompHtml += "</div>"
-                                }
-
-                                pCompHtml += "<div class='dashDetails'>";
-                                        pCompHtml += "<div class='dashItemName'>" + rowJson.name + thisUrlFlag + "</div>";
-
-                                        // pCompHtml += "<div class='dashItemDescription'></div>";
-
-                                        pCompHtml += "<div class='dashButtons'>";
-                                            pCompHtml += "<div id='DashOpenMenu_" + x +"' class='dashTableOpenButton' data-id='" + rowJson.id +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
-                                            pCompHtml += "<div id='dashTableEnableItem_"+x+"' class='dashTableEnableItem' data-id='" + rowJson.id +"'>" + enabledHTML +  "</div>";
-                                            pCompHtml += "<div id='dashTableBuildButton_"+x+"' class='dashTableBuildButton' data-id='" + rowJson.id +"'><i class='fa  fa-play fa-fw  '></i></div>  ";
+                                pCompHtml += "<div class='col-md-12 col-lg-6 dashContentRow'>"
+                                    if(thumbImageUrl !== ""){
+                                        pCompHtml +=  "<div id='thumb_" + rowJson.id +"' class='dashThumb' >";
+                                            pCompHtml += "<img src='"+thumbImageUrl+"'>";
                                         pCompHtml += "</div>"
+                                    }else{
+                                        pCompHtml +=  "<div id='thumb_" + rowJson.id +"' class='dashThumb' >";
+                                        pCompHtml += "</div>"
+                                    }
+
+                                    pCompHtml += "<div class='dashDetails'>";
+                                            pCompHtml += "<div class='dashItemName'>" + rowJson.name + thisUrlFlag + "</div>";
+
+                                           
                                     pCompHtml += "</div>"
                                 pCompHtml += "</div>"
+                                pCompHtml += "<div class='col-md-12 col-lg-6  dashSelected'></div>"
 
                             pCompHtml += "</div>"
+
                             $("#dashTable").append(pCompHtml);
 
-                            $("#DashOpenMenu_" + x ).popover({
-                                animation: true,
-                                content: "Open "+rowJson.name+" component",
-                                delay: { "show": 500, "hide": 100 },
-                                trigger: 'hover',
-                                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
-                            });
+                            
+                            $("#row_" + rowJson.id).find(".dashContentRow").click(function(){
+                                id = $(this).parent().attr("data-id");
+                                $(".selectedDashRow").removeClass("selectedDashRow");
+                                $(this).addClass("selectedDashRow");
+                                loadDashDetails(id)
+                                
+                            })                           
+    
 
-                            $("#dashTableBuildButton_" + x ).popover({
-                                animation: true,
-                                content: "Build "+rowJson.name,
-                                delay: { "show": 500, "hide": 100 },
-                                trigger: 'hover',
-                                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
-                            });
+                            function loadDashDetails(id){
 
-                            $("#dashTableEnableItem_" + x ).popover({
-                                animation: true,
-                                content: enableText + " "+rowJson.name,
-                                delay: { "show": 500, "hide": 100 },
-                                trigger: 'hover',
-                                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
-                            });
+                                $.ajax({
+                                    type: 'get',
+                                    data: {id:id},
+                                    dataType : "text",
+                                    headers: {
+                                        "content-type": "application/json"
+                                    },
+                                    url: '/getDashDetails',
+                                    id: id,
+                                    success : function(data) {
+
+                                        const ddObj = JSON.parse(data);
+
+                                        const id = ddObj.id;
+
+                                        var enabledHTML = "";
+                                        $(".dashSelected").html("");
+                                        if(ddObj.comp.hasOwnProperty("enabled")){
+                                            if(ddObj.comp.enabled == 1){
+                                                enabledHTML = "<i class='fa fa-check-circle-o fa-fw DashListRowPass' data-checked='false' ></i>";
+                                                enableText = "Click to disable";
+                                            }else{
+                                                enabledHTML = "<i class='fa fa-times-circle-o fa-fw DashListRowFail' data-checked='true'></i>";
+                                                enableText = "Click to enable";
+                                            }
+                                        }
+
+                                        var tmpHtml = ""
+                                        tmpHtml += "<div class='dashSelectedTop'>";
+                                            tmpHtml += "<div class='dashItemName'>" + ddObj.comp.name + "</div>";
+
+                                            tmpHtml += "<div class='dashButtons'>";
+                                                tmpHtml += "<div id='dashTableOpenButton' class='dashTableOpenButton' data-id='" + ddObj.id +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
+                                                tmpHtml += "<div id='dashTableEnableItem'  class='dashTableEnableItem' data-id='" + ddObj.id +"'>" + enabledHTML +  "</div>";
+                                                tmpHtml += "<div id='dashTableBuildButton'  class='dashTableBuildButton' data-id='" + ddObj.id +"'><i class='fa  fa-wrench fa-fw  '></i></div>  ";
+                                            tmpHtml += "</div>"
+                                        tmpHtml += "</div>"
+
+                                        tmpHtml += "<div id='dashCompDescription'></div>";
+                                    
+                                        tmpHtml += "<div id='dashCompUrls'>";
+                                            for(let ui in ddObj.lastBuildUrlsArr){
+                                                tmpHtml += "<div class='lastBuildUrl' data-id='" + ddObj.id +"'>"+ddObj.lastBuildUrlsArr[ui]+"</div>";
+                                            }
+                                        tmpHtml += "</div>";
+
+                                        tmpHtml += "<div id='compDashVariables'></div>";                                       
+
+
+                                        //build currentCompDashSelectedVarObj and add idn index, name, compName, compId
+                                        var y=0;
+                                        currentCompDashSelectedVarObj = {};
+                                        for(let idn in ddObj.proVarArr){
+                                            let name = Object.getOwnPropertyNames(ddObj.proVarArr[idn].var)[0];
+                                            let compId = ddObj.proVarArr[idn].compId
+                                            currentCompDashSelectedVarObj[compId + '-' + name] = ddObj.proVarArr[idn].var[name];
+                                            currentCompDashSelectedVarObj[compId + '-' + name].idn = idn;
+                                            currentCompDashSelectedVarObj[compId + '-' + name].name = name;
+                                            currentCompDashSelectedVarObj[compId + '-' + name].compName = ddObj.proVarArr[idn].name;
+                                            currentCompDashSelectedVarObj[compId + '-' + name].compId = ddObj.proVarArr[idn].compId;
+                                        }
+
+                                        $("#row_" + id).find(".dashSelected" ).show();
+
+                                        $("#row_" + id).find(".dashSelected" ).html( tmpHtml )
+
+                                        loadVarDashSelected(currentCompDashSelectedVarObj, "row_" + id );
+                                        
+
+                                        $("#row_" + id).find('.lastBuildUrl').on('click', function(){
+
+                                            var id = $(this).attr('data-ID');
+                                            navigate($(this).text());
+
+                                            $("#videoScreen").detach().appendTo($("#row_" + id).find(".dashThumb")); 
+                                            $(".dashThumb").find("img").show();
+                                            $("#row_" + id).find("img").hide();
+                                        })
+
+                                        $("#row_" + id).find(".dashTableOpenButton").popover({
+                                            animation: true,
+                                            content: "Open "+ddObj.comp.name+" component",
+                                            delay: { "show": 50, "hide": 100 },
+                                            trigger: 'hover',
+                                            template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                                        });
+
+                                        $("#row_" + id).find(".dashTableBuildButton").popover({
+                                            animation: true,
+                                            content: "Build "+ddObj.comp.name,
+                                            delay: { "show": 50, "hide": 100 },
+                                            trigger: 'hover',
+                                            template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                                        });
+
+                                        $("#row_" + id).find(".dashTableEnableItem" ).popover({  
+                                            animation: true,
+                                            content: enableText + " "+ddObj.comp.name,
+                                            delay: { "show": 50, "hide": 100 },
+                                            trigger: 'hover',
+                                            template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                                        });
+                                                      
+                                        $("#row_" + id).find('.dashTableOpenButton').on('click', function(){
+                                            var id = $(this).attr('data-ID');
+                                            $("#componentsBtn").click();
+                                            $('#jstree_div').jstree("deselect_all");
+                                            $('#jstree_div').jstree('select_node',id);
+                                        })
+
+                                        $("#row_" + id).find('.dashTableBuildButton').on('click', function(){
+                                            var id = $(this).attr('data-ID');
+                                            $("#dashId").val(id);
+                                            $.get('/Jobs', {id: id}, function (data) {
+                                                var sys = data[0].ft.split("/")[1];
+                                                    $("#dashSys").val(sys);
+                                                runJob(id, sys);
+                                            })
+
+                                        });
+
+                                        $("#row_" + id).find('.dashTableEnableItem').on('click', function(){
+                                                var id = $(this).attr('data-ID');
+                                                var cCheck = $(this).find( "i" ).attr('data-checked');
+
+                                                const checked = {id:id, checked: cCheck};
+
+                                            $.ajax({
+                                                type: 'get',
+                                                data: checked,
+                                                dataType : "text",
+                                                headers: {
+                                                    "content-type": "application/json"
+                                                },
+                                                url: '/setEnable',
+                                                id: id,
+                                                success : function(data) {
+
+                                                    const enabledJson = JSON.parse(data);
+                                                    const en = enabledJson.enabled;
+                                                    const id = $(this)[0].id;
+
+                                                    if (en === 1){
+                                                        // $("#row_"+id + " .dashTableBuildButton").show();
+                                                        $("#row_"+id + " .dashTableEnableItem > i.fa").removeClass('fa-times-circle-o').removeClass('DashListRowFail').addClass('fa-check-circle-o').addClass('DashListRowPass');
+                                                        $("#row_"+id + " .dashTableEnableItem > i.fa").attr('data-checked',"false" );
+                                                    }else{
+                                                        // $("#row_"+id + " .dashTableBuildButton").hide();
+                                                        $("#row_"+id + " .dashTableEnableItem > i.fa").removeClass('fa-check-circle-o').removeClass('DashListRowPass').addClass('fa-times-circle-o').addClass('DashListRowFail');
+                                                        $("#row_"+id + " .dashTableEnableItem > i.fa").attr('data-checked',"true" );
+                                                    }
+                                                },
+                                                error : function(error) {
+                                                    alert("Error changing enable property for this component");
+                                                    console.log(error)
+                                                }
+                                            })
+                                        });
+                                                                            
+                                        dashCompDescription = new Quill('#dashCompDescription', {
+                                            theme: 'snow',
+                                            modules: {
+                                                "toolbar": false
+                                            }
+                                        });
+                                        dashCompDescription.enable(false);
+                                        var description = ddObj.comp.description;
+                                        if(description.hasOwnProperty("ops")){
+                                            dashCompDescription.setContents(description.ops)
+                                        }else{
+                                            dashCompDescription.setContents(
+                                                [{ insert:  description },
+                                                    { insert: '\n' }]
+                                            );
+                                        };
+                                    
+                                    
+                                    },
+                                    error : function(error) {
+                                        alert("Error calling /getDashDetails");
+                                        console.log(error)
+                                    }
+                                })
+                            }
 
                             if(!rowJson.enabled){
                                  $("#row_"+ rowJson.id + " .dashTableBuildButton").hide();
                              }
 
-                            // if(rowJson.hasOwnProperty("description")){
-                            //     if(rowJson.description.hasOwnProperty("ops")){
-                            //         $("#row_" + rowJson.id + " .dashItemDescription" ).html( (quillGetHTML(rowJson.description)).substring(0,200) )
-                            //     }
-                            // }
+                            
                             x++;
                         }
 
-                        $('.dashTableOpenButton').on('click', function(){
-                            var id = $(this).attr('data-ID');
-                            $("#componentsBtn").click();
-                            $('#jstree_div').jstree("deselect_all");
-                            $('#jstree_div').jstree('select_node',id);
-                        });
-
-
-                        $('.dashTableBuildButton').on('click', function(){
-                            var id = $(this).attr('data-ID');
-                            $("#dashId").val(id);
-                            $.get('/Jobs', {id: id}, function (data) {
-                                var sys = data[0].ft.split("/")[1];
-                                    $("#dashSys").val(sys);
-                                runJob(id, sys);
-                            })
-
-                        });
-
+                        
                         function selectDashTableRow(id){
                             localStorage['dashListRowClicked'] = id;
                         }
-
-//                        $('.dashListRowNotClicked').on('click', function() {
-//                            var id = $(this).attr('data-Id');
-//                            selectDashTableRow(id);
-//
-//                            $.get('/Jobs', {id: id}, function (data) {
-//                                //Navigate to lastbuild.url if exists
-//                                if (data[0].lastBuild) {
-//                                    if (data[0].lastBuild.url) {
-//                                        const url = data[0].lastBuild.url;
-//                                        navigate(url);
-//                                    }
-//                                    if (data[0].lastBuild.launchUrl) {
-//                                        const launchUrl = data[0].lastBuild.launchUrl;
-//                                        updateLaunchLink(launchUrl);
-//                                    }
-//                                }
-//                            });
-//                        })
-
-                        $('.dashTableEnableItem').on('click', function(){
-                                var id = $(this).attr('data-ID');
-                                var cCheck = $(this).find( "i" ).attr('data-checked');
-
-                                const checked = {id:id, checked: cCheck};
-
-                            $.ajax({
-                                type: 'get',
-                                data: checked,
-                                dataType : "text",
-                                headers: {
-                                    "content-type": "application/json"
-                                },
-                                url: '/setEnable',
-                                id: id,
-                                success : function(data) {
-
-                                    const enabledJson = JSON.parse(data);
-                                    const en = enabledJson.enabled;
-                                    const id = $(this)[0].id;
-
-                                    if (en === 1){
-                                        $("#row_"+id + " .dashTableBuildButton").show();
-                                        $("#row_"+id + " .dashTableEnableItem > i.fa").removeClass('fa-times-circle-o').removeClass('DashListRowFail').addClass('fa-check-circle-o').addClass('DashListRowPass');
-                                        $("#row_"+id + " .dashTableEnableItem > i.fa").attr('data-checked',"false" );
-                                    }else{
-                                        $("#row_"+id + " .dashTableBuildButton").hide();
-                                        $("#row_"+id + " .dashTableEnableItem > i.fa").removeClass('fa-check-circle-o').removeClass('DashListRowPass').addClass('fa-times-circle-o').addClass('DashListRowFail');
-                                        $("#row_"+id + " .dashTableEnableItem > i.fa").attr('data-checked',"true" );
-                                    }
-
-                                },
-                                error : function(error) {
-                                    alert("Error changing enable property for this component");
-                                    console.log(error)
-                                }
-                            })
-                        });
-
                     },
                     error : function(error) {
                         console.log(error)
@@ -996,13 +1077,264 @@
                 })
             }
 
+            var currentCompDashSelectedVarObj = {};
+            function loadVarDashSelected(variables, rowId){
+                var currentVarCompId = "";
+
+                $(".dashDetails").show();
+                $("#" + rowId).find(".dashDetails").hide();
+
+                for(var varIdName in variables){
+                    var idn = variables[varIdName].idn
+
+                    let pCompHtml = "";
+                    
+                    if(currentVarCompId !== variables[varIdName].compId){
+                        currentVarCompId = variables[varIdName].compId;
+                        pCompHtml += "<div id='varRowCompHeader' class='varRowCompHeader'>";
+                            pCompHtml += variables[varIdName].compName;
+                        pCompHtml += "</div>";
+                    }
+
+
+                    pCompHtml += createDashVarRowHtml(varIdName, pCompHtml)
+
+                    
+                    
+                    setupDashVarRowHtml(varIdName, pCompHtml)
+
+                    
+                }
+            }
+
+            function setupDashVarRowHtml(varIdName, pCompHtml){
+                const variables = currentCompDashSelectedVarObj;
+                var idn = variables[varIdName].idn
+
+                if($("#varRowDash_"+variables[varIdName].idn).length > 0){
+                        $("#varRowDash_"+variables[varIdName].idn).replaceWith(pCompHtml)
+                }else{
+                    $("#compDashVariables").append(pCompHtml);
+                }
+                
+
+                $("#varNameDash" + idn).text(variables[varIdName].name);
+
+                var valText = variables[varIdName].value;
+                if(variables[varIdName].private){
+                    valText = variables[varIdName].value === "" ? "" : "************"
+                }
+                if(valText.length >40){
+                    valText = valText.substring(0, 37)+"...";
+                    var valTextPop = variables[varIdName].value;
+                    const options = {
+                        animation: true,
+                        content: valTextPop,
+                        delay: { "show": 500, "hide": 50 },
+                        trigger: 'hover',
+                        template: '<div class="popover clickPop" role="tooltip"><div class="arrow clickPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+
+                    }
+                    $("#varValDash" + idn).popover(options);
+                }
+                $("#varValDash" + idn).text(valText);
+                $("#varValColorDash" + idn).val(valText);
+
+                
+                $("#varRowDash_"+idn).find(".compDashVarEditButton").on('click', function(){
+                                                                
+                    var idn = $(this).attr('data-idn');
+                    var newHtml = createVarDashEditHtml(idn);
+
+                    $("#varRowDash_"+idn).html(newHtml);
+
+                    var varName = "";
+                    var varIdName = "";
+                    for(var x in currentCompDashSelectedVarObj){
+                        if (currentCompDashSelectedVarObj[x].idn == idn){
+                            varName = currentCompDashSelectedVarObj[x].name
+                            varIdName = x
+                        }
+                    }
+
+                    $("#varNameDashEdit" + idn).text(varName);
+
+                    var thisType = currentCompDashSelectedVarObj[varIdName].type === "" ? "Text" : currentCompDashSelectedVarObj[varIdName].type;
+
+                    // $("#newCompVarTypeButton" + idn).val(thisType);
+                    // $("#newCompVarTypeButton" + idn).text(thisType);
+                    $("#newCompDashVarValue" + idn).val(currentCompDashSelectedVarObj[varIdName].value);
+                    // $("#newCompVarPrivateDisp"+idn).html(currentCompVarObj[varName].private ? 'Yes' : 'No');
+
+                    if(thisType === "Color"){
+                        $("#compDashVarEditValButton"+idn).hide();
+                        $("#compDashVarEditColorButton"+idn).show();
+                        $('#colorPickerDash'+idn).val($("#newCompDashVarValue"+idn).val())  ;
+                    }else{
+                        $("#compDashVarEditValButton"+idn).show();
+                        $("#compDashVarEditColorButton"+idn).hide();
+                    }
+
+                    // currentCompDashSelectedVarObj[varName].changed = idn;
+
+                    $("#varRowDash_"+idn).find(".compDashVarEditValButton").on('click', function(){
+                        var idn = $(this).attr('data-idn');
+                        
+                        var varName = "";
+                        for(var nm in currentCompDashSelectedVarObj){
+                            if (currentCompDashSelectedVarObj[nm].idn === idn){
+                                varName = nm;
+                            }
+
+                        }
+                        var varType = currentCompDashSelectedVarObj[varName].type;      //$("#newCompVarTypeButton" + idn).text();
+                        if(varType === "WYSIWYG"){
+                            $('#varEditWYSIWYGModal').modal('show');
+
+                            // Sets the HTML contents of the activeEditor editor
+                            tinymce.activeEditor.setContent($("#newCompDashVarValue"+idn).val());
+
+                            $("#varEditWYSIWYGModalCurrentIdn").val(idn);
+                            $("#varEditModalCurrentScreen").val("dash");
+
+                        }else{
+                            $('#varEditModal').modal('show');
+                            $('#varValEditor').val($("#newCompDashVarValue"+idn).val());
+                            $("#varEditModalCurrentIdn").val(idn);
+                            $("#varEditModalCurrentScreen").val("dash");
+                        }
+                    });
+
+
+                    $(".compDashVarSaveButton").click(function(){
+
+                        var id = $(".selectedDashRow").parent().attr("data-id");
+                        var idn = $(this).attr("data-idn");
+                        var name = "";
+                        
+                        for(var x in currentCompDashSelectedVarObj){
+                            if (currentCompDashSelectedVarObj[x].idn == idn){
+                                name = currentCompDashSelectedVarObj[x].name
+                            }
+                        }
+
+                        var val = $("#newCompDashVarValue"+idn).val();
+                        
+                    
+                        $.ajax({
+                            type: 'post',
+                            contentType: "application/json",
+                            url: '/setDashVarVal',
+                            data: JSON.stringify({id:id, val: val, name: name})
+                        }).done(function (data) {
+                            currentCompDashSelectedVarObj[data.id+"-"+data.name].value = data.val;
+                            var html = createDashVarRowHtml(data.id+"-"+data.name)
+                            setupDashVarRowHtml(data.id+"-"+data.name, html)
+                        }).fail(function (e) {
+                            alert("Error colling service: /setDashVarVal" )
+                        });
+                        
+                    })
+
+                        //Save color back
+                    $('.colorPickerDash').on('change', function() {
+                        var idn = $(this).attr('data-idn');
+                        $("#newCompDashVarValue"+idn).val( $('#colorPickerDash'+idn).val() )
+                    })
+
+                    //Save value of text area back
+                    $('#varEditModal').on('hidden.bs.modal', function() {
+                        if($("#varEditModalCurrentScreen").val() === 'dash'){
+                            var idn = $("#varEditModalCurrentIdn").val();
+                            $("#newCompDashVarValue"+idn).val( $('#varValEditor').val() )
+                        }else{
+                            var idn = $("#varEditModalCurrentIdn").val();
+                            $("#newCompVarValue"+idn).val( $('#varValEditor').val() )
+                        }
+                        
+                    });
+
+                    //Save value of tinymce back
+                    $('#varEditWYSIWYGModal').on('hidden.bs.modal', function() {
+                        if($("#varEditModalCurrentScreen").val() === 'dash'){
+                            var idn = $("#varEditWYSIWYGModalCurrentIdn").val();
+                            $("#newCompDashVarValue"+idn).val( tinymce.activeEditor.getContent() )
+                        }else{
+                            var idn = $("#varEditWYSIWYGModalCurrentIdn").val();
+                            $("#newCompVarValue"+idn).val( tinymce.activeEditor.getContent() )
+                        }
+                        
+                    });
+                });
+                    
+            }
+
+            function createDashVarRowHtml(varIdName){
+                //new row
+                let pCompHtml = "";
+                var idn = currentCompDashSelectedVarObj[varIdName].idn
+                pCompHtml += "<div id='varRowDash_" + idn +"'" +  " class='CompDashSelectedVarRow'>";
+
+                    //add name col
+                    pCompHtml += "<div class='col-5 varNameDash'>";
+                        pCompHtml += "<i class='fa fa-pencil fa-fw compDashVarEditButton' data-idn='" + idn +"'></i>" ;
+                        pCompHtml += "<span id = 'varNameDash" + idn + "'></span>";
+                    pCompHtml += "</div>";
+
+                    //add type col
+                    var typeTxt = currentCompDashSelectedVarObj[varIdName].type;
+                
+                    //add value col
+                    pCompHtml += "<div class='col-7 varValDash'>"
+                        pCompHtml += "<span tabindex='0' id = 'varValDash" + idn + "'></span>"
+                        if(typeTxt === "Color"){
+                            pCompHtml += '<input id = "varValColorDash' + idn + '" type="color" class="colorPickerView" disabled="true" >'
+                        }
+                    pCompHtml += "</div>";
+
+                pCompHtml += "</div>";
+
+                return pCompHtml
+
+            }
+
+            //function to create a block of var input html for new vars and edits. provide index str eg "0" or "1" ...
+            function createVarDashEditHtml(currentRowCntStr){
+                var newHtml = '<div id="new_row_dash'+currentRowCntStr+'" class="d-flex varRow newVarRow">'
+
+                //new var name input
+                // newHtml += '<div class="col-5"><input id="newCompDashVarName'+currentRowCntStr+'" class="form-control newCompVarName" type="text"></div>'
+
+                newHtml += "<div class='col-5 varNameDash'>";
+                newHtml += "<span class='varNameDashEdit' id = 'varNameDashEdit" + currentRowCntStr + "'></span>";
+                newHtml += "</div>"; 
+
+                //New component variable value
+                newHtml += '<div class="col-7"><div class="compVarEditValRow">';
+                newHtml += '<input id="newCompDashVarValue'+currentRowCntStr+'" class="form-control newCompDashVarValue" type="text">';
+
+                newHtml += '<a href="#"><i id="compDashVarEditValButton'+currentRowCntStr+'" class="fa fa-expand fa-fw compDashVarEditValButton" data-idn="'+currentRowCntStr+'" ></i></a>';
+                newHtml += '<div id="compDashVarEditColorButton'+currentRowCntStr+'"  data-idn="'+currentRowCntStr+' " style="display:none;">' +
+                    '<input type="color" class="colorPickerDash" style="" data-idn='+currentRowCntStr+' id="colorPickerDash'+currentRowCntStr+'">'+
+                    '</div>';
+                newHtml += '<a href="#"><i id="compDashVarSaveButton'+currentRowCntStr+'" class="fa fa-save fa-fw compDashVarSaveButton" data-idn="'+currentRowCntStr+'" ></i></a>';
+                    
+                newHtml += '</div></div>';
+
+                return newHtml;
+            }
+
+
+
+
+
+            
             var tempCont = document.createElement("div");
             function quillGetHTML(inputDelta) {
 
                 (new Quill(tempCont)).setContents(inputDelta);
                 return tempCont.getElementsByClassName("ql-editor")[0].innerHTML;
             }
-
 
             var serverFailedCount = 0;
             serverStats();
@@ -1122,17 +1454,12 @@
 
                 //New privacy switch
                 newHtml += '<td class="col-2 newCompVarButtonRow">'
-//                    '<div class="newCompVarPrivateButtonRow">';
                 newHtml += '<label class="varFlag privacy-flag" ><input id="newCompVarPrivateInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class=" "></label>';
-//                newHtml += '</td>';
 
                 //New promoted switch
-//                newHtml += '<td class="col-2"><div class="newCompVarPrivateButtonRow">';
                 newHtml += '<label class="varFlag promoted-flag" ><input id="newCompVarPromotedInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class=" "></label>';
-//                newHtml += '</td>';
 
                 //New ask switch
-//                newHtml += '<td class="col-2"><div class="newCompVarPrivateButtonRow">';
                 newHtml += '<label class="varFlag ask-flag" ><input id="newCompVarAskInput'+currentRowCntStr+'" data-inx='+currentRowCntStr+' type="checkbox"  class=" "></label>';
                 newHtml += '</td>';
 
@@ -1149,12 +1476,10 @@
                 //New component variable value
                 newHtml += '<td class="col-5"><div class="compVarEditValRow">';
                 newHtml += '<input id="newCompVarValue'+currentRowCntStr+'" class="form-control newCompVarValue" type="text">';
-//                newHtml += '<input type="color" class="colorPicker" style="" data-idn='+currentRowCntStr+' id="colorPicker'+currentRowCntStr+'">';
 
                 newHtml += '<a href="#"><i id="compVarEditValButton'+currentRowCntStr+'" class="fa fa-expand fa-fw compVarEditValButton" data-idn="'+currentRowCntStr+'" ></i></a>';
                 newHtml += '<div id="compVarEditColorButton'+currentRowCntStr+'"  data-idn="'+currentRowCntStr+' " style="display:none;">' +
                     '<input type="color" class="colorPicker" style="" data-idn='+currentRowCntStr+' id="colorPicker'+currentRowCntStr+'">'+
-//                    '<a href="#"><i  class="fa fa-tint fa-fw compVarEditColorButton" ></i></a>' +
                     '</div>';
                 newHtml += '</td></tr>';
 
@@ -1217,12 +1542,14 @@
                         // Sets the HTML contents of the activeEditor editor
                         tinymce.activeEditor.setContent($("#newCompVarValue"+idn).val());
 
-                        $("#varEditWYSIWYGModalCutrrentIdn").val(idn);
+                        $("#varEditWYSIWYGModalCurrentIdn").val(idn);
+                        $("#varEditModalCurrentScreen").val("comp");
 
                     }else{
                         $('#varEditModal').modal('show');
                         $('#varValEditor').val($("#newCompVarValue"+idn).val());
-                        $("#varEditModalCutrrentIdn").val(idn);
+                        $("#varEditModalCurrentIdn").val(idn);
+                        $("#varEditModalCurrentScreen").val("comp");
                     }
 
                 });
@@ -1233,16 +1560,28 @@
 
                 })
 
-                //Save value of text area into #newCompVarValue
+                //Save value of text area back
                 $('#varEditModal').on('hidden.bs.modal', function() {
-                    var idn = $("#varEditModalCutrrentIdn").val();
-                    $("#newCompVarValue"+idn).val( $('#varValEditor').val() )
+                    if($("#varEditModalCurrentScreen").val() === 'dash'){
+                        var idn = $("#varEditModalCurrentIdn").val();
+                        $("#newCompDashVarValue"+idn).val( $('#varValEditor').val() )
+                    }else{
+                        var idn = $("#varEditModalCurrentIdn").val();
+                        $("#newCompVarValue"+idn).val( $('#varValEditor').val() )
+                    }
+                    
                 });
 
-                //Save value of tinymce into #newCompVarValue
+                //Save value of tinymce back
                 $('#varEditWYSIWYGModal').on('hidden.bs.modal', function() {
-                    var idn = $("#varEditWYSIWYGModalCutrrentIdn").val();
-                    $("#newCompVarValue"+idn).val( tinymce.activeEditor.getContent() )
+                    if($("#varEditModalCurrentScreen").val() === 'dash'){
+                        var idn = $("#varEditWYSIWYGModalCurrentIdn").val();
+                        $("#newCompDashVarValue"+idn).val( tinymce.activeEditor.getContent() )
+                    }else{
+                        var idn = $("#varEditWYSIWYGModalCurrentIdn").val();
+                        $("#newCompVarValue"+idn).val( tinymce.activeEditor.getContent() )
+                    }
+                    
                 });
             }
 
@@ -1337,10 +1676,6 @@
 
                     $(".breadCrumbNode").click(function(){
                         let clickedNode = $(this).attr("data-id");
-//                        $('#jstree_div').jstree('select_node',clickedNode);
-//                        $('#jstree_div').jstree(true).get_node(clickedNode, true).children('.jstree-anchor').focus();
-
-
                         $('#jstree_div').jstree("deselect_all");
                         $('#jstree_div').jstree('select_node',clickedNode);
                         $('#jstree_div').jstree(true).get_node(clickedNode, true).children('.jstree-anchor').focus();
@@ -1462,7 +1797,6 @@
                             updateLaunchLink(url);
                         }
                     }
-
 
                     if(viewmode === "read"){
                         readModeJob();
@@ -2093,12 +2427,13 @@
 
                         pCompHtml += '<input id = "varValColor' + idn + '" type="color" class="colorPickerView" disabled="true" >'
                     }
-//
+
                     pCompHtml += "</td>";
 
                     pCompHtml += "</tr>";
 
                     $("#compVariables").append(pCompHtml);
+
                     $("#varNameTd" + idn).text(varName);
                     var valText = variables[varName].value;
                     if(variables[varName].private){
@@ -2139,7 +2474,7 @@
             });
             $(".varFlagLabel-ask" ).popover({
                 animation: true,
-                content: "Ask user for the value before before component can be built",
+                content: "Ask user for the value before component can be built",
                 delay: { "show": 50, "hide": 100 },
                 trigger: 'hover',
                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
@@ -2320,8 +2655,10 @@
                                     localKey += row.substr(4) + '\n';
                                 }
                                 else if(row.substr(0,12) === 'message:url:'){
-                       //             updateLaunchLink(row.slice(12))
-
+                                    if($(".selectedDashRow").length > 0){
+                                        $(".selectedDashRow").find("img").hide();
+                                        $("#videoScreen").detach().appendTo($(".selectedDashRow").find(".dashThumb"));
+                                    }
                                 }
                                 else if(row.substr(0,16) === 'message:BuildID:'){
 
@@ -2401,16 +2738,13 @@
                             localStorage['key_' + sys] = localKey
                         }
                     }
-//                    if(localAccess !== ''  && !localStorage['access'] ){
-//                        if($('#localStoreAccessCb').is(':checked')) {
-//                            localStorage['access'] = localAccess
-//                        }
-//                    }
+
                     localKey = "";
-//                    localAccess = "";
 
                     updateResultsList(selectedNode);
-                    loadDashboard();
+
+                    // $("#videoScreen").detach().appendTo('#screenShotImageHolder');
+                    // loadDashboard();
 
                     if($("#componentsBtn").hasClass('active')){
                         //close all nodes that were opened
@@ -2426,6 +2760,13 @@
                         }
 
                     }
+                    // else if($("#dashBtn").hasClass('active')){
+
+                    //     //move video screen to dash
+                    //     if($(".selectedDashRow").length > 0){
+                    //         $("#videoScreen").detach().appendTo($(".selectedDashRow").find(".dashThumb"));
+                    //     }
+                    // }
 
                     $('#jstree_div').jstree(true).refresh(true)
                 }).fail(function (e) {
@@ -3752,8 +4093,7 @@
                     }else{
                         setWindowHeight(container.height() * currentRatio ,  false);
                     }
-                    setFormColWidth();
-
+                    
                     updateAllPopovers();
 
                 });
@@ -3874,10 +4214,9 @@
                     libTreeWidth = leftWidth;
 
                     $("#leftLibCol").css('width',leftWidth  - 2);
-//                    $("#leftCol").css('left',libTreeWidth );
+                    
                     $("#libTreePanel").css('width',leftWidth - 7);
 
-                    setFormColWidth();
                 }
             }
             setLibWindowWidth(20, container);
@@ -3894,14 +4233,6 @@
                 setWindowWidth(250, container);
             }else{
                 setWindowWidth(JSON.parse(localStorage['locTreeWidth']).width, container);
-            }
-
-            function setFormColWidth(){
-//                $("#rightCol").css("left", treeWidth + libTreeWidth + 0);
-//                $("#rightCol").css("left", treeWidth  + 0);
-//                $("#screenShotCol").css("left", treeWidth + libTreeWidth + 1);
-//                $("#rightCol").css('width',$(window).width() - (treeWidth + libTreeWidth) -5 );
-//                $("#rightCol").css('width',$(window).width() - ($("#sidebar").width() + treeWidth ) -5 );
             }
 
             //Resource file management
@@ -4076,16 +4407,6 @@
                     $('#keyList').html($(this)[0].files[0].name);
                 }
             });
-
-            //csv Key file management
-//            $('#newAccessButton').on('click', function(){
-//                $('#upload-access').click();
-//            });
-//            $('#upload-access').on('change', function() {
-//                if($(this)[0].files[0].name !== ""){
-//                    $('#accessList').html($(this)[0].files[0].name);
-//                }
-//            });
 
             //settings Style Top Page Pick event
             $('.stylePickTop').on('click', function(evt){
@@ -4322,7 +4643,7 @@
                             $("#dropdownMenuButton")[0].innerHTML = '<img id="dashSystemIcon" class="dashSystemIcon" src='+urlString+'></img>';
                             $("#dropdownMenuButton")[0].innerHTML += sysName;
                             loadDashTable(id);
-                            loadDashSystemDetails(id);
+                            // loadDashSystemDetails(id);
                             loadDashSystemFunctions(id);
 
                             localStorage['dashSystemDropItemClicked'] = JSON.stringify({ id:id, sysName:sysName }) ;
@@ -4339,12 +4660,12 @@
                 function afterDemoWelcomeModal(){
                     $('.popover').popover('hide');
                     var options = { mode: 'no-cors' };
-                    fetch('https://ezstack.systems/message?damoStarted',options).then(function (response) {
+                    fetch('https://ezstack.systems/message?demoStarted',options).then(function (response) {
                         return response.text();
                     }).then(function (html) {
                         console.log("demo started");
                     }).catch(function (err) {
-                        console.warn('Error sending https://ezstack.systems/message?damoStarted ', err);
+                        console.warn('Error sending https://ezstack.systems/message?demoStarted ', err);
                     });
 
                     $("#dashBtn").click();
@@ -4400,57 +4721,83 @@ showFloatSys()
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
-showFloatDesc()
-                        })
-                    }
-                    function showFloatDesc(){
-                        $("#dashBtn").click();
-                        floatPop("dashSystemDetails", "The systems description is displayed here.");
-                        $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
-
-                        $('#dashBoardBottomRow').animate({scrollTop: 0}, 4000);
-                        $("#floatPopOk").click(function(event){
-                            clearTimeout(floatPopOkTimeout);
-
 showFloatDashTable()
                         })
                     }
+//                     function showFloatDesc(){
+//                         $("#dashBtn").click();
+//                         floatPop("dashSystemDetails", "The systems description is displayed here.");
+//                         $("#floatPopOk").unbind();
+//                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
+
+//                         $('#dashBoardBottomRow').animate({scrollTop: 0}, 4000);
+//                         $("#floatPopOk").click(function(event){
+//                             clearTimeout(floatPopOkTimeout);
+
+// showFloatDashTable()
+//                         })
+//                     }
                     function showFloatDashTable(){
                         $("#dashBtn").click();
                         preferedPopPos = "bottom";
-                        floatPop("dashListCol","Below is a grid that displays promoted components that have been built or are ready to be built for the specified system.");
+                        floatPop("dashListCol","Below is a grid that displays web applications and services that have been built or are ready to be built for the specified system.");
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},9000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout)
-showFloatDashCompOpen();
+showFloatDashCompBuildApps();
                         })
                     }
-                    function showFloatDashCompOpen(){
+//                     function showFloatDashCompOpen(){
+//                         $("#dashBtn").click();
+//                         $(".dashContentRow")[0].click();
+//                         preferedPopPos = "bottom";
+//                         floatPop("DashOpenMenu_0","This button is used to exit the dashboard and open this component in the components view.")
+//                         $("#floatPopOk").unbind();
+//                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
+//                         $("#floatPopOk").click(function(event){
+//                             clearTimeout(floatPopOkTimeout);
+
+// showFloatDashCompBuild();
+//                         })
+//                     }
+//                     function showFloatDashCompBuild(){
+//                         $("#dashBtn").click();
+//                         $(".dashTableRow")[0].click();
+//                         preferedPopPos = "bottom";
+//                         floatPop("dashTableBuildButton_0","Clicking this button will open a prompt to build the 'prime' components. These components will install various system tools to help with building.<br><br><b class='floatPopTaskLabel'>Practise:</b> Click this build button and then click 'build' in the dialog to prime this server.")
+//                         $("#floatPopOk").unbind();
+//                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},30*1000);
+//                         $("#floatPopOk").click(function(event){
+//                             clearTimeout(floatPopOkTimeout);
+
+// showFloatStatus();
+//                         })
+//                     }
+
+                    function showFloatDashCompBuildApps(){
                         $("#dashBtn").click();
-                        $(".dashTableRow")[0].click();
-                        preferedPopPos = "bottom";
-                        floatPop("DashOpenMenu_0","This button is used to exit the dashboard and open this component in the components view.")
+//                        $(".dashTableRow")[1].click();
+                        $(".dashContentRow")[0].click();
+
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
+                        setTimeout(function(){
+                            preferedPopPos = "bottom";
+                            floatPop("dashTableBuildButton","ezStack Home is a web app that contains several web components.<br><br><b class='floatPopTaskLabel'>Practise:</b> Click this build<i class='fa  fa-wrench fa-fw'></i> button and then click 'build' in the dialog to install 'ezStack Home' on this server.")
+                            
+                            floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},60*1000);
+                        
+                            const eleObj = document.getElementById("dashTableBuildButton");
+                            eleObj.scrollIntoView(false);
+
+                        },1000)
+
+
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
+// showFloatStatus();
 
-showFloatDashCompBuild();
-                        })
-                    }
-                    function showFloatDashCompBuild(){
-                        $("#dashBtn").click();
-                        $(".dashTableRow")[0].click();
-                        preferedPopPos = "bottom";
-                        floatPop("dashTableBuildButton_0","Clicking this button will open a prompt to build the 'prime' components. These components will install various system tools to help with building.<br><br><b class='floatPopTaskLabel'>Practise:</b> Click this build button and then click 'build' in the dialog to prime this server.")
-                        $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},30*1000);
-                        $("#floatPopOk").click(function(event){
-                            clearTimeout(floatPopOkTimeout);
-
-showFloatStatus();
+showFloatVideoClick()
                         })
                     }
 
@@ -4463,44 +4810,11 @@ showFloatStatus();
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
-                            showFloatDashCompBuildApps()
-                        })
-                    }
-                    function showFloatDashCompBuildApps(){
-                        $("#dashBtn").click();
-//                        $(".dashTableRow")[1].click();
-
-                        preferedPopPos = "bottom";
-                        floatPop("dashTableBuildButton_1","Apps is a project that contains several web applications and services.<br><br><b class='floatPopTaskLabel'>Practise:</b> If the prime build is complete, click this build button and then click 'build' in the dialog to install 'Apps' on this server.")
-
-                        $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},60*1000);
-                        setTimeout(function(){
-                            const eleObj = document.getElementById("dashTableBuildButton_1");
-                            eleObj.scrollIntoView(false);
-
-                        },1000)
-
-
-                        $("#floatPopOk").click(function(event){
-                            clearTimeout(floatPopOkTimeout);
-                            showFloatVideo();
-                        })
-                    }
-                    function showFloatVideo(){
-                        $("#dashBtn").click();
-                        preferedPopPos = "left";
-                        floatPop("videoCanvas", "ezStack Builder provides a live instance of headless-chrome to aid in building your web sites. You can interact with this instance in the browser window. " +
-                            "Headless-chrome gives you a live view of your apps being built. You can scroll and click the browser window like a real browser. " +
-                            "You can also find components by clicking on the displayed web page elements. When browsing components, elements will be highlighted when a component, that created it, is selected.")
-                        $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},30000);
-                        $("#floatPopOk").click(function(event){
-                            clearTimeout(floatPopOkTimeout);
-
 showFloatStyle()
                         })
                     }
+
+//                     
                     function showFloatStyle(){
                         $("#dashBtn").click();
                         floatPop("stylePickMenu", "Both light and dark themes are available.<br><br><b class='floatPopTaskLabel'>Practise:</b> Change to dark theme if that is your preference.  ");
@@ -4633,7 +4947,7 @@ $("#componentsBtn").click();
                         $('#jstree_div').jstree("deselect_all");
                         $("#jstree_div").jstree("open_node", "local", false, true);
                         var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
-                        var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
+                        // var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
                         $("#jstree_div").jstree("open_node", sysId, false, true);
 
                         setTimeout(function(){
@@ -4658,7 +4972,7 @@ $("#componentsBtn").click();
                     function showFloatCompTreeComp2(){
                         $("#jstree_div").jstree("open_node", "local", false, true);
                         var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
-                        var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
+                        // var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
                         $("#jstree_div").jstree("open_node", sysId, false, true);
                         $('#jstree_div').jstree("deselect_all");
 
@@ -4682,7 +4996,7 @@ $("#componentsBtn").click();
                         $("#componentsBtn").click();
                         $("#jstree_div").jstree("open_node", "local", false, true);
                         var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
-                        var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
+                        // var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
                         $("#jstree_div").jstree("open_node", sysId, false, true);
                         $('#jstree_div').jstree("deselect_all");
 
@@ -4707,7 +5021,7 @@ $("#componentsBtn").click();
                         $("#componentsBtn").click();
                         $("#jstree_div").jstree("open_node", "local", false, true);
                         var sysId = $("#jstree_div").jstree("get_children_dom",'local')[0];
-                        var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
+                        // var childrens = $("#jstree_div").jstree("get_children_dom",sysId);
                         $("#jstree_div").jstree("open_node", sysId, false, true);
                         $('#jstree_div').jstree("deselect_all");
 
@@ -4723,9 +5037,24 @@ $("#componentsBtn").click();
                             clearTimeout(floatPopOkTimeout);
 
                             $("#componentsBtn").click();
-                            showFloatCompVars();
+showFloatVideo();
                         })
                     }
+                    function showFloatVideo(){
+                        // $("#dashBtn").click();
+                        preferedPopPos = "left";
+                        floatPop("videoCanvas", "ezStack Builder provides a live instance of headless-chrome to aid in building your web sites. You can interact with this instance in the browser window. " +
+                            "Headless-chrome gives you a live view of your apps being built. You can scroll and click the browser window like a real browser. " +
+                            "You can also find components by clicking on the displayed web page elements. When browsing components, elements will be highlighted when a component, that created it, is selected.")
+                        $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},30000);
+                        $("#floatPopOk").click(function(event){
+                            clearTimeout(floatPopOkTimeout);
+
+showFloatCompVars()
+                        })
+                    }
+                    
                     function showFloatCompVars(){
                         $("#componentsBtn").click();
                         $("#jstree_div").jstree("open_node", "local", false, true);
@@ -4824,7 +5153,7 @@ $("#componentsBtn").click();
                         var childrens = $("#jstree_div").jstree("get_children_dom",sysId)[1];
                         var chChildrens = $("#jstree_div").jstree("get_children_dom",childrens);
                         $('#jstree_div').jstree("deselect_all");
-                        $("#jstree_div").jstree("select_node", chChildrens[0]);
+                        $("#jstree_div").jstree("select_node", chChildrens[1]);
                         $("#codeCollapse").addClass("show");
 
                         setTimeout(function(){
@@ -4847,7 +5176,7 @@ $("#componentsBtn").click();
                         var childrens = $("#jstree_div").jstree("get_children_dom",sysId)[1];
                         var chChildrens = $("#jstree_div").jstree("get_children_dom",childrens);
                         $('#jstree_div').jstree("deselect_all");
-                        $("#jstree_div").jstree("select_node", chChildrens[0]);
+                        $("#jstree_div").jstree("select_node", chChildrens[1]);
                         $("#codeCollapse").addClass("show");
 
                         setTimeout(function(){
@@ -4870,7 +5199,7 @@ $("#componentsBtn").click();
                         var childrens = $("#jstree_div").jstree("get_children_dom",sysId)[1];
                         var chChildrens = $("#jstree_div").jstree("get_children_dom",childrens);
                         $('#jstree_div').jstree("deselect_all");
-                        $("#jstree_div").jstree("select_node", chChildrens[0]);
+                        $("#jstree_div").jstree("select_node", chChildrens[1]);
 
                         $("#codeCollapse").removeClass("show");
 
@@ -4893,7 +5222,7 @@ $("#componentsBtn").click();
                         var childrens = $("#jstree_div").jstree("get_children_dom",sysId)[1];
                         var chChildrens = $("#jstree_div").jstree("get_children_dom",childrens);
                         $('#jstree_div').jstree("deselect_all");
-                        $("#jstree_div").jstree("select_node", chChildrens[0]);
+                        $("#jstree_div").jstree("select_node", chChildrens[1]);
 
                         $("#codeCollapse").removeClass("show");
 
@@ -4916,7 +5245,7 @@ $("#componentsBtn").click();
                         var childrens = $("#jstree_div").jstree("get_children_dom",sysId)[1];
                         var chChildrens = $("#jstree_div").jstree("get_children_dom",childrens);
                         $('#jstree_div').jstree("deselect_all");
-                        $("#jstree_div").jstree("select_node", chChildrens[0]);
+                        $("#jstree_div").jstree("select_node", chChildrens[1]);
 
                         $("#codeCollapse").removeClass("show");
 
@@ -4959,33 +5288,37 @@ $("#componentsBtn").click();
                         $("#dashBtn").click();
                         $("#videoCanvas").parent().append('<div id="vidMiddle" style="position:absolute"></div>');
                         var eleJObj = $("#vidMiddle");
-                        var width = $("#videoCanvas").width();
-                        var height = $("#videoCanvas").height();
-                        eleJObj.css({'top':(height/4+30) + 'px', 'left':width/3 + 'px'});
+                        var width = $(".dashThumb").first().width();
+                        var height = $(".dashThumb").first().height();
+                        eleJObj.css({'top':(height/4+30) + 'px', 'left':width/10 + 'px'});
 
-                        $.get('/highlight', { id: "description-p" }, function(data) {});
-
-                        setTimeout(function(){
+                        setTimeout(function(){ 
+                            $(".lastBuildUrl").first().click(); 
                             preferedPopPos = "left";
                             floatPop("vidMiddle", "You can find components by clicking on elements in the browser window.<br><br><b class='floatPopTaskLabel'>Practise:</b> Click on the highlighted paragraph to find the component that built it.")
                         },500);
+                        setTimeout(function(){ 
+                            $.get('/highlight', { id: "intro-p-span" }, function(data) {});
+                        },2000);
 
                         $("#floatPopOk").unbind();
 
                         vidMiddleTimeout = setTimeout(function(){
-                            sendVideoMouseClick(width*.5/width ,height*.20/height, false);
+                            sendVideoMouseClick(width*.20/width ,height*.20/height, false);
                         },18000);
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},20000);
+
                         $("#floatPopOk").click(function(event){
                             clearTimeout(vidMiddleTimeout);
                             clearTimeout(floatPopOkTimeout);
-                            sendVideoMouseClick(width*.5/width ,height*.20/height, false);
+                            sendVideoMouseClick(width*.20/width ,height*.20/height, false);
 
                             showFloatVideoClickResults()
                         })
                     }
+
                     function showFloatVideoClickResults(){
-                        $("#dashBtn").click();
+                        // $("#dashBtn").click();
 
                         preferedPopPos = "left";
                         $("#floatPopOk").unbind();
@@ -5007,7 +5340,7 @@ $("#componentsBtn").click();
                         })
                     }
                     function showFloatVideoMatchClick(){
-                        $("#dashBtn").click();
+                        // $("#dashBtn").click();
 //
                         preferedPopPos = "left";
                         $("#floatPopOk").unbind();
@@ -5235,7 +5568,7 @@ $("#componentsBtn").click();
             //Main menu selections
             $("#dashBtn").on("click",function(){
                 localStorage["topMenuViewSelected"] = "Dashboard"
-                loadDashboard();
+                // loadDashboard();
                 hideBottom();
                 $("#componentsRowContainer").hide(200);
                 $("#buildCodeRow").hide(200);
@@ -5248,7 +5581,11 @@ $("#componentsBtn").click();
                     setWindowHeight(currentHeight, false);
 
                     //move video screen to dash
-                    $("#videoScreen").detach().appendTo('#screenshot-panel-body');
+                    $(".dashThumb").find("img").show(); 
+                    // if($(".selectedDashRow").length > 0){
+                    //     $("#videoScreen").detach().appendTo($(".selectedDashRow").find(".dashThumb"));
+                    //     $(".selectedDashRow").find("img").hide();
+                    // }        
 
                 });
                 $("#snapButton").hide();
@@ -5270,6 +5607,10 @@ $("#componentsBtn").click();
             });
             $("#componentsBtn").on("click",function(){
                 localStorage["topMenuViewSelected"] = "Components";
+                
+                //move video screen to components ui
+                $("#videoScreen").detach().appendTo('#screenShotImageHolder');
+                
                 $("#dashRow").hide(200);
                 $("#buildCodeRow").hide(200);
 
@@ -5290,9 +5631,7 @@ $("#componentsBtn").click();
 
                     setWindowHeight($(window).height(),  false);
 
-                    //move video screen to components ui
-                    $("#videoScreen").detach().appendTo('#screenShotImageHolder');
-
+                    
                 });
 
             });
@@ -5556,7 +5895,7 @@ $("#componentsBtn").click();
                         "icon" : "fa fa-check-circle-o jobRow"
                     },
                     "needfull" : {
-                        "icon" : "fa fa-play-circle-o",
+                        "icon" : "fa fa-wrench",  //play-circle-o
                         "a_attr": { class : " needfull "},
                         "li_attr": { class : " needfull "}
                     },
@@ -5714,7 +6053,7 @@ $("#componentsBtn").click();
                 currentTemplatesArr[tempNum].resize();
             }
 
-            var currentStyleName = ""
+            var currentStyleName = "";
             function setAceStyle(styleName){
                 if(styleName === "dark"){
                     scriptDisplay.setTheme("ace/theme/twilight");
@@ -6167,7 +6506,8 @@ $("#componentsBtn").click();
                 if($("#componentsBtn").hasClass('active')){
                     $("#videoScreen").detach().appendTo('#screenShotImageHolder');
                 }else{
-                    $("#videoScreen").detach().appendTo('#screenshot-panel-body');
+                    // $("#videoScreen").detach().appendTo('#screenshot-panel-body');
+                    $("#videoScreen").detach().appendTo($(".selectedDashRow").find(".dashThumb"));
                 };
                 $("#inspectMaximizeLink").show();
             });
@@ -6196,7 +6536,7 @@ $("#componentsBtn").click();
                         "icon" : "fa fa-check-circle-o jobRow"
                     },
                     "needfull" : {
-                        "icon" : "fa fa-play-circle-o",
+                        "icon" : "fa fa-wrench", //-circle-o",
                         "a_attr": { class : " needfull "},
                         "li_attr": { class : " needfull "}
                     },
@@ -6834,91 +7174,33 @@ $("#componentsBtn").click();
                 <input name="dashId" id="dashId" type="hidden" />
                 <input name="dashSys" id="dashSys" type="hidden" />
 
-
                 <div class="" id="dashRow">
 
                     <div id="" class="row top-row">
-                        <div class="col dash-panel-column" >
-                            <div class="systemDetailPanelRow">
-                                <div class="dashboardDetails">
-                                    <div class="dashboardLabel">System</div>
-                                    <div class="row">
-                                        <div class="col">
-                                            <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                Pick...
-                                            </button>
-                                            <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
-                                                <div><a class="dropdown-item" href="#">Action</a></div>
-                                            </div>
-                                        </div>
-                                        <div class="col">
-                                            <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownFuncButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                <!--<span>&#402;</span>-->
-                                                Functions
-                                            </button>
-                                            <div id="dashFuncDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownFuncButton">
-
-                                            </div>
-                                        </div>
-                                    </div>
-
-
-
-                                    <div id="dashSystemDetails" class="dashSystemDetails"></div>
-
-                                </div>
-                                <div class="dashboardDetails">
-
-
-                                </div>
-
-                            </div>
-
-                        </div>
-                        <div id='screenshot-panel-body' class="col dashVideoCol" >
-                            <div class="row" id="videoScreen">
-
-                                <div class="col videoCol">
-
-                                    <input id="launchLinkHiddenCopy"><div id="launchLink" class="videoMenuItemLeft"></div><div id="launchLinkCopyContainer"></div>
-                                    <div class="videoMenu">
-
-                                        <span>
-                                            <a id='playButton' href='#'><i class='fa fa-play fa-fw videoMenuItemRight'></i></a>
-                                            <a id='pauseButton' href='#'><i class='fa fa-pause fa-fw videoMenuItemRight'></i></a>
-                                        </span>
-                                        <a id='snapButton' href='#'><i class='fa fa-camera fa-fw videoMenuItemRight'></i></a>
-                                        <a id='videoRefreshLink' href='#'><i class='fa fa-refresh fa-fw videoMenuItemRight'></i></a>
-                                        <a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw videoMenuItemRight'></i></a>
-                                        <a id='inspectMaximizeLink' href='#' class='launchLink'><i class='fa fa-expand fa-fw videoMenuItemRight'></i></a>
-
-                                    </div>
-                                    <div><canvas id="videoCanvas"></canvas></div>
-                                    <div id="vidMenuDesc"></div>
-                                    <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <div id="componentLinks"></div><div id="vidMenuMatchNum"></div>
-                                    </button>
-                                    <div id="vidMenuMatchOverlay" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="vidMenuMatch">
-                                        <div class="col matchLinkCol">
-                                            <div id="matchLink_jstree_div"></div>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="col-2">
+                            <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Pick...
+                            </button>
+                            <div id="dashSystemsDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownMenuButton">
+                                <div><a class="dropdown-item" href="#">Action</a></div>
                             </div>
                         </div>
+                        <div class="col-2">
+                            <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="dropdownFuncButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <!--<span>&#402;</span>-->
+                                Functions
+                            </button>
+                            <div id="dashFuncDropdownMenu" class="dropdown-menu dashSystemsDropdownMenu" aria-labelledby="dropdownFuncButton">
 
+                            </div>
+                        </div>
                     </div>
                     
                     <div id ="dashBoardBottomRow" class=" dashBoardBottomRow">
                         <div id="dashListCol" class="dashListCol">
                             <!--<div class="fadeTop"></div>-->
                             <div id="dashTable" class="dashTbody"></div>
-
-                        </div>
-                        <div id="dashDetailCol" class="dashDetailCol">
-
-
-                        </div>
+                        </div>                
                     </div>
                 </div>
                 <div id="componentsRowContainer">
@@ -7000,7 +7282,7 @@ $("#componentsBtn").click();
                                                                 <thead>
                                                                 <tr class="d-flex">
                                                                    <th class="col-3 dashboardLabel">Name</th>
-                                                                    <th class="col-1 dashboardLabel center"><div class="varFlagLabel">Pri</div></th>
+                                                                    <th class="col-1 dashboardLabel center"><div >Pri</div></th>
                                                                     <!--<th class="col-2 dashboardLabel center">Type</th>-->
                                                                     <th class="col-6 dashboardLabel">Value</th>
                                                                 </tr>
@@ -7041,7 +7323,7 @@ $("#componentsBtn").click();
                             <div id="jobScreen" class="jobScreen">
                                 <div class="buttonRow">
 
-                                    <button id = "run_button" class="btn btn-default jobFormbtn"><i class="fa fa-play fa-fw"></i>Build</button>
+                                    <button id = "run_button" class="btn btn-default jobFormbtn"><i class="fa fa-wrench fa-fw"></i>Build</button>
                                     <button id = "edit_button" class="btn btn-default jobFormbtn"><i class="fa fa-pencil-square-o fa-fw"></i>Edit</button>
                                     <button id = "save_button" class="btn btn-default jobFormbtn"><i class="fa fa-floppy-o fa-fw"></i>Save</button>
                                     <button id = "cancelSave_button" class="btn btn-default jobFormbtn"><i class="fa fa-times-circle fa-fw"></i>Cancel</button>
@@ -7363,16 +7645,10 @@ $("#componentsBtn").click();
                                 <div id="buildCodeDisplay-script" class=" ace_editor ace_dark ace-twilight"></div>
                             </div>
 
-
-
                             <div id="buildCodeTemplates"></div>
 
                         </div>
-
-
-
                     </div>
-
                 </div>
 
                 <div id='bottomRow'  style="display: none" class="d-flex  nowrap   ">
@@ -7410,9 +7686,7 @@ $("#componentsBtn").click();
                     </div>
                 </div>
             </main>
-
         </div>
-
     </div>
 </body>
 <div id="DemoDoneModal" class="modal fade" role="dialog">
@@ -7580,7 +7854,7 @@ $("#componentsBtn").click();
     <div class="modal-dialog modal-run-dialog">
         <nav class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title"><i class="fa fa-play fa-fw"></i>Build</h4>
+                <h4 class="modal-title"><i class="fa fa-wrench fa-fw"></i>Build</h4>
                 <label id="buildModalTitleName"></label>
             </div>
             <div id='runConfirmationBody' class="modal-body run-model-body">
@@ -7615,19 +7889,6 @@ $("#componentsBtn").click();
                         <span class="model-label"><input name="localStoreKeyCb" id="localStoreKeyCb" value="yes" type="checkbox"/>Store key in browser?</span>
                         <!--</label>-->
                     </div>
-
-                    <!--<div class="form-group">-->
-                        <!--&lt;!&ndash;<label style="padding-left: 40px">&ndash;&gt;-->
-                        <!--<span class="model-label">AWS Access code File (.csv): <a id='newAccessButton' class='newKey' href='#'><i class="fa  fa-folder-open fa-fw"></i></a></span>-->
-                        <!--&lt;!&ndash;</label>&ndash;&gt;-->
-                        <!--<div><span id = 'accessList' class = 'keyList'></span><div style="padding-left: 10px"></div></div>-->
-                        <!--<input id="upload-access" type="file" name="key" multiple="single">-->
-                    <!--</div>-->
-                    <!--<div class="form-group">-->
-                        <!--&lt;!&ndash;<label >&ndash;&gt;-->
-                        <!--<span class="model-label"><input name="localStoreAccessCb" id="localStoreAccessCb" value="yes" type="checkbox"/>Store access code in browser?</span>-->
-                        <!--&lt;!&ndash;</label>&ndash;&gt;-->
-                    <!--</div>-->
                 </form>
             </div>
 
@@ -7635,10 +7896,7 @@ $("#componentsBtn").click();
                 <button type="button" id="runConfirmButton" class="btn btn-default jobFormbtn">Build</button>
                 <button type="button" class="btn btn-default jobFormbtn" data-dismiss="modal">Cancel</button>
             </div>
-
-
         </nav>
-
     </div>
 </div>
 <div id="copyModal" class="modal fade" role="dialog">
@@ -7990,7 +8248,8 @@ $("#componentsBtn").click();
 
         <nav class="modal-content varEditWYSIWYGModal-modal-content">
             <div id='WYSIWYGBody' class="modal-body varEditWYSIWYGModal-modal-body">
-                <input id="varEditWYSIWYGModalCutrrentIdn" type="hidden">
+                <input id="varEditWYSIWYGModalCurrentIdn" type="hidden">
+                <input id="varEditWYSIWYGModalCurrentScreen" type="hidden">
                 <br/>
                 <textarea id="varValWYSIWYGEditor" name="content"></textarea>
             </div>
@@ -8006,7 +8265,8 @@ $("#componentsBtn").click();
 
         <nav class="modal-content varEditModal-modal-content">
             <div id='varEditBody' class="modal-body varEditModal-modal-body">
-                <input id="varEditModalCutrrentIdn" type="hidden">
+                <input id="varEditModalCurrentIdn" type="hidden">
+                <input id="varEditModalCurrentScreen" type="hidden">
                 <br/>
                 <textarea id="varValEditor" class="varValEditorTextArea" name="content"></textarea>
             </div>
@@ -8022,7 +8282,35 @@ $("#componentsBtn").click();
 
         <nav class="modal-content videoModal-modal-content">
             <div id='videoBody' class="modal-body videoModal-modal-body">
+                <div class="row" id="videoScreen">
 
+                    <div class="col videoCol">
+
+                        <input id="launchLinkHiddenCopy"><div id="launchLink" class="videoMenuItemLeft"></div><div id="launchLinkCopyContainer"></div>
+                        <div class="videoMenu">
+
+                            <span>
+                                <a id='playButton' href='#'><i class='fa fa-play fa-fw videoMenuItemRight'></i></a>
+                                <a id='pauseButton' href='#'><i class='fa fa-pause fa-fw videoMenuItemRight'></i></a>
+                            </span>
+                            <a id='snapButton' href='#'><i class='fa fa-camera fa-fw videoMenuItemRight'></i></a>
+                            <a id='videoRefreshLink' href='#'><i class='fa fa-refresh fa-fw videoMenuItemRight'></i></a>
+                            <a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw videoMenuItemRight'></i></a>
+                            <a id='inspectMaximizeLink' href='#' class='launchLink'><i class='fa fa-expand fa-fw videoMenuItemRight'></i></a>
+
+                        </div>
+                        <div><canvas id="videoCanvas"></canvas></div>
+                        <div id="vidMenuDesc"></div>
+                        <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <div id="componentLinks"></div><div id="vidMenuMatchNum"></div>
+                        </button>
+                        <div id="vidMenuMatchOverlay" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="vidMenuMatch">
+                            <div class="col matchLinkCol">
+                                <div id="matchLink_jstree_div"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             </div>
             <div class="modal-footer">
