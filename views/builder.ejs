@@ -4900,11 +4900,12 @@ $("#componentsBtn").click();
                     }
                     function showFloatCompSysTitle(){
                         var childrens = $("#jstree_div").jstree("get_children_dom","local");
+                        setTimeout(function(){
+                            $('#jstree_div').jstree("deselect_all");
+                            $("#jstree_div").jstree("select_node", childrens[0].id);
+                            floatPop("sysName",  "Systems have a name ...");
+                        }, 500);
 
-                        $('#jstree_div').jstree("deselect_all");
-                        $("#jstree_div").jstree("select_node", childrens[0].id);
-
-                        floatPop("sysName",  "Systems have a name ...");
 
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},4000);
