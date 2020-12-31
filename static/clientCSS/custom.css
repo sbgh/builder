@@ -1944,7 +1944,7 @@ div#firstRow {
 
 
 .dashTableRow{
-   text-align: center;
+   /* text-align: center; */
    border-radius: 6px;
    display: flex;
    flex-wrap: wrap;

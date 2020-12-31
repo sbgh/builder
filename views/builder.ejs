@@ -5589,7 +5589,7 @@ showFloatCompVars()
                     setWindowHeight(currentHeight, false);
 
                     //move video screen to dash
-                    $(".dashThumb").find("img").show(); 
+                    // $(".dashThumb").find("img").show();  
                     // if($(".selectedDashRow").length > 0){
                     //     $("#videoScreen").detach().appendTo($(".selectedDashRow").find(".dashThumb"));
                     //     $(".selectedDashRow").find("img").hide();
@@ -5618,6 +5618,7 @@ showFloatCompVars()
                 
                 //move video screen to components ui
                 $("#videoScreen").detach().appendTo('#screenShotImageHolder');
+                $(".dashThumb").find("img").show();
                 
                 $("#dashRow").hide(200);
                 $("#buildCodeRow").hide(200);
