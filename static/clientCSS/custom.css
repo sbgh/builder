@@ -2168,6 +2168,7 @@ input.CheckboxFileList {
    white-space: nowrap;
    font-weight: bold;
    overflow: hidden;
+   width: 100%;
 }
 
 .buildCodeListItem{
@@ -2182,6 +2183,7 @@ input.CheckboxFileList {
    padding-left: 5px;
    padding-right: 5px;
    width:40px;
+   text-align: right;
 }
 .buildCodeRowCheck{
    margin-left: 5px;
@@ -2193,7 +2195,7 @@ input.CheckboxFileList {
 .buildCodeRowLastUpdated {
    width: 6em;
    text-align: right;
-   margin-left: auto;
+   /* margin-left: auto; */
    margin-right: 5px;
    padding-left: 3px;
 }
@@ -2225,6 +2227,7 @@ input.CheckboxFileList {
 
 .buildCodeRowListCol{
    max-width: 38%;
+   min-width: 250px;
    padding-right: 0px;
    padding-top: 34px;
 }

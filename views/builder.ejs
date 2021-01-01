@@ -981,6 +981,7 @@
                                             $("#componentsBtn").click();
                                             $('#jstree_div').jstree("deselect_all");
                                             $('#jstree_div').jstree('select_node',id);
+                                            $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus(); 
                                         })
 
                                         $("#row_" + id).find('.dashTableBuildButton').on('click', function(){
