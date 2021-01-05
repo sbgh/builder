@@ -6213,7 +6213,7 @@ showFloatCompVars()
                 );
             };
 
-            //call ajax /video and process the returned chunncked json video frames
+            //call ajax /video and process the returned chuncked json video frames
             function startStream(){
                // console.log("starting stream: "  );
 //                $("#playButton").hide();
@@ -6287,9 +6287,9 @@ showFloatCompVars()
                     $.get('/navigate', {url:url}, function(data) {});
                 }else{
                     pausedUrl = url;
-                    localStorage['appLink'] = url;
-                    $.get('/navigate', {url:url}, function(data) {});
                 }
+                localStorage['appLink'] = url;
+                $.get('/navigate', {url:url}, function(data) {});
             }
             $("#inspectLink").on('click', function(e){
                 $("#inspectLink").addClass('active');
