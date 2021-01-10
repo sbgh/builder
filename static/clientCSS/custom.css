@@ -1632,8 +1632,7 @@ button#vidMenuMatch, #vidMenuDesc {
 }
 
 .dashTableOpenButton{
-   width:30px;
-   /*margin-right: 10px;*/
+   
 }
 
 td.col-1.dashTableBuildItem {
@@ -1641,7 +1640,7 @@ td.col-1.dashTableBuildItem {
 }
 
 .dashTableBuildButton {
-   width:30px;
+   
 }
 
 .compVarEditValButton, .compVarEditButton, .compVarDelButton , .buildCodePickButton, .compFocusButton{
