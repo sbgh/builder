@@ -946,6 +946,7 @@
 
                                             var id = $(this).attr('data-ID');
                                             navigate($(this).text());
+                                            updateLaunchLink($(this).text());
 
                                             $("#videoScreen").detach().appendTo($("#row_" + id).find(".dashThumb")); 
                                             $(".dashThumb").find("img").show();
@@ -4661,12 +4662,12 @@
                 function afterDemoWelcomeModal(){
                     $('.popover').popover('hide');
                     var options = { mode: 'no-cors' };
-                    fetch('https://ezstack.systems/message?demoStarted',options).then(function (response) {
+                    fetch('https://ezstacksystems.com/message?demoStarted',options).then(function (response) {
                         return response.text();
                     }).then(function (html) {
                         console.log("demo started");
                     }).catch(function (err) {
-                        console.warn('Error sending https://ezstack.systems/message?demoStarted ', err);
+                        console.warn('Error sending https://ezstacksystems.com/message?demoStarted ', err);
                     });
 
                     $("#dashBtn").click();
@@ -4725,19 +4726,6 @@ showFloatSys()
 showFloatDashTable()
                         })
                     }
-//                     function showFloatDesc(){
-//                         $("#dashBtn").click();
-//                         floatPop("dashSystemDetails", "The systems description is displayed here.");
-//                         $("#floatPopOk").unbind();
-//                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
-
-//                         $('#dashBoardBottomRow').animate({scrollTop: 0}, 4000);
-//                         $("#floatPopOk").click(function(event){
-//                             clearTimeout(floatPopOkTimeout);
-
-// showFloatDashTable()
-//                         })
-//                     }
                     function showFloatDashTable(){
                         $("#dashBtn").click();
                         preferedPopPos = "bottom";
@@ -4749,36 +4737,9 @@ showFloatDashTable()
 showFloatDashCompBuildApps();
                         })
                     }
-//                     function showFloatDashCompOpen(){
-//                         $("#dashBtn").click();
-//                         $(".dashContentRow")[0].click();
-//                         preferedPopPos = "bottom";
-//                         floatPop("DashOpenMenu_0","This button is used to exit the dashboard and open this component in the components view.")
-//                         $("#floatPopOk").unbind();
-//                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
-//                         $("#floatPopOk").click(function(event){
-//                             clearTimeout(floatPopOkTimeout);
-
-// showFloatDashCompBuild();
-//                         })
-//                     }
-//                     function showFloatDashCompBuild(){
-//                         $("#dashBtn").click();
-//                         $(".dashTableRow")[0].click();
-//                         preferedPopPos = "bottom";
-//                         floatPop("dashTableBuildButton_0","Clicking this button will open a prompt to build the 'prime' components. These components will install various system tools to help with building.<br><br><b class='floatPopTaskLabel'>Practise:</b> Click this build button and then click 'build' in the dialog to prime this server.")
-//                         $("#floatPopOk").unbind();
-//                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},30*1000);
-//                         $("#floatPopOk").click(function(event){
-//                             clearTimeout(floatPopOkTimeout);
-
-// showFloatStatus();
-//                         })
-//                     }
 
                     function showFloatDashCompBuildApps(){
                         $("#dashBtn").click();
-//                        $(".dashTableRow")[1].click();
                         $(".dashContentRow")[0].click();
 
                         $("#floatPopOk").unbind();
