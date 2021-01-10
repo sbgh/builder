@@ -905,11 +905,11 @@
                                             tmpHtml += "<div class='dashItemName'>" + ddObj.comp.name + "</div>";
 
                                             tmpHtml += "<div class='dashButtons'>";
-                                                tmpHtml += "<div class='dashTableOpenButton' data-id='" + ddObj.id +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
-                                                tmpHtml += "<div class='dashTableEnableItem' data-id='" + ddObj.id +"'>" + enabledHTML +  "</div>";
-                                                tmpHtml += "<div class='dashTableBuildButton' data-id='" + ddObj.id +"'><i class='fa  fa-wrench fa-fw  '></i></div>  ";
+                                                tmpHtml += "<div id='dashTableOpenButton' class='dashTableOpenButton' data-id='" + ddObj.id +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
+                                                tmpHtml += "<div id='dashTableEnableItem' class='dashTableEnableItem' data-id='" + ddObj.id +"'>" + enabledHTML +  "</div>";
+                                                tmpHtml += "<div id='dashTableBuildButton' class='dashTableBuildButton' data-id='" + ddObj.id +"'><i class='fa  fa-wrench fa-fw  '></i></div>  ";
                                             tmpHtml += "</div>"
-                                        tmpHtml += "</div>"
+                                        tmpHtml += "</div>" 
 
                                         tmpHtml += "<div id='dashCompDescription'></div>";
                                     
@@ -1102,7 +1102,7 @@
                         pCompHtml += "</div>";
                     }
 
-                    
+
                     pCompHtml += createDashVarRowHtml(varIdName, pCompHtml);
                     setupDashVarRowHtml(varIdName, pCompHtml)
                 }
