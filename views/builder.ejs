@@ -905,9 +905,9 @@
                                             tmpHtml += "<div class='dashItemName'>" + ddObj.comp.name + "</div>";
 
                                             tmpHtml += "<div class='dashButtons'>";
-                                                tmpHtml += "<div id='dashTableOpenButton' class='dashTableOpenButton' data-id='" + ddObj.id +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
-                                                tmpHtml += "<div id='dashTableEnableItem'  class='dashTableEnableItem' data-id='" + ddObj.id +"'>" + enabledHTML +  "</div>";
-                                                tmpHtml += "<div id='dashTableBuildButton'  class='dashTableBuildButton' data-id='" + ddObj.id +"'><i class='fa  fa-wrench fa-fw  '></i></div>  ";
+                                                tmpHtml += "<div class='dashTableOpenButton' data-id='" + ddObj.id +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
+                                                tmpHtml += "<div class='dashTableEnableItem' data-id='" + ddObj.id +"'>" + enabledHTML +  "</div>";
+                                                tmpHtml += "<div class='dashTableBuildButton' data-id='" + ddObj.id +"'><i class='fa  fa-wrench fa-fw  '></i></div>  ";
                                             tmpHtml += "</div>"
                                         tmpHtml += "</div>"
 
@@ -953,7 +953,7 @@
                                             $("#row_" + id).find("img").hide();
                                         })
 
-                                        $("#row_" + id).find(".dashTableOpenButton").popover({
+                                        $("#row_" + id).find('.dashSelectedTop').find(".dashTableOpenButton").popover({ 
                                             animation: true,
                                             content: "Open "+ddObj.comp.name+" component",
                                             delay: { "show": 50, "hide": 100 },
@@ -961,7 +961,7 @@
                                             template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
                                         });
 
-                                        $("#row_" + id).find(".dashTableBuildButton").popover({
+                                        $("#row_" + id).find('.dashSelectedTop').find(".dashTableBuildButton").popover({
                                             animation: true,
                                             content: "Build "+ddObj.comp.name,
                                             delay: { "show": 50, "hide": 100 },
@@ -1093,19 +1093,18 @@
                     
                     if(currentVarCompId !== variables[varIdName].compId){
                         currentVarCompId = variables[varIdName].compId;
-                        pCompHtml += "<div id='varRowCompHeader' class='varRowCompHeader'>";
+                        pCompHtml += "<div class='varRowCompHeader'>";
                             pCompHtml += variables[varIdName].compName;
+                            pCompHtml += "<div class='dashButtons'>";
+                                pCompHtml += "<div class='dashTableOpenButton' data-id='" + currentVarCompId +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
+                                pCompHtml += "<div class='dashTableBuildButton' data-id='" + currentVarCompId +"'><i class='fa  fa-wrench fa-fw  '></i></div>  ";
+                            pCompHtml += "</div>";
                         pCompHtml += "</div>";
                     }
 
-
-                    pCompHtml += createDashVarRowHtml(varIdName, pCompHtml)
-
                     
-                    
+                    pCompHtml += createDashVarRowHtml(varIdName, pCompHtml);
                     setupDashVarRowHtml(varIdName, pCompHtml)
-
-                    
                 }
             }
 

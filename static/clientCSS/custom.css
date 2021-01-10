@@ -2048,6 +2048,10 @@ div#compDashVariables {
     overflow-x: auto;
 }
 
+.varRowCompHeader .dashButtons{
+   margin-left: auto;
+}
+
 .CompDashSelectedVarRow {
    width: 100%;
    display: flex;
@@ -2067,6 +2071,7 @@ div#compDashVariables {
    font-size: .8em;
    font-weight: 600;
    margin-top: 10px;
+   display: flex;
 }
 
 .top-row {
