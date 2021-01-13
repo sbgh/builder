@@ -76,7 +76,8 @@ const viewport = [1280,720];
 //Launch headless Chrome and enable stream
 async function startChrome() {
     async function launchChrome() {
-        return await chromeLauncher.launch({
+        return await chromeLauncher.launch({ 
+            // port: 9222,
             chromeFlags: [ "--headless",
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -86,12 +87,14 @@ async function startChrome() {
                 '--no-zygote',
                 '--single-process',
                 '--disable-gpu',
-                "--allow-running-insecure-content",
+                "--allow-running-insecure-content",   
+                // '--remote-debugging-address=0.0.0.0', 
+                // "--remote-debugging-port=9222",     
                 "--ignore-certificate-errors"] //"--enable-logging",, "--enable-low-end-device-mode" , '--window-size=800,600', --force-device-scale-factor=1.5
         });
     }
     chrome = await launchChrome();
-    console.log('Chrome debugging port running on ' + chrome.port);
+    console.log('Headless Chrome debugging port running on ' + chrome.port);
 
     const viewport = [1280,720];
 
@@ -130,7 +133,7 @@ async function startChrome() {
 
     // default url to cast
     if(Page.hasOwnProperty("startScreencast")){
-        Page.navigate({url: "https://ezStack.systems?headless"});
+        Page.navigate({url: "https://ezStacksystems.com?headless"});
 
         //start screen cast
         // Page.startScreencast({
