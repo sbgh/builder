@@ -1209,13 +1209,14 @@
 
                     $(".compDashVarSaveButton").click(function(){
 
-                        var id = $(".selectedDashRow").parent().attr("data-id");
+                        var id = ''; // $(".selectedDashRow").parent().attr("data-id");
                         var idn = $(this).attr("data-idn");
                         var name = "";
                         
                         for(var x in currentCompDashSelectedVarObj){
                             if (currentCompDashSelectedVarObj[x].idn == idn){
-                                name = currentCompDashSelectedVarObj[x].name
+                                name = currentCompDashSelectedVarObj[x].name;
+                                id = currentCompDashSelectedVarObj[x].compId
                             }
                         }
 
@@ -1228,11 +1229,16 @@
                             url: '/setDashVarVal',
                             data: JSON.stringify({id:id, val: val, name: name})
                         }).done(function (data) {
-                            currentCompDashSelectedVarObj[data.id+"-"+data.name].value = data.val;
-                            var html = createDashVarRowHtml(data.id+"-"+data.name)
-                            setupDashVarRowHtml(data.id+"-"+data.name, html)
+                            if(currentCompDashSelectedVarObj.hasOwnProperty(data.id+"-"+data.name)){
+                                currentCompDashSelectedVarObj[data.id+"-"+data.name].value = data.val;
+                                var html = createDashVarRowHtml(data.id+"-"+data.name);
+                                setupDashVarRowHtml(data.id+"-"+data.name, html)
+                            }else{
+                                alert("Error calling service: /setDashVarVal" )
+                            }
+                            
                         }).fail(function (e) {
-                            alert("Error colling service: /setDashVarVal" )
+                            alert("Error calling service: /setDashVarVal" )
                         });
                         
                     })
@@ -6844,6 +6850,7 @@ showFloatCompVars()
                     console.log(error)
                 }
             });
+
             //redirect user to ezstack when demo finishes
             $('#serverUnavailableDemoModal').on('hidden.bs.modal', function() {
                 if (currentSettings.hasOwnProperty("clientMode")){
