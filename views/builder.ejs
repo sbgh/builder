@@ -4784,7 +4784,7 @@ showFloatStatus()
                         $("#dashBtn").click();
                         floatPop("resultsStatus", "When components are being built the status of each build is displayed here.");
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},12000);
 
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
@@ -5361,7 +5361,7 @@ showFloatFoundComp()
                         // $("#componentsBtn").click();
 
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},5000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
                         // setTimeout(function(){
                         //     $("#name").focus();
                         // },500);
