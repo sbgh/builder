@@ -432,6 +432,7 @@ router.get("/navigate",function(req,res){
 router.get("/VideoClick",function(req,res){
     var xClick = req.query.x;
     var yClick = req.query.y;
+    var selectedComp = req.query.selectedComp;
 
     // var ctrlKey = req.query.ctrlKey; //not used
 
@@ -510,9 +511,9 @@ router.get("/VideoClick",function(req,res){
                     attributesObj = await DOM.getAttributes({nodeId: nodeId});
                     //console.log("got attrib");
 
-                    const matchingComponents = searchComponentProperties(attributesObj.attributes);
+                    const matchingComponents = searchComponentProperties(attributesObj.attributes, selectedComp);
 
-                    const RetObj = {domData:data, outerHtml:outerHtml, attributes:attributesObj.attributes, matchingComponents:matchingComponents.foundObjArr, matchingComponentsCount:matchingComponents.count};
+                    const RetObj = {domData:data, outerHtml:outerHtml, attributes:attributesObj.attributes, matchingComponents:matchingComponents.foundObjArr, matchingComponentsCount:matchingComponents.count, matchingSelectedComp:matchingComponents.matchingSelectedComp};
                     res.end(JSON.stringify(RetObj));
 
                    // console.log("");
@@ -532,11 +533,13 @@ router.get("/VideoClick",function(req,res){
     }
 });
 
-function searchComponentProperties(AttributesArray){
+function searchComponentProperties(AttributesArray, selectedComp){
 //return a jstree array of component ids and promoted gr/parents where the id attribute's, in a provided AttributesArray, value matches at least the first part of a component value named 'id'.
     var foundObj = {};
     var foundObjArr = [];
     var x=0;
+    var matchingSelectedComp = "";
+
     for(var key in SystemsJSON){
         if(SystemsJSON[key].comType === "job"){
             if(SystemsJSON[key].hasOwnProperty("variables")){
@@ -549,8 +552,6 @@ function searchComponentProperties(AttributesArray){
 
                         if(attribToMatch.substring(0, systemVarValue.length) === systemVarValue){
 
-                            //add the names of promoted gr/parents to each row
-                            var gpNameArr =  [];
                             var ancestors = SystemsJSON[key].ft.split("/");
                             var lastParent = '#';
                             for (var idx in ancestors) {
@@ -577,6 +578,10 @@ function searchComponentProperties(AttributesArray){
                                         lastParent = ancestors[idx];
                                     }
                                 }
+
+                                if(selectedComp === ancestors[idx]){
+                                    matchingSelectedComp = key
+                                }
                             }
 
                             x++;
@@ -600,7 +605,7 @@ function searchComponentProperties(AttributesArray){
             }
         }
     }
-    var returnObj = {count:x, foundObjArr:foundObjArr};
+    var returnObj = {count:x, foundObjArr:foundObjArr, matchingSelectedComp: matchingSelectedComp};
     return(returnObj)
 }
 

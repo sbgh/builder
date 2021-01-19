@@ -864,10 +864,13 @@
                             
                             $("#row_" + rowJson.id).find(".dashContentRow").click(function(){
                                 id = $(this).parent().attr("data-id");
-                                $(".selectedDashRow").removeClass("selectedDashRow");
-                                $(this).addClass("selectedDashRow");
-                                loadDashDetails(id)
-                                
+
+                                if(! $(this).hasClass("selectedDashRow")){
+                                    $(".selectedDashRow").removeClass("selectedDashRow");
+                                    $(this).addClass("selectedDashRow");
+                                    loadDashDetails(id)
+                                }
+                                                               
                             })                           
     
 
@@ -1093,7 +1096,7 @@
                     
                     if(currentVarCompId !== variables[varIdName].compId){
                         currentVarCompId = variables[varIdName].compId;
-                        pCompHtml += "<div class='varRowCompHeader'>";
+                        pCompHtml += "<div class='varRowCompHeader'  id='varRowCompHeader_" + currentVarCompId +"'>";
                             pCompHtml += variables[varIdName].compName;
                             pCompHtml += "<div class='dashButtons'>";
                                 pCompHtml += "<div class='dashTableOpenButton' data-id='" + currentVarCompId +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
@@ -1209,7 +1212,7 @@
 
                     $(".compDashVarSaveButton").click(function(){
 
-                        var id = ''; // $(".selectedDashRow").parent().attr("data-id");
+                        var id = ''; 
                         var idn = $(this).attr("data-idn");
                         var name = "";
                         
@@ -1305,7 +1308,7 @@
 
             }
 
-            //function to create a block of var input html for new vars and edits. provide index str eg "0" or "1" ...
+            //function to create a block of var input html for new vars and edits on the dashboard. Provide index str eg "0" or "10" ...
             function createVarDashEditHtml(currentRowCntStr){
                 var newHtml = '<div id="new_row_dash'+currentRowCntStr+'" class="d-flex varRow newVarRow">'
 
@@ -4678,6 +4681,7 @@
                     });
 
                     $("#dashBtn").click();
+                    
                     function showFloatDashMenu(){
 
                         setWindowWidth(260, container);
@@ -4692,46 +4696,13 @@
 
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-                            showFloatCPU();
+showFloatDashTable();
                         })
                         $("#floatPopStop").click(function(event){
                             $('.popover').popover('hide');
                             clearTimeout(floatPopOkTimeout);
                         })
 
-                    }
-                    function showFloatCPU(){
-                        $("#dashBtn").click();
-                        floatPop("osCPUValue", "This displays the current CPU load of your private builder server.");
-                        $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
-                        $("#floatPopOk").click(function(event){
-                            clearTimeout(floatPopOkTimeout);
-showFloatMem()
-//showFloatVideoClick()
-                        })
-                    }
-                    function showFloatMem(){
-                        $("#dashBtn").click();
-                        floatPop("osFMValue", "This shows the amount of free memory available for builder to use.");
-                        $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
-                        $("#floatPopOk").click(function(event){
-                            clearTimeout(floatPopOkTimeout);
-
-showFloatSys()
-                        })
-                    }
-                    function showFloatSys(){
-                        $("#dashBtn").click();
-                        floatPop("dropdownMenuButton", "The systems (servers) you have setup are listed here. Each system can host many applications.");
-                        $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
-                        $("#floatPopOk").click(function(event){
-                            clearTimeout(floatPopOkTimeout);
-
-showFloatDashTable()
-                        })
                     }
                     function showFloatDashTable(){
                         $("#dashBtn").click();
@@ -4744,7 +4715,7 @@ showFloatDashTable()
 showFloatDashCompBuildApps();
                         })
                     }
-
+                    
                     function showFloatDashCompBuildApps(){
                         $("#dashBtn").click();
                         $(".dashContentRow")[0].click();
@@ -4752,9 +4723,15 @@ showFloatDashCompBuildApps();
                         $("#floatPopOk").unbind();
                         setTimeout(function(){
                             preferedPopPos = "bottom";
-                            floatPop("dashTableBuildButton","ezStack Home is a web app that contains several web components.<br><br><b class='floatPopTaskLabel'>Practise:</b> Click this build<i class='fa  fa-wrench fa-fw'></i> button and then click 'build' in the dialog to install 'ezStack Home' on this server.")
+                            floatPop("dashTableBuildButton","ezStack Home is a web app that contains your web components.<br><br><b class='floatPopTaskLabel'>Practise:</b> Click this build<i class='fa  fa-wrench fa-fw'></i> button and then click 'build' in the dialog to install 'ezStack Home' on this server.")
                             
-                            floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},60*1000);
+                            floatPopOkTimeout = setTimeout(function(){
+                                $("#floatPopOk").click();
+                                if($("#resultsStatus").text() === "Idle" && currentSettings.clientMode == "demo"){
+                                    $("#dashTableBuildButton").click();
+                                    setTimeout(function(){$("#runConfirmButton").click();},1000);
+                                }
+                            },60*1000);
                         
                             const eleObj = document.getElementById("dashTableBuildButton");
                             eleObj.scrollIntoView(false);
@@ -4764,12 +4741,45 @@ showFloatDashCompBuildApps();
 
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-showFloatStatus();
-
-// showFloatVideoClick()
+showFloatCPU();
                         })
                     }
 
+
+                    function showFloatCPU(){
+                                            $("#dashBtn").click();
+                                            floatPop("osCPUValue", "This displays the current CPU load of your private builder server.");
+                                            $("#floatPopOk").unbind();
+                                            floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
+                                            $("#floatPopOk").click(function(event){
+                                                clearTimeout(floatPopOkTimeout);
+                    showFloatMem()
+                    //showFloatVideoClick()
+                                            })
+                                        }
+                    function showFloatMem(){
+                        $("#dashBtn").click();
+                        floatPop("osFMValue", "This shows the amount of free memory available for builder to use.");
+                        $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},7000);
+                        $("#floatPopOk").click(function(event){
+                            clearTimeout(floatPopOkTimeout);
+
+showFloatSys()
+                        })
+                    }
+                    function showFloatSys(){
+                                            $("#dashBtn").click();
+                                            floatPop("dropdownMenuButton", "The systems (servers) you have setup are listed here. Each system can host many applications.");
+                                            $("#floatPopOk").unbind();
+                                            floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
+                                            $("#floatPopOk").click(function(event){
+                                                clearTimeout(floatPopOkTimeout);
+showFloatStatus()
+                                            })
+                                        }
+                                        
+                    
                     function showFloatStatus(){
                         $("#dashBtn").click();
                         floatPop("resultsStatus", "When components are being built the status of each build is displayed here.");
@@ -4778,12 +4788,10 @@ showFloatStatus();
 
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-
 showFloatStyle()
                         })
                     }
-
-//                     
+    
                     function showFloatStyle(){
                         $("#dashBtn").click();
                         floatPop("stylePickMenu", "Both light and dark themes are available.<br><br><b class='floatPopTaskLabel'>Practise:</b> Change to dark theme if that is your preference.  ");
@@ -4806,11 +4814,28 @@ showFloatUser()
                             preferedPopPos = "";
                             clearTimeout(floatPopOkTimeout);
 
-$("#userMenuDrop").removeClass('show');
-                            showFloatCompMenu()
+                            $("#userMenuDrop").removeClass('show');
+showFloatVideo()
                         })
                     }
 
+                    function showFloatVideo(){
+                        // $("#dashBtn").click();
+                        preferedPopPos = "left";
+                        floatPop("videoCanvas", "ezStack Builder provides a live instance of headless-chrome to aid in building your web applications. You can interact with this instance in the browser window. " +
+                            "Headless-chrome gives you a live view of your apps being built. You can scroll and click the browser window like a real browser. " +
+                            "You can also find components by clicking on the displayed web page elements. When browsing components, elements will be highlighted when a component, that created it, is selected.")
+                        $("#floatPopOk").unbind();
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},30000);
+                        $("#floatPopOk").click(function(event){
+                            clearTimeout(floatPopOkTimeout);
+
+showFloatVideoClick()
+                        })
+                    }
+                    
+
+/* 
                     function showFloatCompMenu(){
                         $("#dashBtn").click();
                         floatPop("componentsBtn",  "The Components screen allows you to dive deeper into the code by providing a tree view of all components that are installed.")
@@ -5010,20 +5035,7 @@ $("#componentsBtn").click();
 showFloatVideo();
                         })
                     }
-                    function showFloatVideo(){
-                        // $("#dashBtn").click();
-                        preferedPopPos = "left";
-                        floatPop("videoCanvas", "ezStack Builder provides a live instance of headless-chrome to aid in building your web sites. You can interact with this instance in the browser window. " +
-                            "Headless-chrome gives you a live view of your apps being built. You can scroll and click the browser window like a real browser. " +
-                            "You can also find components by clicking on the displayed web page elements. When browsing components, elements will be highlighted when a component, that created it, is selected.")
-                        $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},30000);
-                        $("#floatPopOk").click(function(event){
-                            clearTimeout(floatPopOkTimeout);
-
-showFloatCompVars()
-                        })
-                    }
+                    
                     
                     function showFloatCompVars(){
                         $("#componentsBtn").click();
@@ -5232,6 +5244,7 @@ showFloatCompVars()
                             showFloatCompMenu2();
                         })
                     }
+                    
                     function showFloatCompMenu2(){
                         $("#componentsBtn").click();
 
@@ -5261,6 +5274,10 @@ showFloatCompVars()
                             showFloatVideoClick();
                         })
                     }
+ */                    
+
+
+
                     function showFloatVideoClick(){
                         $("#dashBtn").click();
                         $("#videoCanvas").parent().append('<div id="vidMiddle" style="position:absolute"></div>');
@@ -5313,66 +5330,70 @@ showFloatCompVars()
                             clearTimeout(matchTimeout);
                             clearTimeout(floatPopOkTimeout);
 
-                            showFloatVideoMatchClick()
+showFloatFoundComp()
                         })
                     }
-                    function showFloatVideoMatchClick(){
-                        // $("#dashBtn").click();
-//
-                        preferedPopPos = "left";
-                        $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                    
+//                     function showFloatVideoMatchClick(){
+//                         // $("#dashBtn").click();
+// //
+//                         preferedPopPos = "left";
+//                         $("#floatPopOk").unbind();
+//                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
 
-                        setTimeout(function(){
-                            $("#vidMenuMatch").dropdown('toggle');
-                        },300);
+//                         setTimeout(function(){
+//                             $("#vidMenuMatch").dropdown('toggle');
+//                         },300);
 
-                        setTimeout(function(){
-                            floatPop($(".matchTreeA-found").first().attr('id'), "Clicking on the matched row will open the component in the components view.")
-                        },500);
+//                         setTimeout(function(){
+//                             floatPop($(".matchTreeA-found").first().attr('id'), "Clicking on the matched row will open the component in the components view.")
+//                         },500);
 
-                        $("#floatPopOk").click(function(event){
-                            clearTimeout(floatPopOkTimeout);
-                            $(".matchTreeA-found").first().click();
+//                         $("#floatPopOk").click(function(event){
+//                             clearTimeout(floatPopOkTimeout);
+//                             $(".matchTreeA-found").first().click();
 
-                            showFloatFoundComp()
-                        })
-                    }
+//                             showFloatFoundComp()
+//                         })
+//                     }
+                    
                     function showFloatFoundComp(){
-                        $("#componentsBtn").click();
+                        // $("#componentsBtn").click();
 
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},5000);
+                        // setTimeout(function(){
+                        //     $("#name").focus();
+                        // },500);
                         setTimeout(function(){
-                            $("#name").focus();
-                        },500);
-                        setTimeout(function(){
-                            preferedPopPos = "right";
-                            floatPop("name", "This is the matching component.");
+                            preferedPopPos = "left";
+                            floatPop("compDashVariables", "The text of the paragraph can be changed by editing the highlighted variable.");
 
                         },1000);
 
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
 
-                            showFloatFoundCompVar()
+showFloatEnd()
                         })
                     }
-                    function showFloatFoundCompVar(){
-                        $("#componentsBtn").click();
-                        $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
-                        setTimeout(function(){
-                            preferedPopPos = "top";
-                            floatPop("compVariables", "The text of the paragraph can be edited here.")
-                        },500);
 
-                        $("#floatPopOk").click(function(event){
-                            clearTimeout(floatPopOkTimeout);
 
-                            showFloatEnd()
-                        })
-                    }
+                    // function showFloatFoundCompVar(){
+                    //     $("#componentsBtn").click();
+                    //     $("#floatPopOk").unbind();
+                    //     floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
+                    //     setTimeout(function(){
+                    //         preferedPopPos = "top";
+                    //         floatPop("compVariables", "The text of the paragraph can be edited here.")
+                    //     },500);
+
+                    //     $("#floatPopOk").click(function(event){
+                    //         clearTimeout(floatPopOkTimeout);
+
+                    //         showFloatEnd()
+                    //     })
+                    // }
 
 
                     function showFloatEnd(){
@@ -5384,10 +5405,6 @@ showFloatCompVars()
 
                     showFloatDashMenu();
                 }
-
-//                $("#osCPUValue").click(function(evt){
-//                    afterDemoWelcomeModal();
-//                })
 
                 var floatPopOkTimeout;
                 var preferedPopPos = "";
@@ -6551,29 +6568,65 @@ showFloatCompVars()
 
                     var selectedMatchNode = data.selected[0];
 
-                    if( ! $("#componentsBtn").hasClass('active')){
-                        $("#componentsBtn").click();
+                    if(  $("#componentsBtn").hasClass('active')){
+
+                        setTimeout(function(){
+                            $('#jstree_div').jstree("deselect_all");
+                            $('#jstree_div').jstree('select_node', selectedMatchNode);
+                            $('#jstree_div').jstree(true).get_node(selectedMatchNode, true).children('.jstree-anchor').focus();
+                        }, 500);
+
+                    }else{
+
+                        // const eleObj = document.getElementById("varRowCompHeader_" + selectedMatchNode);
+                        // eleObj.scrollIntoView(false);
                     }
-                    setTimeout(function(){
-                        $('#jstree_div').jstree("deselect_all");
-                        $('#jstree_div').jstree('select_node', selectedMatchNode);
-                        $('#jstree_div').jstree(true).get_node(selectedMatchNode, true).children('.jstree-anchor').focus();
-                    }, 500);
                 });
 
             function sendVideoMouseClick(x ,y, ctrlKey){
-                $.get("/VideoClick",{x:x, y:y, ctrlKey:ctrlKey},function(resp){
+
+
+                var selectedComp = "";
+                if(  $("#componentsBtn").hasClass('active')){
+                    selectedComp = $("#id").val();
+                }else{
+                    selectedComp = $(".selectedDashRow").parent().attr("data-id");                                
+                }
+
+                $.get("/VideoClick",{x:x, y:y, ctrlKey:ctrlKey, selectedComp:selectedComp},function(resp){ 
 
                     var respObj = JSON.parse(resp);
                     if(!respObj.hasOwnProperty('attributes')) {
 
                     }else{
+
+if(respObj.hasOwnProperty('matchingSelectedComp')){
+    const element = document.getElementById("varRowCompHeader_" + respObj.matchingSelectedComp);
+    if (element){
+        // eleObj.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
+
+        const elementTop = element.offsetHeight ;
+
+        const compDashVariables = document.getElementById('compDashVariables');
+        const middle = element.offsetTop  - (compDashVariables.offsetHeight / 2);
+
+        compDashVariables.scrollTo(0, middle);
+
+        $(".varRowCompHeader").css({"font-size":".8em"})
+        $("#varRowCompHeader_" + respObj.matchingSelectedComp ).css({"font-size":"1.2em"})    
+    }
+}
+
+
                         var inspectAttributes = respObj.attributes;
                         var inspectHtml = respObj.outerHtml;
                         var inspectDomObjDesc = respObj.domData.object.description
                         var matchingComponents = respObj.matchingComponents;
                         var matchingComponentsCount = respObj.matchingComponentsCount;
                         var idHtml =  '<div id="codeInspectLabel" class="codeInspectLabel">' + inspectDomObjDesc+ '</div>';
+
+
+
 
                         $("#componentLinks").html(idHtml);
 
@@ -6595,6 +6648,10 @@ showFloatCompVars()
                             $("#vidMenuDesc").html("");
                             $("#vidMenuMatchNum").html(" ("+ matchingComponentsCount.toString() +")")
                         }
+                    
+                    
+                    
+                    
                     }
                 })
             }
