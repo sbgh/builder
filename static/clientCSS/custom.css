@@ -2043,7 +2043,7 @@ div#dashCompDescription {
 div#compDashVariables {
    display: flex;
    flex-direction: column;
-   max-height: 400px;
+   max-height: 300px;
     overflow-x: auto;
 }
 
@@ -2064,6 +2064,18 @@ div#compDashVariables {
    font-size: .8em;
    height: 20px;
 }
+
+.askMarker{
+   display: none;
+}
+
+.dashAskVarRow{
+   color: red;
+}
+.dashAskVarRow .askMarker{
+   display: inline;
+}
+
 
 .varRowCompHeader {
    text-align: left;

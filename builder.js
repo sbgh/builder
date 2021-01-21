@@ -4175,11 +4175,12 @@ router.get("/ClosestRerunnableAn",function(req,res){
 
                 if(BuildCode.hasOwnProperty(SystemsJSON[id].buildCode.linkArr[0])){
 
-                    var hasParentRun = SystemsJSON[SystemsJSON[id].parent].hasOwnProperty("lastBuild") ? true : false
-                    var isParentSystem = SystemsJSON[SystemsJSON[id].parent].comType === "system" ? true : false
-                    if(BuildCode[SystemsJSON[id].buildCode.linkArr[0]].rerunnable === 1 && (hasParentRun || isParentSystem)){//this id is rerunnable and its parent has run (or a system)
+                    var hasParentRun = SystemsJSON[SystemsJSON[id].parent].hasOwnProperty("lastBuild") ? true : false;
+                    var isParentSystem = SystemsJSON[SystemsJSON[id].parent].comType === "system" ? true : false;
+                    var isParentDisabled = SystemsJSON[SystemsJSON[id].parent].enabled !== 1 ? true : false;
+                    if(BuildCode[SystemsJSON[id].buildCode.linkArr[0]].rerunnable === 1 && (hasParentRun || isParentSystem || isParentDisabled)){//this id is rerunnable and its parent has run (or a system)
                         ClosestRerunnableAn = SystemsJSON[id]; //set this as the closest rerunnable
-                        ClosestRerunnableAnID = id
+                        ClosestRerunnableAnID = id 
                     }else{ //else search all ancestors
                         const ftArray = SystemsJSON[id].ft.split("/");
                         //cycle through ancestors in reverse to find id of closest rerunnable ancestor or closest unrun ancestor which ever is higher
@@ -4563,7 +4564,7 @@ router.get("/getDashDetails",function(req,res){
                             //create tmpVar {compId - the requested key, name - name of component}
                             var tmpObj = {compId:key, name:SystemsJSON[key].name}
 
-                            //create vObj to store the current var
+                            //create vObj to store the current var 
                             var vObj = {};
                             vObj[ind] = SystemsJSON[key].variables[ind] 
 
@@ -4656,7 +4657,9 @@ router.get("/getTempTypes",function(req,res){
     res.end(JSON.stringify(resJSON));
 });
 
-/* router.get("/massupdate",function(req,res){
+/*
+
+ router.get("/massupdate",function(req,res){
 
 //mass updates and fix build codes
 
@@ -4730,7 +4733,8 @@ router.get("/getTempTypes",function(req,res){
     res.write("</body></html>");
     res.end("");
 
-}); */
+}); 
+*/
 
 router.get("/snapComp",function(req,res){
     const jobId = req.query.id;

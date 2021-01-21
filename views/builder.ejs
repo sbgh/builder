@@ -874,195 +874,6 @@
                             })                           
     
 
-                            function loadDashDetails(id){
-
-                                $.ajax({
-                                    type: 'get',
-                                    data: {id:id},
-                                    dataType : "text",
-                                    headers: {
-                                        "content-type": "application/json"
-                                    },
-                                    url: '/getDashDetails',
-                                    id: id,
-                                    success : function(data) {
-
-                                        const ddObj = JSON.parse(data);
-
-                                        const id = ddObj.id;
-
-                                        var enabledHTML = "";
-                                        $(".dashSelected").html("");
-                                        if(ddObj.comp.hasOwnProperty("enabled")){
-                                            if(ddObj.comp.enabled == 1){
-                                                enabledHTML = "<i class='fa fa-check-circle-o fa-fw DashListRowPass' data-checked='false' ></i>";
-                                                enableText = "Click to disable";
-                                            }else{
-                                                enabledHTML = "<i class='fa fa-times-circle-o fa-fw DashListRowFail' data-checked='true'></i>";
-                                                enableText = "Click to enable";
-                                            }
-                                        }
-
-                                        var tmpHtml = ""
-                                        tmpHtml += "<div class='dashSelectedTop'>";
-                                            tmpHtml += "<div class='dashItemName'>" + ddObj.comp.name + "</div>";
-
-                                            tmpHtml += "<div class='dashButtons'>";
-                                                tmpHtml += "<div id='dashTableOpenButton' class='dashTableOpenButton' data-id='" + ddObj.id +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
-                                                tmpHtml += "<div id='dashTableEnableItem' class='dashTableEnableItem' data-id='" + ddObj.id +"'>" + enabledHTML +  "</div>";
-                                                tmpHtml += "<div id='dashTableBuildButton' class='dashTableBuildButton' data-id='" + ddObj.id +"'><i class='fa  fa-wrench fa-fw  '></i></div>  ";
-                                            tmpHtml += "</div>"
-                                        tmpHtml += "</div>" 
-
-                                        tmpHtml += "<div id='dashCompDescription'></div>";
-                                    
-                                        tmpHtml += "<div id='dashCompUrls'>";
-                                            for(let ui in ddObj.lastBuildUrlsArr){
-                                                tmpHtml += "<div class='lastBuildUrl' data-id='" + ddObj.id +"'>"+ddObj.lastBuildUrlsArr[ui]+"</div>";
-                                            }
-                                        tmpHtml += "</div>";
-
-                                        tmpHtml += "<div id='compDashVariables'></div>";                                       
-
-
-                                        //build currentCompDashSelectedVarObj and add idn index, name, compName, compId
-                                        var y=0;
-                                        currentCompDashSelectedVarObj = {};
-                                        for(let idn in ddObj.proVarArr){
-                                            let name = Object.getOwnPropertyNames(ddObj.proVarArr[idn].var)[0];
-                                            let compId = ddObj.proVarArr[idn].compId
-                                            currentCompDashSelectedVarObj[compId + '-' + name] = ddObj.proVarArr[idn].var[name];
-                                            currentCompDashSelectedVarObj[compId + '-' + name].idn = idn;
-                                            currentCompDashSelectedVarObj[compId + '-' + name].name = name;
-                                            currentCompDashSelectedVarObj[compId + '-' + name].compName = ddObj.proVarArr[idn].name;
-                                            currentCompDashSelectedVarObj[compId + '-' + name].compId = ddObj.proVarArr[idn].compId;
-                                        }
-
-                                        $("#row_" + id).find(".dashSelected" ).show();
-
-                                        $("#row_" + id).find(".dashSelected" ).html( tmpHtml )
-
-                                        loadVarDashSelected(currentCompDashSelectedVarObj, "row_" + id );
-                                        
-
-                                        $("#row_" + id).find('.lastBuildUrl').on('click', function(){
-
-                                            var id = $(this).attr('data-ID');
-                                            navigate($(this).text());
-                                            updateLaunchLink($(this).text());
-
-                                            $("#videoScreen").detach().appendTo($("#row_" + id).find(".dashThumb")); 
-                                            $(".dashThumb").find("img").show();
-                                            $("#row_" + id).find("img").hide();
-                                        })
-
-                                        $("#row_" + id).find('.dashSelectedTop').find(".dashTableOpenButton").popover({ 
-                                            animation: true,
-                                            content: "Open "+ddObj.comp.name+" component",
-                                            delay: { "show": 50, "hide": 100 },
-                                            trigger: 'hover',
-                                            template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
-                                        });
-
-                                        $("#row_" + id).find('.dashSelectedTop').find(".dashTableBuildButton").popover({
-                                            animation: true,
-                                            content: "Build "+ddObj.comp.name,
-                                            delay: { "show": 50, "hide": 100 },
-                                            trigger: 'hover',
-                                            template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
-                                        });
-
-                                        $("#row_" + id).find(".dashTableEnableItem" ).popover({  
-                                            animation: true,
-                                            content: enableText + " "+ddObj.comp.name,
-                                            delay: { "show": 50, "hide": 100 },
-                                            trigger: 'hover',
-                                            template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
-                                        });
-                                                      
-                                        $("#row_" + id).find('.dashTableOpenButton').on('click', function(){
-                                            var id = $(this).attr('data-ID');
-                                            $("#componentsBtn").click();
-                                            $('#jstree_div').jstree("deselect_all");
-                                            $('#jstree_div').jstree('select_node',id);
-                                            $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus(); 
-                                        })
-
-                                        $("#row_" + id).find('.dashTableBuildButton').on('click', function(){
-                                            var id = $(this).attr('data-ID');
-                                            $("#dashId").val(id);
-                                            $.get('/Jobs', {id: id}, function (data) {
-                                                var sys = data[0].ft.split("/")[1];
-                                                    $("#dashSys").val(sys);
-                                                runJob(id, sys);
-                                            })
-
-                                        });
-
-                                        $("#row_" + id).find('.dashTableEnableItem').on('click', function(){
-                                                var id = $(this).attr('data-ID');
-                                                var cCheck = $(this).find( "i" ).attr('data-checked');
-
-                                                const checked = {id:id, checked: cCheck};
-
-                                            $.ajax({
-                                                type: 'get',
-                                                data: checked,
-                                                dataType : "text",
-                                                headers: {
-                                                    "content-type": "application/json"
-                                                },
-                                                url: '/setEnable',
-                                                id: id,
-                                                success : function(data) {
-
-                                                    const enabledJson = JSON.parse(data);
-                                                    const en = enabledJson.enabled;
-                                                    const id = $(this)[0].id;
-
-                                                    if (en === 1){
-                                                        // $("#row_"+id + " .dashTableBuildButton").show();
-                                                        $("#row_"+id + " .dashTableEnableItem > i.fa").removeClass('fa-times-circle-o').removeClass('DashListRowFail').addClass('fa-check-circle-o').addClass('DashListRowPass');
-                                                        $("#row_"+id + " .dashTableEnableItem > i.fa").attr('data-checked',"false" );
-                                                    }else{
-                                                        // $("#row_"+id + " .dashTableBuildButton").hide();
-                                                        $("#row_"+id + " .dashTableEnableItem > i.fa").removeClass('fa-check-circle-o').removeClass('DashListRowPass').addClass('fa-times-circle-o').addClass('DashListRowFail');
-                                                        $("#row_"+id + " .dashTableEnableItem > i.fa").attr('data-checked',"true" );
-                                                    }
-                                                },
-                                                error : function(error) {
-                                                    alert("Error changing enable property for this component");
-                                                    console.log(error)
-                                                }
-                                            })
-                                        });
-                                                                            
-                                        dashCompDescription = new Quill('#dashCompDescription', {
-                                            theme: 'snow',
-                                            modules: {
-                                                "toolbar": false
-                                            }
-                                        });
-                                        dashCompDescription.enable(false);
-                                        var description = ddObj.comp.description;
-                                        if(description.hasOwnProperty("ops")){
-                                            dashCompDescription.setContents(description.ops)
-                                        }else{
-                                            dashCompDescription.setContents(
-                                                [{ insert:  description },
-                                                    { insert: '\n' }]
-                                            );
-                                        };
-                                    
-                                    
-                                    },
-                                    error : function(error) {
-                                        alert("Error calling /getDashDetails");
-                                        console.log(error)
-                                    }
-                                })
-                            }
-
                             if(!rowJson.enabled){
                                  $("#row_"+ rowJson.id + " .dashTableBuildButton").hide();
                              }
@@ -1083,6 +894,195 @@
             }
 
             var currentCompDashSelectedVarObj = {};
+
+            function loadDashDetails(id){
+
+                $.ajax({
+                type: 'get',
+                data: {id:id},
+                dataType : "text",
+                headers: {
+                    "content-type": "application/json"
+                },
+                url: '/getDashDetails',
+                id: id,
+                success : function(data) {
+
+                    const ddObj = JSON.parse(data);
+
+                    const id = ddObj.id;
+
+                    var enabledHTML = "";
+                    $(".dashSelected").html("");
+                    if(ddObj.comp.hasOwnProperty("enabled")){
+                        if(ddObj.comp.enabled == 1){
+                            enabledHTML = "<i class='fa fa-check-circle-o fa-fw DashListRowPass' data-checked='false' ></i>";
+                            enableText = "Click to disable";
+                        }else{
+                            enabledHTML = "<i class='fa fa-times-circle-o fa-fw DashListRowFail' data-checked='true'></i>";
+                            enableText = "Click to enable";
+                        }
+                    }
+
+                    var tmpHtml = ""
+                    tmpHtml += "<div class='dashSelectedTop'>";
+                        tmpHtml += "<div class='dashItemName'>" + ddObj.comp.name + "</div>";
+
+                        tmpHtml += "<div class='dashButtons'>";
+                            tmpHtml += "<div id='dashTableOpenButton' class='dashTableOpenButton' data-id='" + ddObj.id +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
+                            tmpHtml += "<div id='dashTableEnableItem' class='dashTableEnableItem' data-id='" + ddObj.id +"'>" + enabledHTML +  "</div>";
+                            tmpHtml += "<div id='dashTableBuildButton' class='dashTableBuildButton' data-id='" + ddObj.id +"'><i class='fa  fa-wrench fa-fw  '></i></div>  ";
+                        tmpHtml += "</div>"
+                    tmpHtml += "</div>" 
+
+                    tmpHtml += "<div id='dashCompDescription'></div>";
+                
+                    tmpHtml += "<div id='dashCompUrls'>";
+                        for(let ui in ddObj.lastBuildUrlsArr){
+                            tmpHtml += "<div class='lastBuildUrl' data-id='" + ddObj.id +"'>"+ddObj.lastBuildUrlsArr[ui]+"</div>";
+                        }
+                    tmpHtml += "</div>";
+
+                    tmpHtml += "<div id='compDashVariables'></div>";                                       
+
+
+                    //build currentCompDashSelectedVarObj and add idn index, name, compName, compId
+                    var y=0;
+                    currentCompDashSelectedVarObj = {};
+                    for(let idn in ddObj.proVarArr){
+                        let name = Object.getOwnPropertyNames(ddObj.proVarArr[idn].var)[0];
+                        let compId = ddObj.proVarArr[idn].compId
+                        currentCompDashSelectedVarObj[compId + '-' + name] = ddObj.proVarArr[idn].var[name];
+                        currentCompDashSelectedVarObj[compId + '-' + name].idn = idn;
+                        currentCompDashSelectedVarObj[compId + '-' + name].name = name;
+                        currentCompDashSelectedVarObj[compId + '-' + name].compName = ddObj.proVarArr[idn].name;
+                        currentCompDashSelectedVarObj[compId + '-' + name].compId = ddObj.proVarArr[idn].compId;
+                    }
+
+                    $("#row_" + id).find(".dashSelected" ).show();
+
+                    $("#row_" + id).find(".dashSelected" ).html( tmpHtml );
+
+                    loadVarDashSelected(currentCompDashSelectedVarObj, "row_" + id );
+                    
+                    $("#row_" + id).find('.lastBuildUrl').on('click', function(){
+
+                        var id = $(this).attr('data-ID');
+                        navigate($(this).text());
+                        updateLaunchLink($(this).text());
+
+                        $("#videoScreen").detach().appendTo($("#row_" + id).find(".dashThumb")); 
+                        $(".dashThumb").find("img").show();
+                        $("#row_" + id).find("img").hide();
+                    })
+
+                    $("#row_" + id).find('.dashSelectedTop').find(".dashTableOpenButton").popover({ 
+                        animation: true,
+                        content: "Open "+ddObj.comp.name+" component",
+                        delay: { "show": 50, "hide": 100 },
+                        trigger: 'hover',
+                        template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                    });
+
+                    $("#row_" + id).find('.dashSelectedTop').find(".dashTableBuildButton").popover({
+                        animation: true,
+                        content: "Build "+ddObj.comp.name,
+                        delay: { "show": 50, "hide": 100 },
+                        trigger: 'hover',
+                        template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                    });
+
+                    $("#row_" + id).find(".dashTableEnableItem" ).popover({  
+                        animation: true,
+                        content: enableText + " "+ddObj.comp.name,
+                        delay: { "show": 50, "hide": 100 },
+                        trigger: 'hover',
+                        template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                    });
+                                
+                    $("#row_" + id).find('.dashTableOpenButton').on('click', function(){
+                        var id = $(this).attr('data-ID');
+                        $("#componentsBtn").click();
+                        $('#jstree_div').jstree("deselect_all");
+                        $('#jstree_div').jstree('select_node',id);
+                        $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus(); 
+                    })
+
+                    $("#row_" + id).find('.dashTableBuildButton').on('click', function(){
+                        var id = $(this).attr('data-ID');
+                        $("#dashId").val(id);
+                        $.get('/Jobs', {id: id}, function (data) {
+                            var sys = data[0].ft.split("/")[1];
+                                $("#dashSys").val(sys);
+                            runJob(id, sys);
+                        })
+
+                    });
+
+                    $("#row_" + id).find('.dashTableEnableItem').on('click', function(){
+                            var id = $(this).attr('data-ID');
+                            var cCheck = $(this).find( "i" ).attr('data-checked');
+
+                            const checked = {id:id, checked: cCheck};
+
+                        $.ajax({
+                            type: 'get',
+                            data: checked,
+                            dataType : "text",
+                            headers: {
+                                "content-type": "application/json"
+                            },
+                            url: '/setEnable',
+                            id: id,
+                            success : function(data) {
+
+                                const enabledJson = JSON.parse(data);
+                                const en = enabledJson.enabled;
+                                const id = $(this)[0].id;
+
+                                if (en === 1){
+                                    // $("#row_"+id + " .dashTableBuildButton").show();
+                                    $("#row_"+id + " .dashTableEnableItem > i.fa").removeClass('fa-times-circle-o').removeClass('DashListRowFail').addClass('fa-check-circle-o').addClass('DashListRowPass');
+                                    $("#row_"+id + " .dashTableEnableItem > i.fa").attr('data-checked',"false" );
+                                }else{
+                                    // $("#row_"+id + " .dashTableBuildButton").hide();
+                                    $("#row_"+id + " .dashTableEnableItem > i.fa").removeClass('fa-check-circle-o').removeClass('DashListRowPass').addClass('fa-times-circle-o').addClass('DashListRowFail');
+                                    $("#row_"+id + " .dashTableEnableItem > i.fa").attr('data-checked',"true" );
+                                }
+                            },
+                            error : function(error) {
+                                alert("Error changing enable property for this component");
+                                console.log(error)
+                            }
+                        })
+                    });
+                                                        
+                    dashCompDescription = new Quill('#dashCompDescription', {
+                        theme: 'snow',
+                        modules: {
+                            "toolbar": false
+                        }
+                    });
+                    dashCompDescription.enable(false);
+                    var description = ddObj.comp.description;
+                    if(description.hasOwnProperty("ops")){
+                        dashCompDescription.setContents(description.ops)
+                    }else{
+                        dashCompDescription.setContents(
+                            [{ insert:  description },
+                                { insert: '\n' }]
+                        );
+                    };
+                
+                
+                },
+                error : function(error) {
+                    alert("Error calling /getDashDetails");
+                    console.log(error)
+                }
+            })
+            }
+
             function loadVarDashSelected(variables, rowId){
                 var currentVarCompId = "";
 
@@ -1279,16 +1279,20 @@
                     
             }
 
-            function createDashVarRowHtml(varIdName){
+            function createDashVarRowHtml(varIdName){ 
                 //new row
                 let pCompHtml = "";
-                var idn = currentCompDashSelectedVarObj[varIdName].idn
-                pCompHtml += "<div id='varRowDash_" + idn +"'" +  " class='CompDashSelectedVarRow'>";
+                var idn = currentCompDashSelectedVarObj[varIdName].idn;
+                if(! currentCompDashSelectedVarObj[varIdName].ask){
+                    pCompHtml += "<div id='varRowDash_" + idn +"'" +  " class='CompDashSelectedVarRow'>";
+                }else{
+                    pCompHtml += "<div id='varRowDash_" + idn +"'" +  " class='CompDashSelectedVarRow dashAskVarRow'>";
+                }
 
                     //add name col
                     pCompHtml += "<div class='col-5 varNameDash'>";
                         pCompHtml += "<i class='fa fa-pencil fa-fw compDashVarEditButton' data-idn='" + idn +"'></i>" ;
-                        pCompHtml += "<span id = 'varNameDash" + idn + "'></span>";
+                        pCompHtml += "<span id = 'varNameDash" + idn + "'></span><span class='askMarker'>*</span>";
                     pCompHtml += "</div>";
 
                     //add type col
@@ -2755,9 +2759,6 @@
 
                     updateResultsList(selectedNode);
 
-                    // $("#videoScreen").detach().appendTo('#screenShotImageHolder');
-                    // loadDashboard();
-
                     if($("#componentsBtn").hasClass('active')){
                         //close all nodes that were opened
                         for(var x in closedNodeList){
@@ -2771,15 +2772,11 @@
                             $('#jstree_div').jstree(true).get_node(buildIDRunning, true).children('.jstree-anchor').focus();
                         }
 
+                    }else if($("#dashBtn").hasClass('active')){
+                        if($(".selectedDashRow").length > 0){
+                            loadDashDetails($(".selectedDashRow").parent().attr("data-id"))
+                        }                        
                     }
-                    // else if($("#dashBtn").hasClass('active')){
-
-                    //     //move video screen to dash
-                    //     if($(".selectedDashRow").length > 0){
-                    //         $("#videoScreen").detach().appendTo($(".selectedDashRow").find(".dashThumb"));
-                    //     }
-                    // }
-
                     $('#jstree_div').jstree(true).refresh(true)
                 }).fail(function (e) {
 
@@ -5312,7 +5309,6 @@ showFloatVideo();
                     }
 
                     function showFloatVideoClickResults(){
-                        // $("#dashBtn").click();
 
                         preferedPopPos = "left";
                         $("#floatPopOk").unbind();
@@ -6578,13 +6574,11 @@ showFloatEnd()
 
                     }else{
 
-                        // const eleObj = document.getElementById("varRowCompHeader_" + selectedMatchNode);
-                        // eleObj.scrollIntoView(false);
+
                     }
                 });
 
             function sendVideoMouseClick(x ,y, ctrlKey){
-
 
                 var selectedComp = "";
                 if(  $("#componentsBtn").hasClass('active')){
@@ -6593,6 +6587,7 @@ showFloatEnd()
                     selectedComp = $(".selectedDashRow").parent().attr("data-id");                                
                 }
 
+                $(".varRowCompHeader").css({"font-size":".8em"})
                 $.get("/VideoClick",{x:x, y:y, ctrlKey:ctrlKey, selectedComp:selectedComp},function(resp){ 
 
                     var respObj = JSON.parse(resp);
@@ -6600,23 +6595,21 @@ showFloatEnd()
 
                     }else{
 
-if(respObj.hasOwnProperty('matchingSelectedComp')){
-    const element = document.getElementById("varRowCompHeader_" + respObj.matchingSelectedComp);
-    if (element){
-        // eleObj.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
+                        if(respObj.hasOwnProperty('matchingSelectedComp')){
+                            const element = document.getElementById("varRowCompHeader_" + respObj.matchingSelectedComp);
+                            if (element){
+                               
+                                const elementTop = element.offsetHeight ;
 
-        const elementTop = element.offsetHeight ;
+                                const compDashVariables = document.getElementById('compDashVariables');
+                                const middle = element.offsetTop  - (compDashVariables.offsetHeight / 2);
 
-        const compDashVariables = document.getElementById('compDashVariables');
-        const middle = element.offsetTop  - (compDashVariables.offsetHeight / 2);
+                                compDashVariables.scrollTo(0, middle);
 
-        compDashVariables.scrollTo(0, middle);
-
-        $(".varRowCompHeader").css({"font-size":".8em"})
-        $("#varRowCompHeader_" + respObj.matchingSelectedComp ).css({"font-size":"1.2em"})    
-    }
-}
-
+                                $(".varRowCompHeader").css({"font-size":".8em"})
+                                $("#varRowCompHeader_" + respObj.matchingSelectedComp ).css({"font-size":"1.2em"})    
+                            }
+                        }
 
                         var inspectAttributes = respObj.attributes;
                         var inspectHtml = respObj.outerHtml;
@@ -8263,7 +8256,7 @@ if(respObj.hasOwnProperty('matchingSelectedComp')){
                 <h2>Welcome to ezStack Builder Demo</h2>
                 <hr class="welcome-hr">
                 <p>
-                    In this 10 minute guided tour you will build a web software stack and deploy some applications. This ezStack Builder server will end in 15 minutes.
+                    In this 5 minute guided tour you will build a web software stack and deploy some applications. This ezStack Builder server will end in 15 minutes.
                 </p>
                 <p>
                     For demonstration purposes authentication is not required and the target server is the same as this ezStack Builder demo server (localhost).

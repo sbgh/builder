@@ -683,6 +683,10 @@ div#dashRow {
     border-color: #e6e6e6;
 }
 
+.compVarEditValRow input {
+    background-color: #efefef;
+}
+
 .top-row{
     transition: background-color 2.5s;
     background-color: #ecececd4;
