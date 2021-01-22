@@ -1647,21 +1647,19 @@ td.col-1.dashTableBuildItem {
    cursor: pointer;
 }
 
-
-
-.floatPop, .hoverPop, .clickPop {
-}
-
 .floatPop {
    border-radius: 20px;
    transition: all 0.5s;
-   min-width: 250px;
+   min-width: 300px;
 
 }
 
 .clickPop .popover-body{
    max-height: 70vh;
    overflow: auto;
+}
+.popover-body li{
+  text-align: left;
 }
 
 .hoverPop .popover-body{

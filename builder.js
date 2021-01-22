@@ -133,7 +133,7 @@ async function startChrome() {
 
     // default url to cast
     if(Page.hasOwnProperty("startScreencast")){
-        Page.navigate({url: "https://ezStacksystems.com?headless"});
+        Page.navigate({url: "/images/tvoff.gif"});
 
         //start screen cast
         // Page.startScreencast({

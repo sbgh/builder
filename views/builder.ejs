@@ -4693,7 +4693,8 @@
 
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout);
-showFloatDashTable();
+// showFloatDashTable();
+showFloatFoundComp();
                         })
                         $("#floatPopStop").click(function(event){
                             $('.popover').popover('hide');
@@ -4778,7 +4779,7 @@ showFloatFunc()
 
                                         function showFloatFunc(){
                                             $("#dashBtn").click();
-                                            floatPop("dropdownFuncButton", "Server maintenance functions like reboot or backup are listed here and accessed from here.");
+                                            floatPop("dropdownFuncButton", "Server maintenance functions like reboot or backup are accessed from here.");
                                             $("#floatPopOk").unbind();
                                             floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                                             $("#floatPopOk").click(function(event){
@@ -5368,13 +5369,11 @@ showFloatFoundComp()
                         // $("#componentsBtn").click();
 
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
-                        // setTimeout(function(){
-                        //     $("#name").focus();
-                        // },500);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},60000);
+                        
                         setTimeout(function(){
-                            preferedPopPos = "left";
-                            floatPop("compDashVariables", "The text of the paragraph can be changed by editing the highlighted variable.");
+                            preferedPopPos = "top";
+                            floatPop("compDashVariables", "The paragraph can be changed by the following this procedure: <ul><li>Click the edit icon <i class='fa fa-pencil'></i></li><li>Expand the text box by clicking the expand icon <i class='fa fa-expand'></i></li><li>Then edit the text. </li><li>Then click the save icon <i class='fa fa-save'></i></li><li>Then build <i class='fa fa-wrench'></i></li></ul> ");
 
                         },1000);
 
