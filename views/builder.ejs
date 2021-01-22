@@ -4704,7 +4704,7 @@ showFloatDashTable();
                     function showFloatDashTable(){
                         $("#dashBtn").click();
                         preferedPopPos = "bottom";
-                        floatPop("dashListCol","Below is a grid that displays web applications and services that have been built or are ready to be built for the specified system.");
+                        floatPop("dashListCol","Below is a list of web applications and services that have been built or are ready to be built for the specified system. In this demo none of the applications have been built or deployed yet.");
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},9000);
                         $("#floatPopOk").click(function(event){
@@ -4720,7 +4720,7 @@ showFloatDashCompBuildApps();
                         $("#floatPopOk").unbind();
                         setTimeout(function(){
                             preferedPopPos = "bottom";
-                            floatPop("dashTableBuildButton","ezStack Home is a web app that contains your web components.<br><br><b class='floatPopTaskLabel'>Practise:</b> Click this build<i class='fa  fa-wrench fa-fw'></i> button and then click 'build' in the dialog to install 'ezStack Home' on this server.")
+                            floatPop("dashTableBuildButton","ezStack Home is one example application that you can build and deploy in this demo. For practise build and deploy ezStack home on this server.<br><br><b class='floatPopTaskLabel'>Practise:</b> Click this build<i class='fa  fa-wrench fa-fw'></i> button and then click 'build' in the dialog to install 'ezStack Home' on this server.")
                             
                             floatPopOkTimeout = setTimeout(function(){
                                 $("#floatPopOk").click();
@@ -4767,7 +4767,18 @@ showFloatSys()
                     }
                     function showFloatSys(){
                                             $("#dashBtn").click();
-                                            floatPop("dropdownMenuButton", "The systems (servers) you have setup are listed here. Each system can host many applications.");
+                                            floatPop("dropdownMenuButton", "The systems (servers) you have setup are listed here. You can drag and drop applications onto a system to add them. Each system can host many applications.");
+                                            $("#floatPopOk").unbind();
+                                            floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},10000);
+                                            $("#floatPopOk").click(function(event){
+                                                clearTimeout(floatPopOkTimeout);
+showFloatFunc()
+                                            })
+                                        }
+
+                                        function showFloatFunc(){
+                                            $("#dashBtn").click();
+                                            floatPop("dropdownFuncButton", "Server maintenance functions like reboot or backup are listed here and accessed from here.");
                                             $("#floatPopOk").unbind();
                                             floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
                                             $("#floatPopOk").click(function(event){
