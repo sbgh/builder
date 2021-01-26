@@ -1908,6 +1908,7 @@ input#launchLinkHiddenCopy{
 
 #launchLinkCopyContainer{
    display: inline;
+   padding-left: 10px;
 }
 
 .systemDetailPanelRow{

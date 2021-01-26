@@ -4707,11 +4707,16 @@ showFloatDashTable();
                         preferedPopPos = "bottom";
                         floatPop("dashListCol","Below is a list of web applications and services that have been built or are ready to be built for the specified system. In this demo none of the applications have been built or deployed yet.");
                         $("#floatPopOk").unbind();
-                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},9000);
+                        floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},11000);
                         $("#floatPopOk").click(function(event){
                             clearTimeout(floatPopOkTimeout)
 showFloatDashCompBuildApps();
-                        })
+                        });
+
+                        $('#dashBoardBottomRow').animate({ scrollTop:  $('#dashBoardBottomRow').prop('scrollHeight')  }, 8000);
+                        setTimeout(function(){
+                            $('#dashBoardBottomRow').animate({ scrollTop: 0  }, 900);
+                        },8000);
                     }
                     
                     function showFloatDashCompBuildApps(){
