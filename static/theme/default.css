@@ -15,16 +15,16 @@ a {
 }
 
 .jobScreen{
-    background-color: #ececec;
+    background-color: #f7f7f7;
 }
 .sysScreen{
-    background-color: #ececec;
+    background-color: #f7f7f7;
 }
 
 #rightCol {
      transition: background-color 1s;
-    /*background-color: #ececec;*/
-    /*border-color: #ececec;*/
+    /*background-color: #f7f7f7;*/
+    /*border-color: #f7f7f7;*/
  }
 
 body {
@@ -78,7 +78,7 @@ body {
 #sysDescription.ql-disabled, #description.ql-disabled{
     /*color: #adadad;*/
     transition: background-color 0.5s;
-    background-color: #ececec;
+    background-color: #f7f7f7;
 }
 
 .table-striped > tbody > tr:nth-child(2n+1) {
@@ -142,7 +142,7 @@ div.grippie {
     background-color: #f9f9f9;
     border: 0px solid #ddd;
     border-bottom: 1px solid #bcbcbc;
-    border-top: 1px solid #ececec;
+    border-top: 1px solid #f7f7f7;
 }
 
 .form-control {
@@ -155,7 +155,7 @@ div.grippie {
 .form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
     cursor: not-allowed;
     transition: background-color 1s;
-    background-color: #ececec;
+    background-color: #f7f7f7;
     color: #555555;
     opacity: 1;
 }
@@ -194,7 +194,7 @@ div.grippie {
 
 .customLibDropBox{
     transition: background-color 1s;
-    background-color: #ececec;
+    background-color: #f7f7f7;
 }
 
 .jstree-disabled{
@@ -204,11 +204,11 @@ div.grippie {
 
 .libTree-panel-body{
     transition: background-color 1s;
-    background-color: #ececec;
+    background-color: #f7f7f7;
 }
 .locTree-panel-body{
     transition: background-color 1s;
-    background-color: #ececec;
+    background-color: #f7f7f7;
 }
 
 .jstree-default .jstree-wholerow-hovered {
@@ -260,7 +260,7 @@ div.grippie {
 
 .sys-form-panel{
     transition: background-color 1s;
-    background-color: #ececec;
+    background-color: #f7f7f7;
     color: #555555;
 }
 
@@ -287,7 +287,7 @@ a.libListRow {
 .nav-tabs,
 .nav-tabs > li > a {
     transition: background-color 1s;
-    background-color: #ececec;
+    background-color: #f7f7f7;
     box-shadow: inset 0 -8px 7px -9px rgba(0,0,0,.4),-2px -2px 5px -2px rgba(0,0,0,.4);
 }
 .nav-tabs > li.active > a,
@@ -480,7 +480,7 @@ input:not(:checked) + .slider.round:before{
 
 .aceDisabled {
     transition: background-color 0.5s;
-    background-color: #ececec;
+    background-color: #f7f7f7;
 }
 
 .compVarDelButton{
@@ -612,7 +612,7 @@ btn:focus {
 }
 .sidebar ul li a.active {
     /*transition: background-color 0.2s;*/
-    /*background-color: #ececec;*/
+    /*background-color: #f7f7f7;*/
     background-color: rgba(0, 0, 0, 0.1);
 }
 
@@ -676,7 +676,7 @@ a#buildCodeBtn i {
 
 div#dashRow {
     transition: background-color 2.5s;
-    background-color: #ececec;
+    background-color: #f7f7f7;
 }
 
 .dashItemThumbCol img {
@@ -689,6 +689,6 @@ div#dashRow {
 
 .top-row{
     transition: background-color 2.5s;
-    background-color: #ecececd4;
+    background-color: #f7f7f7d4;
     box-shadow: 1px 4px 8px rgb(236 236 236);
 }

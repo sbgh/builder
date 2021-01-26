@@ -133,7 +133,7 @@ async function startChrome() {
 
     // default url to cast
     if(Page.hasOwnProperty("startScreencast")){
-        Page.navigate({url: "/images/tvoff.gif"});
+        Page.navigate({url: "https://localhost/images/tvoff.gif"});
 
         //start screen cast
         // Page.startScreencast({
@@ -4571,7 +4571,7 @@ router.get("/getDashDetails",function(req,res){
                             //place vObj into tmpObj as a prop
                             tmpObj["var"] = vObj
 
-                            //push tmpObj (containing compID, name, var) into promoted Var Array
+                            //push tmpObj (containing compID, name, var) into promoted Var Array 
                             proVarArr.push(tmpObj) 
                         }
                     }
@@ -4586,6 +4586,22 @@ router.get("/getDashDetails",function(req,res){
             }
         }
     }
+
+    proVarArr.sort(function (a, b) {
+        var compA = "";
+        var compB = "";
+
+        SystemsJSON[a.compId].ft.split("/").forEach(function(id){
+            compA += id === "#" ? "0000000/" : ("0000000" + SystemsJSON[id].sort).slice((SystemsJSON[id].sort).length ) + "/"
+        });
+        compA += ("0000000" + SystemsJSON[a.compId].sort).slice((SystemsJSON[a.compId].sort).length );
+        SystemsJSON[b.compId].ft.split("/").forEach(function(id){
+            compB += id === "#" ? "0000000/" : ("0000000" + SystemsJSON[id].sort).slice((SystemsJSON[id].sort).length ) + "/"
+        });
+        compB += ("0000000" + SystemsJSON[b.compId].sort).slice((SystemsJSON[b.compId].sort).length ); 
+
+        return compA.localeCompare(compB, 'en', { numeric: true });
+    });
 
     resJSON["proVarArr"] = proVarArr; 
     resJSON["lastBuildUrlsArr"] = lastBuildUrlsArr; 
