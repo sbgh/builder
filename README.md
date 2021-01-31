@@ -11,7 +11,7 @@
 
 ## Installation
 
-The current version of /builder and the packaged example components are intended to be installed on a 'fresh' Amazon AWS [EC2](https://us-west-2.console.aws.amazon.com/ec2/) instance (Amazon Linux 2 t2.medium).
+The current version of /builder and the packaged example components are intended to be installed on a 'fresh' Amazon AWS [EC2](https://us-west-2.console.aws.amazon.com/ec2/) instance (Amazon Linux 2 t3.medium).
 
 ### Automated installation
 
