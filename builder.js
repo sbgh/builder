@@ -2653,53 +2653,30 @@ router.post("/run",function(req,res){
 
                 //set flag to run promoted children
                 runRerunnableCh = fields.runRerunnableCh;
+            }
 
-                //storeLocal holds val of 'store key in browser' checkbox
-                storeLocal = fields.storeLocal;
-                //if key-pair file is attached
-                if (files.hasOwnProperty('key')) {
-                    //capture the key-pair in runKey and delete the attached file
-                    var myFiles = files['key'];
-                    if (myFiles.hasOwnProperty('path')) {
-                        runKey = fs.readFileSync(myFiles.path);
-                        newKey = true;
-                        fs.unlink(myFiles.path, function (err) {
-                            if (err) console.log('Error: unable to delete uploaded key file')
-                        });
-                    }
-                } else {
-                    if (storeLocal === 'yes') {
-                        if (fields.hasOwnProperty('localStoredKey')) {
-                            runKey = fields.localStoredKey;
-                            //console.log('runKey local: ' + runKey);
-                        }
+            //storeLocal holds val of 'store key in browser' checkbox
+            storeLocal = fields.storeLocal;
+            //if key-pair file is attached
+            if (files.hasOwnProperty('key')) {
+                //capture the key-pair in runKey and delete the attached file
+                var myFiles = files['key'];
+                if (myFiles.hasOwnProperty('path')) {
+                    runKey = fs.readFileSync(myFiles.path);
+                    newKey = true;
+                    fs.unlink(myFiles.path, function (err) {
+                        if (err) console.log('Error: unable to delete uploaded key file')
+                    });
+                }
+            } else {
+                if (storeLocal === 'yes') {
+                    if (fields.hasOwnProperty('localStoredKey')) {
+                        runKey = fields.localStoredKey;
+                        //console.log('runKey local: ' + runKey);
                     }
                 }
-
-                //storeLocalAccess holds val of 'store access key in browser' checkbox
-                // storeLocalAccess = fields.storeLocalAccess;
-                // if(files.hasOwnProperty('access')   ){
-                //     var myFiles = files['access'];
-                //
-                //     //if runAccess file is attached
-                //     if (myFiles.hasOwnProperty('path')) {
-                //         runAccess = fs.readFileSync(myFiles.path);
-                //         runAccess = runAccess.toString().split('\n')[1];
-                //         newAccess = true;
-                //         fs.unlink(myFiles.path,function(err){
-                //             if(err) console.log('Error: unable to delete uploaded access file')
-                //         });
-                //         //console.log('access file: ' + runAccess);
-                //     }
-                // }else{
-                //     if(storeLocalAccess === 'yes'){
-                //         if(fields.hasOwnProperty('localStoredAccess')){
-                //             runAccess = fields.localStoredAccess;
-                //             //console.log('access file: ' + runAccess);
-                //         }
-                //     }
-                // }
             }
+
         }
     });
 
@@ -2708,7 +2685,7 @@ router.post("/run",function(req,res){
 
     // log any errors
     form.on('error', function(err) {
-        console.log('An error has occured.\n/run \n' + err);
+        console.log('An error has occured.\n/run \n' + err); 
     });
 
     // once form is uploaded, run first component

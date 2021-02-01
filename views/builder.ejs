@@ -836,7 +836,6 @@
                             if(rowJson.hasOwnProperty("thumbnail")){
                                     thumbImageUrl = "/uploads/" + rowJson.id + "/" + rowJson.thumbnail;
                             }
-
                            
                             pCompHtml += "<div id='row_" + rowJson.id +"' data-id='" + rowJson.id +"' data-runSys='"+ rowJson.systemId +"' data-runSysName='"+ rowJson.systemName + "' class='" + thisClass + "'>";
                                 pCompHtml += "<div class='col-md-12 col-lg-6 dashContentRow'>"
@@ -1283,7 +1282,7 @@
                 //new row
                 let pCompHtml = "";
                 var idn = currentCompDashSelectedVarObj[varIdName].idn;
-                if(! currentCompDashSelectedVarObj[varIdName].ask){
+                if(! currentCompDashSelectedVarObj[varIdName].ask || currentCompDashSelectedVarObj[varIdName].value.trim() !== ''){
                     pCompHtml += "<div id='varRowDash_" + idn +"'" +  " class='CompDashSelectedVarRow'>";
                 }else{
                     pCompHtml += "<div id='varRowDash_" + idn +"'" +  " class='CompDashSelectedVarRow dashAskVarRow'>";
@@ -1315,9 +1314,6 @@
             //function to create a block of var input html for new vars and edits on the dashboard. Provide index str eg "0" or "10" ...
             function createVarDashEditHtml(currentRowCntStr){
                 var newHtml = '<div id="new_row_dash'+currentRowCntStr+'" class="d-flex varRow newVarRow">'
-
-                //new var name input
-                // newHtml += '<div class="col-5"><input id="newCompDashVarName'+currentRowCntStr+'" class="form-control newCompVarName" type="text"></div>'
 
                 newHtml += "<div class='col-5 varNameDash'>";
                 newHtml += "<span class='varNameDashEdit' id = 'varNameDashEdit" + currentRowCntStr + "'></span>";
