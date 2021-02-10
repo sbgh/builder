@@ -1067,17 +1067,24 @@
 
                                 const enabledJson = JSON.parse(data);
                                 const en = enabledJson.enabled;
-                                const id = $(this)[0].id;
+                                const id = $(this)[0].id; 
 
                                 if (en === 1){
-                                    // $("#row_"+id + " .dashTableBuildButton").show();
-                                    $("#row_"+id + " .dashTableEnableItem > i.fa").removeClass('fa-times-circle-o').removeClass('DashListRowFail').addClass('fa-check-circle-o').addClass('DashListRowPass');
-                                    $("#row_"+id + " .dashTableEnableItem > i.fa").attr('data-checked',"false" );
+                                    $(".dashTableEnableItem > i.fa").removeClass('fa-times-circle-o').removeClass('DashListRowFail').addClass('fa-check-circle-o').addClass('DashListRowPass');
+                                    $(".dashTableEnableItem > i.fa").attr('data-checked',"false" );
+                                    enableText = "Click to disable";
                                 }else{
-                                    // $("#row_"+id + " .dashTableBuildButton").hide();
-                                    $("#row_"+id + " .dashTableEnableItem > i.fa").removeClass('fa-check-circle-o').removeClass('DashListRowPass').addClass('fa-times-circle-o').addClass('DashListRowFail');
-                                    $("#row_"+id + " .dashTableEnableItem > i.fa").attr('data-checked',"true" );
+                                    $(".dashTableEnableItem > i.fa").removeClass('fa-check-circle-o').removeClass('DashListRowPass').addClass('fa-times-circle-o').addClass('DashListRowFail');
+                                    $(".dashTableEnableItem > i.fa").attr('data-checked',"true" );
+                                    enableText = "Click to enable";
                                 }
+                                $(".dashTableEnableItem" ).popover('dispose').popover({  
+                                    animation: true,
+                                    content: enableText + " "+ddObj.comp.name,
+                                    delay: { "show": 50, "hide": 100 },
+                                    trigger: 'hover',
+                                    template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                                });
                             },
                             error : function(error) {
                                 alert("Error changing enable property for this component");
