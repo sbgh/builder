@@ -988,7 +988,7 @@
                         updateLaunchLink(ddObj.lastBuildUrlsArr[0]);
                         $("#videoScreen").detach().appendTo("#dashScreen"); 
                     }else if(ddObj.comp.hasOwnProperty("thumbnail")){
-                        let thumbUrl = "/uploads/" + ddObj.comp.id + "/" + ddObj.comp.thumbnail;
+                        let thumbUrl = "/uploads/" + ddObj.id + "/" + ddObj.comp.thumbnail;
                         $("#dashScreen").html("<img class='dashSelectedImg' src='"+thumbUrl+"'>")
                     }             
 
@@ -2699,7 +2699,7 @@
                                 else if(row.substr(0,12) === 'message:url:'){
                                     if($("#dashBtn").hasClass('active')){
                                         if($(".selectedDashRow").length > 0){
-                                            $(".selectedDashRow").find("img").hide();
+                                            // $(".selectedDashRow").find("img").hide();
                                             $("#videoScreen").detach().appendTo('#dashScreen');
                                         }   
                                     }else{
