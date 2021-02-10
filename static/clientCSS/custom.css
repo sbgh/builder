@@ -1293,7 +1293,7 @@ th.col-1, td.col-1{
    /*background: linear-gradient(to bottom, #0078d7 0%, #0078d7 100%);*/
 }
 
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
 width: 14px;
 }
 
@@ -1310,7 +1310,7 @@ border-radius: 10px;
 
 ::-webkit-scrollbar-corner {
 background: transparent !important;
-}
+} */
 
 .dashTable{
    color: inherit;
@@ -1933,68 +1933,79 @@ div#firstRow {
 .dashTbody{
    /* display: grid;
    grid-template-columns: repeat(auto-fit, minmax(150px, 250px)); */
-   align-items: center;
-   overflow-x: auto;
-   padding: 15px;
+   /* align-items: center; */
+   overflow: auto;
+   display: flex;
+   /* padding: 15px; */
    /* width: 50%; */
 }
 
+::-webkit-scrollbar-track
+{
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+}
+
+::-webkit-scrollbar
+{
+  width: 10px;
+  height: 10px;
+}
 
 
 .dashTableRow{
-   /* text-align: center; */
-   border-radius: 6px;
-   display: flex;
-   flex-wrap: wrap;
-   margin-bottom: 15px;
-   padding: 15px;
+   padding: 3px 6px 0px 3px;
 }
 
 #dashRow {
-   overflow-y: auto;
-   overflow-x: hidden;
-   height: calc(100vh - 30px);
-   padding-left: 5px;
-   display: flex;
-   flex-direction: column;
-   align-items: flex-start;
 }
 
 .dashListCol{
-   padding-bottom: 60px;
 }
 
 .dashThumb  {
-   /* margin-top: auto;
-   margin-bottom: auto; */
-   /* min-width: 400px; */
+   
 }
 
 .dashThumb img {
-   width: 100%;
-   border: solid 2px;
-   border-radius: 6px;
+   width: 320px;
+   padding: 9px;
 }
 
 .dashContentRow{
-   border-radius: 6px;
-   display: flex;
-   justify-content: center;
-   flex-direction: column;
-   /* min-width: 450px;
-   max-width: 544px; */
-   /* max-height: 400px; */
 }
 
 .dashSelected {
-   /* min-width: 450px; */
-   display: none;
    padding-left: 20px;
+   height: calc(100vh - 350px);
+}
+
+#dashSelectedDetails{
+   flex: 3;
+}
+
+img.dashSelectedImg {
+   width: 90%;
+   max-height: 100%;
 }
 
 .dashSelectedTop{
    display: flex;
    justify-content: space-between;
+}
+
+.dashSelectedRow{
+   display: flex;
+   margin-top: 30px;
+   height: 100%;
+}
+
+.dashSelectedRow #dashScreen {
+   flex: 3;   
+   min-width: 300px;
+}
+
+.dashSelectedRow #videoCanvas{
+   max-width: calc((100vh - 408px) * 1.5);
 }
 
 div#dashCompDescription {
@@ -2024,15 +2035,17 @@ div#dashCompDescription {
 }
 
 .dashDetails{
-   /* width:50%; */
-   /* margin-top: auto; */
-   margin-bottom: auto;
+   padding-left: 11px;
 }
 
 .dashItemName {
    text-align: left;
-   font-size: 1.5em;
+   font-size: 1.0em;
    font-weight: 500;
+}
+
+.dashItemBuildHistory {
+   font-size: small;
 }
 
 .varNameDash {
@@ -2042,8 +2055,10 @@ div#dashCompDescription {
 div#compDashVariables {
    display: flex;
    flex-direction: column;
-   max-height: 300px;
-    overflow-x: auto;
+   height: calc(100% - 50px);
+   overflow: auto;
+   padding-left: 20px;
+    padding-right: 20px;
 }
 
 .varRowCompHeader .dashButtons{
@@ -2116,7 +2131,7 @@ div#compDashVariables {
 @media (min-height: 501px) {
 
    .dashRow {
-      overflow-y: hidden;
+      /* overflow-y: hidden; */
       /*width: 100%;*/
    }
 
@@ -2131,11 +2146,11 @@ div#compDashVariables {
    }
 
    .dashBoardBottomRow {
-   overflow-y: auto;
+   /* overflow-y: auto;
     padding-top: 70px;
     margin-top: -70px;
     width: 100%;
-    height: calc(100vh);
+    height: calc(100vh); */
    }
 }
 

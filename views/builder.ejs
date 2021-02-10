@@ -813,19 +813,23 @@
                         const promoted = JSON.parse(data);
                         $("#dashTable").html("")
 
-                        const dashListRowClicked = localStorage['dashListRowClicked'];
-                        selectDashTableRow(dashListRowClicked);
+                        // const dashListRowClicked = localStorage['dashListRowClicked'];
+                        // selectDashTableRow(dashListRowClicked);
 
                         var x=0;
                         for (var row in promoted){
 
-                            var thisUrlFlag = ""
+                            var lastBuildStr = ""
 
                             rowJson = promoted[row];
                             if(rowJson.hasOwnProperty("lastBuild")){
-                                if(rowJson.lastBuild.hasOwnProperty("url")){
-                                    thisUrlFlag =  '<i class="fa  fa-external-link fa-fw "></i>'
+                                if(rowJson.lastBuild.hasOwnProperty("ct")){
+                                    lastBuildStr =  'Last build: ' + new Date(rowJson.lastBuild.ct).toLocaleString();
+                                }else{
+                                    lastBuildStr =  'Last build: Never'
                                 }
+                            }else{
+                                    lastBuildStr =  'Last build: Never'
                             }
 
                             pCompHtml = "";
@@ -838,7 +842,7 @@
                             }
                            
                             pCompHtml += "<div id='row_" + rowJson.id +"' data-id='" + rowJson.id +"' data-runSys='"+ rowJson.systemId +"' data-runSysName='"+ rowJson.systemName + "' class='" + thisClass + "'>";
-                                pCompHtml += "<div class='col-md-12 col-lg-6 dashContentRow'>"
+                                pCompHtml += "<div class='dashContentRow'>"
                                     if(thumbImageUrl !== ""){
                                         pCompHtml +=  "<div id='thumb_" + rowJson.id +"' class='dashThumb' >";
                                             pCompHtml += "<img src='"+thumbImageUrl+"'>";
@@ -849,12 +853,13 @@
                                     }
 
                                     pCompHtml += "<div class='dashDetails'>";
-                                            pCompHtml += "<div class='dashItemName'>" + rowJson.name + thisUrlFlag + "</div>";
+                                        pCompHtml += "<div class='dashItemName'>" + rowJson.name + "</div>";
+                                        pCompHtml += "<div class='dashItemBuildHistory'>" + lastBuildStr + "</div>";
 
                                            
                                     pCompHtml += "</div>"
                                 pCompHtml += "</div>"
-                                pCompHtml += "<div class='col-md-12 col-lg-6  dashSelected'></div>"
+                                // pCompHtml += "<div class='col-md-12 col-lg-6  dashSelected'></div>"
 
                             pCompHtml += "</div>"
 
@@ -867,24 +872,28 @@
                                 if(! $(this).hasClass("selectedDashRow")){
                                     $(".selectedDashRow").removeClass("selectedDashRow");
                                     $(this).addClass("selectedDashRow");
-                                    loadDashDetails(id)
-                                }
-                                                               
+
+
+                                    
+                                    $('#dashTable').animate({ scrollLeft:  $(this).parent().prop('offsetLeft') - $('#dashTable').prop('offsetWidth')/2  }, 5000);
+
+
+
+                                    loadDashDetails(id);
+                                    localStorage['dashListRowClicked'] = id;
+                                }                                                               
                             })                           
     
 
                             if(!rowJson.enabled){
                                  $("#row_"+ rowJson.id + " .dashTableBuildButton").hide();
                              }
-
                             
                             x++;
                         }
 
                         
-                        function selectDashTableRow(id){
-                            localStorage['dashListRowClicked'] = id;
-                        }
+                       
                     },
                     error : function(error) {
                         console.log(error)
@@ -911,7 +920,10 @@
 
                     const id = ddObj.id;
 
+                    $("#videoScreen").detach().appendTo("#screenShotImageHolder");                     
+
                     var enabledHTML = "";
+                   
                     $(".dashSelected").html("");
                     if(ddObj.comp.hasOwnProperty("enabled")){
                         if(ddObj.comp.enabled == 1){
@@ -924,26 +936,34 @@
                     }
 
                     var tmpHtml = ""
-                    tmpHtml += "<div class='dashSelectedTop'>";
-                        tmpHtml += "<div class='dashItemName'>" + ddObj.comp.name + "</div>";
 
-                        tmpHtml += "<div class='dashButtons'>";
-                            tmpHtml += "<div id='dashTableOpenButton' class='dashTableOpenButton' data-id='" + ddObj.id +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
-                            tmpHtml += "<div id='dashTableEnableItem' class='dashTableEnableItem' data-id='" + ddObj.id +"'>" + enabledHTML +  "</div>";
-                            tmpHtml += "<div id='dashTableBuildButton' class='dashTableBuildButton' data-id='" + ddObj.id +"'><i class='fa  fa-wrench fa-fw  '></i></div>  ";
-                        tmpHtml += "</div>"
-                    tmpHtml += "</div>" 
 
-                    tmpHtml += "<div id='dashCompDescription'></div>";
-                
-                    tmpHtml += "<div id='dashCompUrls'>";
-                        for(let ui in ddObj.lastBuildUrlsArr){
-                            tmpHtml += "<div class='lastBuildUrl' data-id='" + ddObj.id +"'>"+ddObj.lastBuildUrlsArr[ui]+"</div>";
-                        }
+                    tmpHtml += "<div class='dashSelectedRow'>"
+                        tmpHtml += "<div id='dashScreen'></div>";
+
+                        tmpHtml += "<div id='dashSelectedDetails'>"
+                            
+                            tmpHtml += "<div id='compDashVariables'>";
+                                tmpHtml += "<div class='dashSelectedTop'>";
+                                    tmpHtml += "<div class='dashItemName'>" + ddObj.comp.name + "</div>";
+
+                                    tmpHtml += "<div class='dashButtons'>";
+                                        tmpHtml += "<div id='dashTableOpenButton' class='dashTableOpenButton' data-id='" + ddObj.id +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
+                                        tmpHtml += "<div id='dashTableEnableItem' class='dashTableEnableItem' data-id='" + ddObj.id +"'>" + enabledHTML +  "</div>";
+                                        tmpHtml += "<div id='dashTableBuildButton' class='dashTableBuildButton' data-id='" + ddObj.id +"'><i class='fa  fa-wrench fa-fw  '></i></div>  ";
+                                    tmpHtml += "</div>"
+                                tmpHtml += "</div>" 
+
+                                tmpHtml += "<div id='dashCompDescription'></div>";                    
+                    
+                                tmpHtml += "<div id='dashCompUrls'>";
+                                    for(let ui in ddObj.lastBuildUrlsArr){
+                                        tmpHtml += "<div class='lastBuildUrl' data-id='" + ddObj.id +"'>"+ddObj.lastBuildUrlsArr[ui]+"</div>";
+                                    }
+                                tmpHtml += "</div>";                        
+                            tmpHtml += "</div>";                                       
+                        tmpHtml += "</div>";                                       
                     tmpHtml += "</div>";
-
-                    tmpHtml += "<div id='compDashVariables'></div>";                                       
-
 
                     //build currentCompDashSelectedVarObj and add idn index, name, compName, compId
                     var y=0;
@@ -958,24 +978,34 @@
                         currentCompDashSelectedVarObj[compId + '-' + name].compId = ddObj.proVarArr[idn].compId;
                     }
 
-                    $("#row_" + id).find(".dashSelected" ).show();
+                    // $("#row_" + id).find(".dashSelected" ).show();
 
-                    $("#row_" + id).find(".dashSelected" ).html( tmpHtml );
+                    // $("#row_" + id).find(".dashSelected" ).html( tmpHtml );
+                    $(".dashSelected" ).html( tmpHtml );
+
+                    if(ddObj.hasOwnProperty('lastBuildUrlsArr') && ddObj.lastBuildUrlsArr.length > 0){
+                        navigate(ddObj.lastBuildUrlsArr[0]);
+                        updateLaunchLink(ddObj.lastBuildUrlsArr[0]);
+                        $("#videoScreen").detach().appendTo("#dashScreen"); 
+                    }else if(ddObj.comp.hasOwnProperty("thumbnail")){
+                        let thumbUrl = "/uploads/" + ddObj.comp.id + "/" + ddObj.comp.thumbnail;
+                        $("#dashScreen").html("<img class='dashSelectedImg' src='"+thumbUrl+"'>")
+                    }             
 
                     loadVarDashSelected(currentCompDashSelectedVarObj, "row_" + id );
                     
-                    $("#row_" + id).find('.lastBuildUrl').on('click', function(){
+                    $('.lastBuildUrl').on('click', function(){
 
                         var id = $(this).attr('data-ID');
                         navigate($(this).text());
                         updateLaunchLink($(this).text());
 
-                        $("#videoScreen").detach().appendTo($("#row_" + id).find(".dashThumb")); 
-                        $(".dashThumb").find("img").show();
-                        $("#row_" + id).find("img").hide();
+                        $("#videoScreen").detach().appendTo("#dashScreen"); 
+                        // $(".dashThumb").find("img").show();
+                        // $("#row_" + id).find("img").hide();
                     })
 
-                    $("#row_" + id).find('.dashSelectedTop').find(".dashTableOpenButton").popover({ 
+                    $(".dashTableOpenButton").popover({ 
                         animation: true,
                         content: "Open "+ddObj.comp.name+" component",
                         delay: { "show": 50, "hide": 100 },
@@ -983,7 +1013,7 @@
                         template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
                     });
 
-                    $("#row_" + id).find('.dashSelectedTop').find(".dashTableBuildButton").popover({
+                    $(".dashTableBuildButton").popover({
                         animation: true,
                         content: "Build "+ddObj.comp.name,
                         delay: { "show": 50, "hide": 100 },
@@ -991,7 +1021,7 @@
                         template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
                     });
 
-                    $("#row_" + id).find(".dashTableEnableItem" ).popover({  
+                    $(".dashTableEnableItem" ).popover({  
                         animation: true,
                         content: enableText + " "+ddObj.comp.name,
                         delay: { "show": 50, "hide": 100 },
@@ -999,7 +1029,7 @@
                         template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
                     });
                                 
-                    $("#row_" + id).find('.dashTableOpenButton').on('click', function(){
+                    $('.dashTableOpenButton').on('click', function(){
                         var id = $(this).attr('data-ID');
                         $("#componentsBtn").click();
                         $('#jstree_div').jstree("deselect_all");
@@ -1007,7 +1037,7 @@
                         $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus(); 
                     })
 
-                    $("#row_" + id).find('.dashTableBuildButton').on('click', function(){
+                    $('.dashTableBuildButton').on('click', function(){
                         var id = $(this).attr('data-ID');
                         $("#dashId").val(id);
                         $.get('/Jobs', {id: id}, function (data) {
@@ -1018,7 +1048,7 @@
 
                     });
 
-                    $("#row_" + id).find('.dashTableEnableItem').on('click', function(){
+                    $('.dashTableEnableItem').on('click', function(){
                             var id = $(this).attr('data-ID');
                             var cCheck = $(this).find( "i" ).attr('data-checked');
 
@@ -1085,8 +1115,8 @@
             function loadVarDashSelected(variables, rowId){
                 var currentVarCompId = "";
 
-                $(".dashDetails").show();
-                $("#" + rowId).find(".dashDetails").hide();
+                // $(".dashDetails").show();
+                // $("#" + rowId).find(".dashDetails").hide();
 
                 for(var varIdName in variables){
                     var idn = variables[varIdName].idn
@@ -2667,10 +2697,14 @@
                                     localKey += row.substr(4) + '\n';
                                 }
                                 else if(row.substr(0,12) === 'message:url:'){
-                                    if($(".selectedDashRow").length > 0){
-                                        $(".selectedDashRow").find("img").hide();
-                                        $("#videoScreen").detach().appendTo($(".selectedDashRow").find(".dashThumb"));
-                                    }
+                                    if($("#dashBtn").hasClass('active')){
+                                        if($(".selectedDashRow").length > 0){
+                                            $(".selectedDashRow").find("img").hide();
+                                            $("#videoScreen").detach().appendTo('#dashScreen');
+                                        }   
+                                    }else{
+                                        $("#videoScreen").detach().appendTo("#screenShotImageHolder");                                        
+                                    }                                    
                                 }
                                 else if(row.substr(0,16) === 'message:BuildID:'){
 
@@ -2740,7 +2774,6 @@
                                 }
                             })
                         };
-
                         return xhr;
                     }
                 }).done(function (e) {
@@ -3718,7 +3751,9 @@
                         var selectedFile = row.file;
                         var timeStr = selectedFile.split('_')[1];
                         var pass = selectedFile.split('_')[2];
-                        var formattedTimeStr = formatTimeStr(timeStr);
+                        // var formattedTimeStr = formatTimeStr(timeStr);
+
+                        var formattedTimeStr = new Date(timeStr).toLocaleString();
                         html += "               <a href='#' class='list-group-item resultsListRow' data-ID='" + selectedFile+"'>";
                         if(pass == 'p'){
                             html += "               <i class='fa  fa-check fa-fw'></i>"  ;
@@ -4701,7 +4736,7 @@ showFloatDashTable();
                     function showFloatDashTable(){
                         $("#dashBtn").click();
                         preferedPopPos = "bottom";
-                        floatPop("dashListCol","Below is a list of web applications and services that have been built or are ready to be built for the specified system. In this demo none of the applications have been built or deployed yet.");
+                        floatPop("dashListCol","This is a list of web applications and services that have been built or are ready to be built for the specified system. In this demo none of the applications have been built or deployed yet.");
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},11000);
                         $("#floatPopOk").click(function(event){
@@ -4709,9 +4744,9 @@ showFloatDashTable();
 showFloatDashCompBuildApps();
                         });
 
-                        $('#dashBoardBottomRow').animate({ scrollTop:  $('#dashBoardBottomRow').prop('scrollHeight')  }, 8000);
+                        $('#dashTable').animate({ scrollLeft:  $('#dashTable').prop('scrollWidth')  }, 8000);
                         setTimeout(function(){
-                            $('#dashBoardBottomRow').animate({ scrollTop: 0  }, 900);
+                            $('#dashTable').animate({ scrollLeft: 0  }, 900);
                         },8000);
                     }
                     
@@ -4735,7 +4770,7 @@ showFloatDashCompBuildApps();
                             const eleObj = document.getElementById("dashTableBuildButton");
                             eleObj.scrollIntoView(false);
 
-                        },1000)
+                        },1500)
 
 
                         $("#floatPopOk").click(function(event){
@@ -6509,7 +6544,7 @@ showFloatEnd()
                     $("#videoScreen").detach().appendTo('#screenShotImageHolder');
                 }else{
                     // $("#videoScreen").detach().appendTo('#screenshot-panel-body');
-                    $("#videoScreen").detach().appendTo($(".selectedDashRow").find(".dashThumb"));
+                    $("#videoScreen").detach().appendTo($("#dashScreen"));
                 };
                 $("#inspectMaximizeLink").show();
             });
@@ -6610,10 +6645,10 @@ showFloatEnd()
                             const element = document.getElementById("varRowCompHeader_" + respObj.matchingSelectedComp);
                             if (element){
                                
-                                const elementTop = element.offsetHeight ;
+                                // const elementTop = element.offsetHeight ;
 
                                 const compDashVariables = document.getElementById('compDashVariables');
-                                const middle = element.offsetTop  - (compDashVariables.offsetHeight / 2);
+                                const middle = element.offsetTop  - (compDashVariables.offsetHeight / 2) - compDashVariables.offsetTop;
 
                                 compDashVariables.scrollTo(0, middle);
 
@@ -7240,7 +7275,8 @@ showFloatEnd()
                         <div id="dashListCol" class="dashListCol">
                             <!--<div class="fadeTop"></div>-->
                             <div id="dashTable" class="dashTbody"></div>
-                        </div>                
+                        </div>    
+                        <div class=' dashSelected'></div>            
                     </div>
                 </div>
                 <div id="componentsRowContainer">

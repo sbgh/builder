@@ -1668,7 +1668,7 @@ router.get("/resultsList",function(req,res){
             });//sort dec
             files.forEach(function (file) {
                 //console.log(file);
-                resultsFileArray.push({file: file.substring(0, file.indexOf('.'))});
+                resultsFileArray.push({file: file.substring(0, file.indexOf('.json'))});
             });
             res.end(JSON.stringify(resultsFileArray));
         }
@@ -2621,6 +2621,7 @@ router.post("/run",function(req,res){
         }else {
 
             //set id into ids array
+            //only 1st id accepted
             ids = [fields.ids.split(';')[0]];
 
             if (fields.runChildren === 'true') {
@@ -2701,50 +2702,7 @@ router.post("/run",function(req,res){
             res.write("key:"+runKey.toString().split('\n').join('key:') );
             res.write("\n");
         }
-
-        // if(runAccess.toString() !== '' ){
-        //
-        //     var trimmedAccess = runAccess.toString().split('\n');
-        //     var find = '\r';
-        //     var re = new RegExp(find, 'g');
-        //     trimmedAccess = trimmedAccess.toString().replace(re, '');
-        //     if( newAccess === true &&  storeLocalAccess === "yes"){
-        //         res.write("\n");
-        //         res.write("access:"+ trimmedAccess.toString());
-        //         res.write("\n");
-        //     };
-        //
-        //     //console.log("trimmedAccess: "+trimmedAccess);
-        //     const accessParaCount = trimmedAccess.toString().split(',').length;
-        //     var accessCode = {};
-        //     if(accessParaCount > 1){
-        //         if(accessParaCount === 2 || accessParaCount === 3){
-        //             accessCode =  { "accessKeyId": trimmedAccess.toString().split(',')[0], "secretAccessKey": trimmedAccess.toString().split(',')[1] };
-        //             saveAccessConfig()
-        //         }else if(accessParaCount === 5 || accessParaCount === 6){
-        //             accessCode =  { "accessKeyId": trimmedAccess.toString().split(',')[2], "secretAccessKey": trimmedAccess.toString().split(',')[3] };
-        //             saveAccessConfig()
-        //         }else{
-        //             console.log('Error: Unable to parse provided access file, accessParaCount = ' + accessParaCount.toString());
-        //             console.log(trimmedAccess.toString());
-        //         }
-        //         //console.log('accessCode: ' + accessCode);
-        //         function saveAccessConfig(){
-        //             fs.writeFile( homedir + "/accessConfig.json", JSON.stringify(accessCode), function (err) {
-        //                 if (err) {
-        //                     console.log('There has been an error saving your access json: ./accessConfig.json');
-        //                     console.log(err.message);
-        //                     return;
-        //                 }
-        //             })
-        //         }
-        //
-        //     }else{
-        //         console.log('Error: Unable to parse provided access file, accessParaCount = ' + accessParaCount.toString());
-        //     }
-        // }
-
-        //loop through ids and build 'disabled ids' list
+        
         var disabledIds = [];
         var y = 0;
         ids.forEach(function(id){      
@@ -2904,7 +2862,7 @@ router.post("/run",function(req,res){
 
     //function runScript to build a specified component. requires: jobId = job id string | job = component obj , runMethod = "exec" or "SSH"
     function runScript(jobId, job, runMethod) {
-        var script = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].script + "\n"; //add return to end of string to ensure prpompt is returned at end of script
+        var script = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].script + "\n"; //add return to end of string to ensure prompt is returned at end of script
         var scriptArray = script.split("\n"); // the list of commands by row
         var commandIndex = 0;
         var prompt = "[SysStack]"; //prompt will be changed to this
@@ -2940,818 +2898,843 @@ router.post("/run",function(req,res){
         //create ssh connection
         if (runMethod === "SSH") {
 
-            conn.shell(function (err, stream) {
-                if (err) throw err;
+            if(script.trim() === ""){ 
 
-                //close event to update ui, save log
-
-                var exportCommand = "";// holds command to be exported (saved as variable) flag
-
-                //meggege ui that build is starting for the current job
-                message('Building:' + job.name);
+                message('Building: ' + job.name);
                 message('BuildID:[' +jobId+ ']'); //send id to trigger ui functions
+                message('Skipping blank script: ' + job.name);
+                flushMessQueue();  
 
-                stream.on('close', function (code, signal){
-                    var dsString = new Date().toISOString(); //date stamp
+                sshSuccess = true;
+                runNextJob();
 
-                    clearTimeout(lastTimeout);
+            }else{
+                    
+                conn.shell(function (err, stream) {
+                    if (err) throw err;
 
-                    //message ui
-                    message("Completed " + job.name);
-                    message(sshSuccess === true ? "CompletionSuccess:true\n" : "CompletionSuccess:false\n");
-                    flushMessQueue();
+                    //close event to update ui, save log
 
-                    //format date string
-                    var fds = dsString.replace(/_/g, '-').replace(/T/, '-').replace(/:/g, '-').replace(/\..+/, '');
-                    var fileName = "";
-                    SystemsJSON[jobId].lastBuild.ct = fds;
+                    var exportCommand = "";// holds command to be exported (saved as variable) flag
 
-                    //update SystemsJSON component with pass or fail and build results file name
-                    if (sshSuccess === true) {
-                        SystemsJSON[jobId].lastBuild.pass = 1;
-                        fileName =  jobId + '_' + fds + '_p.json';
-                    } else {
-                        SystemsJSON[jobId].lastBuild.pass = 0;
-                        fileName = jobId + '_' + fds + '_f.json';
-                    }
+                    //meggege ui that build is starting for the current job
+                    message('Building: ' + job.name);
+                    message('BuildID:[' +jobId+ ']'); //send id to trigger ui functions
 
-                    //save results file and cache vars to lookup - latestVarCache[Id][varName]
-                    fs.writeFile(resultsPath + fileName, JSON.stringify(resultsArray), function (err) {
-                        if (err) {
-                            console.log('There has been an error saving your json.\n'+err.message);
-                        }else{
-                            if(typeof latestVarCache[jobId] === 'undefined'){
-                                delete latestVarCache[jobId]
-                            }
-                            cacheVarVals([fileName],SystemsJSON[jobId].ft.split('/')[1]);
+                    stream.on('close', function (code, signal){
+                        var dsString = new Date().toISOString(); //date stamp
 
-                            //If this is a special 'system' job then update the system variables
-                            if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].systemFunction === 1){
-                                copySystemVarToSystem(jobId)
-                            }
+                        clearTimeout(lastTimeout);
 
-                            jobIndex++;
+                        //message ui
+                        message("Completed " + job.name);
+                        message(sshSuccess === true ? "CompletionSuccess:true\n" : "CompletionSuccess:false\n");
+                        flushMessQueue();
 
-                            if (ids.length > jobIndex) {
+                        //format date string
+                        //var fds = dsString.replace(/_/g, '-').replace(/T/, '-').replace(/:/g, '-').replace(/\..+/, '');
+                        var fds = dsString;
+                        var fileName = "";
+                        SystemsJSON[jobId].lastBuild.ct = fds; 
 
-                                var id = ids[jobIndex];
-
-                                if (SystemsJSON.hasOwnProperty(id)) {
-                                    //console.log("\nrunning: "+ SystemsJSON[id].name);
-                                    if (sshSuccess) {
-                                        var job = SystemsJSON[id];
-
-                                        runScript(id, job ,"SSH");
-
-                                    } else {
-                                        // message("Script Aborted\n");
-                                        // flushMessQueue();
-                                        res.end("status:Scripts Aborted\n");
-                                    }
-                                } else {
-                                    console.log("Error: /run id not found in SystemsJSON: " + id);
-                                }
-                            } else {
-                                //console.log("all scripts completed")
-                                if (sshSuccess) {
-
-                                    message("All scripts completed\n");
-                                    flushMessQueue();
-                                    res.end("status:All scripts completed\n");  //This line triggers ui to complete style format
-                                } else {
-                                    message("Script Aborted\n");
-                                    flushMessQueue();
-                                    res.end("status:Scripts Aborted\n");
-                                }
-
-                                conn.end();
-                            }
+                        //update SystemsJSON component with pass or fail and build results file name
+                        if (sshSuccess === true) {
+                            SystemsJSON[jobId].lastBuild.pass = 1;
+                            fileName =  jobId + '_' + fds + '_p.json';
+                        } else {
+                            SystemsJSON[jobId].lastBuild.pass = 0;
+                            fileName = jobId + '_' + fds + '_f.json';
                         }
 
-                    });
-                    saveAllJSON(false);
-
-                    //function to update system variables if job = system job. Used to set host etc.
-                    //eg var:systemVar:host=1.2.3.4 will add/change host variable in the system to a value of 1.2.3.4
-                    function copySystemVarToSystem(id){
-
-                        if(typeof SystemsJSON[id] !== "undefined") {
-
-                            var resultsSystem = SystemsJSON[id].ft.split('/')[1];
-                            if(SystemsJSON[resultsSystem].variables){
-                                if(latestVarCache[id]){
-                                    //loop through each var in this job
-                                    //if one is systemVar get the value and add/update in in system
-                                    for(var varName in latestVarCache[id]){
-                                        if(varName === "systemVar"){
-                                            var newVar = latestVarCache[id][varName];
-                                            SystemsJSON[resultsSystem].variables[newVar.split("=")[0]] = {value:newVar.split("=")[1], private: false, type: "Text"}
-                                        }
-                                    }
-                                    saveAllJSON(false)
+                        //save results file and cache vars to lookup - latestVarCache[Id][varName]
+                        fs.writeFile(resultsPath + fileName, JSON.stringify(resultsArray), function (err) {
+                            if (err) {
+                                console.log('There has been an error saving your json.\n'+err.message);
+                            }else{
+                                if(typeof latestVarCache[jobId] === 'undefined'){
+                                    delete latestVarCache[jobId]
                                 }
-                            }
-                        }
-                    }
-                });
+                                cacheVarVals([fileName],SystemsJSON[jobId].ft.split('/')[1]);
 
-                //event when data is returned on ssh session
-                stream.on('data', function (data) {
-
-                    //send data to ui
-                    res.write(data.toString());
-
-                    //Accumulate to buffer until the prompt appears
-                    respBufferAccu = Buffer.concat([respBufferAccu, data]);
-
-                    //if the response contains the current prompt string send next command and process directives
-                    if( respBufferAccu.toString().includes(prompt) ){
-                        //if( respBufferAccu.toString().split('\n').slice(-1)[0]  === prompt ){
-                            //console.log(respBufferAccu.toString().split('\n').slice(-1)[0] + '===' + prompt);
-
-                            writeResponse(respBufferAccu);
-                            respBufferAccu = new Buffer([]);
-
-                            if (commandIndex < scriptArray.length) {
-                                var command = scriptArray[commandIndex];
-                                var currentCommand = replaceVar(command, job);
-                                processDirectives();
-                            }
-                            if (commandIndex < scriptArray.length) {
-                                var command = scriptArray[commandIndex];
-                                var currentCommand = replaceVar(command, job);
-                                sendCommand();
-                            }
-                            if (commandIndex < scriptArray.length){
-                                var command = scriptArray[commandIndex];
-                                var currentCommand = replaceVar(command, job);
-                                processDirectives();
-                            }
-
-                            //if all commands have been sent
-                            if (commandIndex === scriptArray.length) {
-                                commandIndex++;
-
-                                //exit stream if no async processes
-                                if (aSyncInProgress < 1){
-                                    stream.write("exit" + '\n');
-                                    sshSuccess = true
-                                }else{ //otherwise set deferredExit flag
-                                    message('Waiting for asynchronous processes to complete...');
-                                    deferredExit = true
+                                //If this is a special 'system' job then update the system variables
+                                if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].systemFunction === 1){
+                                    copySystemVarToSystem(jobId)
                                 }
-                                flushMessQueue();
-                            }
-                    }
-                    //Function to create response obj to add to results file
-                    function writeResponse(newData) {
 
-                        var ds = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-');
-                        messQueue.forEach(function (mess) {
-                            resultsArray.push({
-                                t: ds,
-                                m: mess
-                            });
-                            res.write("\nmessage:" + mess + "\n")
+                                runNextJob();
+                                
+                            }
+
                         });
-                        messQueue = [];
+                        saveAllJSON(false);
 
-                        var newdataStr = newData.toString();
+                        //function to update system variables if job = system job. Used to set host etc.
+                        //eg var:systemVar:host=1.2.3.4 will add/change host variable in the system to a value of 1.2.3.4
+                        function copySystemVarToSystem(id){
 
-                        //console.log('writeResponse: ' + newdataStr);
+                            if(typeof SystemsJSON[id] !== "undefined") {
 
-                        newdataStr = newdataStr.replace(/\n$/, "");
-                        var newdataAr = newdataStr.split('\n');
-
-                        newdataAr.forEach(function (row) {
-                            if (row === prompt) {
-                                atPrompt = true;
-                            } else {
-                                if (atPrompt === true) {
-                                    resultsArray.push({
-                                        t: ds,
-                                        x: atPrompt === true ? '' : exportVar,
-                                        results: prompt + row + '\n'
-                                    });
-                                } else {
-                                    resultsArray.push({
-                                        t: ds,
-                                        x: atPrompt === true ? '' : exportVar,
-                                        results: row + '\n'
-                                    });
-                                }
-                                atPrompt = false;
-                            }
-                        });
-                        resultsArray.push({t: ds, x: '', cc: newData});
-                    }
-
-                    //function to send next command to ssh stream
-                    function sendCommand() {
-                        if (data.slice(-(prompt.length)).toString() === prompt) {
-                            exportVar = '';
-                            exportCommand = '';
-                            if (currentCommand.substr(0, 7) === "export:") {
-                                exportVar = currentCommand.substr(currentCommand.indexOf(":") + 1);
-                                currentCommand = exportVar.substr(exportVar.indexOf(":") + 1);
-                                exportVar = exportVar.substr(0, exportVar.indexOf(":"));
-                                exportCommand = currentCommand;
-                            }
-                            //console.log('sent  [' + currentCommand + " \n ex:" + exportVar +'\n data:'+ data.toString() + ']');
-
-                            //console.log('sent :' + currentCommand);
-                            stream.write(currentCommand + '\n');
-                            commandIndex++;
-                        }
-                    }
-
-                    //function to process the directives on the current command .
-                    function processDirectives(){
-                        do{
-                            // console.log("commandIndex: " + commandIndex);
-                            // console.log("process:" + currentCommand);
-                            // console.log("");
-
-                            var isDirective = false;//flag to indicate current command was indeed a directive
-
-                            //parse each line and search for directives. while found it is processed and the next line is parsed
-                            if (currentCommand.substr(0, 7) === "noWait:") {
-                                currentCommand = currentCommand.substr(currentCommand.indexOf(":") + 1);
-                                stream.write(currentCommand + '\n');
-
-                                isDirective = true;
-                            } else if
-                            (currentCommand.substr(0, 3) === "^c:") {
-                                stream.write("\x03");
-                                isDirective = true;
-                                //console.log('send ^c');
-                            } else if
-                            (currentCommand.substr(0, 10) === "setPrompt:") {
-                                prompt = currentCommand.substr(currentCommand.indexOf(":") + 1);
-                                //console.log('set prompt [' + prompt + ']');
-                                isDirective = true;
-                            } else if
-                            (currentCommand.substr(0, 15) === "setPromptCodes:") {
-                                var promptCodes = currentCommand.substr(currentCommand.indexOf(":") + 1);
-                                var codesAr = promptCodes.split(" ");
-                                var codePrompt = "";
-                                codesAr.forEach(function (code) {
-                                    codePrompt += String.fromCharCode(parseInt(code, 16));
-                                });
-                                prompt = codePrompt;
-                                //console.log('set promptCodes [' + codePrompt + ']');
-                                isDirective = true;
-                            } else if
-                            (currentCommand.substr(0, 13) === "saveTemplate:") {
-
-                                var template = "";
-                                var pathFileName = "";
-
-                                var tempNum = parseInt(currentCommand.split(':')[1], 10);
-                                if (tempNum > 1 && tempNum < 100) {
-                                    template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[tempNum - 1].c;
-                                    pathFileName = currentCommand.substr(currentCommand.indexOf(":") + 1);
-                                    pathFileName = pathFileName.substr(pathFileName.indexOf(":") + 1);
-                                }else{
-
-                                    //console.log({job: job.name, id: jobId});
-
-                                    template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[0].c;
-                                    pathFileName = currentCommand.substr(currentCommand.indexOf(":") + 1);
-                                }
-
-                                var pathFileNameAr = pathFileName.split('/');
-                                var fileName = pathFileNameAr[pathFileNameAr.length - 1];
-                                var rmResp = execSync("sudo rm -f /tmp/" + fileName);
-
-                                sendTemplate(pathFileName, fileName, template);
-                                function sendTemplate(aPathFileName, aFileName, aTemplate){
-                                    aSyncInProgress++;
-                                    fs.writeFile('/tmp/' + aFileName, aTemplate, function (err) {
-                                        if (err) {
-                                            aSyncInProgress--;
-                                            return console.log(err);
-                                        }
-                                        //var chownResp = execSync("sudo chown " + getSystemVarVal(jobId, 'username') + ":" + getSystemVarVal(jobId, 'username') + ' /tmp/' + aFileName);
-                                        conn.sftp(
-                                            function (err, sftp) {
-                                                //var msg = "";
-                                                if (err) {
-                                                    console.log("Error, problem starting SFTP: %s", err);
-                                                    message('error:saveTemplate - problem starting SFTP');
-                                                    stream.close();
-                                                    aSyncInProgress--;
-                                                } else {
-                                                    var readStream = fs.createReadStream("/tmp/" + aFileName);
-                                                    var writeStream = sftp.createWriteStream(pathFileName);
-                                                    //console.log('creating write stream' + aFileName);
-                                                    writeStream.on('error', function (e) {
-                                                        aSyncInProgress--;
-                                                        console.log('error:saveTemplate - error creating target stream - ' + aPathFileName, e);
-                                                        message('error:saveTemplate - error creating target stream - ' + aPathFileName);
-                                                        stream.close();
-                                                    });
-
-                                                    writeStream.on('close', function () {
-                                                            aSyncInProgress--;
-                                                            //console.log('saveTemplate:Sent - ' + aFileName);
-                                                            sftp.end();
-                                                            //console.log("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName);
-                                                            //Execute sudo chown to change file ownership to the user as defined in the system
-                                                            conn.exec("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName, function(err, stream) {
-                                                                if (err) throw err;
-                                                                stream.on('close', function(code, signal) {
-                                                                    //console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
-                                                                    //conn.end();
-                                                                }).on('data', function(data) {
-                                                                    console.log('STDOUT: ' + data);
-                                                                }).stderr.on('data', function(data) {
-                                                                    console.log('STDERR: ' + data);
-                                                                });
-                                                            });
-                                                            message('saveTemplate:send complete - ' + aPathFileName);
-                                                            var rmResp = execSync("sudo rm -f /tmp/" + aFileName);
-                                                            if(deferredExit === true && aSyncInProgress === 0){
-                                                                stream.write("exit" + '\n');
-                                                                sshSuccess = true
-                                                            }
-                                                        }
-                                                    );
-                                                    readStream.pipe(writeStream);
-                                                }
+                                var resultsSystem = SystemsJSON[id].ft.split('/')[1];
+                                if(SystemsJSON[resultsSystem].variables){
+                                    if(latestVarCache[id]){
+                                        //loop through each var in this job
+                                        //if one is systemVar get the value and add/update in in system
+                                        for(var varName in latestVarCache[id]){
+                                            if(varName === "systemVar"){
+                                                var newVar = latestVarCache[id][varName];
+                                                SystemsJSON[resultsSystem].variables[newVar.split("=")[0]] = {value:newVar.split("=")[1], private: false, type: "Text"}
                                             }
-                                        )
-                                    })
+                                        }
+                                        saveAllJSON(false)
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    //event when data is returned on ssh session
+                    stream.on('data', function (data) {
+
+                        //send data to ui
+                        res.write(data.toString());
+
+                        //Accumulate to buffer until the prompt appears
+                        respBufferAccu = Buffer.concat([respBufferAccu, data]);
+
+                        //if the response contains the current prompt string send next command and process directives
+                        if( respBufferAccu.toString().includes(prompt) ){
+                            //if( respBufferAccu.toString().split('\n').slice(-1)[0]  === prompt ){
+                                //console.log(respBufferAccu.toString().split('\n').slice(-1)[0] + '===' + prompt);
+
+                                writeResponse(respBufferAccu);
+                                respBufferAccu = new Buffer([]);
+
+                                if (commandIndex < scriptArray.length) {
+                                    var command = scriptArray[commandIndex];
+                                    var currentCommand = replaceVar(command, job);
+                                    processDirectives();
+                                }
+                                if (commandIndex < scriptArray.length) {
+                                    var command = scriptArray[commandIndex];
+                                    var currentCommand = replaceVar(command, job);
+                                    sendCommand();
+                                }
+                                if (commandIndex < scriptArray.length){
+                                    var command = scriptArray[commandIndex];
+                                    var currentCommand = replaceVar(command, job);
+                                    processDirectives();
                                 }
 
-                                isDirective = true;
-                            } else if
-                            (currentCommand.substr(0, 8) === "saveVar:") {
+                                //if all commands have been sent
+                                if (commandIndex === scriptArray.length) {
+                                    commandIndex++;
 
-                                var varVal = "";
-                                var pathFileName = "";
+                                    //exit stream if no async processes
+                                    if (aSyncInProgress < 1){
+                                        stream.write("exit" + '\n');
+                                        sshSuccess = true
+                                    }else{ //otherwise set deferredExit flag
+                                        message('Waiting for asynchronous processes to complete...');
+                                        deferredExit = true
+                                    }
+                                    flushMessQueue();
+                                }
+                        }
+                        //Function to create response obj to add to results file
+                        function writeResponse(newData) {
 
-                                var varName = currentCommand.split(':')[1];
-                                if (varName.length > 0) {
+                            var ds = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-');
+                            messQueue.forEach(function (mess) {
+                                resultsArray.push({
+                                    t: ds,
+                                    m: mess
+                                });
+                                res.write("\nmessage:" + mess + "\n")
+                            });
+                            messQueue = [];
 
-                                    if(SystemsJSON[jobId].variables.hasOwnProperty(varName)){
+                            var newdataStr = newData.toString();
 
-                                        varVal = SystemsJSON[jobId].variables[varName].value;
+                            //console.log('writeResponse: ' + newdataStr);
 
+                            newdataStr = newdataStr.replace(/\n$/, "");
+                            var newdataAr = newdataStr.split('\n');
+
+                            newdataAr.forEach(function (row) {
+                                if (row === prompt) {
+                                    atPrompt = true;
+                                } else {
+                                    if (atPrompt === true) {
+                                        resultsArray.push({
+                                            t: ds,
+                                            x: atPrompt === true ? '' : exportVar,
+                                            results: prompt + row + '\n'
+                                        });
+                                    } else {
+                                        resultsArray.push({
+                                            t: ds,
+                                            x: atPrompt === true ? '' : exportVar,
+                                            results: row + '\n'
+                                        });
+                                    }
+                                    atPrompt = false;
+                                }
+                            });
+                            resultsArray.push({t: ds, x: '', cc: newData});
+                        }
+
+                        //function to send next command to ssh stream
+                        function sendCommand() {
+                            if (data.slice(-(prompt.length)).toString() === prompt) {
+                                exportVar = '';
+                                exportCommand = '';
+                                if (currentCommand.substr(0, 7) === "export:") {
+                                    exportVar = currentCommand.substr(currentCommand.indexOf(":") + 1);
+                                    currentCommand = exportVar.substr(exportVar.indexOf(":") + 1);
+                                    exportVar = exportVar.substr(0, exportVar.indexOf(":"));
+                                    exportCommand = currentCommand;
+                                }
+                                //console.log('sent  [' + currentCommand + " \n ex:" + exportVar +'\n data:'+ data.toString() + ']');
+
+                                //console.log('sent :' + currentCommand);
+                                stream.write(currentCommand + '\n');
+                                commandIndex++;
+                            }
+                        }
+
+                        //function to process the directives on the current command .
+                        function processDirectives(){
+                            do{
+                                // console.log("commandIndex: " + commandIndex);
+                                // console.log("process:" + currentCommand);
+                                // console.log("");
+
+                                var isDirective = false;//flag to indicate current command was indeed a directive
+
+                                //parse each line and search for directives. while found it is processed and the next line is parsed
+                                if (currentCommand.substr(0, 7) === "noWait:") {
+                                    currentCommand = currentCommand.substr(currentCommand.indexOf(":") + 1);
+                                    stream.write(currentCommand + '\n');
+
+                                    isDirective = true;
+                                } else if
+                                (currentCommand.substr(0, 3) === "^c:") {
+                                    stream.write("\x03");
+                                    isDirective = true;
+                                    //console.log('send ^c');
+                                } else if
+                                (currentCommand.substr(0, 10) === "setPrompt:") {
+                                    prompt = currentCommand.substr(currentCommand.indexOf(":") + 1);
+                                    //console.log('set prompt [' + prompt + ']');
+                                    isDirective = true;
+                                } else if
+                                (currentCommand.substr(0, 15) === "setPromptCodes:") {
+                                    var promptCodes = currentCommand.substr(currentCommand.indexOf(":") + 1);
+                                    var codesAr = promptCodes.split(" ");
+                                    var codePrompt = "";
+                                    codesAr.forEach(function (code) {
+                                        codePrompt += String.fromCharCode(parseInt(code, 16));
+                                    });
+                                    prompt = codePrompt;
+                                    //console.log('set promptCodes [' + codePrompt + ']');
+                                    isDirective = true;
+                                } else if
+                                (currentCommand.substr(0, 13) === "saveTemplate:") {
+
+                                    var template = "";
+                                    var pathFileName = "";
+
+                                    var tempNum = parseInt(currentCommand.split(':')[1], 10);
+                                    if (tempNum > 1 && tempNum < 100) {
+                                        template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[tempNum - 1].c;
                                         pathFileName = currentCommand.substr(currentCommand.indexOf(":") + 1);
                                         pathFileName = pathFileName.substr(pathFileName.indexOf(":") + 1);
+                                    }else{
 
-                                        var pathFileNameAr = pathFileName.split('/');
-                                        var fileName = pathFileNameAr[pathFileNameAr.length - 1];
-                                        var rmResp = execSync("sudo rm -f /tmp/" + fileName);
+                                        //console.log({job: job.name, id: jobId});
 
-                                        sendVar(pathFileName, fileName, varVal);
+                                        template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[0].c;
+                                        pathFileName = currentCommand.substr(currentCommand.indexOf(":") + 1);
+                                    }
+
+                                    var pathFileNameAr = pathFileName.split('/');
+                                    var fileName = pathFileNameAr[pathFileNameAr.length - 1];
+                                    var rmResp = execSync("sudo rm -f /tmp/" + fileName);
+
+                                    sendTemplate(pathFileName, fileName, template);
+                                    function sendTemplate(aPathFileName, aFileName, aTemplate){
+                                        aSyncInProgress++;
+                                        fs.writeFile('/tmp/' + aFileName, aTemplate, function (err) {
+                                            if (err) {
+                                                aSyncInProgress--;
+                                                return console.log(err);
+                                            }
+                                            //var chownResp = execSync("sudo chown " + getSystemVarVal(jobId, 'username') + ":" + getSystemVarVal(jobId, 'username') + ' /tmp/' + aFileName);
+                                            conn.sftp(
+                                                function (err, sftp) {
+                                                    //var msg = "";
+                                                    if (err) {
+                                                        console.log("Error, problem starting SFTP: %s", err);
+                                                        message('error:saveTemplate - problem starting SFTP');
+                                                        stream.close();
+                                                        aSyncInProgress--;
+                                                    } else {
+                                                        var readStream = fs.createReadStream("/tmp/" + aFileName);
+                                                        var writeStream = sftp.createWriteStream(pathFileName);
+                                                        //console.log('creating write stream' + aFileName);
+                                                        writeStream.on('error', function (e) {
+                                                            aSyncInProgress--;
+                                                            console.log('error:saveTemplate - error creating target stream - ' + aPathFileName, e);
+                                                            message('error:saveTemplate - error creating target stream - ' + aPathFileName);
+                                                            stream.close();
+                                                        });
+
+                                                        writeStream.on('close', function () {
+                                                                aSyncInProgress--;
+                                                                //console.log('saveTemplate:Sent - ' + aFileName);
+                                                                sftp.end();
+                                                                //console.log("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName);
+                                                                //Execute sudo chown to change file ownership to the user as defined in the system
+                                                                conn.exec("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName, function(err, stream) {
+                                                                    if (err) throw err;
+                                                                    stream.on('close', function(code, signal) {
+                                                                        //console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
+                                                                        //conn.end();
+                                                                    }).on('data', function(data) {
+                                                                        console.log('STDOUT: ' + data);
+                                                                    }).stderr.on('data', function(data) {
+                                                                        console.log('STDERR: ' + data);
+                                                                    });
+                                                                });
+                                                                message('saveTemplate:send complete - ' + aPathFileName);
+                                                                var rmResp = execSync("sudo rm -f /tmp/" + aFileName);
+                                                                if(deferredExit === true && aSyncInProgress === 0){
+                                                                    stream.write("exit" + '\n');
+                                                                    sshSuccess = true
+                                                                }
+                                                            }
+                                                        );
+                                                        readStream.pipe(writeStream);
+                                                    }
+                                                }
+                                            )
+                                        })
+                                    }
+
+                                    isDirective = true;
+                                } else if
+                                (currentCommand.substr(0, 8) === "saveVar:") {
+
+                                    var varVal = "";
+                                    var pathFileName = "";
+
+                                    var varName = currentCommand.split(':')[1];
+                                    if (varName.length > 0) {
+
+                                        if(SystemsJSON[jobId].variables.hasOwnProperty(varName)){
+
+                                            varVal = SystemsJSON[jobId].variables[varName].value;
+
+                                            pathFileName = currentCommand.substr(currentCommand.indexOf(":") + 1);
+                                            pathFileName = pathFileName.substr(pathFileName.indexOf(":") + 1);
+
+                                            var pathFileNameAr = pathFileName.split('/');
+                                            var fileName = pathFileNameAr[pathFileNameAr.length - 1];
+                                            var rmResp = execSync("sudo rm -f /tmp/" + fileName);
+
+                                            sendVar(pathFileName, fileName, varVal);
+                                        }else{
+                                            aSyncInProgress--;
+                                            console.log('error:sendVar - Var not found: ' + varName);
+                                            message('error:sendVar - Var not found: ' + varName);
+                                            stream.close();
+                                        }
                                     }else{
                                         aSyncInProgress--;
-                                        console.log('error:sendVar - Var not found: ' + varName);
-                                        message('error:sendVar - Var not found: ' + varName);
+                                        console.log('error:sendVar - Var name not specified');
+                                        message('error:sendVar - Var name not specified');
                                         stream.close();
                                     }
-                                }else{
-                                    aSyncInProgress--;
-                                    console.log('error:sendVar - Var name not specified');
-                                    message('error:sendVar - Var name not specified');
-                                    stream.close();
-                                }
 
 
 
-                                function sendVar(aPathFileName, aFileName, aVar){
-                                    aSyncInProgress++;
-                                    fs.writeFile('/tmp/' + aFileName, aVar, function (err) {
-                                        if (err) {
-                                            aSyncInProgress--;
-                                            return console.log(err);
-                                        }
-                                        conn.sftp(
-                                            function (err, sftp) {
-                                                if (err) {
-                                                    console.log("Error, problem starting SFTP: %s", err);
-                                                    message('error:saveVar - problem starting SFTP');
-                                                    stream.close();
-                                                    aSyncInProgress--;
-                                                } else {
-                                                    var readStream = fs.createReadStream("/tmp/" + aFileName);
-                                                    var writeStream = sftp.createWriteStream(pathFileName);
-
-                                                    writeStream.on('error', function (e) {
-                                                        aSyncInProgress--;
-                                                        console.log('error:saveVar - error creating target stream - ' + aPathFileName, e);
-                                                        message('error:saveVar - error creating target stream - ' + aPathFileName);
+                                    function sendVar(aPathFileName, aFileName, aVar){
+                                        aSyncInProgress++;
+                                        fs.writeFile('/tmp/' + aFileName, aVar, function (err) {
+                                            if (err) {
+                                                aSyncInProgress--;
+                                                return console.log(err);
+                                            }
+                                            conn.sftp(
+                                                function (err, sftp) {
+                                                    if (err) {
+                                                        console.log("Error, problem starting SFTP: %s", err);
+                                                        message('error:saveVar - problem starting SFTP');
                                                         stream.close();
-                                                    });
+                                                        aSyncInProgress--;
+                                                    } else {
+                                                        var readStream = fs.createReadStream("/tmp/" + aFileName);
+                                                        var writeStream = sftp.createWriteStream(pathFileName);
 
-                                                    writeStream.on('close', function () {
+                                                        writeStream.on('error', function (e) {
                                                             aSyncInProgress--;
+                                                            console.log('error:saveVar - error creating target stream - ' + aPathFileName, e);
+                                                            message('error:saveVar - error creating target stream - ' + aPathFileName);
+                                                            stream.close();
+                                                        });
 
-                                                            sftp.end();
+                                                        writeStream.on('close', function () {
+                                                                aSyncInProgress--;
 
-                                                            conn.exec("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName, function(err, stream) {
-                                                                if (err) throw err;
-                                                                stream.on('close', function(code, signal) {
-                                                                }).on('data', function(data) {
-                                                                    console.log('STDOUT: ' + data);
-                                                                }).stderr.on('data', function(data) {
-                                                                    console.log('STDERR: ' + data);
+                                                                sftp.end();
+
+                                                                conn.exec("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName, function(err, stream) {
+                                                                    if (err) throw err;
+                                                                    stream.on('close', function(code, signal) {
+                                                                    }).on('data', function(data) {
+                                                                        console.log('STDOUT: ' + data);
+                                                                    }).stderr.on('data', function(data) {
+                                                                        console.log('STDERR: ' + data);
+                                                                    });
                                                                 });
-                                                            });
-                                                            message('saveVar:send complete - ' + aPathFileName);
-                                                            var rmResp = execSync("sudo rm -f /tmp/" + aFileName);
+                                                                message('saveVar:send complete - ' + aPathFileName);
+                                                                var rmResp = execSync("sudo rm -f /tmp/" + aFileName);
+                                                                if(deferredExit === true && aSyncInProgress === 0){
+                                                                    stream.write("exit" + '\n');
+                                                                    sshSuccess = true
+                                                                }
+                                                            }
+                                                        );
+                                                        readStream.pipe(writeStream);
+                                                    }
+                                                }
+                                            )
+                                        })
+                                    }
+
+                                    isDirective = true;
+                                } else if
+                                (currentCommand.substr(0, 9) === "saveFile:") {
+
+                                    var fileName = currentCommand.split(':')[1].trim();
+                                    var remotePath = currentCommand.split(':')[2].trim();
+
+                                    var bcId = SystemsJSON[jobId].buildCode.linkArr[0];
+                                    var foundErr = false;
+                                    if (fileName.trim() === "" || remotePath.trim() === "") {
+                                        //console.log("Error saving resource file. Please provide file name and path");
+                                        message('error:saveFile - Please provide file name and path');
+                                        stream.close();
+                                    }
+
+                                    if (!fs.existsSync(filesPath + bcId + '/' + fileName)) {
+                                        console.log("Error saving resource file. File resource not found.");
+                                        //foundErr = true;
+                                        message('error:Resource not found - ' + filesPath + bcId + '/' + fileName);
+                                        stream.close();
+                                    } else {
+                                        aSyncInProgress++;
+                                        sendFile(fileName, remotePath, bcId);
+                                        function sendFile(aFileName, aRemotePath, aBuildCodeID) {
+                                            conn.sftp(
+                                                function (err, sftp) {
+                                                    //    var msg = "";
+                                                    if (err) {
+                                                        console.log("Error, problem starting SFTP:", err);
+                                                        message('error:problem starting SFTP - ' + filesPath + aBuildCodeID + '/' + aFileName);
+                                                        aSyncInProgress--;
+                                                        stream.close();
+                                                        // msg = "Error, problem starting SFTP" + '\n';
+                                                        // stream.write(msg);
+                                                    } else {
+                                                        //console.log("file sftp: " + filesPath + aBuildCodeID + '/' + aFileName + ' > ' + aRemotePath + '/' + aFileName);
+                                                        var readStream = fs.createReadStream(filesPath + aBuildCodeID + '/' + aFileName);
+
+                                                        var writeStream = sftp.createWriteStream(remotePath + '/' + aFileName);
+                                                        writeStream.on('error', function (e) {
+                                                            //console.log(e);
+                                                            message('error:saveFile - error creating target stream - ' + aRemotePath + '/' + aFileName);
+                                                            aSyncInProgress--;
+                                                            stream.close();
+                                                        });
+
+                                                        writeStream.on('close', function () {
+                                                            sftp.end();
+                                                            message('saveFile:send complete - ' + aRemotePath + '/' + aFileName);
+                                                            aSyncInProgress--;
                                                             if(deferredExit === true && aSyncInProgress === 0){
                                                                 stream.write("exit" + '\n');
                                                                 sshSuccess = true
                                                             }
-                                                        }
-                                                    );
-                                                    readStream.pipe(writeStream);
+                                                        });
+                                                        readStream.pipe(writeStream);
+
+                                                    }
                                                 }
-                                            }
-                                        )
-                                    })
-                                }
+                                            )
+                                        }
+                                    }
 
-                                isDirective = true;
-                            } else if
-                            (currentCommand.substr(0, 9) === "saveFile:") {
+                                    isDirective = true;
+                                } else if
+                                (currentCommand.substr(0, 5) === "snap:") {
 
-                                var fileName = currentCommand.split(':')[1].trim();
-                                var remotePath = currentCommand.split(':')[2].trim();
-
-                                var bcId = SystemsJSON[jobId].buildCode.linkArr[0];
-                                var foundErr = false;
-                                if (fileName.trim() === "" || remotePath.trim() === "") {
-                                    //console.log("Error saving resource file. Please provide file name and path");
-                                    message('error:saveFile - Please provide file name and path');
-                                    stream.close();
-                                }
-
-                                if (!fs.existsSync(filesPath + bcId + '/' + fileName)) {
-                                    console.log("Error saving resource file. File resource not found.");
-                                    //foundErr = true;
-                                    message('error:Resource not found - ' + filesPath + bcId + '/' + fileName);
-                                    stream.close();
-                                } else {
+                                    var url = currentCommand.replace('snap:','').trim();
+                                    //console.log('url: ' + url);
                                     aSyncInProgress++;
-                                    sendFile(fileName, remotePath, bcId);
-                                    function sendFile(aFileName, aRemotePath, aBuildCodeID) {
-                                        conn.sftp(
-                                            function (err, sftp) {
-                                                //    var msg = "";
-                                                if (err) {
-                                                    console.log("Error, problem starting SFTP:", err);
-                                                    message('error:problem starting SFTP - ' + filesPath + aBuildCodeID + '/' + aFileName);
-                                                    aSyncInProgress--;
-                                                    stream.close();
-                                                    // msg = "Error, problem starting SFTP" + '\n';
-                                                    // stream.write(msg);
-                                                } else {
-                                                    //console.log("file sftp: " + filesPath + aBuildCodeID + '/' + aFileName + ' > ' + aRemotePath + '/' + aFileName);
-                                                    var readStream = fs.createReadStream(filesPath + aBuildCodeID + '/' + aFileName);
 
-                                                    var writeStream = sftp.createWriteStream(remotePath + '/' + aFileName);
-                                                    writeStream.on('error', function (e) {
-                                                        //console.log(e);
-                                                        message('error:saveFile - error creating target stream - ' + aRemotePath + '/' + aFileName);
-                                                        aSyncInProgress--;
-                                                        stream.close();
-                                                    });
+                                    //Send url to client
+                                    message('url:' + url);
 
-                                                    writeStream.on('close', function () {
-                                                        sftp.end();
-                                                        message('saveFile:send complete - ' + aRemotePath + '/' + aFileName);
-                                                        aSyncInProgress--;
-                                                        if(deferredExit === true && aSyncInProgress === 0){
-                                                            stream.write("exit" + '\n');
-                                                            sshSuccess = true
-                                                        }
-                                                    });
-                                                    readStream.pipe(writeStream);
+                                    //add url tag to current comp
+                                    SystemsJSON[jobId].lastBuild.url=url;
+                                    // var anArr = job.ft.replace('#/', '').split('/');
+                                    // var nearestPromotedAn = "";
+                                    // anArr.forEach(function (an) {
+                                    //     if (SystemsJSON[an].hasOwnProperty("promoted")){
+                                    //         if (SystemsJSON[an].promoted === 1){
+                                    //             nearestPromotedAn = an;
+                                    //         }
+                                    //     }
+                                    // });
+                                    // if(nearestPromotedAn && nearestPromotedAn !== ""){
+                                    //     if(SystemsJSON[nearestPromotedAn].hasOwnProperty('lastBuild')){
+                                    //         SystemsJSON[nearestPromotedAn].lastBuild.url=url;
+                                    //     }
+                                    // }
 
-                                                }
+                                    (async function () {
+
+                                        //console.log("Page.navigate: " + url)
+
+                                        await Page.navigate({url: url});
+                                        await Page.loadEventFired();
+
+                                        //console.log("Page.loadEventFired: " + url)
+
+                                        const screenshot = await Page.captureScreenshot({format: "png", fromSurface: true});
+                                        const buffer = new Buffer(screenshot.data, 'base64');
+                                        if (!fs.existsSync(filesPath + jobId)) {
+                                            fs.mkdirSync(filesPath + jobId);
+                                        }
+                                        fs.writeFile(filesPath + jobId + '/' +'screenshot.png', buffer, 'base64', function(err) {
+                                            if (err) {
+                                                console.error(err);
+                                            } else {
+                                                //console.log('Screenshot saved');
                                             }
-                                        )
-                                    }
-                                }
+                                        });
+                                        message('snap:created: ' + "screenshot.png");
 
-                                isDirective = true;
-                            } else if
-                            (currentCommand.substr(0, 5) === "snap:") {
+                                        aSyncInProgress--;
+                                        //console.log(aSyncInProgress.toString())
+                                        if(deferredExit === true && aSyncInProgress === 0){
+                                            stream.write("exit" + '\n');
+                                            sshSuccess = true
+                                        }
 
-                                var url = currentCommand.replace('snap:','').trim();
-                                //console.log('url: ' + url);
-                                aSyncInProgress++;
+                                    })();
 
-                                //Send url to client
-                                message('url:' + url);
+                                    isDirective = true;
 
-                                //add url tag to current comp
-                                SystemsJSON[jobId].lastBuild.url=url;
-                                // var anArr = job.ft.replace('#/', '').split('/');
-                                // var nearestPromotedAn = "";
-                                // anArr.forEach(function (an) {
-                                //     if (SystemsJSON[an].hasOwnProperty("promoted")){
-                                //         if (SystemsJSON[an].promoted === 1){
-                                //             nearestPromotedAn = an;
-                                //         }
-                                //     }
-                                // });
-                                // if(nearestPromotedAn && nearestPromotedAn !== ""){
-                                //     if(SystemsJSON[nearestPromotedAn].hasOwnProperty('lastBuild')){
-                                //         SystemsJSON[nearestPromotedAn].lastBuild.url=url;
-                                //     }
-                                // }
+                                } else if
+                                (currentCommand.substr(0, 9) === "navigate:") {
 
-                                (async function () {
+                                    var url = currentCommand.replace('navigate:','').trim();
+                                    //console.log('url: ' + url);
+                                    aSyncInProgress++;
 
-                                    //console.log("Page.navigate: " + url)
+                                    //Send url to client
+                                    message('url:' + url);
 
-                                    await Page.navigate({url: url});
-                                    await Page.loadEventFired();
-
-                                    //console.log("Page.loadEventFired: " + url)
-
-                                    const screenshot = await Page.captureScreenshot({format: "png", fromSurface: true});
-                                    const buffer = new Buffer(screenshot.data, 'base64');
-                                    if (!fs.existsSync(filesPath + jobId)) {
-                                        fs.mkdirSync(filesPath + jobId);
-                                    }
-                                    fs.writeFile(filesPath + jobId + '/' +'screenshot.png', buffer, 'base64', function(err) {
-                                        if (err) {
-                                            console.error(err);
-                                        } else {
-                                            //console.log('Screenshot saved');
+                                    //add url tag to current comp and to nearest promoted ancestor
+                                    SystemsJSON[jobId].lastBuild.url=url;
+                                    var anArr = job.ft.replace('#/', '').split('/');
+                                    var nearestPromotedAn = "";
+                                    anArr.forEach(function (an) {
+                                        if (SystemsJSON[an].hasOwnProperty("promoted")){
+                                            if (SystemsJSON[an].promoted === 1){
+                                                nearestPromotedAn = an;
+                                            }
                                         }
                                     });
-                                    message('snap:created: ' + "screenshot.png");
-
-                                    aSyncInProgress--;
-                                    //console.log(aSyncInProgress.toString())
-                                    if(deferredExit === true && aSyncInProgress === 0){
-                                        stream.write("exit" + '\n');
-                                        sshSuccess = true
-                                    }
-
-                                })();
-
-                                isDirective = true;
-
-                            } else if
-                            (currentCommand.substr(0, 9) === "navigate:") {
-
-                                var url = currentCommand.replace('navigate:','').trim();
-                                //console.log('url: ' + url);
-                                aSyncInProgress++;
-
-                                //Send url to client
-                                message('url:' + url);
-
-                                //add url tag to current comp and to nearest promoted ancestor
-                                SystemsJSON[jobId].lastBuild.url=url;
-                                var anArr = job.ft.replace('#/', '').split('/');
-                                var nearestPromotedAn = "";
-                                anArr.forEach(function (an) {
-                                    if (SystemsJSON[an].hasOwnProperty("promoted")){
-                                        if (SystemsJSON[an].promoted === 1){
-                                            nearestPromotedAn = an;
+                                    if(nearestPromotedAn && nearestPromotedAn !== ""){
+                                        if(SystemsJSON[nearestPromotedAn].hasOwnProperty('lastBuild')){
+                                            SystemsJSON[nearestPromotedAn].lastBuild.url=url;
                                         }
                                     }
-                                });
-                                if(nearestPromotedAn && nearestPromotedAn !== ""){
-                                    if(SystemsJSON[nearestPromotedAn].hasOwnProperty('lastBuild')){
-                                        SystemsJSON[nearestPromotedAn].lastBuild.url=url;
+
+                                    (async function () {
+
+                                        //console.log("Page.navigate: " + url)
+
+                                        await Page.navigate({url: url});
+                                        await Page.loadEventFired();
+
+                                        //console.log("Page.loadEventFired: " + url)
+
+                                        aSyncInProgress--;
+                                        if(deferredExit === true && aSyncInProgress === 0){
+                                            stream.write("exit" + '\n');
+                                            sshSuccess = true
+                                        }
+
+                                    })();
+                                    isDirective = true;
+
+                                } else if
+                                (currentCommand.substr(0, 11) === "reloadPage:") {
+
+                                    aSyncInProgress++;
+
+                                    (async function () {
+
+                                        console.log("Page.reload ")
+
+                                        await Page.reload();
+                                        aSyncInProgress--;
+                                        if(deferredExit === true && aSyncInProgress === 0){
+                                            stream.write("exit" + '\n');
+                                            sshSuccess = true
+                                        }
+
+                                    })();
+                                    isDirective = true;
+
+                                } else if
+                                (currentCommand.substr(0, 7) === "launch:") {
+                                    var url = currentCommand.replace('launch:','').trim();
+
+                                    message('launching url');
+                                    // message(currentCommand);
+                                    //Send url to client
+                                    message('launch:' + url);
+
+                                    SystemsJSON[jobId].lastBuild.launch=url;
+
+                                    isDirective = true;
+
+                                } else if
+                                (currentCommand.substr(0, 8) === "restart:") {
+
+                                    //request client to restart
+                                    message("restart:request client to restart");
+                                    isDirective = true;
+
+                                } else if
+                                (currentCommand.substr(0, 11) === "setTimeout:") {
+
+                                    //set the 'no prompt' timeout to a value for the remainder of this session
+
+                                    var TOString = currentCommand.replace('setTimeout:','').trim();
+                                    if(parseInt(TOString ) > 0){
+                                        timeOut = parseInt(TOString);
+                                        clearTimeout(lastTimeout);
+                                        lastTimeout = setTimeout(conTimeout, timeOut);
+
+                                    }else{
+                                        message("setTimeout: value error")
+                                    }
+
+                                    isDirective = true;
+
+                                } else if
+                                (currentCommand.substr(0, 6) === "abort:") {
+
+                                    message('Abort directive called');
+                                    stream.close();
+
+                                    isDirective = true;
+                                }
+
+                                if (isDirective === true) {
+                                    commandIndex++;
+                                    if (commandIndex < scriptArray.length){
+                                        command = scriptArray[commandIndex];
+                                        currentCommand = replaceVar(command, job);
+                                    }  else{
+                                        isDirective = false;
                                     }
                                 }
+                            }while(isDirective === true);
+                        }
 
-                                (async function () {
+                        //function to replace the embedded var references with values. Returns new formatted commandStr
+                        function replaceVar(commandStr, job) {// find and replace inserted command vars eg. <%p.mVar4%>
 
-                                    //console.log("Page.navigate: " + url)
+                            const items = commandStr.split(new RegExp('<%', 'g'));
+                            items.forEach(function (item) {
+                                item = item.substr(0, item.indexOf('%>'));
 
-                                    await Page.navigate({url: url});
-                                    await Page.loadEventFired();
-
-                                    //console.log("Page.loadEventFired: " + url)
-
-                                    aSyncInProgress--;
-                                    if(deferredExit === true && aSyncInProgress === 0){
-                                        stream.write("exit" + '\n');
-                                        sshSuccess = true
-                                    }
-
-                                })();
-                                isDirective = true;
-
-                            } else if
-                            (currentCommand.substr(0, 11) === "reloadPage:") {
-
-                                aSyncInProgress++;
-
-                                (async function () {
-
-                                    console.log("Page.reload ")
-
-                                    await Page.reload();
-                                    aSyncInProgress--;
-                                    if(deferredExit === true && aSyncInProgress === 0){
-                                        stream.write("exit" + '\n');
-                                        sshSuccess = true
-                                    }
-
-                                })();
-                                isDirective = true;
-
-                            } else if
-                            (currentCommand.substr(0, 7) === "launch:") {
-                                var url = currentCommand.replace('launch:','').trim();
-
-                                message('launching url');
-                                // message(currentCommand);
-                                //Send url to client
-                                message('launch:' + url);
-
-                                SystemsJSON[jobId].lastBuild.launch=url;
-
-                                isDirective = true;
-
-                            } else if
-                            (currentCommand.substr(0, 8) === "restart:") {
-
-                                //request client to restart
-                                message("restart:request client to restart");
-                                isDirective = true;
-
-                            } else if
-                            (currentCommand.substr(0, 11) === "setTimeout:") {
-
-                                //set the 'no prompt' timeout to a value for the remainder of this session
-
-                                var TOString = currentCommand.replace('setTimeout:','').trim();
-                                if(parseInt(TOString ) > 0){
-                                    timeOut = parseInt(TOString);
-                                    clearTimeout(lastTimeout);
-                                    lastTimeout = setTimeout(conTimeout, timeOut);
-
-                                }else{
-                                    message("setTimeout: value error")
-                                }
-
-                                isDirective = true;
-
-                            } else if
-                            (currentCommand.substr(0, 6) === "abort:") {
-
-                                message('Abort directive called');
-                                stream.close();
-
-                                isDirective = true;
-                            }
-
-                            if (isDirective === true) {
-                                commandIndex++;
-                                if (commandIndex < scriptArray.length){
-                                    command = scriptArray[commandIndex];
-                                    currentCommand = replaceVar(command, job);
-                                }  else{
-                                    isDirective = false;
-                                }
-                            }
-                        }while(isDirective === true);
-                    }
-
-                    //function to replace the embedded var references with values. Returns new formatted commandStr
-                    function replaceVar(commandStr, job) {// find and replace inserted command vars eg. <%p.mVar4%>
-
-                        const items = commandStr.split(new RegExp('<%', 'g'));
-                        items.forEach(function (item) {
-                            item = item.substr(0, item.indexOf('%>'));
-
-                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 'c.') {
-                                var targetVarName = item.substr(2);
-                                var pid = job.parent;
-                                var repStr = "<%c." + targetVarName + "%>";
-                                if(job.variables[targetVarName]){
-                                    var val = job.variables[targetVarName].value;
-                                    commandStr = commandStr.replace(repStr, val)
-                                }
-                            } //look in job for vars
-                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 'p.') {
-                                var targetVarName = item.substr(2);
-                                var pid = job.parent;
-                                var repStr = "<%p." + targetVarName + "%>";
-                                if (typeof latestVarCache[pid] !== "undefined"){
-                                    if (typeof latestVarCache[pid][targetVarName] !== "undefined"){
-                                        var val = latestVarCache[pid][targetVarName].replace(/\n$/, "").replace(/\r$/, "")
+                                if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 'c.') {
+                                    var targetVarName = item.substr(2);
+                                    var pid = job.parent;
+                                    var repStr = "<%c." + targetVarName + "%>";
+                                    if(job.variables[targetVarName]){
+                                        var val = job.variables[targetVarName].value;
                                         commandStr = commandStr.replace(repStr, val)
                                     }
-                                }
-                            } //look in parent for vars
-
-                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 'a.') {
-                                var targetVarName = item.substr(2);
-                                var repStr = "<%a." + targetVarName + "%>";
-                                var anArr = job.ft.replace('#/', '').split('/');
-                                anArr.reverse().forEach(function (an) {
-                                    if (typeof latestVarCache[an] !== "undefined"){
-                                        if (typeof latestVarCache[an][targetVarName] !== "undefined"){
-                                            var val = latestVarCache[an][targetVarName];
+                                } //look in job for vars
+                                if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 'p.') {
+                                    var targetVarName = item.substr(2);
+                                    var pid = job.parent;
+                                    var repStr = "<%p." + targetVarName + "%>";
+                                    if (typeof latestVarCache[pid] !== "undefined"){
+                                        if (typeof latestVarCache[pid][targetVarName] !== "undefined"){
+                                            var val = latestVarCache[pid][targetVarName].replace(/\n$/, "").replace(/\r$/, "")
                                             commandStr = commandStr.replace(repStr, val)
                                         }
                                     }
-                                })//reverse the ancestor list so that closer ancestor values are used first.
-                            } //look in ancestors for vars
+                                } //look in parent for vars
 
-                            if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 's.') {
-                                var targetVarName = item.substr(2);
-                                var ft = job.ft;
-                                var repStr = "<%s." + targetVarName + "%>";
-                                var bestVal;
-                                var relativeScore = 0; //track how close of a relative the job the varwas found in and give pref to closer relatives.
+                                if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 'a.') {
+                                    var targetVarName = item.substr(2);
+                                    var repStr = "<%a." + targetVarName + "%>";
+                                    var anArr = job.ft.replace('#/', '').split('/');
+                                    anArr.reverse().forEach(function (an) {
+                                        if (typeof latestVarCache[an] !== "undefined"){
+                                            if (typeof latestVarCache[an][targetVarName] !== "undefined"){
+                                                var val = latestVarCache[an][targetVarName];
+                                                commandStr = commandStr.replace(repStr, val)
+                                            }
+                                        }
+                                    })//reverse the ancestor list so that closer ancestor values are used first.
+                                } //look in ancestors for vars
 
-                                for (var id in SystemsJSON) { //look in all jobs for var.
-                                    if (SystemsJSON.hasOwnProperty(id) && SystemsJSON[id].comType === 'job') {
-                                        var resultsSystem = SystemsJSON[id].ft.split('/')[1];
-                                        if (resultsSystem === ft.split('/')[1]){ //if same system...
-                                            if (typeof latestVarCache[id] !== "undefined"){
-                                                if (typeof latestVarCache[id][targetVarName] !== "undefined"){
-                                                    var thisScore = calcRelativeScore(ft, SystemsJSON[id].ft);
-                                                    var val = latestVarCache[id][targetVarName];
-                                                    if(relativeScore < thisScore){
-                                                        relativeScore = thisScore;
-                                                        bestVal = val;
+                                if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 's.') {
+                                    var targetVarName = item.substr(2);
+                                    var ft = job.ft;
+                                    var repStr = "<%s." + targetVarName + "%>";
+                                    var bestVal;
+                                    var relativeScore = 0; //track how close of a relative the job the varwas found in and give pref to closer relatives.
+
+                                    for (var id in SystemsJSON) { //look in all jobs for var.
+                                        if (SystemsJSON.hasOwnProperty(id) && SystemsJSON[id].comType === 'job') {
+                                            var resultsSystem = SystemsJSON[id].ft.split('/')[1];
+                                            if (resultsSystem === ft.split('/')[1]){ //if same system...
+                                                if (typeof latestVarCache[id] !== "undefined"){
+                                                    if (typeof latestVarCache[id][targetVarName] !== "undefined"){
+                                                        var thisScore = calcRelativeScore(ft, SystemsJSON[id].ft);
+                                                        var val = latestVarCache[id][targetVarName];
+                                                        if(relativeScore < thisScore){
+                                                            relativeScore = thisScore;
+                                                            bestVal = val;
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
                                     }
-                                }
-                                //now look in system for the var
-                                if (typeof latestVarCache[ft.split('/')[1]] !== "undefined"){
-                                    if (typeof latestVarCache[ft.split('/')[1]][targetVarName] !== "undefined"){
-                                        var val = latestVarCache[ft.split('/')[1]][targetVarName];
-                                        var thisScore = 2;
-                                        if(relativeScore < thisScore){
-                                            relativeScore = thisScore;
-                                            bestVal = val;
+                                    //now look in system for the var
+                                    if (typeof latestVarCache[ft.split('/')[1]] !== "undefined"){
+                                        if (typeof latestVarCache[ft.split('/')[1]][targetVarName] !== "undefined"){
+                                            var val = latestVarCache[ft.split('/')[1]][targetVarName];
+                                            var thisScore = 2;
+                                            if(relativeScore < thisScore){
+                                                relativeScore = thisScore;
+                                                bestVal = val;
+                                            }
                                         }
                                     }
-                                }
-                                if (typeof bestVal !== "undefined"){
-                                    commandStr = commandStr.replace(repStr, bestVal);
-                                }
-                            } //look in same system for vars
-                            //function to return number of ancestors the current running job has in common with the found var job. Requires: jobFT and foundFT job ID strings separated by "/".
-                            function calcRelativeScore(jobFT, foundFT){//how many gr/parents does the current running job have in common with the found var job..
-                                const jobFTArr = jobFT.split('/');
-                                const foundFTArr = foundFT.split('/');
-                                var x = 0;
-                                var score = 0;
-                                while((typeof jobFTArr[x] !== "undefined")&&(typeof foundFTArr[x] !== "undefined")){
-                                    if (jobFTArr[x] === foundFTArr[x]){
-                                        score++;
+                                    if (typeof bestVal !== "undefined"){
+                                        commandStr = commandStr.replace(repStr, bestVal);
                                     }
-                                    x++;
+                                } //look in same system for vars
+                                //function to return number of ancestors the current running job has in common with the found var job. Requires: jobFT and foundFT job ID strings separated by "/".
+                                function calcRelativeScore(jobFT, foundFT){//how many gr/parents does the current running job have in common with the found var job..
+                                    const jobFTArr = jobFT.split('/');
+                                    const foundFTArr = foundFT.split('/');
+                                    var x = 0;
+                                    var score = 0;
+                                    while((typeof jobFTArr[x] !== "undefined")&&(typeof foundFTArr[x] !== "undefined")){
+                                        if (jobFTArr[x] === foundFTArr[x]){
+                                            score++;
+                                        }
+                                        x++;
+                                    }
+                                    return score;
                                 }
-                                return score;
-                            }
-                        });
+                            });
 
-                        //If there are any <% patterns left in the line then raise error and abort
-                        const  remainingItemsCount = commandStr.split(new RegExp('<%', 'g')).length;
-                        const  remainingItems = commandStr.split(new RegExp('<%', 'g'));
-                        if(remainingItemsCount > 1){
-                            var item = remainingItems[1]
-                            item = item.substr(0, item.indexOf('%>'));
+                            //If there are any <% patterns left in the line then raise error and abort
+                            const  remainingItemsCount = commandStr.split(new RegExp('<%', 'g')).length;
+                            const  remainingItems = commandStr.split(new RegExp('<%', 'g'));
+                            if(remainingItemsCount > 1){
+                                var item = remainingItems[1]
+                                item = item.substr(0, item.indexOf('%>'));
 
-                            if (item.length > 2 && item.length < 32) {
-                                //console.log("Error: Component Variable not found: " + item + '\n');
-                                message("Error: Component Variable not found: " + item + '\n');
-                                flushMessQueue();
-                                sshSuccess = false;
-                                stream.close();
-                                return ('');
+                                if (item.length > 2 && item.length < 32) {
+                                    //console.log("Error: Component Variable not found: " + item + '\n');
+                                    message("Error: Component Variable not found: " + item + '\n');
+                                    flushMessQueue();
+                                    sshSuccess = false;
+                                    stream.close();
+                                    return ('');
+                                }
                             }
+                            return (commandStr);
                         }
-                        return (commandStr);
+
+
+                    });
+
+                    stream.stderr.on('data', function (data) {
+                        clearTimeout(lastTimeout);
+                        console.log('STDERR: ' + data);
+                        res.end('STDERR: ' + data);
+                    });
+
+                    //first command
+                    stream.write('stty cols 200' + '\n' + "PS1='[SysStack]'" + '\n'); //set prompt
+                    lastTimeout = setTimeout(conTimeout, timeOut);
+            
+                });
+            }
+        }
+
+
+        
+        function runNextJob(){
+
+            jobIndex++;
+
+                if (ids.length > jobIndex) {
+
+                    var id = ids[jobIndex];
+
+                    if (SystemsJSON.hasOwnProperty(id)) {
+                        //console.log("\nrunning: "+ SystemsJSON[id].name);
+                        if (sshSuccess) {
+                            var job = SystemsJSON[id];
+
+                            runScript(id, job ,"SSH");
+
+                        } else {
+                            // message("Script Aborted\n");
+                            // flushMessQueue();
+                            res.end("status:Scripts Aborted\n");
+                        }
+                    } else {
+                        console.log("Error: /run id not found in SystemsJSON: " + id);
+                    }
+                } else {
+                    //console.log("all scripts completed")
+                    if (sshSuccess) {
+
+                        message("All scripts completed\n");
+                        flushMessQueue();
+                        res.end("status:All scripts completed\n");  //This line triggers ui to complete style format
+                    } else {
+                        message("Script Aborted\n");
+                        flushMessQueue();
+                        res.end("status:Scripts Aborted\n");
                     }
 
-
-                });
-
-                stream.stderr.on('data', function (data) {
-                    clearTimeout(lastTimeout);
-                    console.log('STDERR: ' + data);
-                    res.end('STDERR: ' + data);
-                });
-
-                //first command
-                stream.write('stty cols 200' + '\n' + "PS1='[SysStack]'" + '\n'); //set prompt
-                lastTimeout = setTimeout(conTimeout, timeOut);
-            });
+                    conn.end();
+                }
         }
+
+
     }
 });
 

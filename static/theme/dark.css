@@ -837,7 +837,7 @@ a#buildCodeBtn i {
 }
 
 .dashTableRow {
-    background-color: #3c3f41;
+    /* background-color: #3c3f41; */
 }
 
 .dashContentRow {
@@ -861,3 +861,18 @@ div#dashRow {
 
 }
 
+::-webkit-scrollbar-track
+{
+  background-color: #000000;
+}
+
+::-webkit-scrollbar
+{
+  background-color: #F5F5F5;
+}
+
+::-webkit-scrollbar-thumb
+{
+  background-color: #000000;
+  border: 2px solid #555555;
+}
