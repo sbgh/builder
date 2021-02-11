@@ -1979,6 +1979,10 @@ div#firstRow {
    height: calc(100vh - 350px);
 }
 
+.dashSelectedNameRow {
+   display: flex;
+}
+
 #dashSelectedDetails{
    flex: 3;
 }
@@ -2002,6 +2006,11 @@ img.dashSelectedImg {
 .dashSelectedRow #dashScreen {
    flex: 3;   
    min-width: 300px;
+   text-align: center;
+}
+
+.col.videoColTop {
+   display: flex;
 }
 
 .dashSelectedRow #videoCanvas{
@@ -2061,7 +2070,7 @@ div#compDashVariables {
     padding-right: 20px;
 }
 
-.varRowCompHeader .dashButtons{
+.dashButtons{
    margin-left: auto;
 }
 

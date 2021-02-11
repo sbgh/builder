@@ -661,7 +661,7 @@
                     $("#dropdownMenuButton")[0].innerHTML = '<img id="dashSystemIcon" class="dashSystemIcon" src='+urlString+'></img>';
                     $("#dropdownMenuButton")[0].innerHTML += dashSystemDropItemClickedJson.sysName;
                     loadDashTable(dashSystemDropItemClickedJson.id);
-                    // loadDashSystemDetails(dashSystemDropItemClickedJson.id);
+                    
                     loadDashSystemFunctions(dashSystemDropItemClickedJson.id);
 
                 }
@@ -747,7 +747,7 @@
                             $("#dropdownMenuButton")[0].innerHTML = '<img id="dashSystemIcon" class="dashSystemIcon" src='+urlString+'></img>';
                             $("#dropdownMenuButton")[0].innerHTML += sysName;
                             loadDashTable(id);
-                            // loadDashSystemDetails(id);
+                            
                             loadDashSystemFunctions(id);
 
                             localStorage['dashSystemDropItemClicked'] = JSON.stringify({ id:id, sysName:sysName }) ;
@@ -759,43 +759,7 @@
                         console.log(error)
                     }
                 })
-            }
-
-            //not used
-            function loadDashSystemDetails(systemId){
-                $.get('/Sys', { id: systemId }, function(data) {
-                    var sysJson = data[0] ;
-                    if(sysJson.variables && sysJson.variables.host){
-                        var host = sysJson.variables['host'].value;
-                        host = host ?  host : "[Unspecified]";
-                    }else{
-                        host = "[Unspecified]";
-                    }
-
-                    var dashSystemDetailsHtml = '<div class="dashboardLabel">Host</div>';
-                    dashSystemDetailsHtml += '<p>' + host + '</p>';
-                    dashSystemDetailsHtml += '<div id="dashSystemDescription">' + description + '</div>';
-
-                    $("#dashSystemDetails")[0].innerHTML = dashSystemDetailsHtml;
-
-                    var dashSystemDescription = new Quill('#dashSystemDescription', {
-                        theme: 'snow',
-                        modules: {
-                            "toolbar": false
-                        }
-                    });
-                    dashSystemDescription.enable(false);
-                    var description = sysJson.description;
-                    if(description.hasOwnProperty("ops")){
-                        dashSystemDescription.setContents(description.ops)
-                    }else{
-                        dashSystemDescription.setContents(
-                            [{ insert:  description },
-                                { insert: '\n' }]
-                        );
-                    };
-                });
-            }
+            }        
             
             var dashCompDescription;
             function loadDashTable(systemId){
@@ -859,8 +823,7 @@
                                            
                                     pCompHtml += "</div>"
                                 pCompHtml += "</div>"
-                                // pCompHtml += "<div class='col-md-12 col-lg-6  dashSelected'></div>"
-
+                                
                             pCompHtml += "</div>"
 
                             $("#dashTable").append(pCompHtml);
@@ -872,12 +835,8 @@
                                 if(! $(this).hasClass("selectedDashRow")){
                                     $(".selectedDashRow").removeClass("selectedDashRow");
                                     $(this).addClass("selectedDashRow");
-
-
                                     
-                                    $('#dashTable').animate({ scrollLeft:  $(this).parent().prop('offsetLeft') - $('#dashTable').prop('offsetWidth')/2  }, 5000);
-
-
+                                    $('#dashTable').animate({ scrollLeft:  $(this).parent().prop('offsetLeft') - $('#dashTable').prop('offsetWidth')/2  }, 1000);
 
                                     loadDashDetails(id);
                                     localStorage['dashListRowClicked'] = id;
@@ -919,6 +878,7 @@
                     const ddObj = JSON.parse(data);
 
                     const id = ddObj.id;
+                    $("#dashId").val(id);
 
                     $("#videoScreen").detach().appendTo("#screenShotImageHolder");                     
 
@@ -944,8 +904,8 @@
                         tmpHtml += "<div id='dashSelectedDetails'>"
                             
                             tmpHtml += "<div id='compDashVariables'>";
-                                tmpHtml += "<div class='dashSelectedTop'>";
-                                    tmpHtml += "<div class='dashItemName'>" + ddObj.comp.name + "</div>";
+                                tmpHtml += "<div class='dashSelectedNameRow'>";
+                                    tmpHtml += "<div class='dashSelectedName'>" + ddObj.comp.name + "</div>";
 
                                     tmpHtml += "<div class='dashButtons'>";
                                         tmpHtml += "<div id='dashTableOpenButton' class='dashTableOpenButton' data-id='" + ddObj.id +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
@@ -978,17 +938,16 @@
                         currentCompDashSelectedVarObj[compId + '-' + name].compId = ddObj.proVarArr[idn].compId;
                     }
 
-                    // $("#row_" + id).find(".dashSelected" ).show();
-
-                    // $("#row_" + id).find(".dashSelected" ).html( tmpHtml );
                     $(".dashSelected" ).html( tmpHtml );
 
                     if(ddObj.hasOwnProperty('lastBuildUrlsArr') && ddObj.lastBuildUrlsArr.length > 0){
                         navigate(ddObj.lastBuildUrlsArr[0]);
                         updateLaunchLink(ddObj.lastBuildUrlsArr[0]);
+                        $("#dashUrl").val(ddObj.lastBuildUrlsArr[0]);
                         $("#videoScreen").detach().appendTo("#dashScreen"); 
                     }else if(ddObj.comp.hasOwnProperty("thumbnail")){
                         let thumbUrl = "/uploads/" + ddObj.id + "/" + ddObj.comp.thumbnail;
+                        $("#dashUrl").val('');
                         $("#dashScreen").html("<img class='dashSelectedImg' src='"+thumbUrl+"'>")
                     }             
 
@@ -1039,7 +998,7 @@
 
                     $('.dashTableBuildButton').on('click', function(){
                         var id = $(this).attr('data-ID');
-                        $("#dashId").val(id);
+                        
                         $.get('/Jobs', {id: id}, function (data) {
                             var sys = data[0].ft.split("/")[1];
                                 $("#dashSys").val(sys);
@@ -4690,7 +4649,7 @@
                             $("#dropdownMenuButton")[0].innerHTML = '<img id="dashSystemIcon" class="dashSystemIcon" src='+urlString+'></img>';
                             $("#dropdownMenuButton")[0].innerHTML += sysName;
                             loadDashTable(id);
-                            // loadDashSystemDetails(id);
+                            
                             loadDashSystemFunctions(id);
 
                             localStorage['dashSystemDropItemClicked'] = JSON.stringify({ id:id, sysName:sysName }) ;
@@ -5340,7 +5299,7 @@ showFloatVideo();
 
                         setTimeout(function(){ 
                             $(".lastBuildUrl").first().click(); 
-                            preferedPopPos = "left";
+                            preferedPopPos = "top";
                             floatPop("vidMiddle", "You can find components by clicking on elements in the browser window.<br><br><b class='floatPopTaskLabel'>Practise:</b> Click on the highlighted paragraph to find the component that built it.")
                         },500);
                         setTimeout(function(){ 
@@ -5621,15 +5580,11 @@ showFloatEnd()
                     $('#jslibtree_div').hide();
                     $('#jstree_div').show();
 
-                    setWindowHeight(currentHeight, false);
+                    setWindowHeight(currentHeight, false);                    
 
-                    //move video screen to dash
-                    // $(".dashThumb").find("img").show();  
-                    // if($(".selectedDashRow").length > 0){
-                    //     $("#videoScreen").detach().appendTo($(".selectedDashRow").find(".dashThumb"));
-                    //     $(".selectedDashRow").find("img").hide();
-                    // }        
-
+                    if($("#dashUrl").val()){
+                        $("#videoScreen").detach().appendTo($("#dashScreen"));
+                    }                           
                 });
                 $("#snapButton").hide();
             });
@@ -5700,7 +5655,7 @@ showFloatEnd()
                 trigger: 'hover',
                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
             });
-
+            
             function loadBuildCodeRows(){
                 $.get('/BuildCode', { id: '#' }, function(data) {
                     for(let i in data){
@@ -7254,6 +7209,7 @@ showFloatEnd()
             <main role="main" class="container-fluid  mainCol">
                 <%- include topMenu.ejs %>
                 <input name="dashId" id="dashId" type="hidden" />
+                <input name="dashUrl" id="dashUrl" type="hidden" />
                 <input name="dashSys" id="dashSys" type="hidden" />
 
                 <div class="" id="dashRow">
@@ -8368,19 +8324,23 @@ showFloatEnd()
 
                     <div class="col videoCol">
 
-                        <input id="launchLinkHiddenCopy"><div id="launchLink" class="videoMenuItemLeft"></div><div id="launchLinkCopyContainer"></div>
-                        <div class="videoMenu">
+                        <div class="col videoColTop">
+                            <input id="launchLinkHiddenCopy"><div id="launchLink" class="videoMenuItemLeft"></div><div id="launchLinkCopyContainer"></div>
+                            <div class="videoMenu">
 
-                            <span>
-                                <a id='playButton' href='#'><i class='fa fa-play fa-fw videoMenuItemRight'></i></a>
-                                <a id='pauseButton' href='#'><i class='fa fa-pause fa-fw videoMenuItemRight'></i></a>
-                            </span>
-                            <a id='snapButton' href='#'><i class='fa fa-camera fa-fw videoMenuItemRight'></i></a>
-                            <a id='videoRefreshLink' href='#'><i class='fa fa-refresh fa-fw videoMenuItemRight'></i></a>
-                            <a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw videoMenuItemRight'></i></a>
-                            <a id='inspectMaximizeLink' href='#' class='launchLink'><i class='fa fa-expand fa-fw videoMenuItemRight'></i></a>
+                                <span>
+                                    <a id='playButton' href='#'><i class='fa fa-play fa-fw videoMenuItemRight'></i></a>
+                                    <a id='pauseButton' href='#'><i class='fa fa-pause fa-fw videoMenuItemRight'></i></a>
+                                </span>
+                                <a id='snapButton' href='#'><i class='fa fa-camera fa-fw videoMenuItemRight'></i></a>
+                                <a id='videoRefreshLink' href='#'><i class='fa fa-refresh fa-fw videoMenuItemRight'></i></a>
+                                <a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw videoMenuItemRight'></i></a>
+                                <a id='inspectMaximizeLink' href='#' class='launchLink'><i class='fa fa-expand fa-fw videoMenuItemRight'></i></a>
 
+                            </div>
                         </div>
+                        
+                        
                         <div><canvas id="videoCanvas"></canvas></div>
                         <div id="vidMenuDesc"></div>
                         <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="vidMenuMatch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
