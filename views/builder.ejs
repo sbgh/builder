@@ -925,6 +925,8 @@
                         tmpHtml += "</div>";                                       
                     tmpHtml += "</div>";
 
+                    $(".dashSelected" ).html( tmpHtml );
+
                     //build currentCompDashSelectedVarObj and add idn index, name, compName, compId
                     var y=0;
                     currentCompDashSelectedVarObj = {};
@@ -938,8 +940,7 @@
                         currentCompDashSelectedVarObj[compId + '-' + name].compId = ddObj.proVarArr[idn].compId;
                     }
 
-                    $(".dashSelected" ).html( tmpHtml );
-
+                    
                     if(ddObj.hasOwnProperty('lastBuildUrlsArr') && ddObj.lastBuildUrlsArr.length > 0){
                         navigate(ddObj.lastBuildUrlsArr[0]);
                         updateLaunchLink(ddObj.lastBuildUrlsArr[0]);
@@ -964,7 +965,7 @@
                         // $("#row_" + id).find("img").hide();
                     })
 
-                    $(".dashTableOpenButton").popover({ 
+                    $('.dashSelectedNameRow').find(".dashTableOpenButton").popover({ 
                         animation: true,
                         content: "Open "+ddObj.comp.name+" component",
                         delay: { "show": 50, "hide": 100 },
@@ -972,7 +973,7 @@
                         template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
                     });
 
-                    $(".dashTableBuildButton").popover({
+                    $('.dashSelectedNameRow').find(".dashTableBuildButton").popover({
                         animation: true,
                         content: "Build "+ddObj.comp.name,
                         delay: { "show": 50, "hide": 100 },
@@ -980,7 +981,7 @@
                         template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
                     });
 
-                    $(".dashTableEnableItem" ).popover({  
+                    $('.dashSelectedNameRow').find(".dashTableEnableItem" ).popover({  
                         animation: true,
                         content: enableText + " "+ddObj.comp.name,
                         delay: { "show": 50, "hide": 100 },
@@ -1098,8 +1099,37 @@
                                 pCompHtml += "<div class='dashTableBuildButton' data-id='" + currentVarCompId +"'><i class='fa  fa-wrench fa-fw  '></i></div>  ";
                             pCompHtml += "</div>";
                         pCompHtml += "</div>";
+
+                        $("#compDashVariables").append(pCompHtml);
+
+                        $("#varRowCompHeader_" + currentVarCompId).find(".dashTableOpenButton").popover({ 
+                            animation: true,
+                            content: "Open "+variables[varIdName].compName+" component",
+                            delay: { "show": 50, "hide": 100 },
+                            trigger: 'hover',
+                            template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                        });
+
+                        $("#varRowCompHeader_" + currentVarCompId).find(".dashTableBuildButton").popover({
+                            animation: true,
+                            content: "Build "+variables[varIdName].compName,
+                            delay: { "show": 50, "hide": 100 },
+                            trigger: 'hover',
+                            template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                        });
+
+                        // $('.dashSelectedNameRow').find(".dashTableEnableItem" ).popover({  
+                        //     animation: true,
+                        //     content: enableText + " "+ddObj.comp.name,
+                        //     delay: { "show": 50, "hide": 100 },
+                        //     trigger: 'hover',
+                        //     template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                        // });
+
+                        pCompHtml = ""
                     }
 
+                   
 
                     pCompHtml += createDashVarRowHtml(varIdName, pCompHtml);
                     setupDashVarRowHtml(varIdName, pCompHtml)
