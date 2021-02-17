@@ -5366,7 +5366,7 @@ showFloatVideo();
                             clearTimeout(floatPopOkTimeout);
                             sendVideoMouseClick(width*.20/width ,height*.20/height, false);
 
-                            showFloatVideoClickResults()
+showFloatVideoClickResults()
                         })
                     }
 
@@ -5422,8 +5422,8 @@ showFloatFoundComp()
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},60000);
                         
                         setTimeout(function(){
-                            preferedPopPos = "top";
-                            floatPop("compDashVariables", "The paragraph can be changed by the following this procedure: <ul><li>Click the edit icon <i class='fa fa-pencil'></i></li><li>Expand the text box by clicking the expand icon <i class='fa fa-expand'></i></li><li>Then edit the text. </li><li>Then click the save icon <i class='fa fa-save'></i></li><li>Then build <i class='fa fa-wrench'></i></li></ul> ");
+                            preferedPopPos = "left";
+                            floatPop("compDashVariables", "The <b>Paragraph</b> can be changed by the following this procedure: <ul><li>Click the edit icon <i class='fa fa-pencil'></i></li><li>Expand the text box by clicking the expand icon <i class='fa fa-expand'></i></li><li>Then edit the text. </li><li>Then click the save icon <i class='fa fa-save'></i></li><li>Then build <i class='fa fa-wrench'></i></li></ul> ");
 
                         },1000);
 
@@ -6620,18 +6620,19 @@ showFloatEnd()
 
                     var selectedMatchNode = data.selected[0];
 
-                    if(  $("#componentsBtn").hasClass('active')){
+                     $("#componentsBtn").click();
+
+                    // if(  $("#componentsBtn").hasClass('active')){
 
                         setTimeout(function(){
                             $('#jstree_div').jstree("deselect_all");
                             $('#jstree_div').jstree('select_node', selectedMatchNode);
                             $('#jstree_div').jstree(true).get_node(selectedMatchNode, true).children('.jstree-anchor').focus();
-                        }, 500);
+                        }, 1000);
 
-                    }else{
+                    // }else{
 
-
-                    }
+                    // }
                 });
 
             function sendVideoMouseClick(x ,y, ctrlKey){
@@ -6674,9 +6675,6 @@ showFloatEnd()
                         var matchingComponentsCount = respObj.matchingComponentsCount;
                         var idHtml =  '<div id="codeInspectLabel" class="codeInspectLabel">' + inspectDomObjDesc+ '</div>';
 
-
-
-
                         $("#componentLinks").html(idHtml);
 
                         if(inspectDomObjDesc.substr(0,5) === "input" || inspectDomObjDesc.substr(0,8) === "textarea"){
@@ -6696,11 +6694,7 @@ showFloatEnd()
                             $('#vidMenuMatch').show();
                             $("#vidMenuDesc").html("");
                             $("#vidMenuMatchNum").html(" ("+ matchingComponentsCount.toString() +")")
-                        }
-                    
-                    
-                    
-                    
+                        } 
                     }
                 })
             }
