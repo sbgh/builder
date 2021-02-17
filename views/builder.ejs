@@ -661,6 +661,15 @@
                     $("#dropdownMenuButton")[0].innerHTML = '<img id="dashSystemIcon" class="dashSystemIcon" src='+urlString+'></img>';
                     $("#dropdownMenuButton")[0].innerHTML += dashSystemDropItemClickedJson.sysName;
                     loadDashTable(dashSystemDropItemClickedJson.id);
+
+                    if($("#dashId").val()){
+                        loadDashDetails($("#dashId").val(), true)
+                    } else{
+                        if(localStorage['dashListRowClicked']){
+                            loadDashDetails(localStorage['dashListRowClicked'], true)
+                            $("#dashId").val(localStorage['dashListRowClicked'])
+                        }
+                    }
                     
                     loadDashSystemFunctions(dashSystemDropItemClickedJson.id);
 
@@ -838,7 +847,7 @@
                                     
                                     $('#dashTable').animate({ scrollLeft:  $(this).parent().prop('offsetLeft') - $('#dashTable').prop('offsetWidth')/2  }, 1000);
 
-                                    loadDashDetails(id);
+                                    loadDashDetails(id, true);
                                     localStorage['dashListRowClicked'] = id;
                                 }                                                               
                             })                           
@@ -862,7 +871,7 @@
 
             var currentCompDashSelectedVarObj = {};
 
-            function loadDashDetails(id){
+            function loadDashDetails(id, refreshVideo){
 
                 $.ajax({
                 type: 'get',
@@ -873,6 +882,7 @@
                 },
                 url: '/getDashDetails',
                 id: id,
+                refreshVideo: refreshVideo,
                 success : function(data) {
 
                     const ddObj = JSON.parse(data);
@@ -942,7 +952,10 @@
 
                     
                     if(ddObj.hasOwnProperty('lastBuildUrlsArr') && ddObj.lastBuildUrlsArr.length > 0){
-                        navigate(ddObj.lastBuildUrlsArr[0]);
+                        if(this.refreshVideo){
+                            navigate(ddObj.lastBuildUrlsArr[0]);
+                        }                      
+                        
                         updateLaunchLink(ddObj.lastBuildUrlsArr[0]);
                         $("#dashUrl").val(ddObj.lastBuildUrlsArr[0]);
                         $("#videoScreen").detach().appendTo("#dashScreen"); 
@@ -2797,11 +2810,16 @@
                             $('#jstree_div').jstree(true).get_node(buildIDRunning, true).children('.jstree-anchor').focus();
                         }
 
-                    }else if($("#dashBtn").hasClass('active')){
-                        if($(".selectedDashRow").length > 0){ 
-                            // loadDashDetails($(".selectedDashRow").parent().attr("data-id"))
-                        }                        
                     }
+
+                    if($("#dashId").val()){
+                        loadDashDetails($("#dashId").val(), false)
+                    } 
+                    
+                    if($('#dashSys').val()){
+                        loadDashTable($('#dashSys').val());    
+                    }
+                                   
                     $('#jstree_div').jstree(true).refresh(true)
                 }).fail(function (e) {
 
