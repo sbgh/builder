@@ -4515,8 +4515,8 @@ router.get("/getDashDetails",function(req,res){
     var lastBuildUrlsArr =  []; //store the array of urls found in children
     for (var key in SystemsJSON) {//cycle through all components
         if(SystemsJSON[key].comType === "job"){ //if component is not a system...     
-            var ancestors = SystemsJSON[key].ft.split("/"); //get array of familt tree
-            if(ancestors.includes(id) || key === id){  //if this comp is a desendent or self...
+            var ancestors = SystemsJSON[key].ft.split("/"); //get array of family tree
+            if( (key === id ) ||  (ancestors.includes(id) && SystemsJSON[key].enabled === 1)  ){  //if this comp is self or a desendent that is enabled ...
                 for (var ind in SystemsJSON[key].variables) {   //look at all variables
                     if(SystemsJSON[key].variables[ind].hasOwnProperty("promoted")){
                         if(SystemsJSON[key].variables[ind].promoted){ //if promoted var 
@@ -4633,9 +4633,7 @@ router.get("/getTempTypes",function(req,res){
     res.end(JSON.stringify(resJSON));
 });
 
-/*
-
- router.get("/massupdate",function(req,res){
+/* router.get("/massupdate",function(req,res){
 
 //mass updates and fix build codes
 
