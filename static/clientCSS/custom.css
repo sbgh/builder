@@ -2053,12 +2053,33 @@ div#dashCompDescription {
    font-weight: 500;
 }
 
+.dashItemBottomRow{
+   display: flex;
+}
+
+.dashItemBuildSuccess{
+   margin-left: auto;
+   margin-right: 10px;
+}
+
+.dashItemSuccess{
+   color: green;
+}
+.dashItemFail{
+   color: red;
+}
+
+
 .dashItemBuildHistory {
    font-size: small;
 }
 
 .varNameDash {
    display: flex;
+}
+
+.varRowCompHeaderName{
+   cursor: pointer;
 }
 
 div#compDashVariables {

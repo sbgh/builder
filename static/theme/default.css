@@ -179,11 +179,11 @@ div.grippie {
 .form-control:-ms-input-placeholder { color: #a3a3a3; }  /* Internet Explorer 10-11 */
 .form-control::-ms-input-placeholder { color: #a3a3a3; }  /* Microsoft Edge */
 
-.runningJobCompleteSuccess{
+.runningJobCompleteSuccess, .dashItemSuccess{
     transition: color 0.5s;
     color: #009b23 !important;
 }
-.runningJobCompleteFail{
+.runningJobCompleteFail, .dashItemFail{
     transition: color 0.5s;
     color: #901514 !important;
 }

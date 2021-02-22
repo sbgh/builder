@@ -591,7 +591,7 @@
                                 $("#"+dataObj.id+"_anchor").next().addClass("jstree-codeBlock");
                             })
 
-                            $.get('/highlight', { id: selectedNode }, function(data) {});
+                            highlight(selectedNode);
                             $("#comType").val('Job');
 
                             $("#sysScreen").hide();
@@ -770,6 +770,12 @@
                 })
             }        
             
+            function highlight(selectedNode){
+
+                $.get('/highlight', { id: selectedNode }, function(data) {});
+
+            }
+            
             var dashCompDescription;
             function loadDashTable(systemId){
                 var mydata = {systemId:systemId}
@@ -793,16 +799,24 @@
                         for (var row in promoted){
 
                             var lastBuildStr = ""
+                            var lastBuildSuccessHtml = ""
 
                             rowJson = promoted[row];
                             if(rowJson.hasOwnProperty("lastBuild")){
                                 if(rowJson.lastBuild.hasOwnProperty("ct")){
                                     lastBuildStr =  'Last build: ' + new Date(rowJson.lastBuild.ct).toLocaleString();
+                                    if(rowJson.lastBuild.pass === 1){
+                                        lastBuildSuccessHtml = "<i class='fa fa-check fa-fw dashItemSuccess'></i>"
+                                    }else{
+                                        lastBuildSuccessHtml = "<i class='fa fa-times fa-fw dashItemFail'></i>"
+                                    }
+                                    
                                 }else{
                                     lastBuildStr =  'Last build: Never'
                                 }
                             }else{
                                     lastBuildStr =  'Last build: Never'
+
                             }
 
                             pCompHtml = "";
@@ -826,8 +840,13 @@
                                     }
 
                                     pCompHtml += "<div class='dashDetails'>";
+
                                         pCompHtml += "<div class='dashItemName'>" + rowJson.name + "</div>";
-                                        pCompHtml += "<div class='dashItemBuildHistory'>" + lastBuildStr + "</div>";
+                                        
+                                        pCompHtml += "<div class='dashItemBottomRow'>" ;
+                                            pCompHtml += "<div class='dashItemBuildHistory'>" + lastBuildStr + "</div>";
+                                            pCompHtml += "<div class='dashItemBuildSuccess'>" + lastBuildSuccessHtml + "</div>";
+                                        pCompHtml += "</div>";
 
                                            
                                     pCompHtml += "</div>"
@@ -839,7 +858,7 @@
 
                             
                             $("#row_" + rowJson.id).find(".dashContentRow").click(function(){
-                                id = $(this).parent().attr("data-id");
+                                const id = $(this).parent().attr("data-id");
 
                                 if(! $(this).hasClass("selectedDashRow")){
                                     $(".selectedDashRow").removeClass("selectedDashRow");
@@ -1095,9 +1114,6 @@
             function loadVarDashSelected(variables, rowId){
                 var currentVarCompId = "";
 
-                // $(".dashDetails").show();
-                // $("#" + rowId).find(".dashDetails").hide();
-
                 for(var varIdName in variables){
                     var idn = variables[varIdName].idn
 
@@ -1106,7 +1122,7 @@
                     if(currentVarCompId !== variables[varIdName].compId){
                         currentVarCompId = variables[varIdName].compId;
                         pCompHtml += "<div class='varRowCompHeader'  id='varRowCompHeader_" + currentVarCompId +"'>";
-                            pCompHtml += variables[varIdName].compName;
+                            pCompHtml += "<div class='varRowCompHeaderName' data-id='"+currentVarCompId+"'>" + variables[varIdName].compName + "</div>"
                             pCompHtml += "<div class='dashButtons'>";
                                 pCompHtml += "<div class='dashTableOpenButton' data-id='" + currentVarCompId +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
                                 pCompHtml += "<div class='dashTableBuildButton' data-id='" + currentVarCompId +"'><i class='fa  fa-wrench fa-fw  '></i></div>  ";
@@ -1131,22 +1147,24 @@
                             template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
                         });
 
-                        // $('.dashSelectedNameRow').find(".dashTableEnableItem" ).popover({  
-                        //     animation: true,
-                        //     content: enableText + " "+ddObj.comp.name,
-                        //     delay: { "show": 50, "hide": 100 },
-                        //     trigger: 'hover',
-                        //     template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
-                        // });
-
                         pCompHtml = ""
                     }
-
-                   
+                  
 
                     pCompHtml += createDashVarRowHtml(varIdName, pCompHtml);
                     setupDashVarRowHtml(varIdName, pCompHtml)
                 }
+
+
+
+                $(".varRowCompHeaderName").click(function(){ 
+                  
+                    const id = $(this).attr("data-id");
+                    highlight(id)                    
+                });
+
+
+
             }
 
             function setupDashVarRowHtml(varIdName, pCompHtml){
@@ -5351,7 +5369,7 @@ showFloatVideo();
                             floatPop("vidMiddle", "You can find components by clicking on elements in the browser window.<br><br><b class='floatPopTaskLabel'>Practise:</b> Click on the highlighted paragraph to find the component that built it.")
                         },500);
                         setTimeout(function(){ 
-                            $.get('/highlight', { id: "intro-p-span" }, function(data) {});
+                            highlight("intro-p-span")
                         },2000);
 
                         $("#floatPopOk").unbind();
@@ -5525,7 +5543,6 @@ showFloatEnd()
                     }
 
                 }
-
 
                 $("#welcome-nav-Comp").on("click",function(evt){
                     $("#componentsBtn").click();
