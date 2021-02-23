@@ -4513,6 +4513,7 @@ router.get("/getDashDetails",function(req,res){
 
     var proVarArr =  []; //store the array of promoted variables
     var lastBuildUrlsArr =  []; //store the array of urls found in children
+    var launchUrlsArr =  []; //store the array of launch urls found in children
     for (var key in SystemsJSON) {//cycle through all components
         if(SystemsJSON[key].comType === "job"){ //if component is not a system...     
             var ancestors = SystemsJSON[key].ft.split("/"); //get array of family tree
@@ -4542,6 +4543,11 @@ router.get("/getDashDetails",function(req,res){
                             lastBuildUrlsArr.push(SystemsJSON[key].lastBuild.url)  
                         }                        
                     }                    
+                    if(SystemsJSON[key].lastBuild.hasOwnProperty("launch")){
+                        if(!launchUrlsArr.includes(SystemsJSON[key].lastBuild.launch)){
+                            launchUrlsArr.push(SystemsJSON[key].lastBuild.launch)  
+                        }                        
+                    }                    
                 }   
             }
         }
@@ -4565,6 +4571,7 @@ router.get("/getDashDetails",function(req,res){
 
     resJSON["proVarArr"] = proVarArr; 
     resJSON["lastBuildUrlsArr"] = lastBuildUrlsArr; 
+    resJSON["launchUrlsArr"] = launchUrlsArr; 
     res.end(JSON.stringify(resJSON)); 
 });
 

@@ -975,7 +975,8 @@
                             navigate(ddObj.lastBuildUrlsArr[0]);
                         }                      
                         
-                        updateLaunchLink(ddObj.lastBuildUrlsArr[0]);
+                        updateLaunchLink(ddObj.launchUrlsArr[0]);
+                        
                         $("#dashUrl").val(ddObj.lastBuildUrlsArr[0]);
                         $("#videoScreen").detach().appendTo("#dashScreen"); 
                     }else if(ddObj.comp.hasOwnProperty("thumbnail")){
