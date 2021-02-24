@@ -1956,10 +1956,13 @@ div#firstRow {
    padding: 3px 6px 0px 3px;
 }
 
-#dashRow {
+.selectedDashRow{
+   margin: 5px;
 }
 
-.dashListCol{
+
+#dashListCol{
+      min-height: 267px;
 }
 
 .dashThumb  {
@@ -1972,6 +1975,8 @@ div#firstRow {
 }
 
 .dashContentRow{
+   margin: 8px;
+   border-radius: 10px;
 }
 
 .dashSelected {
@@ -2144,6 +2149,8 @@ div#compDashVariables {
    .dashRow {
       overflow-y: scroll;
    }
+
+   
    .dashBoardBottomRow {
       overflow-y: visible;
       order: 2;

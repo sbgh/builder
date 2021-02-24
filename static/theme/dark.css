@@ -843,12 +843,19 @@ a#buildCodeBtn i {
 .dashContentRow {
     /* transition: background-color 2.5s;
     background-color: #46484a; */
+    
+    background-color: #3c3f41;
 }
 
 div#dashRow {
     transition: background-color 2.5s;
     background-color: black;
 }
+
+.selectedDashRow{
+    border: solid #ffffffb3 3px;
+    box-shadow: 0px 0px 9px 3px rgb(255 255 255 / 81%);
+ }
 
 .dashItemThumbCol img {
     border-color: #959595;
@@ -876,3 +883,7 @@ div#dashRow {
   background-color: #000000;
   border: 2px solid #555555;
 }
+
+::-webkit-scrollbar-corner { 
+    background: #323232;
+ }
