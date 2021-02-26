@@ -853,8 +853,8 @@ div#dashRow {
 }
 
 .selectedDashRow{
-    border: solid #ffffffb3 3px;
-    box-shadow: 0px 0px 9px 3px rgb(255 255 255 / 81%);
+    border: solid #79bdf3 3px;
+    box-shadow: 0px 0px 9px 3px #79bdf3a0;
  }
 
 .dashItemThumbCol img {
