@@ -1123,11 +1123,11 @@
                     if(currentVarCompId !== variables[varIdName].compId){
                         currentVarCompId = variables[varIdName].compId;
                         pCompHtml += "<div class='varRowCompHeader'  id='varRowCompHeader_" + currentVarCompId +"'>";
-                            pCompHtml += "<div class='varRowCompHeaderName' data-id='"+currentVarCompId+"'>" + variables[varIdName].compName + "</div>"
-                            pCompHtml += "<div class='dashButtons'>";
+                            pCompHtml += "<div class='varRowCompHeaderButtons'>";
                                 pCompHtml += "<div class='dashTableOpenButton' data-id='" + currentVarCompId +"'><i class='fa  fa-folder-open fa-fw '></i></div>";
                                 pCompHtml += "<div class='dashTableBuildButton' data-id='" + currentVarCompId +"'><i class='fa  fa-wrench fa-fw  '></i></div>  ";
                             pCompHtml += "</div>";
+                            pCompHtml += "<div class='varRowCompHeaderName' data-id='"+currentVarCompId+"'>" + variables[varIdName].compName + "</div>"
                         pCompHtml += "</div>";
 
                         $("#compDashVariables").append(pCompHtml);
@@ -1334,7 +1334,29 @@
                     });
                 });
                     
+                $("#varRowDash_"+idn).find(".compDashVarCopyButton").on('click', function(){
+                    
+                    var idn = $(this).attr('data-idn');
+
+                    for(var x in currentCompDashSelectedVarObj){
+                        if (currentCompDashSelectedVarObj[x].idn == idn){
+
+                            $("#launchLinkHiddenCopy").val(currentCompDashSelectedVarObj[x].value);
+
+                            var copyText = document.getElementById("launchLinkHiddenCopy");
+                            copyText.select();
+                            copyText.setSelectionRange(0, 99999);
+                            document.execCommand("copy");
+
+                        }
+                    }
+
+
+                })
+                
+
             }
+
 
             function createDashVarRowHtml(varIdName){ 
                 //new row
@@ -1356,12 +1378,14 @@
                     var typeTxt = currentCompDashSelectedVarObj[varIdName].type;
                 
                     //add value col
-                    pCompHtml += "<div class='col-7 varValDash'>"
+                    pCompHtml += "<div class='varValDash'>"
                         pCompHtml += "<span tabindex='0' id = 'varValDash" + idn + "'></span>"
                         if(typeTxt === "Color"){
                             pCompHtml += '<input id = "varValColorDash' + idn + '" type="color" class="colorPickerView" disabled="true" >'
                         }
                     pCompHtml += "</div>";
+                    
+                    pCompHtml += "<i class='fa fa-copy fa-fw compDashVarCopyButton' data-idn='" + idn +"'></i>" ;
 
                 pCompHtml += "</div>";
 
@@ -1393,10 +1417,6 @@
             }
 
 
-
-
-
-            
             var tempCont = document.createElement("div");
             function quillGetHTML(inputDelta) {
 
@@ -6403,6 +6423,30 @@ showFloatEnd()
                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
             });
 
+            
+            $("#pasteClipLink").on('click', function(e){
+
+                navigator.clipboard.readText()
+                .then(text => {
+                    
+                    $.get("/stringSend",{text:text},function(resp){
+
+                    });
+                
+                })
+                .catch(err => {
+                    console.error('Failed to read clipboard contents: ', err);
+                });                
+                
+            });
+            $("#pasteClipLink").popover({
+                animation: true,
+                content: "Paste text to input",
+                delay: { "show": 500, "hide": 100 },
+                trigger: 'hover',
+                template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+            });
+
             var pausedUrl = "";
             $("#playButton").hide();
             $("#playButton").on('click', function(e){
@@ -8396,6 +8440,7 @@ showFloatEnd()
                                 <a id='videoRefreshLink' href='#'><i class='fa fa-refresh fa-fw videoMenuItemRight'></i></a>
                                 <a id='inspectLink' href='#'><i class='fa fa-stethoscope fa-fw videoMenuItemRight'></i></a>
                                 <a id='inspectMaximizeLink' href='#' class='launchLink'><i class='fa fa-expand fa-fw videoMenuItemRight'></i></a>
+                                <a id='pasteClipLink' href='#' class='launchLink'><i class='fa fa-paste fa-fw videoMenuItemRight'></i></a>
 
                             </div>
                         </div>

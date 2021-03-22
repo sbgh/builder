@@ -751,23 +751,44 @@ router.get("/mouseMove",function(req,res){
 router.get("/keySend",function(req,res){
     var KeyObj = req.query.KeyObj;
     //console.log( KeyObj );
-        (async function (KeyObj) {
-            var modifiers=0; //Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
+       
+    // sendChar(KeyObj);
+    (async function (KeyObj) {
+        var modifiers=0; //Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
 
-           if(KeyObj.key.length > 1){
-                    var keyCodeNum = parseInt(KeyObj.keyCode);
-                    var keyCodeStr = String.fromCharCode(keyCodeNum);
-                    // console.log({ keyCodeStr });
-                    // console.log({ type: 'char', text : keyCodeStr, key : KeyObj.key, code : KeyObj.code, nativeVirtualKeyCode : keyCodeNum, windowsVirtualKeyCode : keyCodeNum  });
-                await PageInput.dispatchKeyEvent({ type: 'keyDown', text : keyCodeStr, key : KeyObj.key, code : KeyObj.code, nativeVirtualKeyCode : keyCodeNum, windowsVirtualKeyCode : keyCodeNum });
-                await PageInput.dispatchKeyEvent({ type: 'keyUp', text : keyCodeStr, key : KeyObj.key, code : KeyObj.code, nativeVirtualKeyCode : keyCodeNum, windowsVirtualKeyCode : keyCodeNum });
-            }else{
-                await PageInput.dispatchKeyEvent({ type: 'char', text:KeyObj.key});
-            }
+       if(KeyObj.key.length > 1){
+                var keyCodeNum = parseInt(KeyObj.keyCode);
+                var keyCodeStr = String.fromCharCode(keyCodeNum);
+                // console.log({ keyCodeStr });
+                // console.log({ type: 'char', text : keyCodeStr, key : KeyObj.key, code : KeyObj.code, nativeVirtualKeyCode : keyCodeNum, windowsVirtualKeyCode : keyCodeNum  });
+            await PageInput.dispatchKeyEvent({ type: 'keyDown', text : keyCodeStr, key : KeyObj.key, code : KeyObj.code, nativeVirtualKeyCode : keyCodeNum, windowsVirtualKeyCode : keyCodeNum });
+            await PageInput.dispatchKeyEvent({ type: 'keyUp', text : keyCodeStr, key : KeyObj.key, code : KeyObj.code, nativeVirtualKeyCode : keyCodeNum, windowsVirtualKeyCode : keyCodeNum });
+        }else{
+            await PageInput.dispatchKeyEvent({ type: 'char', text:KeyObj.key});
+        }
 
-        })(KeyObj);
-
+    })(KeyObj);
     res.end();
+});
+
+function sendChar(KeyObj){
+   
+}
+
+router.get("/stringSend",function(req,res){
+
+    var text = req.query.text;
+    (async function (text) {
+
+        // console.log( text );
+        await PageInput.insertText({text: text }, function(resp){
+
+            var a = resp;
+        })   
+        
+    })(text);  
+
+    res.end();  
 });
 
 router.get("/VideoScroll",function(req,res){

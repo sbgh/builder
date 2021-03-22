@@ -667,7 +667,7 @@ input:focus + .slider {
     filter: brightness(150%);
 }
 
-.compVarEditValButton, .compVarEditButton, .ql-snow a , .buildCodePickButton, .compFocusButton, .compDashVarEditButton{
+.compVarEditValButton, .compVarEditButton, .ql-snow a , .buildCodePickButton, .compFocusButton, .compDashVarEditButton, .compDashVarCopyButton{
     transition: color 0.5s;
     color: #79bdf3;
 }

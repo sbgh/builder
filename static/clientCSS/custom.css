@@ -1988,6 +1988,8 @@ div#firstRow {
    display: flex;
 }
 
+
+
 #dashSelectedDetails{
    flex: 3;
 }
@@ -2036,6 +2038,7 @@ div#dashCompDescription {
 
 .varValDash{
    text-align: left;
+   min-width: 30%;
 }
 
 .lastBuildUrl{
@@ -2100,6 +2103,10 @@ div#compDashVariables {
    margin-left: auto;
 }
 
+.SelectedNameRowButtons{
+
+}
+
 .CompDashSelectedVarRow {
    width: 100%;
    display: flex;
@@ -2134,6 +2141,10 @@ div#compDashVariables {
    display: flex;
 }
 
+.varRowCompHeaderButtons{
+   display: flex;
+    padding-right: 3px;
+}
 .top-row {
    /* width: 100%; */
    padding-top: 20px;

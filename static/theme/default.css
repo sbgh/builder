@@ -492,7 +492,8 @@ input:not(:checked) + .slider.round:before{
     filter: brightness(50%);
 }
 
-.compVarEditValButton, .compVarEditButton, .ql-snow a, .buildCodePickButton, .compFocusButton, .compDashVarEditButton {
+.compVarEditValButton, .compVarEditButton, .ql-snow a, .buildCodePickButton, .compFocusButton, .compDashVarEditButton, .compDashVarCopyButton
+{
     transition: color 0.5s;
     color: #367ae0;
 }
