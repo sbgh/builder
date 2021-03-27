@@ -978,7 +978,14 @@
                         updateLaunchLink(ddObj.launchUrlsArr[0]);
                         
                         $("#dashUrl").val(ddObj.lastBuildUrlsArr[0]);
-                        $("#videoScreen").detach().appendTo("#dashScreen"); 
+
+                        
+                        if($("#componentsBtn").hasClass('active')){
+                            $("#videoScreen").detach().appendTo('#screenShotImageHolder');
+                        }else{                            
+                            $("#videoScreen").detach().appendTo($("#dashScreen"));
+                        };
+
                     }else if(ddObj.comp.hasOwnProperty("thumbnail")){
                         let thumbUrl = "/uploads/" + ddObj.id + "/" + ddObj.comp.thumbnail;
                         $("#dashUrl").val('');
@@ -2612,11 +2619,6 @@
 
                 //build list of ids
                 if($('#runChildrenCb').is(':checked')){
-//                    var selectedNodes = $("#jstree_div").jstree(true).get_json(ids, { flat: true }); //returns parent and all children objs
-//                    var selectedNodesArr = selectedNodes.map(a => a.id); //extract ids into arr
-//                    if (selectedNodesArr.length > 0 ){
-//                        ids = selectedNodesArr.join(';');
-//                    }
                     formData.append('runChildren', 'true');
                 }else{
                     formData.append('runChildren', 'false');
@@ -2754,6 +2756,12 @@
                                         $("#videoScreen").detach().appendTo("#screenShotImageHolder");                                        
                                     }                                    
                                 }
+                                else if(row.substr(0,15) === 'message:launch:'){
+
+                                   let url = row.replace('message:launch:','');
+                                   //window.open(url, '_blank')
+                                    updateLaunchLink(url)
+                                }
                                 else if(row.substr(0,16) === 'message:BuildID:'){
 
                                     buildIDRunning = row.substring(
@@ -2809,12 +2817,6 @@
 
                                     //restart client in 3 seconds
                                     setTimeout(function(){location.reload(true)} , 3000);
-                                }
-                                else if(row.substr(0,15) === 'message:launch:'){
-
-                                   let url = row.replace('message:launch:','');
-                                   //window.open(url, '_blank')
-                                    updateLaunchLink(url)
                                 }
                                 else{
                                     $("#results_html").append(row + '<br>');
@@ -5707,7 +5709,7 @@ showFloatEnd()
                     $("#componentsBtn").addClass("active");
                     $('#jslibtree_div').hide();
                     $('#jstree_div').show( function(){
-                        selectedNode = $('#jstree_div').jstree('get_selected', true);
+                        // selectedNode = $('#jstree_div').jstree('get_selected', true)[0].id;
                     });
 
                     if(!bottomHiddenFlag){
@@ -6614,7 +6616,6 @@ showFloatEnd()
                 if($("#componentsBtn").hasClass('active')){
                     $("#videoScreen").detach().appendTo('#screenShotImageHolder');
                 }else{
-                    // $("#videoScreen").detach().appendTo('#screenshot-panel-body');
                     $("#videoScreen").detach().appendTo($("#dashScreen"));
                 };
                 $("#inspectMaximizeLink").show();
