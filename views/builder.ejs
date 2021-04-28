@@ -1192,19 +1192,21 @@
                 if(variables[varIdName].private){
                     valText = variables[varIdName].value === "" ? "" : "************"
                 }
-                if(valText.length >40){
-                    valText = valText.substring(0, 37)+"...";
-                    var valTextPop = variables[varIdName].value;
-                    const options = {
-                        animation: true,
-                        content: valTextPop,
-                        delay: { "show": 500, "hide": 50 },
-                        trigger: 'hover',
-                        template: '<div class="popover clickPop" role="tooltip"><div class="arrow clickPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+                if(valText.split("\n")[0].length >40 || valText.split("\n").length > 1){
+                        valText = valText.substring(0, 37)+"...";
+                }   
 
-                    }
-                    $("#varValDash" + idn).popover(options);
+                var valTextPop = variables[varIdName].value;
+                const options = {
+                    animation: true,
+                    content: valTextPop,
+                    delay: { "show": 500, "hide": 50 },
+                    trigger: 'hover',
+                    template: '<div class="popover clickPop" role="tooltip"><div class="arrow clickPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+
                 }
+                $("#varValDash" + idn).popover(options);
+                
                 $("#varValDash" + idn).text(valText);
                 $("#varValColorDash" + idn).val(valText);
 
@@ -1229,10 +1231,7 @@
 
                     var thisType = currentCompDashSelectedVarObj[varIdName].type === "" ? "Text" : currentCompDashSelectedVarObj[varIdName].type;
 
-                    // $("#newCompVarTypeButton" + idn).val(thisType);
-                    // $("#newCompVarTypeButton" + idn).text(thisType);
                     $("#newCompDashVarValue" + idn).val(currentCompDashSelectedVarObj[varIdName].value);
-                    // $("#newCompVarPrivateDisp"+idn).html(currentCompVarObj[varName].private ? 'Yes' : 'No');
 
                     if(thisType === "Color"){
                         $("#compDashVarEditValButton"+idn).hide();
@@ -1242,8 +1241,6 @@
                         $("#compDashVarEditValButton"+idn).show();
                         $("#compDashVarEditColorButton"+idn).hide();
                     }
-
-                    // currentCompDashSelectedVarObj[varName].changed = idn;
 
                     $("#varRowDash_"+idn).find(".compDashVarEditValButton").on('click', function(){
                         var idn = $(this).attr('data-idn');
@@ -1410,7 +1407,7 @@
 
                 //New component variable value
                 newHtml += '<div class="col-7"><div class="compVarEditValRow">';
-                newHtml += '<input id="newCompDashVarValue'+currentRowCntStr+'" class="form-control newCompDashVarValue" type="text">';
+                newHtml += '<textarea id="newCompDashVarValue'+currentRowCntStr+'" class="newCompDashVarValue"></textarea>';
 
                 newHtml += '<a href="#"><i id="compDashVarEditValButton'+currentRowCntStr+'" class="fa fa-expand fa-fw compDashVarEditValButton" data-idn="'+currentRowCntStr+'" ></i></a>';
                 newHtml += '<div id="compDashVarEditColorButton'+currentRowCntStr+'"  data-idn="'+currentRowCntStr+' " style="display:none;">' +
@@ -1572,7 +1569,7 @@
 
                 //New component variable value
                 newHtml += '<td class="col-5"><div class="compVarEditValRow">';
-                newHtml += '<input id="newCompVarValue'+currentRowCntStr+'" class="form-control newCompVarValue" type="text">';
+                newHtml += '<textarea rows="1" id="newCompVarValue'+currentRowCntStr+'" class="newCompVarValue" ></textarea>';
 
                 newHtml += '<a href="#"><i id="compVarEditValButton'+currentRowCntStr+'" class="fa fa-expand fa-fw compVarEditValButton" data-idn="'+currentRowCntStr+'" ></i></a>';
                 newHtml += '<div id="compVarEditColorButton'+currentRowCntStr+'"  data-idn="'+currentRowCntStr+' " style="display:none;">' +
@@ -2536,19 +2533,20 @@
                     if(variables[varName].private){
                         valText = variables[varName].value === "" ? "" : "************"
                     }
-                    if(valText.length >40){
+                    if(valText.split("\n")[0].length >40 || valText.split("\n").length > 1){
                         valText = valText.substring(0, 37)+"...";
-                        var valTextPop = variables[varName].value;
-                        const options = {
-                            animation: true,
-                            content: valTextPop,
-                            delay: { "show": 500, "hide": 50 },
-                            trigger: 'hover',
-                            template: '<div class="popover clickPop" role="tooltip"><div class="arrow clickPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
-
-                        }
-                        $("#varValTd" + idn).popover(options);
                     }
+                    var valTextPop = variables[varName].value;
+                    const options = {
+                        animation: true,
+                        content: valTextPop,
+                        delay: { "show": 500, "hide": 50 },
+                        trigger: 'hover',
+                        template: '<div class="popover clickPop" role="tooltip"><div class="arrow clickPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+
+                    }
+                    $("#varValTd" + idn).popover(options);
+                    
                     $("#varValTd" + idn).text(valText);
                     $("#varValColor" + idn).val(valText);
                 }

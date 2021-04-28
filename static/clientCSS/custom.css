@@ -450,6 +450,11 @@ padding-left: 0px;
    justify-content: space-between; 
 }
 
+.newCompVarValue, .newCompDashVarValue{
+   padding: 0;
+   resize: none;
+}
+
 label.varFlag {
    margin-bottom: 2px;
    width: 33%;
@@ -1654,6 +1659,10 @@ td.col-1.dashTableBuildItem {
 
 }
 
+.popover{
+   white-space: pre-wrap; 
+}
+
 .clickPop .popover-body{
    max-height: 70vh;
    overflow: auto;
@@ -2051,6 +2060,9 @@ div#dashCompDescription {
    width: 100%;
 }
 
+
+
+
 .dashDetails{
    padding-left: 11px;
 }
@@ -2119,6 +2131,7 @@ div#compDashVariables {
 .newCompDashVarValue {
    font-size: .8em;
    height: 20px;
+   width: 90%;
 }
 
 .askMarker{

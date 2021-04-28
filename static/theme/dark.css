@@ -450,7 +450,7 @@ input:focus + .slider {
 }
 
 .dashboardPanel{
-    //background: url("/images/dark-pattern-op.png") ;
+    /* background: url("/images/dark-pattern-op.png") ; */
 }
 .dashPanel{
     transition: background-color 0.5s;
@@ -656,6 +656,11 @@ input:focus + .slider {
 .newCompVarTypeButton{
     transition: color 0.5s;
     color: #79bdf3;
+}
+
+.newCompVarValue, .newCompDashVarValue{
+    background-color: #323232;
+    color: white;
 }
 
 .compVarDelButton{
