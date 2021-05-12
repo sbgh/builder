@@ -1335,7 +1335,7 @@ tbody.varTbody{
    /*line-height: 24px;*/
 /*}*/
 
-.varRow{
+.varRow, .actionRow{
    white-space: nowrap;
 }
 
@@ -1344,12 +1344,20 @@ tbody.varTbody{
    margin-bottom: 6px;
 }
 
-.varRow > td{
+.varRow> td {
    font-weight: 500;
    font-size: .8em;
    border: none;
    padding: 0px;
    min-width: min-content;
+}
+
+.actionRow .newCompActionTypeDropdownMenu{
+   padding: 0;
+}
+.actionRow .newCompActionTypeDropdownItem{
+   padding-left: 3px;
+   padding-right: 3px;
 }
 
 .newCompVarPrivateButtonRow, .newSysVarPrivateButtonRow{
@@ -1361,7 +1369,7 @@ tbody.varTbody{
    /*margin-left: -10px;*/
 }
 
-.newCompVarTypeButton{
+.newCompVarTypeButton, .newCompActionTypeButton{
 
    background: none;
    padding: 0;
@@ -1370,6 +1378,8 @@ tbody.varTbody{
    font-size: 1.0em;
 
 }
+
+
 
 .newCompVarName, .newCompVarValue, .newSysVarName, .newSysVarValue {
    width:90%;
@@ -1581,6 +1591,11 @@ tbody.buildCodeTbody{
 #videoScreen, #vidMenuMatchNum{
    white-space:nowrap;
    display:inline-block;
+}
+
+.vidMenuMatchOverlay {
+   max-height: 80vh;
+   overflow: auto;
 }
 
 button#vidMenuMatch, #vidMenuDesc {
@@ -2038,10 +2053,10 @@ div#dashCompDescription {
 
 }
 
-#dashCompUrls{
+#dashCompUrls, #dashCompLaunches{
    text-align: left;
-   padding-top: 20px;
-   padding-bottom: 20px;
+   padding-top: 2px;
+   padding-bottom: 5px;
    padding-left: 15px;
 }
 
@@ -2050,7 +2065,7 @@ div#dashCompDescription {
    min-width: 30%;
 }
 
-.lastBuildUrl{
+.lastBuildUrl, .lastBuildLaunch{
    cursor: pointer;
    text-decoration: underline;
    font-size: .8em;
@@ -2386,4 +2401,88 @@ ul#userMenuDrop {
    z-index: 2000;
 }
 
+.actionRow {
+   display: flex;
+}
 
+.actionItem.actionItemType {
+   font-size: 15px;
+   min-width: 125px;
+   white-space: nowrap;
+   overflow: hidden;
+}
+
+.actionItem.actionItemTempNum {
+   min-width: 230px;
+   font-size: 14px;
+   white-space: nowrap;
+   overflow: hidden;
+}
+
+.actionItem input{
+   display: inline-block;
+   padding: 0;
+   padding-left: 3px;
+   margin-top: 7px;
+   height: 20px;
+   font-size: 14px;
+}
+.actionItem.actionItemTempNum input {
+   width: 3em;
+   margin-left: 17px;
+   padding: 0;
+   padding-left: 3px;
+   height: 23px;
+}
+
+.actionItem.actionItemReplaceStr, .actionItem.actionItemValue, .actionItem.actionItemAppendText {
+   min-width: 250px;
+   font-size: 14px;
+   white-space: nowrap;
+   overflow: hidden;
+}
+
+.actionItem.actionItemName, .actionItem.actionItemTag {
+   min-width: 230px;
+   font-size: 14px;
+   white-space: nowrap;
+   overflow: hidden;
+}
+
+.actionItem.actionItemTarget, .actionItem.actionItemAppendLine {
+   min-width: 250px;
+   font-size: 14px;
+   white-space: nowrap;
+   overflow: hidden;
+}
+
+span.actionClause {
+   font-size: 11px;
+   padding-left: 3px;
+   padding-right: 4px;
+   font-weight: 700;
+   display: inline-block;
+   min-width: 43px;
+   text-align: right;
+}
+
+.newCompActionTypeButton {
+   margin-left: 19px;
+    min-width: 126px;
+    text-align: left;
+    font-size: 15px;
+}
+
+.compActionEditButton{
+   display: none;
+}
+
+i.fa.fa-times.fa-fw.compActionDelButton {
+   padding-top: 6px;
+   transform: translateX(-12px);
+   cursor: pointer;
+}
+
+#insertVariableActions, #newAction{
+   display: none;
+}

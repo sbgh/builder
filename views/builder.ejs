@@ -947,9 +947,15 @@
                     
                                 tmpHtml += "<div id='dashCompUrls'>";
                                     for(let ui in ddObj.lastBuildUrlsArr){
-                                        tmpHtml += "<div class='lastBuildUrl' data-id='" + ddObj.id +"'>"+ddObj.lastBuildUrlsArr[ui]+"</div>";
+                                        tmpHtml += "<div class='lastBuildUrl' data-id='" + ddObj.id +"'>"+ddObj.lastBuildUrlsArr[ui]+'<i class="fa  fa-video-camera fa-fw "></i></div>';
                                     }
-                                tmpHtml += "</div>";                        
+                                tmpHtml += "</div>";  
+                                tmpHtml += "<div id='dashCompLaunches'>";
+                                    for(let ui in ddObj.launchUrlsArr){
+                                        tmpHtml += "<div class='lastBuildLaunch' data-id='" + ddObj.id +"'>"+ddObj.launchUrlsArr[ui]+'<i class="fa  fa-external-link fa-fw "></i></div>';
+                                    }
+                                tmpHtml += "</div>";  
+                                                      
                             tmpHtml += "</div>";                                       
                         tmpHtml += "</div>";                                       
                     tmpHtml += "</div>";
@@ -996,13 +1002,22 @@
                     
                     $('.lastBuildUrl').on('click', function(){
 
-                        var id = $(this).attr('data-ID');
+                        // var id = $(this).attr('data-ID');
                         navigate($(this).text());
                         updateLaunchLink($(this).text());
 
                         $("#videoScreen").detach().appendTo("#dashScreen"); 
-                        // $(".dashThumb").find("img").show();
-                        // $("#row_" + id).find("img").hide();
+                    })
+
+
+                    $('.lastBuildLaunch').on('click', function(){
+
+                        // var id = $(this).attr('data-ID');
+                        updateLaunchLink($(this).text());
+
+                        window.open($(this).text(), '_blank').focus();
+
+
                     })
 
                     $('.dashSelectedNameRow').find(".dashTableOpenButton").popover({ 
@@ -1420,7 +1435,6 @@
                 return newHtml;
             }
 
-
             var tempCont = document.createElement("div");
             function quillGetHTML(inputDelta) {
 
@@ -1465,8 +1479,6 @@
                     }
                 })
             }
-
-
 
             function hideBottom(){
 //                $("#bottomRow").hide(function(){});
@@ -1611,13 +1623,7 @@
                     }
                 });
 
-//                $('.newCompVarPrivateButton').on('click', function(){
-//                    var id = $("#id").val();
-//                    const checked =  this.checked;
-//                    var inx = $(this).attr('data-inx');
-//
-//                    $("#newCompVarPrivateDisp"+inx).html(checked ? 'Yes' : 'No');
-//                })
+
 
                 $(".compVarEditValButton").on('click', function(){
                     var idn = $(this).attr('data-idn');
@@ -1907,6 +1913,7 @@
                 })
             }
 
+            
             function loadBuildCode(id){
 //                    console.log("try to get build code " + data[0].buildCode.linkArr[0]);
                 $.get('/BuildCode', { id: id }, function(data) {
@@ -2050,40 +2057,63 @@
                                 $('#resourceFiles').val(data[0].resourceFiles);
                                 populateFileList( $('#buildCode').val(), $('#resourceFiles').val(), false, "#fileList");
 
-                                $("#buildCodeMatch").html("");
-                                $.get('/componentsByBcId', { id: data[0].id }, function(data) {
-                                    var rowHtml;
-                                    const dataObj = JSON.parse(data);
-                                    const  buildCodeMatch = dataObj.compArr;
-                                    const thistId = $("#id").val();
-                                    let x=0;
-                                    for (var key in buildCodeMatch) {
-                                        if (buildCodeMatch.hasOwnProperty(key) && thistId !== buildCodeMatch[key].id) {
-                                            rowHtml = '<div data-id="'+buildCodeMatch[key].id+'" class="buildCodeMatchRow">';
-                                            rowHtml += '<i class="fa  fa-folder-open fa-fw "></i>';
-                                            rowHtml += buildCodeMatch[key].systemName + ' : ';
-                                            rowHtml += buildCodeMatch[key].name + '</div>';
+                                loadUsedInTree(data[0].id, "usedInMatchLinkComp_jstree_div", "usedInMatchComp");
 
-                                            $("#buildCodeMatch").append(rowHtml);
-                                            x++;
-                                        }
-                                    }
 
-                                    if(x === 0){
-                                        $("#alsoUsedInMess").text("Not used in any other component")
-                                    }else if(x === 1){
-                                        $("#alsoUsedInMess").text("Used in one other component:")
+                                // $("#buildCodeMatch").html("");
+                                // $.get('/componentsByBcId', { id: data[0].id }, function(data) {
+                                //     var rowHtml;
+                                //     const dataObj = JSON.parse(data);
+                                //     const  buildCodeMatch = dataObj.compArr;
+                                //     const thistId = $("#id").val();
+                                //     let x=0;
+                                //     for (var key in buildCodeMatch) {
+                                //         if (buildCodeMatch.hasOwnProperty(key) && thistId !== buildCodeMatch[key].id) {
+                                //             rowHtml = '<div data-id="'+buildCodeMatch[key].id+'" class="buildCodeMatchRow">';
+                                //             rowHtml += '<i class="fa  fa-folder-open fa-fw "></i>';
+                                //             rowHtml += buildCodeMatch[key].systemName + ' : ';
+                                //             rowHtml += buildCodeMatch[key].name + '</div>';
+
+                                //             $("#buildCodeMatch").append(rowHtml);
+                                //             x++;
+                                //         }
+                                //     }
+
+                                //     if(x === 0){
+                                //         $("#alsoUsedInMess").text("Not used in any other component")
+                                //     }else if(x === 1){
+                                //         $("#alsoUsedInMess").text("Used in one other component:")
+                                //     }else{
+                                //         $("#alsoUsedInMess").text("Used in "+x.toString()+" other components:")
+                                //     }
+
+                                //     $('.buildCodeMatchRow').on('click', function(){
+                                //         var id = $(this).attr('data-id');
+                                //         $('#jstree_div').jstree("deselect_all");
+                                //         $('#jstree_div').jstree('select_node',id);
+                                //         $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
+                                //     });
+                                // })
+
+
+
+                                if(data[0].hasOwnProperty("actions") ){
+                                    actionArr = data[0].actions;
+                                    paintActions($('#id').val())
+                                }else{
+                                    $("#actions").html('');
+                                }
+
+                                if(data[0].hasOwnProperty("hasActions")){
+                                    if(data[0].hasActions === true){
+                                        $("#hasActions").show()
                                     }else{
-                                        $("#alsoUsedInMess").text("Used in "+x.toString()+" other components:")
-                                    }
-
-                                    $('.buildCodeMatchRow').on('click', function(){
-                                        var id = $(this).attr('data-id');
-                                        $('#jstree_div').jstree("deselect_all");
-                                        $('#jstree_div').jstree('select_node',id);
-                                        $('#jstree_div').jstree(true).get_node(id, true).children('.jstree-anchor').focus();
-                                    });
-                                })
+                                        $("#hasActions").hide()
+                                    }  
+                                }else{
+                                    $("#hasActions").hide()
+                                }                       
+                            
                             }
 
                         }else{
@@ -2093,11 +2123,189 @@
                         }
                     }
 
-
-
                 });
             }
 
+
+            $('#newAction').on("click", function(){
+                let idn = (actionArr.length).toString();
+                let newRowObj = {type: "saveTemplate", tempNum: 1, targetFile: "", c: idn, changed:"edited" }
+                actionArr.push(newRowObj);
+
+                $("#actions").append('<div id="actionRow'+idn+'" class="actionRow saveTemplate ">')
+                $("#actionRow" + idn).attr('data-type', "saveTemplate");
+                
+                var newHtml = createActionsRowEditHtml(actionArr.length-1, newRowObj);
+
+                $("#insertVariableActions").show();
+
+                $("#actionRow" + idn).html(newHtml);
+                setActionTypeEvents();
+
+            });
+
+            var actionArr = [];
+
+            function paintActions(){
+            //<%if (false) {%>
+            // {type: "saveTemplate", tempNum: "1", targetFile: "<%s.viewsPath%>/<%p.viewName%>.ejs", c: "0"}                    
+            // {type: "replaceStr", tag: "'%id%'", replaceStr: "'<%c.id%>'", target: "template1", c: "0"}
+            // {type: "makeVar", name: "id", value: "<%c.id%>", c: "1"}
+            // {type: "replaceLine", tag: "'%css%'", appendText: "var:css", target: "template1", c: "2"}
+            // {type: "replaceStr", tag: "'%classList%'", replaceStr: "'<%c.classList%>'", target: "template1", c: "3"}
+            // {type: "appendLine", tag: "'<%a.currentHTMLInsert%>'", appendText: "template1", target: "<%a.servicePathFileName%>", c: "4"}
+            //<%}%> 
+                var actionRowsHtml = '';
+                let x=0;
+                
+                for(var row in actionArr){
+                    let xStr = (x).toString();
+                    var actionArrRow =  actionArr[row];
+                    delete actionArrRow.changed;
+                    actionRowsHtml += '<div id="actionRow'+xStr+'" class="actionRow '+ actionArrRow.type + ' ">';
+                            actionRowsHtml += '<i class="fa fa-pencil fa-fw compActionEditButton" data-idn="'+xStr+'"></i>';
+                    if(actionArrRow.type === "replaceStr"){
+                            actionRowsHtml += '<div class="actionItem actionItemType">' + 'Replace String' + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemTag">' + actionArrRow.tag + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemReplaceStr">' + '<span class="actionClause">with</span>' + actionArrRow.replaceStr + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">in</span>' + actionArrRow.target + '</div>'
+                    }else if(actionArrRow.type === "appendLine"){
+                            actionRowsHtml += '<div class="actionItem actionItemType">' + 'Append Line' + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemTag">' + actionArrRow.tag + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemAppendLine">' + '<span class="actionClause">with</span>' + actionArrRow.appendText + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">in</span>' + actionArrRow.target + '</div>'
+                    }else if(actionArrRow.type === "replaceLine"){
+                            actionRowsHtml += '<div class="actionItem actionItemType">' + 'Replace Line' + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemTag">' + actionArrRow.tag + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemAppendLine">' + '<span class="actionClause">with</span>' + actionArrRow.appendText + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">in</span>' + actionArrRow.target + '</div>'
+                    }else if(actionArrRow.type === "makeVar"){
+                            actionRowsHtml += '<div class="actionItem actionItemType">' + 'Set Variable' + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemName">' + actionArrRow.name + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">with</span>' + actionArrRow.value + '</div>'
+                    }else if(actionArrRow.type === "saveTemplate"){
+                            actionRowsHtml += '<div class="actionItem actionItemType">' + 'Save Template' + actionArrRow.tempNum + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemTag">' +  '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemReplaceStr">' +  '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">to</span>' + actionArrRow.targetFile + '</div>'
+                    }    
+                    actionRowsHtml += '</div>\n'
+                    x++;                                    
+                }
+                
+                $("#actions").html(actionRowsHtml);
+
+                
+                $(".compActionEditButton").on('click', function(){
+                    var idn = $(this).attr('data-idn');
+                    let actionArrRow = actionArr[idn];
+                    var newHtml = createActionsRowEditHtml(idn, actionArrRow);
+                    actionArrRow.changed = "edited";
+
+                    $("#insertVariableActions").show();
+
+                    $("#actionRow"+idn).html(newHtml);
+
+                    $("#actionRow" + idn).attr('data-type', actionArrRow.type);
+                    setActionTypeEvents();
+                });
+                
+            }
+           
+            function setActionTypeEvents(){
+
+                $(".newCompActionTypeDropdownItem").on('click', function(){
+                    var type = $(this).attr('data-type');
+                    var targetIndex = $(this).attr('data-target'); 
+                    $("#actionRow" + targetIndex).attr('data-type', type);
+                    
+                    let actionArrRow = actionArr[targetIndex];
+                    let newRow = {};
+                    if(type === "replaceStr"){
+                        newRow = {type: "replaceStr", tag: actionArrRow.hasOwnProperty("tag") ? actionArrRow.tag : "" , replaceStr: actionArrRow.hasOwnProperty("replaceStr") ? actionArrRow.replaceStr : "", target: actionArrRow.hasOwnProperty("target") ? actionArrRow.target : "", c: targetIndex};
+                    }else if(type === "appendLine"){
+                        newRow = {type: "appendLine", tag: actionArrRow.hasOwnProperty("tag") ? actionArrRow.tag : "" , appendText: actionArrRow.hasOwnProperty("appendText") ? actionArrRow.appendText : "", target: actionArrRow.hasOwnProperty("target") ? actionArrRow.target : "", c: targetIndex};
+                    }else if(type === "replaceLine"){
+                        newRow = {type: "replaceLine", tag: actionArrRow.hasOwnProperty("tag") ? actionArrRow.tag : "" , appendText: actionArrRow.hasOwnProperty("appendText") ? actionArrRow.appendText : "", target: actionArrRow.hasOwnProperty("target") ? actionArrRow.target : "", c: targetIndex};
+                    }else if(type === "makeVar"){
+                        newRow = {type: "makeVar", name: actionArrRow.hasOwnProperty("name") ? actionArrRow.name : "" , value: actionArrRow.hasOwnProperty("value") ? actionArrRow.value : "", c: targetIndex};
+                    }else if(type === "saveTemplate"){
+                        newRow = {type: "saveTemplate", tempNum: actionArrRow.hasOwnProperty("tempNum") ? actionArrRow.tempNum : "1" , targetFile: actionArrRow.hasOwnProperty("targetFile") ? actionArrRow.targetFile : "", c: targetIndex};
+                    }     
+                    
+                    actionArr[targetIndex] = newRow;
+                    $("#actionRow"+targetIndex).html(createActionsRowEditHtml(targetIndex, newRow)); 
+
+                                            
+                    setActionTypeEvents();
+
+                });
+
+                $(".actionRow").find("input").on('click', function(){
+                    var id = $(this).attr('id');
+                    $("#varInsertTargetId").val(id) 
+                })                    
+
+                $(".compActionDelButton").on('click', function(){
+                    var idn = $(this).attr('data-idn');
+                    actionArr[idn].changed = "deleted";
+                    $("#actionRow"+idn).remove();
+                });                        
+            }
+
+
+            function createActionsRowEditHtml(currentRowCnt, actionArrRow){
+
+                let currentRowCntStr = (currentRowCnt).toString();
+
+                let type = actionArrRow.type;
+
+                let typeStr = "";
+                if(type === "replaceStr"){
+                    typeStr = "Replace String"
+                }else if(type === "appendLine"){
+                    typeStr = "Append Line"
+                }else if(type === "replaceLine"){
+                    typeStr = "Replace Line";
+                }else if(type === "makeVar"){
+                    typeStr = "Set Variable"
+                }else if(type === "saveTemplate"){
+                    typeStr = "Save Template"
+                }    
+
+                var newHtml =   '<button class="dropdown-toggle newCompActionTypeButton" type="button" id="newCompActionTypeButton'+currentRowCntStr+'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">'+typeStr+'</button>';
+                newHtml +=      '<i class="fa fa-times fa-fw compActionDelButton" data-idn="'+currentRowCntStr+'"></i>';
+                    
+                newHtml +=      '<div id="newCompActionTypeDropdownMenu'+currentRowCntStr+'" class="dropdown-menu newCompActionTypeDropdownMenu" aria-labelledby="newCompActionTypeButton'+currentRowCntStr+'" x-placement="bottom-start" >';
+                    newHtml +=      '<div><a class="dropdown-item newCompActionTypeDropdownItem" data-target="'+currentRowCntStr+'" data-type="saveTemplate" href="#">Save Template</a></div>' ;
+                    newHtml +=      '<div><a class="dropdown-item newCompActionTypeDropdownItem" data-target="'+currentRowCntStr+'" data-type="replaceStr" href="#" >Replace String</a></div>' ;
+                    newHtml +=      '<div><a class="dropdown-item newCompActionTypeDropdownItem" data-target="'+currentRowCntStr+'" data-type="replaceLine" href="#" >Replace Line</a></div>' ;
+                    newHtml +=      '<div><a class="dropdown-item newCompActionTypeDropdownItem" data-target="'+currentRowCntStr+'" data-type="appendLine" href="#" >Append Line</a></div>' ;
+                    newHtml +=      '<div><a class="dropdown-item newCompActionTypeDropdownItem" data-target="'+currentRowCntStr+'" data-type="makeVar" href="#" >Set Variable</a></div>' ;
+                newHtml +=      '</div>';
+
+                if(type === "replaceStr" ){
+                    newHtml += '<div class="actionItem actionItemTag">' + '<input id="actionItemTagInput'+currentRowCntStr+'" class="form-control actionItemTagInput" type="text" value="'+actionArrRow.tag+'">' + '</div>'
+                    newHtml += '<div class="actionItem actionItemReplaceStr">' + '<span class="actionClause">with</span>' + '<input id="actionItemReplaceStrInput'+currentRowCntStr+'" class="form-control actionItemReplaceStrInput" type="text" value="'+actionArrRow.replaceStr+'">' + '</div>'
+                    newHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">in</span>' + '<input id="actionItemTargetInput'+currentRowCntStr+'" class="form-control actionItemTargetInput" type="text" value="'+actionArrRow.target+'">' + '</div>'
+                
+                }else if(type === "replaceLine" || type === "appendLine"){
+                    newHtml += '<div class="actionItem actionItemTag">' + '<input id="actionItemTagInput'+currentRowCntStr+'" class="form-control actionItemTagInput" type="text" value="'+actionArrRow.tag+'">' + '</div>'  
+                    newHtml += '<div class="actionItem actionItemAppendText">' + '<span class="actionClause">with</span>' + '<input id="actionItemAppendTextInput'+currentRowCntStr+'" class="form-control actionItemAppendTextInput" type="text" value="'+actionArrRow.appendText+'">'  + '</div>'
+                    newHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">in</span>' + '<input id="actionItemTargetInput'+currentRowCntStr+'" class="form-control actionItemTargetInput" type="text" value="'+actionArrRow.target+'">' + '</div>'
+                }else if(type === "makeVar"){
+                    newHtml += '<div class="actionItem actionItemName">' + '<input id="actionItemNameInput'+currentRowCntStr+'" class="form-control actionItemNameInput" type="text" value='+actionArrRow.name+'>' + '</div>'
+                    newHtml += '<div class="actionItem actionItemValue">' + '<span class="actionClause">with</span>' + '<input id="actionItemValueInput'+currentRowCntStr+'" class="form-control actionItemValueInput" type="text" value="'+actionArrRow.value+'">' + '</div>'
+                }else if(type === "saveTemplate"){
+                    newHtml += '<div class="actionItem actionItemTempNum">' + '<input id="actionItemTempNumInput'+currentRowCntStr+'" class="form-control actionItemTempNumInput" type="number" value='+actionArrRow.tempNum+'>' + '</div>'
+                    newHtml += '<div class="actionItem actionItemReplaceStr">' +  '</div>'
+                    newHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">to</span>' + '<input id="actionItemTargetInput'+currentRowCntStr+'" class="form-control actionItemTargetInput" type="text" value="'+actionArrRow.targetFile+'">' + '</div>'
+                }    
+                newHtml += '</div>\n'
+
+                return newHtml;
+            }
+            
             //geLibJobByID
             function getLibJobByID(NodeID, lib){
                 //const viewmode = "read"
@@ -2552,24 +2760,23 @@
                 }
             }
 
-
             $(".varFlagLabel-pro" ).popover({
                 animation: true,
-                content: "Promote this variable to the dashboard",
+                content: "Promote a property to the dashboard",
                 delay: { "show": 50, "hide": 100 },
                 trigger: 'hover',
                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
             });
             $(".varFlagLabel-pri" ).popover({
                 animation: true,
-                content: "Private variable's value is never copied",
+                content: "Private properties value is never copied",
                 delay: { "show": 50, "hide": 100 },
                 trigger: 'hover',
                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
             });
             $(".varFlagLabel-ask" ).popover({
                 animation: true,
-                content: "Ask user for the value before component can be built",
+                content: "If value is empty, ask user for the value before component can be built",
                 delay: { "show": 50, "hide": 100 },
                 trigger: 'hover',
                 template: '<div class="popover hoverPop" role="tooltip"><div class="arrow hoverPopArrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
@@ -2716,7 +2923,9 @@
 
                             newLines.forEach(function(row){
                                 //console.log(row);
-                                if(row.substr(0,17) === 'message:Building:'){$("#resultsStatus").html(  " <img src='/images/throbber.gif'> " + row.slice(17)   );}
+                                if(row.substr(0,17) === 'message:Building:'){
+                                    $("#resultsStatus").html(  " <img src='/images/throbber.gif'> " + row.slice(17)   );
+                                }
                                 else if(row.substr(0,28) === 'status:All scripts completed'){
                                     $("#resultsStatus").html( "<b>All scripts completed</b>");
                                 }
@@ -2761,7 +2970,7 @@
                                     updateLaunchLink(url)
                                 }
                                 else if(row.substr(0,16) === 'message:BuildID:'){
-
+ 
                                     buildIDRunning = row.substring(
                                         row.lastIndexOf("[") + 1,
                                         row.lastIndexOf("]")
@@ -2776,17 +2985,18 @@
                                             $('#' + buildIDRunningPrev + '_anchor').removeClass('runningJob').removeClass('runningJobCompleteFail').addClass("runningJobCompleteSuccess");
                                         }
                                         buildIDRunningPrev = buildIDRunning;
+                                        $('#results_html')[0].scrollTop = $('#results_html')[0].scrollHeight;
 
-                                        if($("#componentsBtn").hasClass('active')) {
+                                        // if($("#componentsBtn").hasClass('active')) {
                                             //save a list of all closed nodes that were opened
-                                            if ($('#jstree_div li#' + buildIDRunning + '.jstree-open').length !== 1) {
-                                                closedNodeList.push(buildIDRunning)
-                                            }
+                                            // if ($('#jstree_div li#' + buildIDRunning + '.jstree-open').length !== 1) {
+                                            //     closedNodeList.push(buildIDRunning)
+                                            // }
 
-                                            var runningNode = $('#jstree_div').jstree(true).get_node(buildIDRunning, true);
-                                            $("#jstree_div").jstree("open_node", buildIDRunning);
-                                            runningNode.children('.jstree-anchor').focus();
-                                        }
+                                            // var runningNode = $('#jstree_div').jstree(true).get_node(buildIDRunning, true);
+                                            // $("#jstree_div").jstree("open_node", buildIDRunning);
+                                            // runningNode.children('.jstree-anchor').focus();
+                                        // }
                                     }
                                 }
                                 else if(row.substr(0,28) === 'status:All scripts completed'){
@@ -2838,9 +3048,10 @@
 
                     if($("#componentsBtn").hasClass('active')){
                         //close all nodes that were opened
-                        for(var x in closedNodeList){
-                            $("#jstree_div").jstree("close_node", closedNodeList[x]);
-                        }
+                        // for(var x in closedNodeList){
+                        //     $("#jstree_div").jstree("close_node", closedNodeList[x]);
+                        // }
+
                         if(CompletionSuccess){
                             $('#jstree_div').jstree(true).get_node(selectedNode, true).children('.jstree-anchor').focus();
                         }else{
@@ -3145,6 +3356,7 @@
                 $("#remove_button").hide();
                 $("#new_button").hide();
                 $("#run_button").hide();
+                $('#newAction').show();
                 $("#insertVariable").show();
                 $("#newTemplateButton").show();
                 $("#newFileButton").show();
@@ -3194,7 +3406,9 @@
 
                 //remove click event from readModeJob
                 $('#jobForm .ql-editor').unbind();
-//                $('#jobForm .ql-editor').css("max-height","500px")
+
+                $(".compActionEditButton").show();
+
             }
 
             function readModeJob(){
@@ -3227,6 +3441,8 @@
                 $("#run_button").show();
 
                 $('#insertVariable').hide();
+                $('#newAction').hide();
+                $('#insertVariableActions').hide();
                 $("#newTemplateButton").hide();
                 $("#newFileButton").hide();
                 $(".delFile").hide();
@@ -3258,14 +3474,8 @@
                 $("#snapButton").hide();
 
                 $('#jobForm .ql-editor').unbind();
-//                $('#jobForm .ql-editor').on('click', function(evt){
-//                    if($('#jobForm .ql-editor').css("max-height") !== "900px"){
-//                        $('#jobForm .ql-editor').css("max-height","900px")
-//                    }else{
-//                        $('#jobForm .ql-editor').css("max-height","70px")
-//                    }
-//
-//                })
+                
+                $(".compActionEditButton").hide();
 
             }
 
@@ -3345,6 +3555,8 @@
                 $("#new_button").hide();
                 $("#run_button").hide();
                 $('#insertVariable').hide();
+                $('#newAction').hide();
+                $('#insertVariableActions').hide();
                 $("#newTemplateButton").hide();
                 $("#newFileButton").hide();
                 $(".delFile").hide();
@@ -3359,6 +3571,7 @@
                 if (checkBoxes.exists()){
                     checkBoxes.hide();
                 }
+                $(".compActionEditButton").hide();
             }
 
             function readModeLibSys(){
@@ -3493,6 +3706,19 @@
                 mydata.text = $("#text").val();
                 mydata.resourceFiles = $('#resourceFiles').val();
 
+//remove ''
+// for(let x in actionArr){
+//     if(actionArr[x].hasOwnProperty("replaceStr") ){
+//         actionArr[x].replaceStr = actionArr[x].replaceStr.replace(/'/g,'');
+//     }
+//     if(actionArr[x].hasOwnProperty("tag") ){
+//         actionArr[x].tag = actionArr[x].tag.replace(/'/g,'');
+//     }    
+// }
+
+                saveActions();
+                mydata.actions = actionArr;
+
                 mydata.buildCode = $("#buildCode").val();
 
                 mydata.buildCodeName = $("#newBuildCodeName").val();
@@ -3533,6 +3759,48 @@
                     }
                 });
             });
+
+            function saveActions(){
+                for(let x in actionArr){
+                    if(actionArr[x].changed ){
+                        if(actionArr[x].changed === "edited"){
+                            var actionArrRow = actionArr[x];
+                            var actionArrUIRow = $("#actionRow" + x);
+                            var uiRowType = actionArrUIRow.attr('data-type');
+                            var repObj = {};
+                            if(uiRowType === "replaceStr"){
+                                repObj.type = "replaceStr";
+                                repObj.tag = $("#actionItemTagInput" + x).val();
+                                repObj.replaceStr = $("#actionItemReplaceStrInput" + x).val();
+                                repObj.target = $("#actionItemTargetInput" + x).val();
+                                actionArr[x] = repObj
+                            }else if(actionArrRow.type === "appendLine"){
+                                actionArrRow.tag = $("#actionItemTagInput" + x).val();
+                                actionArrRow.appendText = $("#actionItemAppendTextInput" + x).val();
+                                actionArrRow.target = $("#actionItemTargetInput" + x).val();
+                            }else if(actionArrRow.type === "replaceLine"){
+                                actionArrRow.tag = $("#actionItemTagInput" + x).val();
+                                actionArrRow.appendText = $("#actionItemAppendTextInput" + x).val();
+                                actionArrRow.target = $("#actionItemTargetInput" + x).val();
+                            }else if(actionArrRow.type === "makeVar"){
+                                actionArrRow.name = $("#actionItemNameInput" + x).val();
+                                actionArrRow.value = $("#actionItemValueInput" + x).val();
+                            }else if(actionArrRow.type === "saveTemplate"){
+                                actionArrRow.tempNum = $("#actionItemTempNumInput" + x).val();
+                                actionArrRow.targetFile  = $("#actionItemTargetFileInput" + x).val();
+                            }  
+
+                            delete actionArr[x].changed;
+                        }                        
+
+                        if(actionArr[x].changed === "deleted"){
+                            actionArr.splice(x, 1);
+                        }
+                        
+                    }
+                    
+                }
+            }
 
             //save Sys
             $("#save_sys_button").click(function(event){
@@ -3675,11 +3943,54 @@
                 });
 
                 $('#varModal').modal('toggle');
-                //insertAtCaret('script', pasteText);
-                scriptEditor.insert(pasteText);
+               
+                if($("#varInsertTargetId").val() === 'scriptEditor'){
+                    scriptEditor.insert(pasteText.trim());
+                }else{
+                    // var $focused = $(':focus');
+                    $("#"+$("#varInsertTargetId").val()).insertAtCaret(pasteText.trim());
+                }
+                
 
             });
 
+            $.fn.extend({
+                insertAtCaret: function(myValue){
+                    return this.each(function(i) {
+                        if (document.selection) {
+                            //For browsers like Internet Explorer
+                            this.focus();
+                            sel = document.selection.createRange();
+                            sel.text = myValue;
+                            this.focus();
+                        }else if (this.selectionStart || this.selectionStart == '0') {
+                            //For browsers like Firefox and Webkit based
+                            var startPos = this.selectionStart;
+                            var endPos = this.selectionEnd;
+                            var scrollTop = this.scrollTop;
+                            this.value = this.value.substring(0, startPos)+myValue+this.value.substring(endPos,this.value.length);
+                            this.focus();
+                            this.selectionStart = startPos + myValue.length;
+                            this.selectionEnd = startPos + myValue.length;
+                            this.scrollTop = scrollTop;
+                        } else {
+                            this.value += myValue;
+                            this.focus();
+                        }
+                    })
+                }
+            });
+
+
+            $("#insertVariable").on("click", function(){
+                $("#varInsertTargetId").val('scriptEditor') 
+                $("#varModal").modal("show");            
+            })
+
+            $("#insertVariableActions").on("click", function(){                
+                $("#varModal").modal("show");          
+            })
+            
             $('#varModal').on('shown.bs.modal', function() {
                 getVariables("Parent");
                 //console.log('got vars');
@@ -5146,7 +5457,7 @@ showFloatVideo();
 
                         setTimeout(function(){
                             $('#job-form-panel').animate({ scrollTop: $("#compVariables").offset().top  + $('#job-form-panel').scrollTop() -  ($('#job-form-panel').height() * 0.8) }, 1000);
-                            floatPop("compVariables",  "Developers define component variables that allow you to control component builds from a high level.");
+                            floatPop("compVariables",  "Developers define Component Properties that allow you to control component builds from a high level.");
                         },500);
                         $("#floatPopOk").unbind();
                         floatPopOkTimeout = setTimeout(function(){$("#floatPopOk").click();},8000);
@@ -5953,7 +6264,7 @@ showFloatEnd()
                     }
                 });
 
-                loadUsedInTree(id);
+                loadUsedInTree(id, "usedInMatchLink_jstree_div", "usedInMatch")
             }
 
             //create usedInMatchLink tree
@@ -6015,7 +6326,7 @@ showFloatEnd()
 
                 $('#videoModal').modal('hide');
 
-                var selectedMatchNode = data.selected[0];
+                var selectedMatchNode = data.selected[0].replace("_match","");
 
                 if( ! $("#componentsBtn").hasClass('active')){
                     $("#componentsBtn").click();
@@ -6027,25 +6338,87 @@ showFloatEnd()
                 }, 500);
             });
 
-            function loadUsedInTree(buildId){
+            $("#usedInMatchLinkComp_jstree_div").jstree({
+                "core" : {
+                    "themes": {
+                        "name": "default",
+                        "dots": true,
+                        "icons": true,
+                        "variant" : "small"
+                    },
+                    "data" : currectMatchTreeObjArr,
+                    'check_callback': function(operation, node, node_parent, node_position, more) {
+                        return true;  //allow all other operations
+                    }
+                },
+                "types" : {
+                    "system" : {
+                        "icon" : "fa fa-server ",
+                        "a_attr": { class : " systemRow "}
+                    },
+                    "job" : {
+                        "icon" : "fa fa-check-circle-o jobRow"
+                    },
+                    "needfull" : {
+                        "icon" : "fa fa-wrench",  //play-circle-o
+                        "a_attr": { class : " needfull "},
+                        "li_attr": { class : " needfull "}
+                    },
+                    "rerunnable" : {
+                        "icon" : "fa fa-repeat rerunnableRow",
+                        "a_attr": { class : " rerunnableRow "}
+                    },
+                    "root" : {
+                        "icon" : "fa fa-server"
+                    },
+                    "disabled" : {
+                        "icon" : "fa fa-times-circle-o disabledRow",
+                        "li_attr": { class : "  "}
+                    }
+                },
+                "sort" : function(a, b) {
+                    a1 = this.get_node(a);
+                    b1 = this.get_node(b);
+                    return (a1.original.sort < b1.original.sort) ? -1 : 1;
+
+                },
+                "plugins" : [ "sort", "types", "wholerow"]
+            }).on(  'create_node.jstree', function(e, data) {
+                //console.log('saved');
+            }  );
+
+            $('#usedInMatchLinkComp_jstree_div').bind("refresh.jstree", function (e, data) {
+                $(this).jstree("open_all");
+            })
+
+            $('#usedInMatchLinkComp_jstree_div').on("select_node.jstree", function (e, data) {
+
+                var selectedMatchNode = data.selected[0].replace("_match","");
+
+                setTimeout(function(){
+                    $('#jstree_div').jstree("deselect_all");
+                    $('#jstree_div').jstree('select_node', selectedMatchNode);
+                    $('#jstree_div').jstree(true).get_node(selectedMatchNode, true).children('.jstree-anchor').focus();
+                }, 500);
+            });
+
+            function loadUsedInTree(buildId, treeId, usedInMatchId){
                 $.get("/componentsTreeByBcId",{buildId:buildId},function(resp){
 
                     var respObj = JSON.parse(resp);
 
-
                     var matchingComponents = respObj.matchingComponents;
                     var matchingComponentsCount = respObj.matchingComponentsCount;
 
-
-                    $('#usedInMatchLink_jstree_div').jstree(true).settings.core.data = matchingComponents;
-                    $('#usedInMatchLink_jstree_div').jstree(true).refresh();
+                    $('#'+treeId).jstree(true).settings.core.data = matchingComponents;
+                    $('#'+treeId).jstree(true).refresh();
 
                     if(matchingComponentsCount < 1){
-                        $("#usedInMatch").text('0 components');
+                        $("#"+usedInMatchId).text('0 components');
                     }else if(matchingComponentsCount === 1){
-                        $("#usedInMatch").text('1 component');
+                        $("#"+usedInMatchId).text('1 component');
                     }else{
-                            $("#usedInMatch").text(matchingComponentsCount.toString() +" components")
+                        $("#"+usedInMatchId).text(matchingComponentsCount.toString() +" components")
                         }
 
                 })
@@ -6678,7 +7051,7 @@ showFloatEnd()
 
                     $('#videoModal').modal('hide');
 
-                    var selectedMatchNode = data.selected[0];
+                    var selectedMatchNode = data.selected[0].replace("_clickMatch","");
 
                      $("#componentsBtn").click();
 
@@ -6955,7 +7328,7 @@ showFloatEnd()
                 $("#buildCode").val("");
                 $("#newBuildCodeName").val("copy of " + $("#newBuildCodeName").val());
                 $("#alsoUsedInMess").text("Not used in any other component")
-                $("#buildCodeMatch").html("");
+                // $("#buildCodeMatch").html("");
                 $("#buildCodeCopyButton").hide();
                 $("#buildCodeForkButton").hide();
 
@@ -7241,8 +7614,6 @@ showFloatEnd()
 
 
             }
-
-
         });
 
     </script>
@@ -7314,6 +7685,7 @@ showFloatEnd()
                 <input name="dashUrl" id="dashUrl" type="hidden" />
                 <input name="dashSys" id="dashSys" type="hidden" />
 
+                <!-- Dashboard -->
                 <div class="" id="dashRow">
 
                     <div id="" class="row top-row">
@@ -7344,8 +7716,9 @@ showFloatEnd()
                         <div class=' dashSelected'></div>            
                     </div>
                 </div>
-                <div id="componentsRowContainer">
 
+                <!-- Components -->
+                <div id="componentsRowContainer">
                     <div id="componentsRow" class="d-flex justify-content-between nowrap  ">
 
                         <!--username kept showing up in search input so https://stackoverflow.com/questions/17781077/autocomplete-off-is-not-working-on-firefox/29852908#29852908-->
@@ -7538,7 +7911,7 @@ showFloatEnd()
                                                                 <div id="description" class=""></div>
                                                             </div>
                                                             <div id="compVariablesForm" class="form-group">
-                                                                <label class="build-label">Component Variables</label><a class="newCompVarBtn" href="#"><i class="fa fa-plus fa-fw"></i></a>
+                                                                <label class="build-label">Component Properties</label><a class="newCompVarBtn" href="#"><i class="fa fa-plus fa-fw"></i></a>
                                                                 <a href="#" id='varHelp' data-toggle="modal" data-target="#varHelpModal"><i class="fa fa-question fa-fw"></i></a>
                                                                 <!--<textarea rows="4" class="form-control form-custom" placeholder="List var=value pairs" id="compVariables"></textarea>-->
                                                                 <table class="table varTable">
@@ -7606,7 +7979,7 @@ showFloatEnd()
                                                                                 </div>
                                                                             </div>
                                                                         </div>
-                                                                        <div class="col-sm-2 switchCol">
+                                                                        <!-- <div class="col-sm-2 switchCol">
                                                                             <div class="form-group">
                                                                                 <label class="build-label">Run Locally</label>
                                                                                 <div>
@@ -7618,19 +7991,38 @@ showFloatEnd()
 
                                                                                 </div>
                                                                             </div>
-                                                                        </div>
+                                                                        </div> -->
                                                                         <div class="col-sm-6">
 
-                                                                            <label id="alsoUsedInMess" class="build-label"></label>
-                                                                            <div id="buildCodeMatch"></div>
+                                                                            <!-- <label id="alsoUsedInMess" class="build-label"></label> -->
+                                                                            <!-- <div id="buildCodeMatch"></div> -->
+                                                                            <label>Used In: </label>
+                                                                            <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="usedInMatchComp" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                                <div id="usedInComponentLinksComp"></div><div id="usedInMatchNumComp"></div>
+                                                                            </button>
+                                                                            <div id="usedInMatchOverlayComp" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="usedInMatchComp">
+                                                                                <div class="col matchLinkCol">
+                                                                                    <div id="usedInMatchLinkComp_jstree_div"></div>
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
 
 
+                                                                    <!-- Actions input -->
+                                                                    <div class="form-group">
+                                                                        <label class="build-label">Actions </label><a id="newAction" href="#"><i class="fa fa-plus fa-fw"></i></a>
+                                                                        <!-- <label id="hasActions"> hasActions</label> -->
+                                                                        <!-- <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal"><i class="fa fa-question fa-fw"></i></a> -->
+                                                                        <a href="#" id='insertVariableActions'  >[Insert Variable]</a>
+                                                                        <div class="actionRows" id="actions"></div>
+                                                                    </div>
+
+                                                                    <!-- script input -->
                                                                     <div class="form-group">
                                                                         <label class="build-label">Build Script</label><i class="fa fa-fw"></i>
                                                                         <a href="#" id='buildHelp' data-toggle="modal" data-target="#buildHelpModal"><i class="fa fa-question fa-fw"></i></a>
-                                                                        <a href="#" id='insertVariable' data-toggle="modal" data-target="#varModal">[Insert Variable]</a>
+                                                                        <a href="#" id='insertVariable' >[Insert Variable]</a>
                                                                         <!--<textarea class="form-control form-custom code" rows="4" id="script"></textarea>-->
 
                                                                         <div class="card codeCard">
@@ -7749,6 +8141,8 @@ showFloatEnd()
                         </div>
                     </div>
                 </div>
+
+                <!-- BuildCode -->
                 <div class="" id="buildCodeRow">
                     <div class=" buildCodeRowListCol" >
                         
@@ -8128,6 +8522,7 @@ showFloatEnd()
     </div>
 </div>
 <div id="varModal" class="modal fade" role="dialog">
+    <input id="varInsertTargetId" type="text" style="display:none">
     <div class="modal-dialog modal-dialog-var">
 
         <nav class="modal-content">
@@ -8261,14 +8656,13 @@ showFloatEnd()
                     &lt;%scope.variable-name%&gt;<br>
                     Builder will search for the variable name defined in all results that fit within the scope and replace the tag before line is sent to the server.<br/>
                     The scope can be as follows:<br/>
-                    c - the current component (defined in Component Variables not as a var:)<br/>
-                    p - the parent component<br/>
-                    a - all direct ancestor components (parent, gr-parent, g-gr-parent, etc)<br/>
-                    s - all components in the current system plus any system variable defined in the same system<br/><br/>
-                    For example when builder process detects &lt;%p.staticDirectory%&gt; in a script it will cause builder to replace it with the value of the 'staticDirectory' variable in the parent component.<br/><br/>
+                    c. - the current component (defined in Component Properties)<br/>
+                    p. - the parent component variable (var: or set var option in Actions)<br/>
+                    a. - the closest direct ancestor variable (parent, gr-parent, g-gr-parent, etc)<br/>
+                    s. - all components in the current system plus any system variable defined in the same system<br/><br/>
+                    For example when builder process detects &lt;%p.staticDirectory%&gt; in a script or action it will cause builder to replace it with the value of the 'staticDirectory' var: defined in the parent component.<br/><br/>
                     Note: <br/>
-                    - A variable named 'systemVar' is a special variable in a component that is flagged as a system function. If a variable named 'systemVar' is detected when builder is processing a script line, the value will be inserted into the variables section in the corresponding system.<br/>
-                    - If the variable name is not found in the specified scope an error is raised and the SSH session is aborted.
+                    - If the property/variable name is not found in the specified scope an error is raised and the SSH session is aborted.
 
                 </p>
             </div>
@@ -8284,13 +8678,13 @@ showFloatEnd()
 
         <nav class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title">Component Variables</h1>
+                <h1 class="modal-title">Component Properties</h1>
             </div>
             <div id='varHelpBody' class="modal-body varHelpBody" >
-                <p>Component variables are used to provide configurability to each component. A build script developer can insert a component variable into the build script that can be adjusted without changing the build code.</p>
-                <p>In edit mode click the + button to add a new variable. Provide a name and a text value. Setting privacy to yes will prevent the value from being seen on the builder screen and will prevent the value from being copied when components are copied.  <br></p>
-                <p>Replace any hardcoded value in the build script with &lt;%c.variable-name%&gt;<br>
-                    When the build script is executed the &lt;%c.variable-name%&gt; tag will be replaced with the text in the component variable list. If the matching variable is not found in the component variable list a fatal error will occur.
+                <p>Component Properties are used to provide high level configurability to each component. A build script developer can insert a component Property value into the build script that can be adjusted without changing the build code.</p>
+                <p>In edit mode click the + button to add a new property. Provide a name and a text value. Setting privacy to yes will prevent the value from being seen on the builder screen and will prevent the value from being copied when components are copied.  <br></p>
+                <p>Replace any hardcoded value in the build script with &lt;%c.property-name%&gt;<br>
+                    When the build script is executed the &lt;%c.property-name%&gt; tag will be replaced with the text in the component property list. If the matching property is not found in the component property list a fatal error will occur.
                 </p>
             </div>
             <div class="modal-footer">

@@ -483,7 +483,7 @@ input:not(:checked) + .slider.round:before{
     background-color: #f7f7f7;
 }
 
-.compVarDelButton{
+.compVarDelButton, .compActionDelButton{
     transition: color 0.5s;
     color:#901514;
 }
@@ -492,7 +492,7 @@ input:not(:checked) + .slider.round:before{
     filter: brightness(50%);
 }
 
-.compVarEditValButton, .compVarEditButton, .ql-snow a, .buildCodePickButton, .compFocusButton, .compDashVarEditButton, .compDashVarCopyButton
+.compVarEditValButton, .compVarEditButton, .ql-snow a, .buildCodePickButton, .compFocusButton, .compDashVarEditButton, .compDashVarCopyButton, .compActionEditButton
 {
     transition: color 0.5s;
     color: #367ae0;
@@ -515,7 +515,7 @@ input:not(:checked) + .slider.round:before{
     z-index: 1001;
 }
 
-.vidMenuMatchOverlay, .dashSystemDropdownItem, .dashSystemFunctionItem, .templateTypeDropdownItem, .topMenuDropdown{
+.vidMenuMatchOverlay, .dashSystemDropdownItem, .dashSystemFunctionItem, .templateTypeDropdownItem, .topMenuDropdown, .newCompActionTypeDropdownItem{
     background-color: rgba(236, 236, 236, 0.9);
 }
 
@@ -661,7 +661,7 @@ a#buildCodeBtn i {
     color: #367ae0;
 }
 
-#launchLinkCopy, .buildCodeListCopy, #deleteBuildCodes, .lastBuildUrl  {
+#launchLinkCopy, .buildCodeListCopy, #deleteBuildCodes, .lastBuildUrl, .lastBuildLaunch  {
     color: #367ae0;
 }
 
@@ -716,3 +716,13 @@ div#dashRow {
 ::-webkit-scrollbar-corner { 
     background: #F5F5F5;
  }
+
+ .actionItemType, span.actionClause {
+    transition: color 2.5s;
+     color: #367ae0;
+}
+
+.newCompVarTypeButton, .newCompActionTypeButton {
+    transition: color 0.5s;
+    color: #367ae0;
+}

@@ -558,24 +558,24 @@ function searchComponentProperties(AttributesArray, selectedComp){
 
                                 if(SystemsJSON.hasOwnProperty(ancestors[idx])){
                                     if(SystemsJSON[ancestors[idx]].comType === "system" || SystemsJSON[ancestors[idx]].promoted === 1){
-
-                                        if(!foundObj.hasOwnProperty(ancestors[idx])){
-                                            foundObj[ancestors[idx]] = {};
-                                            foundObj[ancestors[idx]].id = ancestors[idx];
-                                            foundObj[ancestors[idx]].text = SystemsJSON[ancestors[idx]].name;
-                                            foundObj[ancestors[idx]].type = getType(ancestors[idx]);
-                                            foundObj[ancestors[idx]].comType = SystemsJSON[ancestors[idx]].comType;
-                                            foundObj[ancestors[idx]].sort = SystemsJSON[ancestors[idx]].sort;
-                                            foundObj[ancestors[idx]].parent = lastParent;
+                                        let thisIndex = ancestors[idx] + "_clickMatch";
+                                        if(!foundObj.hasOwnProperty(thisIndex)){
+                                            foundObj[thisIndex] = {};
+                                            foundObj[thisIndex].id = thisIndex;
+                                            foundObj[thisIndex].text = SystemsJSON[ancestors[idx]].name;
+                                            foundObj[thisIndex].type = getType(ancestors[idx]);
+                                            foundObj[thisIndex].comType = SystemsJSON[ancestors[idx]].comType;
+                                            foundObj[thisIndex].sort = SystemsJSON[ancestors[idx]].sort;
+                                            foundObj[thisIndex].parent = lastParent;
                                             if (SystemsJSON[ancestors[idx]].icon) {
-                                                foundObj[ancestors[idx]].icon = "/uploads/" + ancestors[idx] + "/" + "icon.png"
+                                                foundObj[thisIndex].icon = "/uploads/" + ancestors[idx] + "/" + "icon.png"
                                             }
-                                            foundObj[ancestors[idx]].li_attr = {"class": "matchTreeLi"};
-                                            foundObj[ancestors[idx]].a_attr = {"class": "matchTreeA"};
+                                            foundObj[thisIndex].li_attr = {"class": "matchTreeLi"};
+                                            foundObj[thisIndex].a_attr = {"class": "matchTreeA"};
 
-                                            foundObjArr.push(foundObj[ancestors[idx]]);
+                                            foundObjArr.push(foundObj[thisIndex]);
                                         }
-                                        lastParent = ancestors[idx];
+                                        lastParent = thisIndex;
                                     }
                                 }
 
@@ -585,17 +585,17 @@ function searchComponentProperties(AttributesArray, selectedComp){
                             }
 
                             x++;
-                            foundObj[key] = {};
-                            foundObj[key].id = key;
-                            foundObj[key].text = SystemsJSON[key].name;
-                            foundObj[key].comType = SystemsJSON[key].comType;
-                            foundObj[key].sort = SystemsJSON[key].sort;
-                            foundObj[key].type = getType(key);
-                            foundObj[key].parent = lastParent;
-                            foundObj[key].li_attr = {"class": "matchTreeLi matchTreeLi-found"};
-                            foundObj[key].a_attr = {"class": "matchTreeA matchTreeA-found "};
+                            foundObj[key + "_clickMatch"] = {};
+                            foundObj[key + "_clickMatch"].id = key + "_clickMatch";
+                            foundObj[key + "_clickMatch"].text = SystemsJSON[key].name;
+                            foundObj[key + "_clickMatch"].comType = SystemsJSON[key].comType;
+                            foundObj[key + "_clickMatch"].sort = SystemsJSON[key].sort;
+                            foundObj[key + "_clickMatch"].type = getType(key);
+                            foundObj[key + "_clickMatch"].parent = lastParent;
+                            foundObj[key + "_clickMatch"].li_attr = {"class": "matchTreeLi matchTreeLi-found"};
+                            foundObj[key + "_clickMatch"].a_attr = {"class": "matchTreeA matchTreeA-found "};
 
-                            foundObjArr.push(foundObj[key]);
+                            foundObjArr.push(foundObj[key + "_clickMatch"]);
 
                         }
                     }
@@ -1167,6 +1167,88 @@ router.get("/Jobs",function(req,res){
     res.end(JSON.stringify(resJSON));
 });
 
+
+function convert(script, id){
+    //{type: "saveTemplate", tempNum: "1", targetFile: "<%s.viewsPath%>/<%p.viewName%>.ejs"}
+    //{type: "replaceStr", tag: "'%id%'", replaceStr: "'<%c.id%>'", target: "template1", c: "0"}
+    //{type: "makeVar", name: "id", value: "<%c.id%>", c: "1"}
+    //{type: "replaceLine", tag: "'%css%'", appendText: "var:css", target: "template1", c: "2"}
+    //{type: "replaceStr", tag: "'%classList%'", replaceStr: "'<%c.classList%>'", target: "template1", c: "3"}
+    //{type: "appendLine", tag: "'<%a.currentHTMLInsert%>'", appendText: "template1", target: "<%a.servicePathFileName%>", c: "4"}
+    
+    const scriptArr = script.split("\n") 
+    var actions = [];
+    var action = {};
+    var refs = {}; 
+
+    var pathFileName = "";
+    var x=0;
+    for (var row in scriptArr){
+        if(scriptArr[row].substr(0, ("saveTemplate:").length) === "saveTemplate:"){
+
+            var tempNum = parseInt(scriptArr[row].split(':')[1], 10);
+            if (tempNum > 1 && tempNum < 100) {
+                pathFileName = scriptArr[row].substr(scriptArr[row].indexOf(":") + 1);
+                pathFileName = pathFileName.substr(pathFileName.indexOf(":") + 1);
+
+                if(pathFileName.indexOf(".txt") > 0 && pathFileName.includes("tmp") > 0){ 
+                    refs[pathFileName] = "template"+tempNum
+                }else{
+                    actions.push({type:"saveTemplate", tempNum:tempNum, targetFile : pathFileName.replace(/\'/g,""), c:(x).toString()});
+                    x++;
+                }                
+            }else{
+                pathFileName = scriptArr[row].substr(scriptArr[row].indexOf(":") + 1);
+                if(pathFileName.indexOf(".txt") > 0){       
+                    refs[pathFileName] = "template1" 
+                }else{
+                    actions.push({type:"saveTemplate", tempNum:"1", targetFile : pathFileName.replace(/\'/g,""), c:(x).toString()});
+                    x++;
+                }   
+            }
+        }
+
+        if(scriptArr[row].substr(0, ("saveVar:").length) === "saveVar:"){
+            var varName = scriptArr[row].split(':')[1];
+            if (varName !== "") {
+                pathFileName = scriptArr[row].split(':')[2].replace(/\'/g,"");
+                refs[pathFileName] = "var:"+varName
+            }
+        }
+
+
+        if(scriptArr[row].substr(0, ("<%s.Replace file str with str%>").length) === "<%s.Replace file str with str%>"){
+
+            paras = scriptArr[row].replace("<%s.Replace file str with str%>","").replace(/  +/g," ").trim().replace(/\'/g,"").split(" ");
+            var target = refs.hasOwnProperty(paras[2]) ? refs[paras[2]] : paras[2]; 
+            actions.push({type:"replaceStr", tag: paras[0], replaceStr: paras[1] ,target : target, c:(x).toString()} ) ;
+            x++;
+        } 
+
+        if(scriptArr[row].substr(0, ("<%s.Replace file line with file%>").length) === "<%s.Replace file line with file%>"){
+
+            paras = scriptArr[row].replace("<%s.Replace file line with file%>","").replace(/  +/g," ").trim().replace(/\'/g,"").split(" ");
+            var repFile = refs.hasOwnProperty(paras[1]) ? refs[paras[1]] : paras[1];
+            var targetFile = refs.hasOwnProperty(paras[2]) ? refs[paras[2]] : paras[2];
+if(repFile.includes("var:") && BuildCode[id].name === 'Pragraph'){
+                actions.push({type:"replaceLine", tag: paras[0], appendText: repFile ,target : targetFile, c:(x).toString()}); 
+            }else{
+                actions.push({type:"appendLine", tag: paras[0], appendText: repFile ,target : targetFile, c:(x).toString()}); 
+            }
+            x++;
+        }
+        if(scriptArr[row].substr(0, ("echo var:").length) === "echo var:"){
+
+            paras = scriptArr[row].replace("echo var:","").replace("  "," ").trim().replace(/\'/g,"").split(":");
+            
+            actions.push({type:"makeVar", name: paras[0], value: paras[1], c:(x).toString()});
+            x++;
+
+        }
+    }
+    return actions
+}
+
 //Service Rt: /BuildCode [components build code], Method: get, Requires: id = build code ID or component ID (will lookup build id) or '#' [all with optional filter (prop mode = "" | All | thisParent | thisBranch, prop node = id of component to compare)], Returns:  single row from BuildCode + id prop or all raw BuildCode rows filtered by either All buildcodes used in systemJson or all buildcodes used in all comps with same rerunnable ancestor or all comps with same parent.
 router.get("/BuildCode",function(req,res){
 
@@ -1187,6 +1269,20 @@ router.get("/BuildCode",function(req,res){
     if (id !== '#'){
         if(id !== ""){
             rowdata = JSON.parse(JSON.stringify(BuildCode[id]) );
+
+if(rowdata.script !== '' && rowdata.script.split("\n")[0].trim() !== "#noconvert"){ 
+    // rowdata.actions = convert(rowdata.script, id) ;  
+    rowdata.hasActions = true
+}else{
+    // rowdata.actions = ''
+    rowdata.hasActions = false 
+}      
+
+// delete rowdata.actions ;
+// rowdata.hasActions = false;
+
+
+
             rowdata.id = id;
         }else if(compId !== ""){
             if(BuildCode.hasOwnProperty(SystemsJSON[compId].buildCode.linkArr[0])){
@@ -1846,6 +1942,8 @@ router.post("/save",function(req,res){
 
             }
 
+            newBuildCode.actions = req.body.actions;
+            
             newBuildCode.rerunnable = req.body.rerunnable;
             newBuildCode.systemFunction = req.body.systemFunction;
             newBuildCode.runLocal = req.body.runLocal;
@@ -2589,6 +2687,9 @@ router.get("/stream",function(req,res){
 var latestResultsFileList = [];
 var latestVarCache = {};
 
+var fileRefObj = {}; //A list of files accumulated during action processing 
+var snapsList = []; //holds the 'snapped' url array generated during build        
+
 //Service Rt: /run to build a list of components. Disabled components and thier children will be skipped, Method: post, Requires: ids = list of ids to build seperated by ';' , Returns: A very long chunked responcse containg ssh output and imbedded codes to update the ui
 //the ssh connect obj
 var conn; //global object to store the ssh2 connection
@@ -2767,6 +2868,8 @@ router.post("/run",function(req,res){
 
 
         var id = ids[0];
+        fileRefObj = {}; 
+        snapsList = [];
         //console.log("running: "+ ids);
         jobIndex = 0;
         if (SystemsJSON.hasOwnProperty(id)){
@@ -2918,29 +3021,28 @@ router.post("/run",function(req,res){
 
         //create ssh connection
         if (runMethod === "SSH") {
+        
 
+            message('Starting: ' + job.name);
+            message('Building: ' + job.name);
+            message('BuildID:[' +jobId+ ']'); //send id to trigger ui functions
+            flushMessQueue();     
+            
+if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions")){ 
+    processActions();
+}
             if(script.trim() === ""){ 
-
-                message('Building: ' + job.name);
-                message('BuildID:[' +jobId+ ']'); //send id to trigger ui functions
-                message('Skipping blank script: ' + job.name);
-                flushMessQueue();  
 
                 sshSuccess = true;
                 runNextJob();
 
-            }else{
-                    
+            }else{               
                 conn.shell(function (err, stream) {
                     if (err) throw err;
 
                     //close event to update ui, save log
 
                     var exportCommand = "";// holds command to be exported (saved as variable) flag
-
-                    //meggege ui that build is starting for the current job
-                    message('Building: ' + job.name);
-                    message('BuildID:[' +jobId+ ']'); //send id to trigger ui functions
 
                     stream.on('close', function (code, signal){
                         var dsString = new Date().toISOString(); //date stamp
@@ -2978,9 +3080,9 @@ router.post("/run",function(req,res){
                                 cacheVarVals([fileName],SystemsJSON[jobId].ft.split('/')[1]);
 
                                 //If this is a special 'system' job then update the system variables
-                                if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].systemFunction === 1){
-                                    copySystemVarToSystem(jobId)
-                                }
+                                // if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].systemFunction === 1){
+                                //     copySystemVarToSystem(jobId)
+                                // }
 
                                 runNextJob();
                                 
@@ -2991,10 +3093,9 @@ router.post("/run",function(req,res){
 
                         //function to update system variables if job = system job. Used to set host etc.
                         //eg var:systemVar:host=1.2.3.4 will add/change host variable in the system to a value of 1.2.3.4
+                        //not used
                         function copySystemVarToSystem(id){
-
                             if(typeof SystemsJSON[id] !== "undefined") {
-
                                 var resultsSystem = SystemsJSON[id].ft.split('/')[1];
                                 if(SystemsJSON[resultsSystem].variables){
                                     if(latestVarCache[id]){
@@ -3011,6 +3112,7 @@ router.post("/run",function(req,res){
                                 }
                             }
                         }
+                        
                     });
 
                     //event when data is returned on ssh session
@@ -3033,6 +3135,9 @@ router.post("/run",function(req,res){
                                 if (commandIndex < scriptArray.length) {
                                     var command = scriptArray[commandIndex];
                                     var currentCommand = replaceVar(command, job);
+
+
+
                                     processDirectives();
                                 }
                                 if (commandIndex < scriptArray.length) {
@@ -3183,64 +3288,10 @@ router.post("/run",function(req,res){
                                     var rmResp = execSync("sudo rm -f /tmp/" + fileName);
 
                                     sendTemplate(pathFileName, fileName, template);
-                                    function sendTemplate(aPathFileName, aFileName, aTemplate){
-                                        aSyncInProgress++;
-                                        fs.writeFile('/tmp/' + aFileName, aTemplate, function (err) {
-                                            if (err) {
-                                                aSyncInProgress--;
-                                                return console.log(err);
-                                            }
-                                            //var chownResp = execSync("sudo chown " + getSystemVarVal(jobId, 'username') + ":" + getSystemVarVal(jobId, 'username') + ' /tmp/' + aFileName);
-                                            conn.sftp(
-                                                function (err, sftp) {
-                                                    //var msg = "";
-                                                    if (err) {
-                                                        console.log("Error, problem starting SFTP: %s", err);
-                                                        message('error:saveTemplate - problem starting SFTP');
-                                                        stream.close();
-                                                        aSyncInProgress--;
-                                                    } else {
-                                                        var readStream = fs.createReadStream("/tmp/" + aFileName);
-                                                        var writeStream = sftp.createWriteStream(pathFileName);
-                                                        //console.log('creating write stream' + aFileName);
-                                                        writeStream.on('error', function (e) {
-                                                            aSyncInProgress--;
-                                                            console.log('error:saveTemplate - error creating target stream - ' + aPathFileName, e);
-                                                            message('error:saveTemplate - error creating target stream - ' + aPathFileName);
-                                                            stream.close();
-                                                        });
 
-                                                        writeStream.on('close', function () {
-                                                                aSyncInProgress--;
-                                                                //console.log('saveTemplate:Sent - ' + aFileName);
-                                                                sftp.end();
-                                                                //console.log("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName);
-                                                                //Execute sudo chown to change file ownership to the user as defined in the system
-                                                                conn.exec("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName, function(err, stream) {
-                                                                    if (err) throw err;
-                                                                    stream.on('close', function(code, signal) {
-                                                                        //console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
-                                                                        //conn.end();
-                                                                    }).on('data', function(data) {
-                                                                        console.log('STDOUT: ' + data);
-                                                                    }).stderr.on('data', function(data) {
-                                                                        console.log('STDERR: ' + data);
-                                                                    });
-                                                                });
-                                                                message('saveTemplate:send complete - ' + aPathFileName);
-                                                                var rmResp = execSync("sudo rm -f /tmp/" + aFileName);
-                                                                if(deferredExit === true && aSyncInProgress === 0){
-                                                                    stream.write("exit" + '\n');
-                                                                    sshSuccess = true
-                                                                }
-                                                            }
-                                                        );
-                                                        readStream.pipe(writeStream);
-                                                    }
-                                                }
-                                            )
-                                        })
-                                    }
+
+
+                                   
 
                                     isDirective = true;
                                 } else if
@@ -3402,59 +3453,47 @@ router.post("/run",function(req,res){
 
                                     var url = currentCommand.replace('snap:','').trim();
                                     //console.log('url: ' + url);
-                                    aSyncInProgress++;
+                                    // aSyncInProgress++;
 
                                     //Send url to client
-                                    message('url:' + url);
+                                    // message('url:' + url);
 
                                     //add url tag to current comp
                                     SystemsJSON[jobId].lastBuild.url=url;
-                                    // var anArr = job.ft.replace('#/', '').split('/');
-                                    // var nearestPromotedAn = "";
-                                    // anArr.forEach(function (an) {
-                                    //     if (SystemsJSON[an].hasOwnProperty("promoted")){
-                                    //         if (SystemsJSON[an].promoted === 1){
-                                    //             nearestPromotedAn = an;
+
+                                    snapsList.push(url)
+
+                                    // (async function () {
+
+                                    //     //console.log("Page.navigate: " + url)
+
+                                    //     await Page.navigate({url: url});
+                                    //     await Page.loadEventFired();
+
+                                    //     //console.log("Page.loadEventFired: " + url)
+
+                                    //     const screenshot = await Page.captureScreenshot({format: "png", fromSurface: true});
+                                    //     const buffer = new Buffer(screenshot.data, 'base64');
+                                    //     if (!fs.existsSync(filesPath + jobId)) {
+                                    //         fs.mkdirSync(filesPath + jobId);
+                                    //     }
+                                    //     fs.writeFile(filesPath + jobId + '/' +'screenshot.png', buffer, 'base64', function(err) {
+                                    //         if (err) {
+                                    //             console.error(err);
+                                    //         } else {
+                                    //             //console.log('Screenshot saved');
                                     //         }
+                                    //     });
+                                    //     message('snap:created: ' + "screenshot.png");
+
+                                    //     aSyncInProgress--;
+                                    //     //console.log(aSyncInProgress.toString())
+                                    //     if(deferredExit === true && aSyncInProgress === 0){
+                                    //         stream.write("exit" + '\n');
+                                    //         sshSuccess = true
                                     //     }
-                                    // });
-                                    // if(nearestPromotedAn && nearestPromotedAn !== ""){
-                                    //     if(SystemsJSON[nearestPromotedAn].hasOwnProperty('lastBuild')){
-                                    //         SystemsJSON[nearestPromotedAn].lastBuild.url=url;
-                                    //     }
-                                    // }
 
-                                    (async function () {
-
-                                        //console.log("Page.navigate: " + url)
-
-                                        await Page.navigate({url: url});
-                                        await Page.loadEventFired();
-
-                                        //console.log("Page.loadEventFired: " + url)
-
-                                        const screenshot = await Page.captureScreenshot({format: "png", fromSurface: true});
-                                        const buffer = new Buffer(screenshot.data, 'base64');
-                                        if (!fs.existsSync(filesPath + jobId)) {
-                                            fs.mkdirSync(filesPath + jobId);
-                                        }
-                                        fs.writeFile(filesPath + jobId + '/' +'screenshot.png', buffer, 'base64', function(err) {
-                                            if (err) {
-                                                console.error(err);
-                                            } else {
-                                                //console.log('Screenshot saved');
-                                            }
-                                        });
-                                        message('snap:created: ' + "screenshot.png");
-
-                                        aSyncInProgress--;
-                                        //console.log(aSyncInProgress.toString())
-                                        if(deferredExit === true && aSyncInProgress === 0){
-                                            stream.write("exit" + '\n');
-                                            sshSuccess = true
-                                        }
-
-                                    })();
+                                    // })();
 
                                     isDirective = true;
 
@@ -3578,124 +3617,7 @@ router.post("/run",function(req,res){
                                     }
                                 }
                             }while(isDirective === true);
-                        }
-
-                        //function to replace the embedded var references with values. Returns new formatted commandStr
-                        function replaceVar(commandStr, job) {// find and replace inserted command vars eg. <%p.mVar4%>
-
-                            const items = commandStr.split(new RegExp('<%', 'g'));
-                            items.forEach(function (item) {
-                                item = item.substr(0, item.indexOf('%>'));
-
-                                if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 'c.') {
-                                    var targetVarName = item.substr(2);
-                                    var pid = job.parent;
-                                    var repStr = "<%c." + targetVarName + "%>";
-                                    if(job.variables[targetVarName]){
-                                        var val = job.variables[targetVarName].value;
-                                        commandStr = commandStr.replace(repStr, val)
-                                    }
-                                } //look in job for vars
-                                if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 'p.') {
-                                    var targetVarName = item.substr(2);
-                                    var pid = job.parent;
-                                    var repStr = "<%p." + targetVarName + "%>";
-                                    if (typeof latestVarCache[pid] !== "undefined"){
-                                        if (typeof latestVarCache[pid][targetVarName] !== "undefined"){
-                                            var val = latestVarCache[pid][targetVarName].replace(/\n$/, "").replace(/\r$/, "")
-                                            commandStr = commandStr.replace(repStr, val)
-                                        }
-                                    }
-                                } //look in parent for vars
-
-                                if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 'a.') {
-                                    var targetVarName = item.substr(2);
-                                    var repStr = "<%a." + targetVarName + "%>";
-                                    var anArr = job.ft.replace('#/', '').split('/');
-                                    anArr.reverse().forEach(function (an) {
-                                        if (typeof latestVarCache[an] !== "undefined"){
-                                            if (typeof latestVarCache[an][targetVarName] !== "undefined"){
-                                                var val = latestVarCache[an][targetVarName];
-                                                commandStr = commandStr.replace(repStr, val)
-                                            }
-                                        }
-                                    })//reverse the ancestor list so that closer ancestor values are used first.
-                                } //look in ancestors for vars
-
-                                if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 's.') {
-                                    var targetVarName = item.substr(2);
-                                    var ft = job.ft;
-                                    var repStr = "<%s." + targetVarName + "%>";
-                                    var bestVal;
-                                    var relativeScore = 0; //track how close of a relative the job the varwas found in and give pref to closer relatives.
-
-                                    for (var id in SystemsJSON) { //look in all jobs for var.
-                                        if (SystemsJSON.hasOwnProperty(id) && SystemsJSON[id].comType === 'job') {
-                                            var resultsSystem = SystemsJSON[id].ft.split('/')[1];
-                                            if (resultsSystem === ft.split('/')[1]){ //if same system...
-                                                if (typeof latestVarCache[id] !== "undefined"){
-                                                    if (typeof latestVarCache[id][targetVarName] !== "undefined"){
-                                                        var thisScore = calcRelativeScore(ft, SystemsJSON[id].ft);
-                                                        var val = latestVarCache[id][targetVarName];
-                                                        if(relativeScore < thisScore){
-                                                            relativeScore = thisScore;
-                                                            bestVal = val;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    //now look in system for the var
-                                    if (typeof latestVarCache[ft.split('/')[1]] !== "undefined"){
-                                        if (typeof latestVarCache[ft.split('/')[1]][targetVarName] !== "undefined"){
-                                            var val = latestVarCache[ft.split('/')[1]][targetVarName];
-                                            var thisScore = 2;
-                                            if(relativeScore < thisScore){
-                                                relativeScore = thisScore;
-                                                bestVal = val;
-                                            }
-                                        }
-                                    }
-                                    if (typeof bestVal !== "undefined"){
-                                        commandStr = commandStr.replace(repStr, bestVal);
-                                    }
-                                } //look in same system for vars
-                                //function to return number of ancestors the current running job has in common with the found var job. Requires: jobFT and foundFT job ID strings separated by "/".
-                                function calcRelativeScore(jobFT, foundFT){//how many gr/parents does the current running job have in common with the found var job..
-                                    const jobFTArr = jobFT.split('/');
-                                    const foundFTArr = foundFT.split('/');
-                                    var x = 0;
-                                    var score = 0;
-                                    while((typeof jobFTArr[x] !== "undefined")&&(typeof foundFTArr[x] !== "undefined")){
-                                        if (jobFTArr[x] === foundFTArr[x]){
-                                            score++;
-                                        }
-                                        x++;
-                                    }
-                                    return score;
-                                }
-                            });
-
-                            //If there are any <% patterns left in the line then raise error and abort
-                            const  remainingItemsCount = commandStr.split(new RegExp('<%', 'g')).length;
-                            const  remainingItems = commandStr.split(new RegExp('<%', 'g'));
-                            if(remainingItemsCount > 1){
-                                var item = remainingItems[1]
-                                item = item.substr(0, item.indexOf('%>'));
-
-                                if (item.length > 2 && item.length < 32) {
-                                    //console.log("Error: Component Variable not found: " + item + '\n');
-                                    message("Error: Component Variable not found: " + item + '\n');
-                                    flushMessQueue();
-                                    sshSuccess = false;
-                                    stream.close();
-                                    return ('');
-                                }
-                            }
-                            return (commandStr);
-                        }
-
+                        }                       
 
                     });
 
@@ -3709,15 +3631,74 @@ router.post("/run",function(req,res){
                     stream.write('stty cols 200' + '\n' + "PS1='[SysStack]'" + '\n'); //set prompt
                     lastTimeout = setTimeout(conTimeout, timeOut);
             
+                    function sendTemplate(aPathFileName, aFileName, aTemplate){
+                        aSyncInProgress++;
+                        fs.writeFile('/tmp/' + aFileName, aTemplate, function (err) {
+                            if (err) {
+                                aSyncInProgress--;
+                                return console.log(err);
+                            }
+                            conn.sftp(
+                                function (err, sftp) {
+                                    //var msg = "";
+
+
+                                    if (err) {  
+                                        console.log("Error, problem starting SFTP: %s", err);
+                                        message('error:saveTemplate - problem starting SFTP');
+                                        stream.close();
+                                        aSyncInProgress--;
+                                    } else {
+                                        var readStream = fs.createReadStream("/tmp/" + aFileName); 
+                                        var writeStream = sftp.createWriteStream(aPathFileName);
+                                        //console.log('creating write stream' + aFileName); 
+                                        writeStream.on('error', function (e) {
+                                            aSyncInProgress--;
+                                            console.log('error:saveTemplate - error creating target stream - ' + aPathFileName, e);
+                                            message('error:saveTemplate - error creating target stream - ' + aPathFileName);
+                                            stream.close();
+                                        });
+
+                                        writeStream.on('close', function () { 
+                                                aSyncInProgress--;
+                                                //console.log('saveTemplate:Sent - ' + aFileName);
+                                                sftp.end();
+                                                //console.log("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + pathFileName);
+                                                //Execute sudo chown to change file ownership to the user as defined in the system
+                                                conn.exec("sudo chown " + getSystemVarVal(jobId, "username") + ":" + getSystemVarVal(jobId, "username") + " " + aPathFileName, function(err, stream) {
+                                                    if (err) throw err;
+                                                    stream.on('close', function(code, signal) {
+                                                        //console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
+                                                        //conn.end();
+                                                    }).on('data', function(data) {
+                                                        console.log('STDOUT: ' + data); 
+                                                    }).stderr.on('data', function(data) {
+                                                        console.log('STDERR: ' + data);
+                                                    });
+                                                });
+                                                message('saveTemplate:send complete - ' + aPathFileName); 
+                                                var rmResp = execSync("sudo rm -f /tmp/" + aFileName);
+                                                if(deferredExit === true && aSyncInProgress === 0){
+                                                    stream.write("exit" + '\n');
+                                                    sshSuccess = true
+                                                }
+                                            }
+                                        );
+                                        readStream.pipe(writeStream);
+                                    }
+                                }
+                            )
+                        })
+                    }
+
                 });
             }
-        }
 
+            
+            
+            function runNextJob(){
 
-        
-        function runNextJob(){
-
-            jobIndex++;
+                jobIndex++;
 
                 if (ids.length > jobIndex) {
 
@@ -3734,13 +3715,109 @@ router.post("/run",function(req,res){
                             // message("Script Aborted\n");
                             // flushMessQueue();
                             res.end("status:Scripts Aborted\n");
+                            conn.end();
                         }
                     } else {
                         console.log("Error: /run id not found in SystemsJSON: " + id);
+                        conn.end();
                     }
                 } else {
                     //console.log("all scripts completed")
-                    if (sshSuccess) {
+                    if (sshSuccess) { 
+                        message("Saving files\n");
+
+                        if(snapsList.length > 0){
+                            message('url:' + snapsList[snapsList.length-1]);
+                        }
+
+                        function saveActionFiles(fileRefObj){  
+
+                            if( Object.keys(fileRefObj).length > 0){
+
+                                let deferedfile = Object.keys(fileRefObj)[0]
+                                var template = fileRefObj[deferedfile]
+                                var pathFileNameAr = deferedfile.split('/');
+                                var fileName = pathFileNameAr[pathFileNameAr.length - 1];
+
+                                var rmResp = execSync("sudo rm -f /tmp/" + fileName); 
+
+                                sendDeferred(deferedfile, fileName, template, 0);
+                            }
+                        }
+
+                        function sendDeferred(aPathFileName, aFileName, aTemplate, idn){
+                            aSyncInProgress++;
+                            // console.log("Sending Deferred:", aFileName);
+                            fs.writeFile('/tmp/' + aFileName, aTemplate, function (err) {
+                                if (err) {
+                                    aSyncInProgress--;
+                                    return console.log(err);
+                                }
+                               conn.sftp(
+                                    function (err, sftp) {
+                                        if (err) {  
+                                            console.log("Error, problem starting SFTP: %s", err);
+                                            message('error:saveTemplate - problem starting SFTP');
+                                            conn.end();
+                                            aSyncInProgress--;
+                                        } else {
+                                            var readStream = fs.createReadStream("/tmp/" + aFileName); 
+                                            var writeStream = sftp.createWriteStream(aPathFileName);
+                                            // console.log('creating write stream ' + aFileName); 
+                                            writeStream.on('error', function (e) {
+                                                aSyncInProgress--;
+                                                console.log('error:saveTemplate - error creating target stream - ' + aPathFileName, e);
+                                                message('error:saveTemplate - error creating target stream - ' + aPathFileName);
+                                                conn.end();
+                                            });
+
+                                            writeStream.on('close', function () { 
+                                                    aSyncInProgress--;
+                                                    // console.log('deferred file:Sent - ' + aFileName);
+                                                    sftp.end();
+
+                                                    message('deferred file:send complete - ' + aPathFileName);
+                                                    // console.log('remove /tmp/' + aFileName);
+                                                    var rmResp = execSync("sudo rm -f /tmp/" + aFileName); 
+                                                    // console.log('done /tmp/' + aFileName); 
+
+                                                    if(  Object.keys(fileRefObj)[idn + 1]  ){
+                                                        let deferedfile = Object.keys(fileRefObj)[idn + 1]
+                                                        var template = fileRefObj[deferedfile]
+                                                        var pathFileNameAr = deferedfile.split('/');
+                                                        var fileName = pathFileNameAr[pathFileNameAr.length - 1];
+                                                        var rmResp = execSync("sudo rm -f /tmp/" + fileName);
+                                                        sendDeferred(deferedfile, fileName, template, idn + 1);
+                                                    }else{
+                                                        if(snapsList.length > 0){
+                                                            function delayedSnap() {
+                                                                Page.navigate({url: snapsList[snapsList.length-1]});
+
+                                                                console.log("snap: " + snapsList[snapsList.length-1])
+                                                            }
+                                                            setTimeout(delayedSnap, 500 )
+                                                        }
+                                                    }
+                                                    
+                                                    if(aSyncInProgress === 0){
+                                                        conn.end(); 
+                                                    } 
+                                                }
+                                            );
+                                            readStream.pipe(writeStream);
+                                        }
+                                    }  
+                                )
+                            })
+                        }
+
+                        saveActionFiles(fileRefObj); 
+                        
+                        if (aSyncInProgress === 0){
+                            conn.end();
+                        }
+
+
 
                         message("All scripts completed\n");
                         flushMessQueue();
@@ -3748,14 +3825,258 @@ router.post("/run",function(req,res){
                     } else {
                         message("Script Aborted\n");
                         flushMessQueue();
-                        res.end("status:Scripts Aborted\n");
-                    }
-
-                    conn.end();
+                        res.end("status:Scripts Aborted\n"); 
+                        conn.end();
+                    }                       
                 }
+            }
         }
 
 
+        function processActions(){ 
+            
+            if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions")){  
+                
+                var actionArr = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].actions; 
+                
+                var templateObj = {} //stores the value of template1. template2, .... during processing of 1 job
+                for(var row in actionArr){
+                    //{type: "saveTemplate", tempNum: "1", targetFile: "<%s.viewsPath%>/<%p.viewName%>.ejs", c: "0"}
+                    
+                    //{type: "replaceStr", tag: "'%id%'", replaceStr: "'<%c.id%>'", target: "template1", c: "0"}
+                    //{type: "makeVar", name: "id", value: "<%c.id%>", c: "1"}
+                    //{type: "replaceLine", tag: "'%css%'", appendText: "var:css", target: "template1", c: "2"}
+                    //{type: "replaceStr", tag: "'%classList%'", replaceStr: "'<%c.classList%>'", target: "template1", c: "3"}
+                    //{type: "appendLine", tag: "'<%a.currentHTMLInsert%>'", appendText: "template1", target: "<%a.servicePathFileName%>", c: "4"}
+                    
+                    var cTag = actionArr[row].hasOwnProperty('tag') ? replaceVar(actionArr[row].tag, job) : '';
+                    var ctarget = actionArr[row].hasOwnProperty('target') ? replaceVar(actionArr[row].target, job) : '';
+                    var ctargetFile = actionArr[row].hasOwnProperty('targetFile') ? replaceVar(actionArr[row].targetFile, job) : '';
+                    var creplaceStr = actionArr[row].hasOwnProperty('replaceStr') ? replaceVar(actionArr[row].replaceStr, job) : '';
+                    var cappendText = actionArr[row].hasOwnProperty('appendText') ? replaceVar(actionArr[row].appendText, job) : '';
+                    
+                    if(actionArr[row].type === "saveTemplate"){
+                        
+                        let template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[actionArr[row].tempNum - 1].c
+                        
+                        fileRefObj[ctargetFile] = template;
+                    }
+                    if(actionArr[row].type === "replaceStr"){  
+                        //replace in template
+                        if(actionArr[row].target.substring(0,8) === "template" ){
+                            if(! templateObj.hasOwnProperty(actionArr[row].target)){
+                                let  tempNum = parseInt(actionArr[row].target.replace("template","")); 
+                                let template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[tempNum - 1].c
+                                templateObj[actionArr[row].target] = template;
+                            }
+                            
+                            templateObj[actionArr[row].target] = templateObj[actionArr[row].target].split(cTag).join(creplaceStr);
+                        }else{
+                            //replace in file
+                            let file = ctarget;
+                            if(fileRefObj.hasOwnProperty(file)){
+                                fileRefObj[file] = fileRefObj[file].split(cTag).join(creplaceStr);
+                            }
+                        }
+
+                    }
+                    if(actionArr[row].type === "makeVar"){ 
+                        let varName = actionArr[row].name;
+                        if(!latestVarCache.hasOwnProperty(jobId)){latestVarCache[jobId] = {}}
+                        latestVarCache[jobId][varName] = replaceVar(actionArr[row].value, job);
+                    }
+
+                    if(actionArr[row].type === "replaceLine"  || actionArr[row].type === "appendLine"){ 
+                        //replace if target = template 
+                        if(actionArr[row].target.substring(0,8) === "template" ){
+                            if(! templateObj.hasOwnProperty(actionArr[row].target)){
+                                let  tempNum = parseInt(actionArr[row].target.replace("template","")); 
+                                let template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[tempNum - 1].c
+                                templateObj[actionArr[row].target] = template;
+                            }
+                            tArr = templateObj[actionArr[row].target].split('\n');
+
+                            for (n in tArr){
+                                if(tArr[n].includes(cTag)){
+                                    let appendLine = tArr[n];
+
+                                    let replaceVal = actionArr[row].appendText;
+                                    if(actionArr[row].appendText.substring(0,4) === "var:"){
+                                        replaceVal = SystemsJSON[jobId].variables[actionArr[row].appendText.split(':')[1]].value;
+                                    }
+                                    
+                                    if(actionArr[row].type === "appendLine"){
+                                        replaceVal += "\n" + appendLine
+                                    }
+                                    tArr[n] = replaceVal;
+                                }                            
+                            }                            
+                            templateObj[actionArr[row].target] = tArr.join('\n');
+                        }else{
+                            //else replace in file
+                            let file = ctarget;
+                            let replaceVal = actionArr[row].appendText;
+                            if(fileRefObj.hasOwnProperty(file)){
+
+                                tArr = fileRefObj[file].split('\n');
+                                for (n in tArr){
+                                    if(tArr[n].includes(cTag)){
+                                        let appendLine = tArr[n];
+
+                                        // let replaceVal = actionArr[row].appendText;
+
+                                        if(replaceVal.substring(0,8) === "template"){
+                                            var tempIndex = replaceVal
+                                            if(! templateObj.hasOwnProperty(replaceVal)){
+                                                let  tempNum = parseInt(replaceVal.replace("template","")); 
+                                                let template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[tempNum - 1].c
+                                                templateObj[replaceVal] = template;
+                                                replaceVal = template;
+                                            }
+                                            replaceVal = templateObj[tempIndex];
+                                        }else if(replaceVal.substring(0,4) === "var:"){
+//     if(SystemsJSON[jobId].name === 'Paragraph'){
+// let a = 1;
+//     } cappendText
+                                            replaceVal = SystemsJSON[jobId].variables[replaceVal.split(':')[1]].value; 
+                                        }else{
+                                            replaceVal = cappendText; 
+                                            if(replaceVal.includes("<p>") && SystemsJSON[jobId].variables.hasOwnProperty("id")){
+
+                                                replaceVal = replaceVal.replace("<p>",'<p id="'+ SystemsJSON[jobId].variables["id"].value+'">')
+                                                replaceVal = replaceVal.replace("<span ",'<span id="'+ SystemsJSON[jobId].variables["id"].value+'-span" ')
+                                            }
+                                        }                                        
+                                        if(actionArr[row].type === "appendLine"){ 
+                                            replaceVal += "\n" + appendLine
+                                        }
+                                        tArr[n] = replaceVal;
+                                    }                            
+                                }                            
+                                fileRefObj[file] = tArr.join('\n');
+                            }
+                        }
+                    }                    
+                }
+            }
+        }
+
+        
+        //function to replace the embedded var references with values. Returns new formatted commandStr
+        function replaceVar(commandStr, job) {// find and replace inserted command vars eg. <%p.mVar4%>
+
+            const items = commandStr.split(new RegExp('<%', 'g'));
+            items.forEach(function (item) {
+                item = item.substr(0, item.indexOf('%>'));
+
+                if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 'c.') {
+                    var targetVarName = item.substr(2);
+                    var pid = job.parent;
+                    var repStr = "<%c." + targetVarName + "%>";
+                    if(job.variables[targetVarName]){
+                        var val = job.variables[targetVarName].value;
+                        commandStr = commandStr.replace(repStr, val)
+                    }
+                } //look in job for vars
+                if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 'p.') {
+                    var targetVarName = item.substr(2);
+                    var pid = job.parent;
+                    var repStr = "<%p." + targetVarName + "%>";
+                    if (typeof latestVarCache[pid] !== "undefined"){
+                        if (typeof latestVarCache[pid][targetVarName] !== "undefined"){
+                            var val = latestVarCache[pid][targetVarName].replace(/\n$/, "").replace(/\r$/, "")
+                            commandStr = commandStr.replace(repStr, val)
+                        }
+                    }
+                } //look in parent for vars
+
+                if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 'a.') {
+                    var targetVarName = item.substr(2);
+                    var repStr = "<%a." + targetVarName + "%>";
+                    var anArr = job.ft.replace('#/', '').split('/');
+                    anArr.reverse().forEach(function (an) {
+                        if (typeof latestVarCache[an] !== "undefined"){
+                            if (typeof latestVarCache[an][targetVarName] !== "undefined"){
+                                var val = latestVarCache[an][targetVarName];
+                                commandStr = commandStr.replace(repStr, val)
+                            }
+                        }
+                    })//reverse the ancestor list so that closer ancestor values are used first.
+                } //look in ancestors for vars
+
+                if (item.length > 2 && item.length < 32 && item.substr(0, 2) === 's.') {
+                    var targetVarName = item.substr(2);
+                    var ft = job.ft;
+                    var repStr = "<%s." + targetVarName + "%>";
+                    var bestVal;
+                    var relativeScore = 0; //track how close of a relative the job the varwas found in and give pref to closer relatives.
+
+                    for (var id in SystemsJSON) { //look in all jobs for var.
+                        if (SystemsJSON.hasOwnProperty(id) && SystemsJSON[id].comType === 'job') {
+                            var resultsSystem = SystemsJSON[id].ft.split('/')[1];
+                            if (resultsSystem === ft.split('/')[1]){ //if same system...
+                                if (typeof latestVarCache[id] !== "undefined"){
+                                    if (typeof latestVarCache[id][targetVarName] !== "undefined"){
+                                        var thisScore = calcRelativeScore(ft, SystemsJSON[id].ft);
+                                        var val = latestVarCache[id][targetVarName];
+                                        if(relativeScore < thisScore){
+                                            relativeScore = thisScore;
+                                            bestVal = val;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    //now look in system for the var
+                    if (typeof latestVarCache[ft.split('/')[1]] !== "undefined"){
+                        if (typeof latestVarCache[ft.split('/')[1]][targetVarName] !== "undefined"){
+                            var val = latestVarCache[ft.split('/')[1]][targetVarName];
+                            var thisScore = 2;
+                            if(relativeScore < thisScore){
+                                relativeScore = thisScore;
+                                bestVal = val;
+                            }
+                        }
+                    }
+                    if (typeof bestVal !== "undefined"){
+                        commandStr = commandStr.replace(repStr, bestVal);
+                    }
+                } //look in same system for vars
+                //function to return number of ancestors the current running job has in common with the found var job. Requires: jobFT and foundFT job ID strings separated by "/".
+                function calcRelativeScore(jobFT, foundFT){//how many gr/parents does the current running job have in common with the found var job..
+                    const jobFTArr = jobFT.split('/');
+                    const foundFTArr = foundFT.split('/');
+                    var x = 0;
+                    var score = 0;
+                    while((typeof jobFTArr[x] !== "undefined")&&(typeof foundFTArr[x] !== "undefined")){
+                        if (jobFTArr[x] === foundFTArr[x]){
+                            score++;
+                        }
+                        x++;
+                    }
+                    return score;
+                }
+            });
+
+            //If there are any <% patterns left in the line then raise error and abort
+            const  remainingItemsCount = commandStr.split(new RegExp('<%', 'g')).length;
+            const  remainingItems = commandStr.split(new RegExp('<%', 'g'));
+            if(remainingItemsCount > 1){
+                var item = remainingItems[1]
+                item = item.substr(0, item.indexOf('%>'));
+
+                if (item.length > 2 && item.length < 32) {
+                    //console.log("Error: Component Variable not found: " + item + '\n');
+                    message("Error: Component Variable not found: " + item + '\n');
+                    flushMessQueue();
+                    sshSuccess = false;
+                    // stream.close();
+                    return ('');
+                }
+            }
+            return (commandStr);
+        }
     }
 });
 
@@ -4480,44 +4801,45 @@ function searchForComponentByBuildId(buildId){
 
                             if(SystemsJSON[ancestors[idx]].comType === "system" || SystemsJSON[ancestors[idx]].promoted === 1 || BuildCode[SystemsJSON[ancestors[idx]].buildCode.linkArr[0]].rerunnable  === 1){
 
-                                if(!foundObj.hasOwnProperty(ancestors[idx])){
-                                    foundObj[ancestors[idx]] = {};
-                                    foundObj[ancestors[idx]].id = ancestors[idx];
-                                    foundObj[ancestors[idx]].text = SystemsJSON[ancestors[idx]].name;
-                                    foundObj[ancestors[idx]].type = getType(ancestors[idx]);
-                                    foundObj[ancestors[idx]].comType = SystemsJSON[ancestors[idx]].comType;
-                                    foundObj[ancestors[idx]].sort = SystemsJSON[ancestors[idx]].sort;
-                                    foundObj[ancestors[idx]].parent = lastParent;
+                                if(!foundObj.hasOwnProperty(ancestors[idx] + "_match")){
+                                    foundObj[ancestors[idx]+ "_match"] = {};
+                                    foundObj[ancestors[idx]+ "_match"].id = ancestors[idx] + "_match";
+                                    foundObj[ancestors[idx]+ "_match"].text = SystemsJSON[ancestors[idx]].name;
+                                    foundObj[ancestors[idx]+ "_match"].type = getType(ancestors[idx]);
+                                    foundObj[ancestors[idx]+ "_match"].comType = SystemsJSON[ancestors[idx]].comType;
+                                    foundObj[ancestors[idx]+ "_match"].sort = SystemsJSON[ancestors[idx]].sort;
+                                    foundObj[ancestors[idx]+ "_match"].parent = lastParent;
                                     if (SystemsJSON[ancestors[idx]].icon) {
-                                        foundObj[ancestors[idx]].icon = "/uploads/" + ancestors[idx] + "/" + "icon.png"
+                                        foundObj[ancestors[idx]+ "_match"].icon = "/uploads/" + ancestors[idx] + "/" + "icon.png"
                                     }
-                                    foundObj[ancestors[idx]].li_attr = {"class": "matchTreeLi"};
-                                    foundObj[ancestors[idx]].a_attr = {"class": "matchTreeA"};
+                                    foundObj[ancestors[idx]+ "_match"].li_attr = {"class": "matchTreeLi"};
+                                    foundObj[ancestors[idx]+ "_match"].a_attr = {"class": "matchTreeA"};
 
-                                    foundObjArr.push(foundObj[ancestors[idx]]);
+                                    foundObjArr.push(foundObj[ancestors[idx]+ "_match"]);
                                 }
-                                lastParent = ancestors[idx];
+                                lastParent = ancestors[idx] + "_match";
                             }
                         }
                     }
 
                     x++;
-                    foundObj[key] = {};
-                    foundObj[key].id = key;
-                    foundObj[key].text = SystemsJSON[key].name;
-                    foundObj[key].comType = SystemsJSON[key].comType;
-                    foundObj[key].sort = SystemsJSON[key].sort;
-                    foundObj[key].type = getType(key);
-                    foundObj[key].parent = lastParent;
-                    foundObj[key].li_attr = {"class": "matchTreeLi matchTreeLi-found"};
-                    foundObj[key].a_attr = {"class": "matchTreeA matchTreeA-found "};
+                    foundObj[key+ "_match"] = {};
+                    foundObj[key+ "_match"].id = key + "_match";
+                    foundObj[key+ "_match"].text = SystemsJSON[key].name;
+                    foundObj[key+ "_match"].comType = SystemsJSON[key].comType;
+                    foundObj[key+ "_match"].sort = SystemsJSON[key].sort;
+                    foundObj[key+ "_match"].type = getType(key);
+                    foundObj[key+ "_match"].parent = lastParent;
+                    foundObj[key+ "_match"].li_attr = {"class": "matchTreeLi matchTreeLi-found"};
+                    foundObj[key+ "_match"].a_attr = {"class": "matchTreeA matchTreeA-found "};
 
-                    foundObjArr.push(foundObj[key]);
+                    foundObjArr.push(foundObj[key+ "_match"]);  
                 }
             }
         }
     }
     var returnObj = {count:x, foundObjArr:foundObjArr};
+    
     return(returnObj)
 }
 
