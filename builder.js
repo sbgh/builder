@@ -3340,8 +3340,8 @@ if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions"))
                                             conn.sftp(
                                                 function (err, sftp) {
                                                     if (err) {
-                                                        console.log("Error, problem starting SFTP: %s", err);
-                                                        message('error:saveVar - problem starting SFTP');
+                                                        console.log("sendVar - Error, problem starting SFTP: %s", err);
+                                                        message('error:sendVar - problem starting SFTP');
                                                         stream.close();
                                                         aSyncInProgress--;
                                                     } else {
@@ -3350,8 +3350,8 @@ if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions"))
 
                                                         writeStream.on('error', function (e) {
                                                             aSyncInProgress--;
-                                                            console.log('error:saveVar - error creating target stream - ' + aPathFileName, e);
-                                                            message('error:saveVar - error creating target stream - ' + aPathFileName);
+                                                            console.log('error:sendVar - error creating target stream - ' + aPathFileName, e);
+                                                            message('error:sendVar - error creating target stream - ' + aPathFileName);
                                                             stream.close();
                                                         });
 
@@ -3425,14 +3425,14 @@ if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions"))
                                                         var writeStream = sftp.createWriteStream(remotePath + '/' + aFileName);
                                                         writeStream.on('error', function (e) {
                                                             //console.log(e);
-                                                            message('error:saveFile - error creating target stream - ' + aRemotePath + '/' + aFileName);
+                                                            message('error:saveFile: - error creating target stream - ' + aRemotePath + '/' + aFileName);
                                                             aSyncInProgress--;
                                                             stream.close();
                                                         });
 
                                                         writeStream.on('close', function () {
                                                             sftp.end();
-                                                            message('saveFile:send complete - ' + aRemotePath + '/' + aFileName);
+                                                            message('saveFile: send complete - ' + aRemotePath + '/' + aFileName);
                                                             aSyncInProgress--;
                                                             if(deferredExit === true && aSyncInProgress === 0){
                                                                 stream.write("exit" + '\n');
@@ -3654,8 +3654,8 @@ if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions"))
                                         //console.log('creating write stream' + aFileName); 
                                         writeStream.on('error', function (e) {
                                             aSyncInProgress--;
-                                            console.log('error:saveTemplate - error creating target stream - ' + aPathFileName, e);
-                                            message('error:saveTemplate - error creating target stream - ' + aPathFileName);
+                                            console.log('error:sendTemplate - error creating target stream - ' + aPathFileName, e);
+                                            message('error:sendTemplate - error creating target stream - ' + aPathFileName);
                                             stream.close();
                                         });
 
@@ -3766,8 +3766,8 @@ if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions"))
                                             // console.log('creating write stream ' + aFileName); 
                                             writeStream.on('error', function (e) {
                                                 aSyncInProgress--;
-                                                console.log('error:saveTemplate - error creating target stream - ' + aPathFileName, e);
-                                                message('error:saveTemplate - error creating target stream - ' + aPathFileName);
+                                                console.log('error:sendDeferred - error creating target stream - ' + aPathFileName, e);
+                                                message('error:sendDeferred - error creating target stream - ' + aPathFileName);
                                                 conn.end();
                                             });
 
@@ -3793,9 +3793,9 @@ if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions"))
                                                             function delayedSnap() {
                                                                 Page.navigate({url: snapsList[snapsList.length-1]});
 
-                                                                console.log("snap: " + snapsList[snapsList.length-1])
+                                                               // console.log("snap: " + snapsList[snapsList.length-1])
                                                             }
-                                                            setTimeout(delayedSnap, 500 )
+                                                            setTimeout(delayedSnap, 700 )
                                                         }
                                                     }
                                                     
