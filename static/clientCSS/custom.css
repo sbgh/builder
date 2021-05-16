@@ -1535,13 +1535,11 @@ tbody.buildCodeTbody{
    justify-content: space-between;
 }
 
-.cardLable{
-
-}
 .newBuildCodeName{
    display: flex;
    align-self: center;
 }
+
 .newBuildCodeName > input{
    font-size: 1.0em;
    height: 20px;
@@ -1560,6 +1558,10 @@ tbody.buildCodeTbody{
 .dropdown-toggle:disabled::after  {
    content: none;
    border: 0px;
+}
+
+.dropdown-toggle:focus {
+   outline: none;
 }
 
 .buildCodeButton{
@@ -2423,7 +2425,8 @@ ul#userMenuDrop {
    display: inline-block;
    padding: 0;
    padding-left: 3px;
-   margin-top: 7px;
+   margin-top: 2px;
+   margin-bottom: 2px;
    height: 20px;
    font-size: 14px;
 }
@@ -2449,6 +2452,10 @@ ul#userMenuDrop {
    overflow: hidden;
 }
 
+.actionItemEdit.actionItemName, .actionItemEdit.actionItemTag {
+   min-width: 216px;
+}
+
 .actionItem.actionItemTarget, .actionItem.actionItemAppendLine {
    min-width: 250px;
    font-size: 14px;
@@ -2467,22 +2474,32 @@ span.actionClause {
 }
 
 .newCompActionTypeButton {
-   margin-left: 19px;
     min-width: 126px;
     text-align: left;
     font-size: 15px;
 }
 
 .compActionEditButton{
-   display: none;
+   cursor: pointer;
 }
 
 i.fa.fa-times.fa-fw.compActionDelButton {
    padding-top: 6px;
-   transform: translateX(-12px);
+   margin-left: -7px;
    cursor: pointer;
 }
 
 #insertVariableActions, #newAction{
    display: none;
+}
+
+.draggableAction{
+   background-image: linear-gradient(135deg, #7e7e7e 25%, transparent 9%)
+                     , linear-gradient(225deg, #3d3d3d 25%, transparent 9%)
+                     , linear-gradient(45deg, #969696 25%, transparent 13%)
+                     , linear-gradient(315deg, #4b4b4b 25%, #3c3f41 25%);
+
+   background-position: 10px 0, 10px 0, 0 0, 0 0;
+   background-size: 4px 4px;
+   background-repeat: repeat;
 }

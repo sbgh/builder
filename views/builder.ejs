@@ -2132,7 +2132,7 @@
                 let newRowObj = {type: "saveTemplate", tempNum: 1, targetFile: "", c: idn, changed:"edited" }
                 actionArr.push(newRowObj);
 
-                $("#actions").append('<div id="actionRow'+idn+'" class="actionRow saveTemplate ">')
+                $("#actions").append('<div id="actionRow'+idn+'" class="actionRow saveTemplate draggableAction" ondrop="dropActionRow(event)" ondragover="allowDropActionRow(event)" ondragstart="dragActionRow(event)">')
                 $("#actionRow" + idn).attr('data-type', "saveTemplate");
                 
                 var newHtml = createActionsRowEditHtml(actionArr.length-1, newRowObj);
@@ -2140,21 +2140,62 @@
                 $("#insertVariableActions").show();
 
                 $("#actionRow" + idn).html(newHtml);
-                setActionTypeEvents();
+                setActionTypeEvents(idn);
 
             });
 
             var actionArr = [];
+            
+            window.allowDropActionRow=function(ev){
+                ev.preventDefault();
+                $(".actionRow").css({"border-top":"solid 0px"})
+                console.log(ev.srcElement.id, ev.target.id)
+                if($(ev.target)){
+                    var rowParent = $(ev.target).hasClass("actionRow") ? $(ev.target) : $(ev.target).closest(".actionRow")
+                    
+                    if(rowParent){
+                        rowParent.css({"border-top":"solid 2px #fff"})
+                    }
+                }                
+            }
+
+            window.leaveDropActionRow=function(ev){
+                $(".actionRow").css({"border-top":"solid 0px"})
+            }
+
+            window.dragActionRow = function (ev) {
+                ev.dataTransfer.setData("text", ev.target.id);
+            }
+
+            window.dropActionRow = function(ev){
+                ev.preventDefault();
+                var data = ev.dataTransfer.getData("text");
+
+                $("#"+data).insertBefore($(ev.target).closest(".actionRow"));
+                $(".actionRow").css({"border-top":"solid 0px"});
+
+                let oldIndex = parseInt($("#"+data).attr("id").replace("actionRow",""))
+                let newIndex = parseInt($(ev.target).closest(".actionRow").attr("id").replace("actionRow",""))
+                
+                //move err ele to new index
+                var mElement = actionArr[oldIndex];
+                actionArr.splice(oldIndex, 1); //remove 
+                actionArr.splice(oldIndex, 0, {}); //add place holder
+                actionArr.splice(newIndex, 0, mElement); //put in new index
+                actionArr.splice(actionArr.indexOf({}), 1); //remove place holder
+            }
 
             function paintActions(){
-            //<%if (false) {%>
-            // {type: "saveTemplate", tempNum: "1", targetFile: "<%s.viewsPath%>/<%p.viewName%>.ejs", c: "0"}                    
-            // {type: "replaceStr", tag: "'%id%'", replaceStr: "'<%c.id%>'", target: "template1", c: "0"}
-            // {type: "makeVar", name: "id", value: "<%c.id%>", c: "1"}
-            // {type: "replaceLine", tag: "'%css%'", appendText: "var:css", target: "template1", c: "2"}
-            // {type: "replaceStr", tag: "'%classList%'", replaceStr: "'<%c.classList%>'", target: "template1", c: "3"}
-            // {type: "appendLine", tag: "'<%a.currentHTMLInsert%>'", appendText: "template1", target: "<%a.servicePathFileName%>", c: "4"}
-            //<%}%> 
+                
+                
+                //<%if (false) {%>
+                // {type: "saveTemplate", tempNum: "1", targetFile: "<%s.viewsPath%>/<%p.viewName%>.ejs", c: "0"}                    
+                // {type: "replaceStr", tag: "'%id%'", replaceStr: "'<%c.id%>'", target: "template1", c: "0"}
+                // {type: "makeVar", name: "id", value: "<%c.id%>", c: "1"}
+                // {type: "replaceLine", tag: "'%css%'", appendText: "var:css", target: "template1", c: "2"}
+                // {type: "replaceStr", tag: "'%classList%'", replaceStr: "'<%c.classList%>'", target: "template1", c: "3"}
+                // {type: "appendLine", tag: "'<%a.currentHTMLInsert%>'", appendText: "template1", target: "<%a.servicePathFileName%>", c: "4"}
+                //<%}%> 
                 var actionRowsHtml = '';
                 let x=0;
                 
@@ -2162,29 +2203,29 @@
                     let xStr = (x).toString();
                     var actionArrRow =  actionArr[row];
                     delete actionArrRow.changed;
-                    actionRowsHtml += '<div id="actionRow'+xStr+'" class="actionRow '+ actionArrRow.type + ' ">';
-                            actionRowsHtml += '<i class="fa fa-pencil fa-fw compActionEditButton" data-idn="'+xStr+'"></i>';
+                    actionRowsHtml += '<div id="actionRow'+xStr+'" class="actionRow '+ actionArrRow.type + ' " ondrop="dropActionRow(event)" ondragover="allowDropActionRow(event)" ondragleave="leaveDropActionRow(event)" ondragstart="dragActionRow(event)">';
+                            // actionRowsHtml += '<i class="fa fa-pencil fa-fw compActionEditButton" data-idn="'+xStr+'"></i>';
                     if(actionArrRow.type === "replaceStr"){
-                            actionRowsHtml += '<div class="actionItem actionItemType">' + 'Replace String' + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemType" data-idn="'+xStr+'">' + 'Replace String' + '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemTag">' + actionArrRow.tag + '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemReplaceStr">' + '<span class="actionClause">with</span>' + actionArrRow.replaceStr + '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">in</span>' + actionArrRow.target + '</div>'
                     }else if(actionArrRow.type === "appendLine"){
-                            actionRowsHtml += '<div class="actionItem actionItemType">' + 'Append Line' + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemType" data-idn="'+xStr+'">' + 'Append Line' + '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemTag">' + actionArrRow.tag + '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemAppendLine">' + '<span class="actionClause">with</span>' + actionArrRow.appendText + '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">in</span>' + actionArrRow.target + '</div>'
                     }else if(actionArrRow.type === "replaceLine"){
-                            actionRowsHtml += '<div class="actionItem actionItemType">' + 'Replace Line' + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemType" data-idn="'+xStr+'">' + 'Replace Line' + '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemTag">' + actionArrRow.tag + '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemAppendLine">' + '<span class="actionClause">with</span>' + actionArrRow.appendText + '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">in</span>' + actionArrRow.target + '</div>'
                     }else if(actionArrRow.type === "makeVar"){
-                            actionRowsHtml += '<div class="actionItem actionItemType">' + 'Set Variable' + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemType" data-idn="'+xStr+'">' + 'Set Variable' + '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemName">' + actionArrRow.name + '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">with</span>' + actionArrRow.value + '</div>'
                     }else if(actionArrRow.type === "saveTemplate"){
-                            actionRowsHtml += '<div class="actionItem actionItemType">' + 'Save Template' + actionArrRow.tempNum + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemType" data-idn="'+xStr+'">' + 'Save Template' + actionArrRow.tempNum + '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemTag">' +  '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemReplaceStr">' +  '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">to</span>' + actionArrRow.targetFile + '</div>'
@@ -2196,23 +2237,12 @@
                 $("#actions").html(actionRowsHtml);
 
                 
-                $(".compActionEditButton").on('click', function(){
-                    var idn = $(this).attr('data-idn');
-                    let actionArrRow = actionArr[idn];
-                    var newHtml = createActionsRowEditHtml(idn, actionArrRow);
-                    actionArrRow.changed = "edited";
-
-                    $("#insertVariableActions").show();
-
-                    $("#actionRow"+idn).html(newHtml);
-
-                    $("#actionRow" + idn).attr('data-type', actionArrRow.type);
-                    setActionTypeEvents();
-                });
+                
                 
             }
+
            
-            function setActionTypeEvents(){
+            function setActionTypeEvents(idn){
 
                 $(".newCompActionTypeDropdownItem").on('click', function(){
                     var type = $(this).attr('data-type');
@@ -2234,23 +2264,29 @@
                     }     
                     
                     actionArr[targetIndex] = newRow;
+                    actionArr[targetIndex].changed = "edited";
                     $("#actionRow"+targetIndex).html(createActionsRowEditHtml(targetIndex, newRow)); 
 
                                             
-                    setActionTypeEvents();
+                    setActionTypeEvents(targetIndex);
 
                 });
 
                 $(".actionRow").find("input").on('click', function(){
-                    var id = $(this).attr('id');
-                    $("#varInsertTargetId").val(id) 
+                    let id = $(this).attr('id');
+                    $("#varInsertTargetId").val(id);
+
+                    $("#insertVariableActions").show(); 
                 })                    
 
                 $(".compActionDelButton").on('click', function(){
-                    var idn = $(this).attr('data-idn');
+                    let idn = $(this).attr('data-idn');
                     actionArr[idn].changed = "deleted";
                     $("#actionRow"+idn).remove();
-                });                        
+                });
+                
+                $("#actionRow" + idn).attr("draggable","true");
+                $("#actionRow" + idn).addClass("draggableAction");
             }
 
 
@@ -2284,28 +2320,32 @@
                     newHtml +=      '<div><a class="dropdown-item newCompActionTypeDropdownItem" data-target="'+currentRowCntStr+'" data-type="makeVar" href="#" >Set Variable</a></div>' ;
                 newHtml +=      '</div>';
 
+                var noDragInputTxt = ' draggable="true" ondragstart="event.preventDefault();event.stopPropagation();" '
+
                 if(type === "replaceStr" ){
-                    newHtml += '<div class="actionItem actionItemTag">' + '<input id="actionItemTagInput'+currentRowCntStr+'" class="form-control actionItemTagInput" type="text" value="'+actionArrRow.tag+'">' + '</div>'
-                    newHtml += '<div class="actionItem actionItemReplaceStr">' + '<span class="actionClause">with</span>' + '<input id="actionItemReplaceStrInput'+currentRowCntStr+'" class="form-control actionItemReplaceStrInput" type="text" value="'+actionArrRow.replaceStr+'">' + '</div>'
-                    newHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">in</span>' + '<input id="actionItemTargetInput'+currentRowCntStr+'" class="form-control actionItemTargetInput" type="text" value="'+actionArrRow.target+'">' + '</div>'
+                    newHtml += '<div class="actionItem actionItemEdit actionItemTag">' + '<input '+noDragInputTxt+' id="actionItemTagInput'+currentRowCntStr+'" class="form-control actionItemTagInput" type="text" value="'+actionArrRow.tag+'">' + '</div>'
+                    newHtml += '<div class="actionItem actionItemEdit actionItemReplaceStr">' + '<span class="actionClause">with</span>' + '<input '+noDragInputTxt+' id="actionItemReplaceStrInput'+currentRowCntStr+'" class="form-control actionItemReplaceStrInput" type="text" value="'+actionArrRow.replaceStr+'">' + '</div>'
+                    newHtml += '<div class="actionItem actionItemEdit actionItemTarget">' + '<span class="actionClause">in</span>' + '<input '+noDragInputTxt+' id="actionItemTargetInput'+currentRowCntStr+'" class="form-control actionItemTargetInput" type="text" value="'+actionArrRow.target+'">' + '</div>'
                 
                 }else if(type === "replaceLine" || type === "appendLine"){
-                    newHtml += '<div class="actionItem actionItemTag">' + '<input id="actionItemTagInput'+currentRowCntStr+'" class="form-control actionItemTagInput" type="text" value="'+actionArrRow.tag+'">' + '</div>'  
-                    newHtml += '<div class="actionItem actionItemAppendText">' + '<span class="actionClause">with</span>' + '<input id="actionItemAppendTextInput'+currentRowCntStr+'" class="form-control actionItemAppendTextInput" type="text" value="'+actionArrRow.appendText+'">'  + '</div>'
-                    newHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">in</span>' + '<input id="actionItemTargetInput'+currentRowCntStr+'" class="form-control actionItemTargetInput" type="text" value="'+actionArrRow.target+'">' + '</div>'
+                    newHtml += '<div class="actionItem actionItemEdit actionItemTag">' + '<input '+noDragInputTxt+' id="actionItemTagInput'+currentRowCntStr+'" class="form-control actionItemTagInput" type="text" value="'+actionArrRow.tag+'">' + '</div>'  
+                    newHtml += '<div class="actionItem actionItemEdit actionItemAppendText">' + '<span class="actionClause">with</span>' + '<input '+noDragInputTxt+' id="actionItemAppendTextInput'+currentRowCntStr+'" class="form-control actionItemAppendTextInput" type="text" value="'+actionArrRow.appendText+'">'  + '</div>'
+                    newHtml += '<div class="actionItem actionItemEdit actionItemTarget">' + '<span class="actionClause">in</span>' + '<input '+noDragInputTxt+' id="actionItemTargetInput'+currentRowCntStr+'" class="form-control actionItemTargetInput" type="text" value="'+actionArrRow.target+'">' + '</div>'
                 }else if(type === "makeVar"){
-                    newHtml += '<div class="actionItem actionItemName">' + '<input id="actionItemNameInput'+currentRowCntStr+'" class="form-control actionItemNameInput" type="text" value='+actionArrRow.name+'>' + '</div>'
-                    newHtml += '<div class="actionItem actionItemValue">' + '<span class="actionClause">with</span>' + '<input id="actionItemValueInput'+currentRowCntStr+'" class="form-control actionItemValueInput" type="text" value="'+actionArrRow.value+'">' + '</div>'
+                    newHtml += '<div class="actionItem actionItemEdit actionItemName">' + '<input '+noDragInputTxt+' id="actionItemNameInput'+currentRowCntStr+'" class="form-control actionItemNameInput" type="text" value='+actionArrRow.name+'>' + '</div>'
+                    newHtml += '<div class="actionItem actionItemEdit actionItemValue">' + '<span class="actionClause">with</span>' + '<input '+noDragInputTxt+' id="actionItemValueInput'+currentRowCntStr+'" class="form-control actionItemValueInput" type="text" value="'+actionArrRow.value+'">' + '</div>'
                 }else if(type === "saveTemplate"){
-                    newHtml += '<div class="actionItem actionItemTempNum">' + '<input id="actionItemTempNumInput'+currentRowCntStr+'" class="form-control actionItemTempNumInput" type="number" value='+actionArrRow.tempNum+'>' + '</div>'
-                    newHtml += '<div class="actionItem actionItemReplaceStr">' +  '</div>'
-                    newHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">to</span>' + '<input id="actionItemTargetInput'+currentRowCntStr+'" class="form-control actionItemTargetInput" type="text" value="'+actionArrRow.targetFile+'">' + '</div>'
+                    newHtml += '<div class="actionItem actionItemEdit actionItemTempNum">' + '<input '+noDragInputTxt+' id="actionItemTempNumInput'+currentRowCntStr+'" class="form-control actionItemTempNumInput" type="number" value='+actionArrRow.tempNum+'>' + '</div>'
+                    newHtml += '<div class="actionItem actionItemEdit actionItemReplaceStr">' +  '</div>'
+                    newHtml += '<div class="actionItem actionItemEdit actionItemTarget">' + '<span class="actionClause">to</span>' + '<input '+noDragInputTxt+' id="actionItemTargetInput'+currentRowCntStr+'" class="form-control actionItemTargetInput" type="text" value="'+actionArrRow.targetFile+'">' + '</div>'
                 }    
                 newHtml += '</div>\n'
 
                 return newHtml;
             }
             
+
+
             //geLibJobByID
             function getLibJobByID(NodeID, lib){
                 //const viewmode = "read"
@@ -3409,6 +3449,21 @@
 
                 $(".compActionEditButton").show();
 
+                $(".actionItemType").addClass('compActionEditButton');
+                $(".compActionEditButton").on('click', function(){
+                    var idn = $(this).attr('data-idn');
+                    let actionArrRow = actionArr[idn];
+                    var newHtml = createActionsRowEditHtml(idn, actionArrRow);
+                    actionArrRow.changed = "edited";
+
+                    // $("#insertVariableActions").show();
+
+                    $("#actionRow"+idn).html(newHtml);
+
+                    $("#actionRow" + idn).attr('data-type', actionArrRow.type);
+                    setActionTypeEvents(idn);
+                });
+
             }
 
             function readModeJob(){
@@ -3475,7 +3530,7 @@
 
                 $('#jobForm .ql-editor').unbind();
                 
-                $(".compActionEditButton").hide();
+                // $(".compActionEditButton").hide();
 
             }
 
@@ -3571,7 +3626,7 @@
                 if (checkBoxes.exists()){
                     checkBoxes.hide();
                 }
-                $(".compActionEditButton").hide();
+                // $(".compActionEditButton").hide();
             }
 
             function readModeLibSys(){
@@ -3764,30 +3819,31 @@
                 for(let x in actionArr){
                     if(actionArr[x].changed ){
                         if(actionArr[x].changed === "edited"){
+                            let oldIdn = actionArr[x].c
                             var actionArrRow = actionArr[x];
-                            var actionArrUIRow = $("#actionRow" + x);
+                            var actionArrUIRow = $("#actionRow" + oldIdn);
                             var uiRowType = actionArrUIRow.attr('data-type');
                             var repObj = {};
                             if(uiRowType === "replaceStr"){
                                 repObj.type = "replaceStr";
-                                repObj.tag = $("#actionItemTagInput" + x).val();
-                                repObj.replaceStr = $("#actionItemReplaceStrInput" + x).val();
-                                repObj.target = $("#actionItemTargetInput" + x).val();
+                                repObj.tag = $("#actionItemTagInput" + oldIdn).val();
+                                repObj.replaceStr = $("#actionItemReplaceStrInput" + oldIdn).val();
+                                repObj.target = $("#actionItemTargetInput" + oldIdn).val();
                                 actionArr[x] = repObj
                             }else if(actionArrRow.type === "appendLine"){
-                                actionArrRow.tag = $("#actionItemTagInput" + x).val();
-                                actionArrRow.appendText = $("#actionItemAppendTextInput" + x).val();
-                                actionArrRow.target = $("#actionItemTargetInput" + x).val();
+                                actionArrRow.tag = $("#actionItemTagInput" + oldIdn).val();
+                                actionArrRow.appendText = $("#actionItemAppendTextInput" + oldIdn).val();
+                                actionArrRow.target = $("#actionItemTargetInput" + oldIdn).val();
                             }else if(actionArrRow.type === "replaceLine"){
-                                actionArrRow.tag = $("#actionItemTagInput" + x).val();
-                                actionArrRow.appendText = $("#actionItemAppendTextInput" + x).val();
-                                actionArrRow.target = $("#actionItemTargetInput" + x).val();
+                                actionArrRow.tag = $("#actionItemTagInput" + oldIdn).val();
+                                actionArrRow.appendText = $("#actionItemAppendTextInput" + oldIdn).val();
+                                actionArrRow.target = $("#actionItemTargetInput" + oldIdn).val();
                             }else if(actionArrRow.type === "makeVar"){
-                                actionArrRow.name = $("#actionItemNameInput" + x).val();
-                                actionArrRow.value = $("#actionItemValueInput" + x).val();
+                                actionArrRow.name = $("#actionItemNameInput" + oldIdn).val();
+                                actionArrRow.value = $("#actionItemValueInput" + oldIdn).val();
                             }else if(actionArrRow.type === "saveTemplate"){
-                                actionArrRow.tempNum = $("#actionItemTempNumInput" + x).val();
-                                actionArrRow.targetFile  = $("#actionItemTargetFileInput" + x).val();
+                                actionArrRow.tempNum = $("#actionItemTempNumInput" + oldIdn).val();
+                                actionArrRow.targetFile  = $("#actionItemTargetInput" + oldIdn).val();
                             }  
 
                             delete actionArr[x].changed;
@@ -3798,6 +3854,9 @@
                         }
                         
                     }
+                    if(actionArr.hasOwnProperty(x)){
+                        actionArr[x].c = (x).toString();
+                    }                   
                     
                 }
             }

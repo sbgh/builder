@@ -3834,7 +3834,9 @@ if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions"))
 
 
         function processActions(){ 
-            
+            // if(SystemsJSON[jobId].name === 'Pop in element'){
+            //     let a = 1;
+            // } 
             if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions")){  
                 
                 var actionArr = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].actions; 
@@ -3935,9 +3937,7 @@ if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions"))
                                             }
                                             replaceVal = templateObj[tempIndex];
                                         }else if(replaceVal.substring(0,4) === "var:"){
-//     if(SystemsJSON[jobId].name === 'Paragraph'){
-// let a = 1;
-//     } cappendText
+
                                             replaceVal = SystemsJSON[jobId].variables[replaceVal.split(':')[1]].value; 
                                         }else{
                                             replaceVal = cappendText; 

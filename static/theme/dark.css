@@ -898,7 +898,11 @@ div#dashRow {
     background: #323232;
  }
 
- .actionItemType, span.actionClause {
+ span.actionClause {
     transition: color 2.5s;
+    color: #868686;
+}
+.compActionEditButton{
+    transition: color .5s;
     color: #79bdf3;
 }
