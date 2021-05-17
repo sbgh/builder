@@ -3834,9 +3834,9 @@ if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions"))
 
 
         function processActions(){ 
-            // if(SystemsJSON[jobId].name === 'Pop in element'){
-            //     let a = 1;
-            // } 
+if(SystemsJSON[jobId].name === 'Product Nav Link (COV-19 Products)'){ 
+    let a = 1;
+} 
             if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions")){  
                 
                 var actionArr = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].actions; 
@@ -3902,7 +3902,7 @@ if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions"))
                                 if(tArr[n].includes(cTag)){
                                     let appendLine = tArr[n];
 
-                                    let replaceVal = actionArr[row].appendText;
+                                    let replaceVal = cappendText;
                                     if(actionArr[row].appendText.substring(0,4) === "var:"){
                                         replaceVal = SystemsJSON[jobId].variables[actionArr[row].appendText.split(':')[1]].value;
                                     }

@@ -2229,6 +2229,11 @@
                             actionRowsHtml += '<div class="actionItem actionItemTag">' +  '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemReplaceStr">' +  '</div>'
                             actionRowsHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">to</span>' + actionArrRow.targetFile + '</div>'
+                    }else{
+                            actionRowsHtml += '<div class="actionItem actionItemType" data-idn="'+xStr+'">' + 'Save Template' + '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemTag">' +  '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemReplaceStr">' +  '</div>'
+                            actionRowsHtml += '<div class="actionItem actionItemTarget">' + '<span class="actionClause">to</span>'  + '</div>'
                     }    
                     actionRowsHtml += '</div>\n'
                     x++;                                    
@@ -2307,6 +2312,9 @@
                     typeStr = "Set Variable"
                 }else if(type === "saveTemplate"){
                     typeStr = "Save Template"
+                }else{
+                    type = "saveTemplate";
+                    typeStr = "Save Template"
                 }    
 
                 var newHtml =   '<button class="dropdown-toggle newCompActionTypeButton" type="button" id="newCompActionTypeButton'+currentRowCntStr+'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">'+typeStr+'</button>';
@@ -2335,6 +2343,10 @@
                     newHtml += '<div class="actionItem actionItemEdit actionItemName">' + '<input '+noDragInputTxt+' id="actionItemNameInput'+currentRowCntStr+'" class="form-control actionItemNameInput" type="text" value='+actionArrRow.name+'>' + '</div>'
                     newHtml += '<div class="actionItem actionItemEdit actionItemValue">' + '<span class="actionClause">with</span>' + '<input '+noDragInputTxt+' id="actionItemValueInput'+currentRowCntStr+'" class="form-control actionItemValueInput" type="text" value="'+actionArrRow.value+'">' + '</div>'
                 }else if(type === "saveTemplate"){
+                    newHtml += '<div class="actionItem actionItemEdit actionItemTempNum">' + '<input '+noDragInputTxt+' id="actionItemTempNumInput'+currentRowCntStr+'" class="form-control actionItemTempNumInput" type="number" value='+actionArrRow.tempNum+'>' + '</div>'
+                    newHtml += '<div class="actionItem actionItemEdit actionItemReplaceStr">' +  '</div>'
+                    newHtml += '<div class="actionItem actionItemEdit actionItemTarget">' + '<span class="actionClause">to</span>' + '<input '+noDragInputTxt+' id="actionItemTargetInput'+currentRowCntStr+'" class="form-control actionItemTargetInput" type="text" value="'+actionArrRow.targetFile+'">' + '</div>'
+                }else{
                     newHtml += '<div class="actionItem actionItemEdit actionItemTempNum">' + '<input '+noDragInputTxt+' id="actionItemTempNumInput'+currentRowCntStr+'" class="form-control actionItemTempNumInput" type="number" value='+actionArrRow.tempNum+'>' + '</div>'
                     newHtml += '<div class="actionItem actionItemEdit actionItemReplaceStr">' +  '</div>'
                     newHtml += '<div class="actionItem actionItemEdit actionItemTarget">' + '<span class="actionClause">to</span>' + '<input '+noDragInputTxt+' id="actionItemTargetInput'+currentRowCntStr+'" class="form-control actionItemTargetInput" type="text" value="'+actionArrRow.targetFile+'">' + '</div>'
@@ -3826,24 +3838,24 @@
                             var repObj = {};
                             if(uiRowType === "replaceStr"){
                                 repObj.type = "replaceStr";
-                                repObj.tag = $("#actionItemTagInput" + oldIdn).val();
-                                repObj.replaceStr = $("#actionItemReplaceStrInput" + oldIdn).val();
-                                repObj.target = $("#actionItemTargetInput" + oldIdn).val();
+                                repObj.tag = $("#actionItemTagInput" + oldIdn).val().trim();
+                                repObj.replaceStr = $("#actionItemReplaceStrInput" + oldIdn).val().trim();
+                                repObj.target = $("#actionItemTargetInput" + oldIdn).val().trim();
                                 actionArr[x] = repObj
                             }else if(actionArrRow.type === "appendLine"){
-                                actionArrRow.tag = $("#actionItemTagInput" + oldIdn).val();
-                                actionArrRow.appendText = $("#actionItemAppendTextInput" + oldIdn).val();
-                                actionArrRow.target = $("#actionItemTargetInput" + oldIdn).val();
+                                actionArrRow.tag = $("#actionItemTagInput" + oldIdn).val().trim();
+                                actionArrRow.appendText = $("#actionItemAppendTextInput" + oldIdn).val().trim();
+                                actionArrRow.target = $("#actionItemTargetInput" + oldIdn).val().trim();
                             }else if(actionArrRow.type === "replaceLine"){
-                                actionArrRow.tag = $("#actionItemTagInput" + oldIdn).val();
-                                actionArrRow.appendText = $("#actionItemAppendTextInput" + oldIdn).val();
-                                actionArrRow.target = $("#actionItemTargetInput" + oldIdn).val();
+                                actionArrRow.tag = $("#actionItemTagInput" + oldIdn).val().trim();
+                                actionArrRow.appendText = $("#actionItemAppendTextInput" + oldIdn).val().trim();
+                                actionArrRow.target = $("#actionItemTargetInput" + oldIdn).val().trim();
                             }else if(actionArrRow.type === "makeVar"){
-                                actionArrRow.name = $("#actionItemNameInput" + oldIdn).val();
-                                actionArrRow.value = $("#actionItemValueInput" + oldIdn).val();
+                                actionArrRow.name = $("#actionItemNameInput" + oldIdn).val().trim();
+                                actionArrRow.value = $("#actionItemValueInput" + oldIdn).val().trim();
                             }else if(actionArrRow.type === "saveTemplate"){
-                                actionArrRow.tempNum = $("#actionItemTempNumInput" + oldIdn).val();
-                                actionArrRow.targetFile  = $("#actionItemTargetInput" + oldIdn).val();
+                                actionArrRow.tempNum = $("#actionItemTempNumInput" + oldIdn).val().trim();
+                                actionArrRow.targetFile  = $("#actionItemTargetInput" + oldIdn).val().trim();
                             }  
 
                             delete actionArr[x].changed;
