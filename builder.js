@@ -1278,8 +1278,8 @@ if(rowdata.script !== '' && rowdata.script.split("\n")[0].trim() !== "#noconvert
     rowdata.hasActions = false 
 }      
 
-// delete rowdata.actions ;
-// rowdata.hasActions = false;
+// delete rowdata.actions ; 
+// rowdata.hasActions = false; 
 
 
 
@@ -2704,6 +2704,7 @@ router.post("/run",function(req,res){
     var runKey="";
     var newKey=false;
 
+    var sshSuccess = true; //error flag creation
 
     //users remote ip
     var remoteIP = req.connection.remoteAddress.toString();
@@ -2974,6 +2975,7 @@ router.post("/run",function(req,res){
         message("No prompt detected " + timeOut.toString() + " ms");
         flushMessQueue();
         //res.write("message:No prompt detected " + timeOut.toString() + " ms") ;
+        sshSuccess = false;
         conn.end();
      }
 
@@ -3006,8 +3008,6 @@ router.post("/run",function(req,res){
         resultsArray = []; // array to hold results key vals init
         SystemsJSON[jobId].lastBuild = {}; //Obj to hold last build time stamp, pass/fall, url
 
-        var sshSuccess = false; //error flag creation
-
         if (runMethod === "exec") {
             scriptArray.forEach(function (item) {
                 // var cmd = item;
@@ -3028,9 +3028,12 @@ router.post("/run",function(req,res){
             message('BuildID:[' +jobId+ ']'); //send id to trigger ui functions
             flushMessQueue();     
             
-if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions")){ 
-    processActions();
-}
+            if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions")){ 
+                sshSuccess = processActions();
+                if(!sshSuccess){
+                    runNextJob();
+                }
+            } 
             if(script.trim() === ""){ 
 
                 sshSuccess = true;
@@ -3727,7 +3730,7 @@ if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions"))
                         message("Saving files\n");
 
                         if(snapsList.length > 0){
-                            message('url:' + snapsList[snapsList.length-1]);
+                            message('url:' + snapsList[snapsList.length-1]); 
                         }
 
                         function saveActionFiles(fileRefObj){  
@@ -3834,9 +3837,7 @@ if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions"))
 
 
         function processActions(){ 
-if(SystemsJSON[jobId].name === 'Product Nav Link (COV-19 Products)'){ 
-    let a = 1;
-} 
+            let actionError = false;
             if(BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].hasOwnProperty("actions")){  
                 
                 var actionArr = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].actions; 
@@ -3857,108 +3858,153 @@ if(SystemsJSON[jobId].name === 'Product Nav Link (COV-19 Products)'){
                     var creplaceStr = actionArr[row].hasOwnProperty('replaceStr') ? replaceVar(actionArr[row].replaceStr, job) : '';
                     var cappendText = actionArr[row].hasOwnProperty('appendText') ? replaceVar(actionArr[row].appendText, job) : '';
                     
-                    if(actionArr[row].type === "saveTemplate"){
-                        
-                        let template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[actionArr[row].tempNum - 1].c
-                        
-                        fileRefObj[ctargetFile] = template;
-                    }
-                    if(actionArr[row].type === "replaceStr"){  
-                        //replace in template
-                        if(actionArr[row].target.substring(0,8) === "template" ){
-                            if(! templateObj.hasOwnProperty(actionArr[row].target)){
-                                let  tempNum = parseInt(actionArr[row].target.replace("template","")); 
-                                let template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[tempNum - 1].c
-                                templateObj[actionArr[row].target] = template;
-                            }
-                            
-                            templateObj[actionArr[row].target] = templateObj[actionArr[row].target].split(cTag).join(creplaceStr);
-                        }else{
-                            //replace in file
-                            let file = ctarget;
-                            if(fileRefObj.hasOwnProperty(file)){
-                                fileRefObj[file] = fileRefObj[file].split(cTag).join(creplaceStr);
-                            }
+
+                    if(actionArr[row].type === "replaceStr" || actionArr[row].type === "replaceLine" || actionArr[row].type === "appendText"){
+                        if(cTag.trim() === ''){
+                            actionError = true;
+                            message('Error processing action #'+actionArr[row].c +' in component ' + SystemsJSON[jobId].name); 
+                            message('Replace string is empty'); 
                         }
-
+                        if(ctarget.trim() === ''){
+                            actionError = true;
+                            message('Error processing action #'+actionArr[row].c +' in component ' + SystemsJSON[jobId].name); 
+                            message('Target string is empty'); 
+                        }
                     }
-                    if(actionArr[row].type === "makeVar"){ 
-                        let varName = actionArr[row].name;
-                        if(!latestVarCache.hasOwnProperty(jobId)){latestVarCache[jobId] = {}}
-                        latestVarCache[jobId][varName] = replaceVar(actionArr[row].value, job);
+                    
+                    if(actionArr[row].type === "makeVar"){
+                        if(actionArr[row].name.trim() === ''){
+                            actionError = true;
+                            message('Error processing action #'+actionArr[row].c +' in component ' + SystemsJSON[jobId].name); 
+                            message('Varible name is empty'); 
+                        }
                     }
-
-                    if(actionArr[row].type === "replaceLine"  || actionArr[row].type === "appendLine"){ 
-                        //replace if target = template 
-                        if(actionArr[row].target.substring(0,8) === "template" ){
-                            if(! templateObj.hasOwnProperty(actionArr[row].target)){
-                                let  tempNum = parseInt(actionArr[row].target.replace("template","")); 
-                                let template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[tempNum - 1].c
-                                templateObj[actionArr[row].target] = template;
+                    
+                    if(actionArr[row].targetFile === "saveTemplate"){
+                        if(ctargetFile.trim() === ''){
+                            actionError = true;
+                            message('Error processing action #'+actionArr[row].c +' in component ' + SystemsJSON[jobId].name); 
+                            message('Target file is empty'); 
+                        }
+                    }
+                    
+                    if(actionError === true){ 
+                        message('Build aborted'); 
+                        flushMessQueue(); 
+                        return !actionError;
+                    }else{
+                        if(actionArr[row].type === "saveTemplate"){
+                            
+                            let template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[actionArr[row].tempNum - 1].c
+                            
+                            fileRefObj[ctargetFile] = template;
+                        }
+                        if(actionArr[row].type === "replaceStr"){  
+                            //replace in template
+                            if(actionArr[row].target.substring(0,8) === "template" ){
+                                if(! templateObj.hasOwnProperty(actionArr[row].target)){
+                                    let  tempNum = parseInt(actionArr[row].target.replace("template","")); 
+                                    let template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[tempNum - 1].c
+                                    templateObj[actionArr[row].target] = template;
+                                }
+                                
+                                templateObj[actionArr[row].target] = templateObj[actionArr[row].target].split(cTag).join(creplaceStr);
+                            }else{
+                                //replace in file
+                                let file = ctarget;
+                                if(fileRefObj.hasOwnProperty(file)){
+                                    fileRefObj[file] = fileRefObj[file].split(cTag).join(creplaceStr);
+                                }
                             }
-                            tArr = templateObj[actionArr[row].target].split('\n');
 
-                            for (n in tArr){
-                                if(tArr[n].includes(cTag)){
-                                    let appendLine = tArr[n];
+                        }
+                        if(actionArr[row].type === "makeVar"){ 
+                            let varName = actionArr[row].name;
+                            if(!latestVarCache.hasOwnProperty(jobId)){latestVarCache[jobId] = {}}
+                            latestVarCache[jobId][varName] = replaceVar(actionArr[row].value, job);
+                        }
+                        if(actionArr[row].type === "replaceLine"  || actionArr[row].type === "appendLine"){ 
+                            //replace if target = template 
 
-                                    let replaceVal = cappendText;
-                                    if(actionArr[row].appendText.substring(0,4) === "var:"){
-                                        replaceVal = SystemsJSON[jobId].variables[actionArr[row].appendText.split(':')[1]].value;
-                                    }
-                                    
-                                    if(actionArr[row].type === "appendLine"){
-                                        replaceVal += "\n" + appendLine
-                                    }
-                                    tArr[n] = replaceVal;
-                                }                            
-                            }                            
-                            templateObj[actionArr[row].target] = tArr.join('\n');
-                        }else{
-                            //else replace in file
-                            let file = ctarget;
-                            let replaceVal = actionArr[row].appendText;
-                            if(fileRefObj.hasOwnProperty(file)){
+                            if(actionArr[row].target.substring(0,8) === "template" ){
+                                if(! templateObj.hasOwnProperty(actionArr[row].target)){
+                                    let  tempNum = parseInt(actionArr[row].target.replace("template","")); 
+                                    let template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[tempNum - 1].c
+                                    templateObj[actionArr[row].target] = template;
+                                }
+                                tArr = templateObj[actionArr[row].target].split('\n');
 
-                                tArr = fileRefObj[file].split('\n');
                                 for (n in tArr){
                                     if(tArr[n].includes(cTag)){
                                         let appendLine = tArr[n];
 
-                                        // let replaceVal = actionArr[row].appendText;
+                                        let replaceVal = cappendText;
+                                        if(actionArr[row].appendText.substring(0,4) === "var:"){
+                                            replaceVal = SystemsJSON[jobId].variables[actionArr[row].appendText.split(':')[1]].value;
+                                        }
 
-                                        if(replaceVal.substring(0,8) === "template"){
-                                            var tempIndex = replaceVal
-                                            if(! templateObj.hasOwnProperty(replaceVal)){
-                                                let  tempNum = parseInt(replaceVal.replace("template","")); 
-                                                let template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[tempNum - 1].c
-                                                templateObj[replaceVal] = template;
-                                                replaceVal = template;
-                                            }
-                                            replaceVal = templateObj[tempIndex];
-                                        }else if(replaceVal.substring(0,4) === "var:"){
-
-                                            replaceVal = SystemsJSON[jobId].variables[replaceVal.split(':')[1]].value; 
-                                        }else{
-                                            replaceVal = cappendText; 
-                                            if(replaceVal.includes("<p>") && SystemsJSON[jobId].variables.hasOwnProperty("id")){
-
-                                                replaceVal = replaceVal.replace("<p>",'<p id="'+ SystemsJSON[jobId].variables["id"].value+'">')
-                                                replaceVal = replaceVal.replace("<span ",'<span id="'+ SystemsJSON[jobId].variables["id"].value+'-span" ')
-                                            }
-                                        }                                        
-                                        if(actionArr[row].type === "appendLine"){ 
+                                        if(replaceVal.includes("<p>") && SystemsJSON[jobId].variables.hasOwnProperty("id")){
+                                            replaceVal = replaceVal.replace("<p>",'<p id="'+ SystemsJSON[jobId].variables["id"].value+'">')
+                                            replaceVal = replaceVal.replace("<span ",'<span id="'+ SystemsJSON[jobId].variables["id"].value+'-span" ')
+                                        }
+                                        
+                                        if(actionArr[row].type === "appendLine"){
                                             replaceVal += "\n" + appendLine
                                         }
                                         tArr[n] = replaceVal;
                                     }                            
                                 }                            
-                                fileRefObj[file] = tArr.join('\n');
+                                templateObj[actionArr[row].target] = tArr.join('\n');
+                            }else{
+                                //else replace in file
+                                let file = ctarget;
+                                let replaceVal = cappendText;
+                                if(fileRefObj.hasOwnProperty(file)){ 
+
+                                    tArr = fileRefObj[file].split('\n'); 
+                                    for (n in tArr){
+                                        if(tArr[n].includes(cTag)){
+                                            if(SystemsJSON[jobId].name === 'Remove Class hidden (mobile-icons)'){ 
+                                                let a = 1; 
+                                            }  
+                                            let appendLine = tArr[n];
+
+                                            if(replaceVal.substring(0,8) === "template"){
+                                                var tempIndex = replaceVal
+                                                if(! templateObj.hasOwnProperty(replaceVal)){
+                                                    let  tempNum = parseInt(replaceVal.replace("template","")); 
+                                                    let template = BuildCode[SystemsJSON[jobId].buildCode.linkArr[0]].templates.tempArr[tempNum - 1].c
+                                                    templateObj[replaceVal] = template;
+                                                    replaceVal = template;
+                                                }
+                                                replaceVal = templateObj[tempIndex];
+                                            }else if(replaceVal.substring(0,4) === "var:"){
+                                                replaceVal = SystemsJSON[jobId].variables[replaceVal.split(':')[1]].value;  
+                                                if(replaceVal.includes("<p>") && SystemsJSON[jobId].variables.hasOwnProperty("id")){
+                                                    replaceVal = replaceVal.replace("<p>",'<p id="'+ SystemsJSON[jobId].variables["id"].value+'">')
+                                                    // replaceVal = replaceVal.replace("<span ",'<span id="'+ SystemsJSON[jobId].variables["id"].value+'-span" ')
+                                                }
+                                            }else{
+                                                // replaceVal = cappendText; 
+                                                if(replaceVal.includes("<p>") && SystemsJSON[jobId].variables.hasOwnProperty("id")){
+                                                    replaceVal = replaceVal.replace("<p>",'<p id="'+ SystemsJSON[jobId].variables["id"].value+'">')
+                                                    // replaceVal = replaceVal.replace("<span ",'<span id="'+ SystemsJSON[jobId].variables["id"].value+'-span" ')
+                                                }
+                                            }                                        
+                                            if(actionArr[row].type === "appendLine"){ 
+                                                replaceVal += "\n" + appendLine
+                                            }
+                                            tArr[n] = replaceVal;
+                                        }                            
+                                    }                            
+                                    fileRefObj[file] = tArr.join('\n');
+                                }
                             }
-                        }
-                    }                    
+                        }       
+                    }                                 
                 }
             }
+            return true
         }
 
         

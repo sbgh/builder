@@ -3544,6 +3544,9 @@
                 
                 // $(".compActionEditButton").hide();
 
+                $("#usedInMessage").hide();
+                $("#usedInMatchComp").show();
+                
             }
 
             function editModeSys(){
@@ -3772,16 +3775,6 @@
 
                 mydata.text = $("#text").val();
                 mydata.resourceFiles = $('#resourceFiles').val();
-
-//remove ''
-// for(let x in actionArr){
-//     if(actionArr[x].hasOwnProperty("replaceStr") ){
-//         actionArr[x].replaceStr = actionArr[x].replaceStr.replace(/'/g,'');
-//     }
-//     if(actionArr[x].hasOwnProperty("tag") ){
-//         actionArr[x].tag = actionArr[x].tag.replace(/'/g,'');
-//     }    
-// }
 
                 saveActions();
                 mydata.actions = actionArr;
@@ -7398,8 +7391,10 @@ showFloatEnd()
             $("#buildCodeForkBtn").on('click', function(evt){
                 $("#buildCode").val("");
                 $("#newBuildCodeName").val("copy of " + $("#newBuildCodeName").val());
-                $("#alsoUsedInMess").text("Not used in any other component")
-                // $("#buildCodeMatch").html("");
+                // $("#alsoUsedInMess").text("Not used in any other component")
+                $("#usedInMatchComp").hide(); 
+                $("#usedInMatchComp").before('<div id="usedInMessage">0 Components</div>'); //dashSystemDropdownButton
+
                 $("#buildCodeCopyButton").hide();
                 $("#buildCodeForkButton").hide();
 
@@ -8063,14 +8058,14 @@ showFloatEnd()
                                                                                 </div>
                                                                             </div>
                                                                         </div> -->
-                                                                        <div class="col-sm-6">
+                                                                        <div id="usedInComponentCol" class="col">
 
                                                                             <!-- <label id="alsoUsedInMess" class="build-label"></label> -->
                                                                             <!-- <div id="buildCodeMatch"></div> -->
-                                                                            <label>Used In: </label>
+                                                                            <label class="build-label">Used In: </label>
                                                                             <button class="dropdown-toggle dashSystemDropdownButton" type="button" id="usedInMatchComp" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                                                 <div id="usedInComponentLinksComp"></div><div id="usedInMatchNumComp"></div>
-                                                                            </button>
+                                                                            </button> 
                                                                             <div id="usedInMatchOverlayComp" class="dropdown-menu vidMenuMatchOverlay" aria-labelledby="usedInMatchComp">
                                                                                 <div class="col matchLinkCol">
                                                                                     <div id="usedInMatchLinkComp_jstree_div"></div>

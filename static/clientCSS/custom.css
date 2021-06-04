@@ -1642,6 +1642,15 @@ button#vidMenuMatch, #vidMenuDesc {
    margin-bottom: 0rem;
 }
 
+div#usedInComponentCol {
+   text-align: right;
+}
+
+div#usedInMessage {
+   display: inline-block;
+   font-size: 14px;
+}
+
 .videoMenu{
    white-space:nowrap;
    display: inline-block;
