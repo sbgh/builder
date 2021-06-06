@@ -2418,7 +2418,7 @@ ul#userMenuDrop {
 
 .actionItem.actionItemType {
    font-size: 15px;
-   min-width: 125px;
+   min-width: 140px;
    white-space: nowrap;
    overflow: hidden;
 }
@@ -2428,6 +2428,7 @@ ul#userMenuDrop {
    font-size: 14px;
    white-space: nowrap;
    overflow: hidden;
+   width: 25%;
 }
 
 .actionItem input{
@@ -2438,38 +2439,46 @@ ul#userMenuDrop {
    margin-bottom: 2px;
    height: 20px;
    font-size: 14px;
+   width: 85%;
 }
 .actionItem.actionItemTempNum input {
    width: 3em;
    margin-left: 17px;
    padding: 0;
    padding-left: 3px;
-   height: 23px;
+   height: 20px;
 }
 
 .actionItem.actionItemReplaceStr, .actionItem.actionItemValue, .actionItem.actionItemAppendText {
-   min-width: 250px;
+   min-width: 175px;
    font-size: 14px;
    white-space: nowrap;
    overflow: hidden;
+   width: 25%;
 }
 
 .actionItem.actionItemName, .actionItem.actionItemTag {
-   min-width: 230px;
+   min-width: 175px;
    font-size: 14px;
    white-space: nowrap;
    overflow: hidden;
+   width: 25%;
 }
 
 .actionItemEdit.actionItemName, .actionItemEdit.actionItemTag {
-   min-width: 216px;
+   min-width: 175px;
+   width: 25%;
 }
 
 .actionItem.actionItemTarget, .actionItem.actionItemAppendLine {
-   min-width: 250px;
+   min-width: 175px;
    font-size: 14px;
    white-space: nowrap;
    overflow: hidden;
+}
+
+.actionItem.actionItemEdit.actionItemTarget {
+   width: 37%;
 }
 
 span.actionClause {
@@ -2511,4 +2520,5 @@ i.fa.fa-times.fa-fw.compActionDelButton {
    background-position: 10px 0, 10px 0, 0 0, 0 0;
    background-size: 4px 4px;
    background-repeat: repeat;
+   margin-bottom: 2px;
 }
