@@ -2183,6 +2183,10 @@
                 actionArr.splice(oldIndex, 0, {}); //add place holder
                 actionArr.splice(newIndex, 0, mElement); //put in new index
                 actionArr.splice(actionArr.indexOf({}), 1); //remove place holder
+            
+                $(".actionRow").each(function(ind){
+                    $(this).attr('id','actionRow' + (ind).toString()) 
+                })
             }
 
             function paintActions(){
@@ -3821,7 +3825,8 @@
             });
 
             function saveActions(){
-                for(let x in actionArr){
+                // for(let x in actionArr){
+                for (var x = actionArr.length - 1; x >= 0; x--) {
                     if(actionArr[x].changed ){
                         if(actionArr[x].changed === "edited"){
                             let oldIdn = actionArr[x].c
@@ -3857,12 +3862,12 @@
                         if(actionArr[x].changed === "deleted"){
                             actionArr.splice(x, 1);
                         }
-                        
                     }
+                }
+                for(let x in actionArr){
                     if(actionArr.hasOwnProperty(x)){
                         actionArr[x].c = (x).toString();
-                    }                   
-                    
+                    }  
                 }
             }
 
