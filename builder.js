@@ -3952,6 +3952,7 @@ router.post("/run",function(req,res){
                                             replaceVal += "\n" + appendLine
                                         }
                                         tArr[n] = replaceVal;
+                                        break; //only replace 1st instance
                                     }                            
                                 }                            
                                 templateObj[actionArr[row].target] = tArr.join('\n');
@@ -3964,9 +3965,9 @@ router.post("/run",function(req,res){
                                     tArr = fileRefObj[file].split('\n'); 
                                     for (n in tArr){
                                         if(tArr[n].includes(cTag)){
-                                            if(SystemsJSON[jobId].name === 'Remove Class hidden (mobile-icons)'){ 
-                                                let a = 1; 
-                                            }  
+    // if(SystemsJSON[jobId].name === 'name input'){ 
+    //     let a = 1;  
+    // }  
                                             let appendLine = tArr[n];
 
                                             if(replaceVal.substring(0,8) === "template"){
@@ -3995,6 +3996,8 @@ router.post("/run",function(req,res){
                                                 replaceVal += "\n" + appendLine
                                             }
                                             tArr[n] = replaceVal;
+        // console.log(SystemsJSON[jobId].name, cTag);
+                                            break; //only replace 1st instance
                                         }                            
                                     }                            
                                     fileRefObj[file] = tArr.join('\n');
@@ -4822,7 +4825,8 @@ router.get("/componentsByBcId",function(req,res){
 router.get("/componentsTreeByBcId",function(req,res){
 
     var buildId = req.query.buildId;
-    const matchingComponents = searchForComponentByBuildId(buildId);
+    var treeId = req.query.treeId;
+    const matchingComponents = searchForComponentByBuildId(buildId, treeId);
 
 
     const RetObj = {matchingComponents:matchingComponents.foundObjArr, matchingComponentsCount:matchingComponents.count};
@@ -4830,7 +4834,7 @@ router.get("/componentsTreeByBcId",function(req,res){
 
 });
 
-function searchForComponentByBuildId(buildId){
+function searchForComponentByBuildId(buildId, treeId){
 //return a jstree array of component ids, and promoted gr/parents, where the build id is used.
     var foundObj = {};
     var foundObjArr = [];
@@ -4847,44 +4851,44 @@ function searchForComponentByBuildId(buildId){
 
                             if(SystemsJSON[ancestors[idx]].comType === "system" || SystemsJSON[ancestors[idx]].promoted === 1 || BuildCode[SystemsJSON[ancestors[idx]].buildCode.linkArr[0]].rerunnable  === 1){
 
-                                if(!foundObj.hasOwnProperty(ancestors[idx] + "_match")){
-                                    foundObj[ancestors[idx]+ "_match"] = {};
-                                    foundObj[ancestors[idx]+ "_match"].id = ancestors[idx] + "_match";
-                                    foundObj[ancestors[idx]+ "_match"].text = SystemsJSON[ancestors[idx]].name;
-                                    foundObj[ancestors[idx]+ "_match"].type = getType(ancestors[idx]);
-                                    foundObj[ancestors[idx]+ "_match"].comType = SystemsJSON[ancestors[idx]].comType;
-                                    foundObj[ancestors[idx]+ "_match"].sort = SystemsJSON[ancestors[idx]].sort;
-                                    foundObj[ancestors[idx]+ "_match"].parent = lastParent;
+                                if(!foundObj.hasOwnProperty(ancestors[idx] + treeId)){
+                                    foundObj[ancestors[idx]+ treeId] = {};
+                                    foundObj[ancestors[idx]+ treeId].id = ancestors[idx] + treeId;
+                                    foundObj[ancestors[idx]+ treeId].text = SystemsJSON[ancestors[idx]].name;
+                                    foundObj[ancestors[idx]+ treeId].type = getType(ancestors[idx]);
+                                    foundObj[ancestors[idx]+ treeId].comType = SystemsJSON[ancestors[idx]].comType;
+                                    foundObj[ancestors[idx]+ treeId].sort = SystemsJSON[ancestors[idx]].sort;
+                                    foundObj[ancestors[idx]+ treeId].parent = lastParent;
                                     if (SystemsJSON[ancestors[idx]].icon) {
-                                        foundObj[ancestors[idx]+ "_match"].icon = "/uploads/" + ancestors[idx] + "/" + "icon.png"
+                                        foundObj[ancestors[idx]+ treeId].icon = "/uploads/" + ancestors[idx] + "/" + "icon.png"
                                     }
-                                    foundObj[ancestors[idx]+ "_match"].li_attr = {"class": "matchTreeLi"};
-                                    foundObj[ancestors[idx]+ "_match"].a_attr = {"class": "matchTreeA"};
+                                    foundObj[ancestors[idx]+ treeId].li_attr = {"class": "matchTreeLi"};
+                                    foundObj[ancestors[idx]+ treeId].a_attr = {"class": "matchTreeA"};
 
-                                    foundObjArr.push(foundObj[ancestors[idx]+ "_match"]);
+                                    foundObjArr.push(foundObj[ancestors[idx]+ treeId]);
                                 }
-                                lastParent = ancestors[idx] + "_match";
+                                lastParent = ancestors[idx] + treeId;
                             }
                         }
                     }
 
                     x++;
-                    foundObj[key+ "_match"] = {};
-                    foundObj[key+ "_match"].id = key + "_match";
-                    foundObj[key+ "_match"].text = SystemsJSON[key].name;
-                    foundObj[key+ "_match"].comType = SystemsJSON[key].comType;
-                    foundObj[key+ "_match"].sort = SystemsJSON[key].sort;
-                    foundObj[key+ "_match"].type = getType(key);
-                    foundObj[key+ "_match"].parent = lastParent;
-                    foundObj[key+ "_match"].li_attr = {"class": "matchTreeLi matchTreeLi-found"};
-                    foundObj[key+ "_match"].a_attr = {"class": "matchTreeA matchTreeA-found "};
+                    foundObj[key+ treeId] = {};
+                    foundObj[key+ treeId].id = key + treeId;
+                    foundObj[key+ treeId].text = SystemsJSON[key].name;
+                    foundObj[key+ treeId].comType = SystemsJSON[key].comType;
+                    foundObj[key+ treeId].sort = SystemsJSON[key].sort;
+                    foundObj[key+ treeId].type = getType(key);
+                    foundObj[key+ treeId].parent = lastParent;
+                    foundObj[key+ treeId].li_attr = {"class": "matchTreeLi matchTreeLi-found"};
+                    foundObj[key+ treeId].a_attr = {"class": "matchTreeA matchTreeA-found "};
 
-                    foundObjArr.push(foundObj[key+ "_match"]);  
+                    foundObjArr.push(foundObj[key+ treeId]);  
                 }
             }
         }
     }
-    var returnObj = {count:x, foundObjArr:foundObjArr};
+    var returnObj = { count: x, foundObjArr: foundObjArr};
     
     return(returnObj)
 }

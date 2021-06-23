@@ -6395,7 +6395,7 @@ showFloatEnd()
 
                 $('#videoModal').modal('hide');
 
-                var selectedMatchNode = data.selected[0].replace("_match","");
+                var selectedMatchNode = data.selected[0].replace("usedInMatchLink_jstree_div","");
 
                 if( ! $("#componentsBtn").hasClass('active')){
                     $("#componentsBtn").click();
@@ -6462,17 +6462,17 @@ showFloatEnd()
 
             $('#usedInMatchLinkComp_jstree_div').on("select_node.jstree", function (e, data) {
 
-                var selectedMatchNode = data.selected[0].replace("_match","");
+                var selectedMatchNode = data.selected[0].replace("usedInMatchLinkComp_jstree_div","");
 
-                setTimeout(function(){
+                // setTimeout(function(){
                     $('#jstree_div').jstree("deselect_all");
                     $('#jstree_div').jstree('select_node', selectedMatchNode);
                     $('#jstree_div').jstree(true).get_node(selectedMatchNode, true).children('.jstree-anchor').focus();
-                }, 500);
+                // }, 500);
             });
 
             function loadUsedInTree(buildId, treeId, usedInMatchId){
-                $.get("/componentsTreeByBcId",{buildId:buildId},function(resp){
+                $.get("/componentsTreeByBcId",{buildId:buildId, treeId:treeId},function(resp){
 
                     var respObj = JSON.parse(resp);
 
@@ -6480,6 +6480,7 @@ showFloatEnd()
                     var matchingComponentsCount = respObj.matchingComponentsCount;
 
                     $('#'+treeId).jstree(true).settings.core.data = matchingComponents;
+                    $('#'+treeId).jstree("deselect_all"); //or else the refresh also clicks row again
                     $('#'+treeId).jstree(true).refresh();
 
                     if(matchingComponentsCount < 1){
