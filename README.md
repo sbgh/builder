@@ -18,7 +18,7 @@ The current version of /builder and the packaged example components are intended
 The automated installation will download the latest /builder code from Github and install all dependencies required to run /builder.
 These dependencies include Node.js, NPM, headless Chrome, unzip and several Node.js extensions.
 
-From the ec2-user home directory execute:
+After logging into your new ec2 instance with the ec2-user account, from the ec2-user home directory execute:
 ```
 curl -L https://raw.githubusercontent.com/sbgh/builder/master/setup/builderSetup.sh > builderSetup.sh
 chmod 700 builderSetup.sh

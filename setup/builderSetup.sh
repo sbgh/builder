@@ -16,9 +16,9 @@ while true; do
 done
 
 while true; do
-    read -p "Do you wish to install Node.js & NPM? y/n " yn
+    read -p "Do you wish to install Node.js v14 & NPM? y/n " yn
     case $yn in
-        [Yy]* ) curl --silent --location https://rpm.nodesource.com/setup_10.x | sudo bash -; sudo yum -y install nodejs;break;;
+        [Yy]* ) curl --silent --location https://rpm.nodesource.com/setup_14.x | sudo bash -; sudo yum -y install nodejs;break;;
         [Nn]* ) echo "not installing Node.js";break;;
         * ) echo "Please answer y or n.";;
     esac
