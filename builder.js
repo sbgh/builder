@@ -3943,9 +3943,9 @@ router.post("/run",function(req,res){
                                             replaceVal = SystemsJSON[jobId].variables[actionArr[row].appendText.split(':')[1]].value;
                                         }
 
-                                        if(replaceVal.includes("<p>") && SystemsJSON[jobId].variables.hasOwnProperty("id")){
+                                        if(replaceVal.includes("<p><span") && SystemsJSON[jobId].variables.hasOwnProperty("id")){
+                                            replaceVal = replaceVal.replace("<p><span ",'<p><span id="'+ SystemsJSON[jobId].variables["id"].value+'-span" ')
                                             replaceVal = replaceVal.replace("<p>",'<p id="'+ SystemsJSON[jobId].variables["id"].value+'">')
-                                            replaceVal = replaceVal.replace("<span ",'<span id="'+ SystemsJSON[jobId].variables["id"].value+'-span" ')
                                         }
                                         
                                         if(actionArr[row].type === "appendLine"){
@@ -3981,15 +3981,23 @@ router.post("/run",function(req,res){
                                                 replaceVal = templateObj[tempIndex];
                                             }else if(replaceVal.substring(0,4) === "var:"){
                                                 replaceVal = SystemsJSON[jobId].variables[replaceVal.split(':')[1]].value;  
-                                                if(replaceVal.includes("<p>") && SystemsJSON[jobId].variables.hasOwnProperty("id")){
+                                                // if(replaceVal.includes("<p>") && SystemsJSON[jobId].variables.hasOwnProperty("id")){
+                                                //     replaceVal = replaceVal.replace("<p>",'<p id="'+ SystemsJSON[jobId].variables["id"].value+'">')
+                                                //     // replaceVal = replaceVal.replace("<span ",'<span id="'+ SystemsJSON[jobId].variables["id"].value+'-span" ')
+                                                // }
+                                                if(replaceVal.includes("<p><span") && SystemsJSON[jobId].variables.hasOwnProperty("id")){
+                                                    replaceVal = replaceVal.replace("<p><span ",'<p><span id="'+ SystemsJSON[jobId].variables["id"].value+'-span" ')
                                                     replaceVal = replaceVal.replace("<p>",'<p id="'+ SystemsJSON[jobId].variables["id"].value+'">')
-                                                    // replaceVal = replaceVal.replace("<span ",'<span id="'+ SystemsJSON[jobId].variables["id"].value+'-span" ')
                                                 }
                                             }else{
                                                 // replaceVal = cappendText; 
-                                                if(replaceVal.includes("<p>") && SystemsJSON[jobId].variables.hasOwnProperty("id")){
+                                                // if(replaceVal.includes("<p>") && SystemsJSON[jobId].variables.hasOwnProperty("id")){
+                                                //     replaceVal = replaceVal.replace("<p>",'<p id="'+ SystemsJSON[jobId].variables["id"].value+'">')
+                                                //     // replaceVal = replaceVal.replace("<span ",'<span id="'+ SystemsJSON[jobId].variables["id"].value+'-span" ')
+                                                // }
+                                                if(replaceVal.includes("<p><span") && SystemsJSON[jobId].variables.hasOwnProperty("id")){
+                                                    replaceVal = replaceVal.replace("<p><span ",'<p><span id="'+ SystemsJSON[jobId].variables["id"].value+'-span" ')
                                                     replaceVal = replaceVal.replace("<p>",'<p id="'+ SystemsJSON[jobId].variables["id"].value+'">')
-                                                    // replaceVal = replaceVal.replace("<span ",'<span id="'+ SystemsJSON[jobId].variables["id"].value+'-span" ')
                                                 }
                                             }                                        
                                             if(actionArr[row].type === "appendLine"){ 
