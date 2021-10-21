@@ -517,7 +517,7 @@ input:focus + .slider {
 
 }
 
-.dashSystemDropdownButton, .buildCodeDropdownButton{
+.dashSystemDropdownButton, .buildCodeDropdownButton, #dashCompSelectedLabel{
     color:#79bdf3;
 }
 
@@ -905,4 +905,10 @@ div#dashRow {
 .compActionEditButton{
     transition: color .5s;
     color: #79bdf3;
+}
+
+div#dashCompSelectedOverlay {
+    background-color: black;
+    border: solid #79bdf3 3px;
+    box-shadow: 0px 0px 9px 3px #79bdf3a0;
 }

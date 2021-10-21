@@ -388,7 +388,7 @@ input:not(:checked) + .slider.round:before{
 
 }
 
-.dashSystemDropdownButton, .buildCodeDropdownButton{
+.dashSystemDropdownButton, .buildCodeDropdownButton, #dashCompSelectedLabel{
 
     color:#367ae0;
 
@@ -730,4 +730,8 @@ span.actionClause {
 .newCompVarTypeButton, .newCompActionTypeButton {
     transition: color 0.5s;
     color: #367ae0;
+}
+
+div#dashCompSelectedOverlay {
+    background-color: white;
 }

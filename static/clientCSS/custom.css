@@ -2131,7 +2131,7 @@ div#dashCompDescription {
 div#compDashVariables {
    display: flex;
    flex-direction: column;
-   height: calc(100% - 50px);
+   /* height: calc(100% - 50px); */
    overflow: auto;
    padding-left: 20px;
     padding-right: 20px;
@@ -2174,12 +2174,19 @@ div#compDashVariables {
 
 .varRowCompHeader {
    text-align: left;
-   font-size: .8em;
+   font-size: 1em;
    font-weight: 600;
    margin-top: 10px;
    display: flex;
+   margin-bottom: 15px;
+   justify-content: space-between;
 }
-
+i.fa.fa-copy.fa-fw.compDashVarCopyButton {
+   margin-left: auto;
+}
+.dashSelectedName {
+   font-size: 1.2em;
+}
 .varRowCompHeaderButtons{
    display: flex;
     padding-right: 3px;
@@ -2521,4 +2528,9 @@ i.fa.fa-times.fa-fw.compActionDelButton {
    background-size: 4px 4px;
    background-repeat: repeat;
    margin-bottom: 2px;
+}
+
+div#dashCompSelectedOverlay {
+   overflow-y: auto;
+   max-height: 400px;
 }

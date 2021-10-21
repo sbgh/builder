@@ -4,7 +4,7 @@
   "scripts": {
     "start": "./restartServer.sh",
     "stop": "forever stop builder.js",
-    "debug": " nodemon --watch ./builder.js --debug --inspect=0.0.0.0:9229 builder.js"
+    "debug": " nodemon --watch ./builder.js --inspect=0.0.0.0:9229 builder.js"
   },
   "nodemonConfig": {
   "ignore": ["test/*", "results/*"],
@@ -24,7 +24,7 @@
     "password-hash": "^1.2.2",
     "readline-sync": "^1.4.10",
     "session-file-store": "^1.5.0", 
-    "ssh2": "^0.5.5"
+    "ssh2": "^1.5.0"
   }
 }
  

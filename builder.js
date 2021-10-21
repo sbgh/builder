@@ -4912,6 +4912,8 @@ router.get("/getDashDetails",function(req,res){
         resJSON["id"] = id; 
     }
 
+    var proVarTree =  []; //store the array of tree nodes of jobs that have promoted variables
+    var proVarTreeObj =  {}; //store the temp obj of tree nodes of jobs that have promoted variables
     var proVarArr =  []; //store the array of promoted variables
     var lastBuildUrlsArr =  []; //store the array of urls found in children
     var launchUrlsArr =  []; //store the array of launch urls found in children
@@ -4919,9 +4921,31 @@ router.get("/getDashDetails",function(req,res){
         if(SystemsJSON[key].comType === "job"){ //if component is not a system...     
             var ancestors = SystemsJSON[key].ft.split("/"); //get array of family tree
             if( (key === id ) ||  (ancestors.includes(id) && SystemsJSON[key].enabled === 1)  ){  //if this comp is self or a desendent that is enabled ...
+                
                 for (var ind in SystemsJSON[key].variables) {   //look at all variables
                     if(SystemsJSON[key].variables[ind].hasOwnProperty("promoted")){
                         if(SystemsJSON[key].variables[ind].promoted){ //if promoted var 
+
+                            if(!proVarTreeObj[key]){
+                                var lastParent = '#';
+                                for (var idx in ancestors) { 
+                                    if(proVarTreeObj[ancestors[idx]]){
+                                        lastParent = ancestors[idx] + "-dashSelectedComp"
+                                    }
+                                }
+                                proVarTreeObj[key] = {};
+                                proVarTreeObj[key].text = SystemsJSON[key].text;
+                                proVarTreeObj[key].parent = lastParent;
+                                proVarTreeObj[key].id = key + "-dashSelectedComp"
+                                if (SystemsJSON[key].icon) {
+                                    proVarTreeObj[key].icon = "/uploads/" + key + "/" + "icon.png"
+                                }
+                                proVarTreeObj[key].li_attr = {"class": "matchTreeLi"};
+                                proVarTreeObj[key].a_attr = {"class": "matchTreeA"};
+                                proVarTreeObj[key].type = getType(ancestors[idx]);
+                                proVarTreeObj[key].sort = SystemsJSON[key].sort;
+                            }
+                            
 
                             //create tmpVar {compId - the requested key, name - name of component}
                             var tmpObj = {compId:key, name:SystemsJSON[key].name}
@@ -4970,6 +4994,30 @@ router.get("/getDashDetails",function(req,res){
         return compA.localeCompare(compB, 'en', { numeric: true });
     });
 
+    for(var ind in proVarTreeObj){
+        proVarTree.push(proVarTreeObj[ind]) 
+    }
+
+    proVarTree.sort(function (a, b) {
+        var compA = "";
+        var compB = "";
+
+        a=a.id.replace("-dashSelectedComp","")
+        b=b.id.replace("-dashSelectedComp","")
+
+        SystemsJSON[a].ft.split("/").forEach(function(id){
+            compA += id === "#" ? "0000000/" : ("0000000" + SystemsJSON[id].sort).slice((SystemsJSON[id].sort).length ) + "/"
+        });
+        compA += ("0000000" + SystemsJSON[a].sort).slice((SystemsJSON[a].sort).length );
+        SystemsJSON[b].ft.split("/").forEach(function(id){
+            compB += id === "#" ? "0000000/" : ("0000000" + SystemsJSON[id].sort).slice((SystemsJSON[id].sort).length ) + "/"
+        });
+        compB += ("0000000" + SystemsJSON[b].sort).slice((SystemsJSON[b].sort).length ); 
+
+        return compA.localeCompare(compB, 'en', { numeric: true });
+    });
+
+    resJSON["proVarTree"] = proVarTree;
     resJSON["proVarArr"] = proVarArr; 
     resJSON["lastBuildUrlsArr"] = lastBuildUrlsArr; 
     resJSON["launchUrlsArr"] = launchUrlsArr; 
