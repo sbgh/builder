@@ -4934,7 +4934,8 @@ router.get("/getDashDetails",function(req,res){
                                     }
                                 }
                                 proVarTreeObj[key] = {};
-                                proVarTreeObj[key].text = SystemsJSON[key].text;
+                                proVarTreeObj[key].text = SystemsJSON[key].name;
+                                proVarTreeObj[key].name = SystemsJSON[key].name;
                                 proVarTreeObj[key].parent = lastParent;
                                 proVarTreeObj[key].id = key + "-dashSelectedComp"
                                 if (SystemsJSON[key].icon) {
