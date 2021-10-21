@@ -1177,6 +1177,7 @@
                     let pCompHtml = "";
 
                     if (rowId === variables[varIdName].compId) {
+                        currentVarCompId = variables[varIdName].compId;
                         if (idn === "0") {
                             pCompHtml += "<div class='varRowCompHeader'  id='varRowCompHeader_" + currentVarCompId + "'>";
 
@@ -1215,7 +1216,7 @@
                             });
 
                         }
-                        currentVarCompId = variables[varIdName].compId;
+                        
 
                         pCompHtml = createDashVarRowHtml(varIdName, pCompHtml);
                         setupDashVarRowHtml(varIdName, pCompHtml)
