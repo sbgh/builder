@@ -399,6 +399,7 @@ router.get("/highlight",function(req,res){
 
                 //scroll to ele
                 await protocol.send('Runtime.evaluate', { expression: ` 
+                    $('.scroller').stop();
                     $('.scroller').animate({
                         scrollTop: ($("#` + possibleJsId  + `").offset().top + $(".scroller").scrollTop()) - Math.max(document.documentElement.clientHeight, window.innerHeight || 0)/5 
                     }, 1000);` 
