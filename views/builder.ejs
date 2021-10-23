@@ -1179,20 +1179,20 @@
                     if (rowId === variables[varIdName].compId) {
                         currentVarCompId = variables[varIdName].compId;
                         if (idn === "0") {
-                            pCompHtml += "<div class='varRowCompHeader'  id='varRowCompHeader_" + currentVarCompId + "'>";
+                            pCompHtml += "<div class='varRowCompHeader'  id='varRowCompHeader_" + currentVarCompId + "'>"; 
 
-                            pCompHtml += "<div id='dashCompSelectedLabel' class='dropdown-toggle varRowCompHeaderName' data-id='" + currentVarCompId + "' data-toggle='dropdown' aria-haspopup='true' aria-expanded='true' >" + variables[varIdName].compName + "</div>";
-                            pCompHtml += "<div class='varRowCompHeaderButtons'>";
-                            pCompHtml += "<div class='dashTableOpenButton' data-id='" + currentVarCompId + "'><i class='fa  fa-folder-open fa-fw '></i></div>";
-                            pCompHtml += "<div class='dashTableBuildButton' data-id='" + currentVarCompId + "'><i class='fa  fa-wrench fa-fw  '></i></div>  ";
-                            pCompHtml += "</div>";
+                                pCompHtml += "<div id='dashCompSelectedLabel' class='dropdown-toggle varRowCompHeaderName' data-id='" + currentVarCompId + "' data-toggle='dropdown' aria-haspopup='true' aria-expanded='true' >" + variables[varIdName].compName + "</div>";
+                                pCompHtml += "<div class='varRowCompHeaderButtons'>";
+                                    pCompHtml += "<div class='dashTableOpenButton' data-id='" + currentVarCompId + "'><i class='fa  fa-folder-open fa-fw '></i></div>";
+                                    pCompHtml += "<div class='dashTableBuildButton' data-id='" + currentVarCompId + "'><i class='fa  fa-wrench fa-fw  '></i></div>  ";
+                                pCompHtml += "</div>";
 
 
-                            pCompHtml += '<div id="dashCompSelectedOverlay" class="dropdown-menu dashCompSelectedOverlay " aria-labelledby="dashCompSelectedButton" >';
-                            pCompHtml += '<div class=" ">';
-                            pCompHtml += '<div id="dashSelectedComp_jstree_div"></div>';
-                            pCompHtml += '</div>';
-                            pCompHtml += '</div>';
+                                pCompHtml += '<div id="dashCompSelectedOverlay" class="dropdown-menu dashCompSelectedOverlay " aria-labelledby="dashCompSelectedButton" >';
+                                    pCompHtml += '<div class=" ">';
+                                        pCompHtml += '<div id="dashSelectedComp_jstree_div"></div>';
+                                    pCompHtml += '</div>';
+                                pCompHtml += '</div>';
 
                             pCompHtml += "</div>";
 
@@ -1297,10 +1297,15 @@
                     $('#dashCompSelectedOverlay.dropdown-menu').removeClass("show");
 
                     selectedMatchNode = data.selected[0].replace("-dashSelectedComp", "");
-
-                    $("#dashCompSelectedLabel").text($("#" + selectedMatchNode + "-dashSelectedComp_anchor").text());
+                    
+                    let nameText = $("#" + selectedMatchNode + "-dashSelectedComp_anchor").text()
+                    $("#dashCompSelectedLabel").text(nameText);
 
                     loadVarDashSelectedPicked(currentCompDashSelectedVarObj, selectedMatchNode);
+                    $(".varRowCompHeader .dashTableOpenButton").attr('data-ID',selectedMatchNode);
+                    $(".varRowCompHeader .dashTableBuildButton").attr('data-ID',selectedMatchNode);
+                    $(".varRowCompHeader .dashTableOpenButton").attr('data-content', "Open " + nameText + " component");
+                    $(".varRowCompHeader .dashTableBuildButton").attr('data-content', "Build " + nameText);
 
 
                 });
@@ -5990,7 +5995,7 @@
 
                         setTimeout(function () {
                             preferedPopPos = "left";
-                            floatPop("compDashVariables", "The <b>Paragraph</b> can be changed by the following this procedure: <ul><li>Click the edit icon <i class='fa fa-pencil'></i></li><li>Expand the text box by clicking the expand icon <i class='fa fa-expand'></i></li><li>Then edit the text. </li><li>Then click the save icon <i class='fa fa-save'></i></li><li>Then build <i class='fa fa-wrench'></i></li></ul> ");
+                            floatPop("varRowCompHeader_", "The <b>Paragraph</b> can be changed by the following this procedure: <ul><li>Click the edit icon <i class='fa fa-pencil'></i></li><li>Expand the text box by clicking the expand icon <i class='fa fa-expand'></i></li><li>Then edit the text. </li><li>Then click the save icon <i class='fa fa-save'></i></li><li>Then build <i class='fa fa-wrench'></i></li></ul> ");
 
                         }, 1000);
 
