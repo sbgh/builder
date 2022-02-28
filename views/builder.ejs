@@ -1326,6 +1326,8 @@
 
             function loadVarDashSelectedPicked(variables, rowId) {
                 var currentVarCompId = "";
+                
+                $(".CompDashSelectedVarRow").html('');
                 for (var varIdName in variables) {
                     var idn = variables[varIdName].idn
 
@@ -1334,7 +1336,6 @@
                     if (rowId === variables[varIdName].compId) {
 
                         pCompHtml = createDashVarRowHtml(varIdName, pCompHtml);
-                        $(".CompDashSelectedVarRow").html('');
                         setupDashVarRowHtml(varIdName, pCompHtml)
                     }
 
