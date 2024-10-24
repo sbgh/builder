@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"> 
 
 <head>
     <meta charset="UTF-8">
@@ -2348,14 +2348,6 @@
             function paintActions() {
 
 
-                //<%if (false) {%>
-                // {type: "saveTemplate", tempNum: "1", targetFile: "<%s.viewsPath%>/<%p.viewName%>.ejs", c: "0"}                    
-                // {type: "replaceStr", tag: "'%id%'", replaceStr: "'<%c.id%>'", target: "template1", c: "0"}
-                // {type: "makeVar", name: "id", value: "<%c.id%>", c: "1"}
-                // {type: "replaceLine", tag: "'%css%'", appendText: "var:css", target: "template1", c: "2"}
-                // {type: "replaceStr", tag: "'%classList%'", replaceStr: "'<%c.classList%>'", target: "template1", c: "3"}
-                // {type: "appendLine", tag: "'<%a.currentHTMLInsert%>'", appendText: "template1", target: "<%a.servicePathFileName%>", c: "4"}
-                //<%}%> 
                 var actionRowsHtml = '';
                 let x = 0;
 
@@ -7922,7 +7914,78 @@
             </nav>
 
             <main role="main" class="container-fluid  mainCol">
-                <%- include topMenu.ejs %>
+               
+
+
+                <div id="myNavbar" class="">
+                    <div class="topRow">
+    
+                        <div id="navTopIcon">
+    
+                        </div>
+                        <div id="os-panels">
+    
+                            <div class='panel dashPanel os-panel'>
+                                <div class='panel-body dashPanelBody os-panel-body'>
+                                    <span class="dashboardLabel" >CPU Load: </span>
+                                    <span class="osValue" id="osCPUValue" >%</span>
+                                </div>
+                            </div>
+    
+    
+                            <div class='panel dashPanel os-panel'>
+                                <div class='panel-body dashPanelBody os-panel-body'>
+                                    <span class="dashboardLabel" >Free Mem: </span>
+                                    <span class="osValue" id="osFMValue" >GB</span>
+                                </div>
+                            </div>
+    
+                            <div class='panel dashPanel os-panel'>
+                                <div class='panel-body dashPanelBody os-panel-body os-panel-body-status'>
+                                    <span class="dashboardLabel" >Build Status: </span>
+                                    <span class="osValue" id="resultsStatus" >Idle</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.dropdown -->
+                        <div class="dropdown dropdown-settings">
+                            <div id="stylePickMenu">
+                                <span class="radio stylePickTop" data-id="default">
+                                    <label><input type="radio" id ="defaultStyleRadioTop" name="setupRadio" checked><i class='fa fa-sun-o fa-fw '></i></label>
+                                </span>
+                                <span class="radio stylePickTop" data-id="dark">
+                                    <label><input type="radio" id="darkStyleRadioTop" name="setupRadio" > <i class='fa  fa-moon-o fa-fw '></i></label>
+                                </span>
+                            </div>
+                            <a aria-expanded="false" class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                <i id="user-menu" class="fa fa-user fa-fw userIcon"></i>
+                            </a>
+                            <ul id="userMenuDrop" class="dropdown-menu dropdown-user topMenuDropdown">
+                                <li><a href="#" data-toggle="modal" data-target="#profileModal">
+                                        <i class="fa fa-user fa-fw "></i> <%= username %> Profile</a></li>
+                                <li><a href="#" data-toggle="modal" data-target="#setupModal"><i class="fa fa-gear fa-fw"></i> Settings</a></li>
+                                <li class="divider"></li>
+                                <li><a href="/logout"><i class="fa fa-sign-out fa-fw"></i> Logout</a></li>
+                            </ul>
+                            <a id="sidebarBtn" data-toggle="collapse" href="#" data-target="#sidebar" role="button" class="">
+                                <i class="fa fa-bars fa-lg"></i>
+                            </a>
+                            <!-- /.dropdown-user -->
+                        </div>
+                    </div>
+    
+                    <!--<div class="nav navbar-top-links ">-->
+    
+    
+    
+                        <!--&lt;!&ndash; /.dropdown &ndash;&gt;-->
+                    <!--</div>-->
+        </div>
+
+
+
+
+
                     <input name="dashId" id="dashId" type="hidden" />
                     <input name="dashUrl" id="dashUrl" type="hidden" />
                     <input name="dashSys" id="dashSys" type="hidden" />
@@ -8773,7 +8836,7 @@
         <nav class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title">
-                    <%= username %> Profile
+                    
                 </h4>
             </div>
             <div class="modal-body">
